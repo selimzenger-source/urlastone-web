@@ -156,27 +156,15 @@
   background: #1a1a1a !important;
 }
 
+/* Hide default Leaflet close button - we use a custom one */
 .leaflet-popup-close-button {
-  color: white !important;
-  font-size: 24px !important;
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 32px !important;
-  top: 8px !important;
-  right: 8px !important;
-  z-index: 10 !important;
-  background: rgba(0, 0, 0, 0.6) !important;
-  border-radius: 50% !important;
-  text-align: center !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.leaflet-popup-close-button:hover {
-  color: #b39345 !important;
-  background: rgba(0, 0, 0, 0.8) !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
 }
 
 /* Instagram embed responsive */

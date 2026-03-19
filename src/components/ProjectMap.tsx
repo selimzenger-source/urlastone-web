@@ -125,7 +125,33 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               maxWidth: '340px',
               fontFamily: 'Inter, sans-serif',
               overflow: 'hidden',
+              position: 'relative',
             }}>
+              {/* Custom close button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  // Find the leaflet popup wrapper and trigger close
+                  let el = e.currentTarget as HTMLElement | null
+                  while (el && !el.classList.contains('leaflet-popup')) {
+                    el = el.parentElement
+                  }
+                  if (el) {
+                    const closeBtn = el.querySelector('a.leaflet-popup-close-button') as HTMLElement
+                    if (closeBtn) closeBtn.click()
+                  }
+                }}
+                style={{
+                  position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'white', fontSize: '20px', fontWeight: 300,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  lineHeight: 1,
+                }}
+              >
+                ✕
+              </button>
               {/* Photo Slider */}
               {loc.photos && loc.photos.length > 0 && (
                 <PhotoSlider photos={loc.photos} alt={loc.project_name || loc.city} />
