@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
@@ -79,7 +79,7 @@ export default function HeroSection() {
       gold: t.slide8_gold,
       desc: t.slide8_desc,
       bgSize: 'cover',
-      bgPos: 'center 55%',
+      bgPos: 'center 70%',
     },
   ]
 
@@ -102,6 +102,21 @@ export default function HeroSection() {
     goTo((current - 1 + slides.length) % slides.length)
   }, [current, goTo, slides.length])
 
+  // Touch swipe support
+  const touchStartX = useRef<number | null>(null)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }, [])
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next()
+      else prev()
+    }
+    touchStartX.current = null
+  }, [next, prev])
+
   useEffect(() => { setLoaded(true) }, [])
 
   // Auto-slide every 7 seconds
@@ -111,7 +126,11 @@ export default function HeroSection() {
   }, [next])
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden">
+    <section
+      className="relative min-h-screen flex flex-col overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Background Slides */}
       {slides.map((slide, i) => (
         <div
