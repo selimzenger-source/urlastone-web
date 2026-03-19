@@ -16,6 +16,8 @@ export default function FeaturedStones() {
       description: t.featured_traverten_desc,
       origin: t.featured_traverten_origin,
       image: '/featured-traverten.jpg',
+      bgSize: 'cover',
+      bgPos: 'center',
     },
     {
       id: 'mermer',
@@ -23,6 +25,8 @@ export default function FeaturedStones() {
       description: t.featured_mermer_desc,
       origin: t.featured_mermer_origin,
       image: '/featured-mermer.jpg',
+      bgSize: '140%',
+      bgPos: 'center 60%',
     },
     {
       id: 'bazalt',
@@ -30,6 +34,8 @@ export default function FeaturedStones() {
       description: t.featured_bazalt_desc,
       origin: t.featured_bazalt_origin,
       image: '/featured-bazalt.jpg',
+      bgSize: 'cover',
+      bgPos: 'center',
     },
     {
       id: 'kalker',
@@ -37,6 +43,8 @@ export default function FeaturedStones() {
       description: t.featured_kalker_desc,
       origin: t.featured_kalker_origin,
       image: '/featured-kalker.jpg',
+      bgSize: 'cover',
+      bgPos: 'center',
     },
   ]
 
@@ -71,8 +79,13 @@ export default function FeaturedStones() {
           >
             {/* Image background */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-              style={{ backgroundImage: `url(${stone.image})` }}
+              className="absolute inset-0 transition-transform duration-700 group-hover:scale-110"
+              style={{
+                backgroundImage: `url(${stone.image})`,
+                backgroundSize: stone.bgSize || 'cover',
+                backgroundPosition: stone.bgPos || 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
             />
 
             {/* Gradient overlay */}
