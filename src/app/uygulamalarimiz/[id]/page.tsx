@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
@@ -26,6 +26,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPhoto, setCurrentPhoto] = useState(0)
+  const [lightbox, setLightbox] = useState(false)
 
   useEffect(() => {
     if (!params.id) return
@@ -104,24 +105,28 @@ export default function ProjectDetailPage() {
             <div>
               {photos.length > 0 ? (
                 <div className="space-y-3">
-                  {/* Main Photo */}
-                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white/[0.04]">
+                  {/* Main Photo - responsive aspect ratio */}
+                  <div className="relative rounded-2xl overflow-hidden bg-white/[0.04] cursor-pointer group" onClick={() => setLightbox(true)}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photos[currentPhoto]}
                       alt={projectName}
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto max-h-[70vh] object-contain"
                     />
+                    {/* Zoom overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <ZoomIn size={32} className="text-white opacity-0 group-hover:opacity-70 transition-opacity" />
+                    </div>
                     {photos.length > 1 && (
                       <>
                         <button
-                          onClick={prevPhoto}
+                          onClick={(e) => { e.stopPropagation(); prevPhoto() }}
                           className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
                         >
                           <ChevronLeft size={20} />
                         </button>
                         <button
-                          onClick={nextPhoto}
+                          onClick={(e) => { e.stopPropagation(); nextPhoto() }}
                           className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
                         >
                           <ChevronRight size={20} />
@@ -263,6 +268,57 @@ export default function ProjectDetailPage() {
       </section>
 
       <Footer />
+
+      {/* Fullscreen Lightbox */}
+      {lightbox && photos.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onClick={() => setLightbox(false)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setLightbox(false)}
+            className="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Navigation */}
+          {photos.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); prevPhoto() }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <ChevronLeft size={28} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); nextPhoto() }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <ChevronRight size={28} />
+              </button>
+            </>
+          )}
+
+          {/* Full image */}
+          <div className="max-w-[95vw] max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photos[currentPhoto]}
+              alt={projectName}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+          </div>
+
+          {/* Counter */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 text-white text-sm font-mono">
+              {currentPhoto + 1} / {photos.length}
+            </div>
+          )}
+        </div>
+      )}
     </main>
   )
 }

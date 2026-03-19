@@ -91,7 +91,14 @@ function PhotoSlider({ photos, alt }: { photos: string[]; alt: string }) {
   )
 }
 
-export default function ProjectMap({ locations }: { locations: Location[] }) {
+interface MapLabels {
+  details: string
+  navigate: string
+}
+
+export default function ProjectMap({ locations, labels }: { locations: Location[]; labels?: MapLabels }) {
+  const detailsText = labels?.details || 'Detayları Gör →'
+  const navigateText = labels?.navigate || 'Konuma Git'
   return (
     <MapContainer
       center={[39.0, 35.0]}
@@ -161,7 +168,7 @@ export default function ProjectMap({ locations }: { locations: Location[] }) {
                         border: '1px solid rgba(255, 255, 255, 0.12)',
                       }}
                     >
-                      Detayları Gör →
+                      {detailsText} →
                     </a>
                   )}
                   <a
@@ -176,7 +183,7 @@ export default function ProjectMap({ locations }: { locations: Location[] }) {
                       border: '1px solid rgba(179, 147, 69, 0.25)',
                     }}
                   >
-                    🗺️ Konuma Git
+                    🗺️ {navigateText}
                   </a>
                 </div>
               </div>

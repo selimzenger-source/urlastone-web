@@ -3,7 +3,8 @@ import Anthropic from '@anthropic-ai/sdk'
 
 function validateAdmin(request: NextRequest): boolean {
   const auth = request.headers.get('Authorization')
-  return auth === `Bearer ${process.env.ADMIN_PASSWORD}`
+  const password = (process.env.ADMIN_PASSWORD || '').trim()
+  return auth === `Bearer ${password}`
 }
 
 const client = new Anthropic({

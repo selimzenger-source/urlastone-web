@@ -139,6 +139,46 @@
   animation-play-state: paused;
 }
 
+/* Leaflet popup overrides for dark theme + mobile */
+.leaflet-popup-content-wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.leaflet-popup-tip {
+  background: #1a1a1a !important;
+}
+
+.leaflet-popup-close-button {
+  color: white !important;
+  font-size: 24px !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 10 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 50% !important;
+  text-align: center !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #b39345 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
 /* Instagram embed responsive */
 .instagram-embed-container iframe {
   max-width: 100% !important;

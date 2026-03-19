@@ -3,7 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 function validateAdmin(request: NextRequest): boolean {
   const auth = request.headers.get('Authorization')
-  return auth === `Bearer ${process.env.ADMIN_PASSWORD}`
+  const password = (process.env.ADMIN_PASSWORD || '').trim()
+  return auth === `Bearer ${password}`
 }
 
 // POST — admin: fotoğraf yükle

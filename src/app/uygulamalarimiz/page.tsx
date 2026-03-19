@@ -115,7 +115,7 @@ export default function UygulamalarimPage() {
                   <Loader2 size={32} className="animate-spin text-white/20" />
                 </div>
               ) : (
-                <ProjectMap locations={locations} />
+                <ProjectMap locations={locations} labels={{ details: t.apps_details, navigate: t.apps_navigate }} />
               )}
             </div>
           </div>
