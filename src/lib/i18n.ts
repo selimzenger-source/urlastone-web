@@ -83,6 +83,8 @@ type TranslationKeys = {
   footer_desc: string
   footer_links: string
   footer_iletisim: string
+  footer_follow: string
+  footer_slogan: string
   footer_rights: string
 
   // Hakkımızda
@@ -361,6 +363,8 @@ const translations: Record<Locale, TranslationKeys> = {
     footer_desc: 'Doğal taşın eşsiz güzelliğini modern mimariyle buluşturuyoruz.',
     footer_links: 'Hızlı Linkler',
     footer_iletisim: 'İletişim',
+    footer_follow: 'Takip Edin',
+    footer_slogan: 'Doğal Taş Pazarı — Urla, İzmir',
     footer_rights: 'Tüm hakları saklıdır.',
     about_tag: 'Hakkımızda',
     about_title1: 'Doğal taşa',
@@ -612,6 +616,8 @@ const translations: Record<Locale, TranslationKeys> = {
     footer_desc: 'We bring the unique beauty of natural stone together with modern architecture.',
     footer_links: 'Quick Links',
     footer_iletisim: 'Contact',
+    footer_follow: 'Follow Us',
+    footer_slogan: 'Natural Stone Market — Urla, Izmir',
     footer_rights: 'All rights reserved.',
     about_tag: 'About Us',
     about_title1: 'Passionate about',
@@ -863,6 +869,8 @@ const translations: Record<Locale, TranslationKeys> = {
     footer_desc: 'Unimos la belleza de la piedra natural con la arquitectura moderna.',
     footer_links: 'Enlaces Rápidos',
     footer_iletisim: 'Contacto',
+    footer_follow: 'Síguenos',
+    footer_slogan: 'Mercado de Piedra Natural — Urla, Izmir',
     footer_rights: 'Todos los derechos reservados.',
     about_tag: 'Sobre Nosotros',
     about_title1: 'Apasionados por',
@@ -1114,6 +1122,8 @@ const translations: Record<Locale, TranslationKeys> = {
     footer_desc: 'نجمع بين جمال الحجر الطبيعي والعمارة الحديثة.',
     footer_links: 'روابط سريعة',
     footer_iletisim: 'اتصل بنا',
+    footer_follow: 'تابعونا',
+    footer_slogan: 'سوق الحجر الطبيعي — أورلا، إزمير',
     footer_rights: 'جميع الحقوق محفوظة.',
     about_tag: 'من نحن',
     about_title1: 'شغوفون',
@@ -1365,6 +1375,8 @@ const translations: Record<Locale, TranslationKeys> = {
     footer_desc: 'Wir vereinen die Schönheit von Naturstein mit moderner Architektur.',
     footer_links: 'Schnelllinks',
     footer_iletisim: 'Kontakt',
+    footer_follow: 'Folgen Sie Uns',
+    footer_slogan: 'Natursteinmarkt — Urla, Izmir',
     footer_rights: 'Alle Rechte vorbehalten.',
     about_tag: 'Über Uns',
     about_title1: 'Leidenschaftlich für',

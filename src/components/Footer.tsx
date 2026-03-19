@@ -22,7 +22,7 @@ export default function Footer() {
               style={{ filter: 'brightness(10)' }}
             />
             <p className="font-mono text-[10px] text-white/30 tracking-wider uppercase mb-6">
-              Doğal Taş Pazarı &mdash; Urla, İzmir
+              {t.footer_slogan}
             </p>
             <p className="text-white/40 text-sm leading-relaxed">
               {t.footer_desc}
@@ -70,7 +70,7 @@ export default function Footer() {
 
           {/* Social */}
           <div>
-            <h4 className="text-white font-medium text-sm mb-6">Takip</h4>
+            <h4 className="text-white font-medium text-sm mb-6">{t.footer_follow}</h4>
             <div className="flex items-center gap-3">
               <a
                 href="https://www.instagram.com/urladogaltaspazari/"
