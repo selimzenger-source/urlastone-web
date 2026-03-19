@@ -2,41 +2,7 @@
 
 import { useState } from 'react'
 import { Send, Upload, X, CheckCircle, Loader2 } from 'lucide-react'
-
-const projeTipleri = [
-  'Cephe Kaplama',
-  'Zemin Döşeme',
-  'İç Mekan',
-  'Bahçe & Peyzaj',
-  'Havuz Kenarı',
-  'Merdiven & Basamak',
-  'Diğer',
-]
-
-const tasSecenekleri = [
-  'Traverten',
-  'Mermer',
-  'Bazalt',
-  'Granit',
-  'Lime Stone',
-  'Onyx',
-  'Bilmiyorum, önerinizi isterim',
-]
-
-const metrekareSecenekleri = [
-  '0 – 50 m²',
-  '50 – 100 m²',
-  '100 – 500 m²',
-  '500+ m²',
-  'Bilmiyorum',
-]
-
-const kaynakSecenekleri = [
-  'Google',
-  'Instagram',
-  'Tavsiye',
-  'Diğer',
-]
+import { useLanguage } from '@/context/LanguageContext'
 
 interface FormData {
   adSoyad: string
@@ -52,6 +18,43 @@ interface FormData {
 }
 
 export default function TeklifForm() {
+  const { t } = useLanguage()
+
+  const projeTipleri = [
+    t.form_opt_cephe,
+    t.form_opt_zemin,
+    t.form_opt_ic_mekan,
+    t.form_opt_bahce,
+    t.form_opt_havuz,
+    t.form_opt_merdiven,
+    t.form_opt_diger,
+  ]
+
+  const tasSecenekleri = [
+    t.form_stone_traverten,
+    t.form_stone_mermer,
+    t.form_stone_bazalt,
+    t.form_stone_granit,
+    t.form_stone_limestone,
+    t.form_stone_onyx,
+    t.form_stone_recommend,
+  ]
+
+  const metrekareSecenekleri = [
+    '0 – 50 m\u00B2',
+    '50 – 100 m\u00B2',
+    '100 – 500 m\u00B2',
+    '500+ m\u00B2',
+    t.form_sqm_unknown,
+  ]
+
+  const kaynakSecenekleri = [
+    t.form_source_google,
+    t.form_source_instagram,
+    t.form_source_referral,
+    t.form_source_other,
+  ]
+
   const [form, setForm] = useState<FormData>({
     adSoyad: '',
     telefon: '',
@@ -111,13 +114,13 @@ export default function TeklifForm() {
           <CheckCircle size={32} className="text-green-400" />
         </div>
         <h3 className="font-heading text-2xl font-bold text-white mb-3">
-          Talebiniz Alındı!
+          {t.form_success_title}
         </h3>
         <p className="text-white/50 text-sm max-w-md mx-auto mb-2">
-          En kısa sürede sizinle iletişime geçeceğiz. Detaylı teklifiniz e-posta adresinize gönderilecektir.
+          {t.form_success_desc}
         </p>
         <p className="text-white/30 text-xs font-mono">
-          Ortalama yanıt süresi: 24 saat içinde
+          {t.form_success_time}
         </p>
       </div>
     )
@@ -127,10 +130,10 @@ export default function TeklifForm() {
     <form onSubmit={handleSubmit} className="glass-card p-8 md:p-10">
       <div className="mb-8">
         <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-2">
-          Ücretsiz Teklif
+          {t.form_free_quote}
         </p>
         <h3 className="font-heading text-2xl font-bold text-white">
-          Projenizi anlatın, <span className="italic text-gradient-gold">biz teklif verelim.</span>
+          {t.form_title} <span className="italic text-gradient-gold">{t.form_title_gold}</span>
         </h3>
       </div>
 
@@ -139,7 +142,7 @@ export default function TeklifForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Ad Soyad <span className="text-gold-400">*</span>
+              {t.form_name_label} <span className="text-gold-400">*</span>
             </label>
             <input
               type="text"
@@ -147,13 +150,13 @@ export default function TeklifForm() {
               required
               value={form.adSoyad}
               onChange={handleChange}
-              placeholder="Adınız Soyadınız"
+              placeholder={t.form_name_placeholder}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
             />
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Telefon <span className="text-gold-400">*</span>
+              {t.form_phone_label} <span className="text-gold-400">*</span>
             </label>
             <input
               type="tel"
@@ -161,7 +164,7 @@ export default function TeklifForm() {
               required
               value={form.telefon}
               onChange={handleChange}
-              placeholder="05XX XXX XX XX"
+              placeholder={t.form_phone_placeholder}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
             />
           </div>
@@ -169,14 +172,14 @@ export default function TeklifForm() {
 
         <div>
           <label className="block text-white/50 text-xs font-mono mb-2">
-            E-posta
+            {t.form_email_label}
           </label>
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={handleChange}
-            placeholder="ornek@mail.com"
+            placeholder={t.form_email_placeholder}
             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
           />
         </div>
@@ -185,7 +188,7 @@ export default function TeklifForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              İl <span className="text-gold-400">*</span>
+              {t.form_city_label} <span className="text-gold-400">*</span>
             </label>
             <input
               type="text"
@@ -193,20 +196,20 @@ export default function TeklifForm() {
               required
               value={form.il}
               onChange={handleChange}
-              placeholder="Örn: İzmir"
+              placeholder={t.form_city_placeholder}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
             />
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              İlçe
+              {t.form_district_label}
             </label>
             <input
               type="text"
               name="ilce"
               value={form.ilce}
               onChange={handleChange}
-              placeholder="Örn: Urla"
+              placeholder={t.form_district_placeholder}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
             />
           </div>
@@ -216,7 +219,7 @@ export default function TeklifForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Proje Tipi <span className="text-gold-400">*</span>
+              {t.form_project_type_label} <span className="text-gold-400">*</span>
             </label>
             <select
               name="projeTipi"
@@ -225,7 +228,7 @@ export default function TeklifForm() {
               onChange={handleChange}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/40 transition-colors appearance-none cursor-pointer"
             >
-              <option value="" className="bg-[#1a1a1a]">Seçiniz...</option>
+              <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
               {projeTipleri.map(tip => (
                 <option key={tip} value={tip} className="bg-[#1a1a1a]">{tip}</option>
               ))}
@@ -233,7 +236,7 @@ export default function TeklifForm() {
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Tahmini Metrekare
+              {t.form_sqm_label}
             </label>
             <select
               name="metrekare"
@@ -241,7 +244,7 @@ export default function TeklifForm() {
               onChange={handleChange}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/40 transition-colors appearance-none cursor-pointer"
             >
-              <option value="" className="bg-[#1a1a1a]">Seçiniz...</option>
+              <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
               {metrekareSecenekleri.map(m => (
                 <option key={m} value={m} className="bg-[#1a1a1a]">{m}</option>
               ))}
@@ -252,7 +255,7 @@ export default function TeklifForm() {
         {/* Taş Tercihi - Chip Select */}
         <div>
           <label className="block text-white/50 text-xs font-mono mb-3">
-            Taş Tercihi <span className="text-white/30">(birden fazla seçebilirsiniz)</span>
+            {t.form_stone_pref_label} <span className="text-white/30">{t.form_stone_pref_hint}</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {tasSecenekleri.map(tas => {
@@ -278,7 +281,7 @@ export default function TeklifForm() {
         {/* Fotoğraf Yükleme */}
         <div>
           <label className="block text-white/50 text-xs font-mono mb-3">
-            Uygulama Alanı Fotoğrafları <span className="text-white/30">(max 5 adet)</span>
+            {t.form_photos_label} <span className="text-white/30">{t.form_photos_hint}</span>
           </label>
 
           {dosyalar.length > 0 && (
@@ -308,7 +311,7 @@ export default function TeklifForm() {
           {dosyalar.length < 5 && (
             <label className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-white/[0.12] cursor-pointer hover:border-gold-400/30 transition-colors">
               <Upload size={18} className="text-white/30" />
-              <span className="text-white/40 text-sm">Fotoğraf ekle (JPG, PNG — max 10MB)</span>
+              <span className="text-white/40 text-sm">{t.form_photos_add}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -323,14 +326,14 @@ export default function TeklifForm() {
         {/* Açıklama */}
         <div>
           <label className="block text-white/50 text-xs font-mono mb-2">
-            Ek Açıklama / Özel İstekler
+            {t.form_notes_label}
           </label>
           <textarea
             name="aciklama"
             value={form.aciklama}
             onChange={handleChange}
             rows={4}
-            placeholder="Projeniz hakkında eklemek istediğiniz detaylar..."
+            placeholder={t.form_notes_placeholder}
             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors resize-none"
           />
         </div>
@@ -338,7 +341,7 @@ export default function TeklifForm() {
         {/* Bizi Nereden Buldunuz */}
         <div>
           <label className="block text-white/50 text-xs font-mono mb-2">
-            Bizi nereden buldunuz?
+            {t.form_source_label}
           </label>
           <select
             name="kaynak"
@@ -346,7 +349,7 @@ export default function TeklifForm() {
             onChange={handleChange}
             className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/40 transition-colors appearance-none cursor-pointer"
           >
-            <option value="" className="bg-[#1a1a1a]">Seçiniz...</option>
+            <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
             {kaynakSecenekleri.map(k => (
               <option key={k} value={k} className="bg-[#1a1a1a]">{k}</option>
             ))}
@@ -362,18 +365,18 @@ export default function TeklifForm() {
           {gonderiliyor ? (
             <>
               <Loader2 size={16} className="animate-spin" />
-              Gönderiliyor...
+              {t.form_submitting}
             </>
           ) : (
             <>
               <Send size={16} />
-              Teklif Talebi Gönder
+              {t.form_submit_btn}
             </>
           )}
         </button>
 
         <p className="text-white/20 text-[10px] font-mono text-center">
-          Bilgileriniz gizli tutulur ve yalnızca teklif sürecinde kullanılır.
+          {t.form_privacy_note}
         </p>
       </div>
     </form>

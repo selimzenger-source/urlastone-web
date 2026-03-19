@@ -14,62 +14,65 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import Link from 'next/link'
-
-const ekip = [
-  {
-    ad: 'Fatih At',
-    unvan: 'İhracat ve Toptan Satış Sorumlusu',
-    foto: '/ekip-fatih.jpg',
-    bio: 'Afyon Kocatepe Üniversitesi Doğal Taş Teknikerliği mezunu. 15 yıl boyunca TUREKS bünyesinde ihracat biriminden üretim sorumluluğuna kadar önemli pozisyonlarda görev aldı. Daymar Stone firmasını kurarak ihracat ve iç piyasaya yönelik üretim gerçekleştirdi. Rockshell ürünlerinin üretimine öncülük ederek Urla Stone\'un kurucuları arasında yerini aldı.',
-    linkedin: '#',
-  },
-  {
-    ad: 'Özer Demirkırkan',
-    unvan: 'Üretim ve AR-GE Sorumlusu',
-    foto: '/ekip-ozer.jpg',
-    bio: 'Kocaeli Üniversitesi Endüstri Mühendisliği mezunu. 13 yıl boyunca TUREKS bünyesinde ihracat ve üretim alanlarında deneyim kazandı. Daymar Stone firmasını kurarak Rockshell ürün serisinin geliştirilmesine öncülük etti. Üretim süreçlerindeki AR-GE çalışmalarıyla Urla Stone\'un kurucuları arasında yerini aldı.',
-    linkedin: '#',
-  },
-  {
-    ad: 'Cihan Zenger',
-    unvan: 'Perakende ve Proje Sorumlusu',
-    foto: '/ekip-cihan.jpg',
-    bio: 'Yeditepe Üniversitesi Mimarlık Fakültesi mezunu. Regen Cons.&Arch. şirketini kurarak 6 yıl boyunca mimari proje hazırlığı ve uygulamaları gerçekleştirdi. İnşaat sektöründe yenilikçi ürünlerin tanıtımı ve uygulanmasıyla Kayseri ve İç Anadolu Bölgesi\'nde faaliyet gösterdi. Urla Stone\'un kurucu ortağı olarak perakende ve proje yönetimini üstleniyor.',
-    linkedin: '#',
-  },
-]
-
-const stats = [
-  { sayi: '15+', etiket: 'Yıllık Sektör Deneyimi', icon: Award },
-  { sayi: '500+', etiket: 'Tamamlanan Proje', icon: Building2 },
-  { sayi: '50+', etiket: 'İhracat Ülkesi', icon: Globe },
-  { sayi: '20+', etiket: 'Doğal Taş Çeşidi', icon: Gem },
-]
-
-const degerler = [
-  {
-    baslik: 'Kalite',
-    aciklama: 'Her projede en yüksek kalite standartlarını uyguluyoruz. Doğal taşın doğasına saygı duyarak, kusursuz sonuçlar üretiyoruz.',
-    icon: Award,
-  },
-  {
-    baslik: 'Yenilikçilik',
-    aciklama: 'Rockshell teknolojisi ile doğal taş sektöründe yeni bir çağ başlattık. AR-GE yatırımlarımızla sürekli gelişiyoruz.',
-    icon: Hammer,
-  },
-  {
-    baslik: 'Güven',
-    aciklama: '15 yılı aşkın sektör deneyimimiz ve yüzlerce başarılı proje ile müşterilerimizin güvenini kazandık.',
-    icon: Users,
-  },
-  {
-    baslik: 'Küresel Vizyon',
-    aciklama: '50\'den fazla ülkeye ihracat yapan yapımızla, Türk doğal taşını dünyaya tanıtıyoruz.',
-    icon: Globe,
-  },
-]
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function HakkimizdaPage() {
+  const { t } = useLanguage()
+
+  const ekip = [
+    {
+      ad: 'Fatih At',
+      unvan: t.about_team_fatih_title,
+      foto: '/ekip-fatih.jpg',
+      bio: t.about_team_fatih_bio,
+      linkedin: '#',
+    },
+    {
+      ad: 'Özer Demirkırkan',
+      unvan: t.about_team_ozer_title,
+      foto: '/ekip-ozer.jpg',
+      bio: t.about_team_ozer_bio,
+      linkedin: '#',
+    },
+    {
+      ad: 'Cihan Zenger',
+      unvan: t.about_team_cihan_title,
+      foto: '/ekip-cihan.jpg',
+      bio: t.about_team_cihan_bio,
+      linkedin: '#',
+    },
+  ]
+
+  const stats = [
+    { sayi: '15+', etiket: t.about_stat1, icon: Award },
+    { sayi: '500+', etiket: t.about_stat2, icon: Building2 },
+    { sayi: '50+', etiket: t.about_stat3, icon: Globe },
+    { sayi: '20+', etiket: t.about_stat4, icon: Gem },
+  ]
+
+  const degerler = [
+    {
+      baslik: t.about_val1,
+      aciklama: t.about_val1_desc,
+      icon: Award,
+    },
+    {
+      baslik: t.about_val2,
+      aciklama: t.about_val2_desc,
+      icon: Hammer,
+    },
+    {
+      baslik: t.about_val3,
+      aciklama: t.about_val3_desc,
+      icon: Users,
+    },
+    {
+      baslik: t.about_val4,
+      aciklama: t.about_val4_desc,
+      icon: Globe,
+    },
+  ]
+
   return (
     <main className="bg-[#0a0a0a] min-h-screen">
       <Navbar />
@@ -80,16 +83,14 @@ export default function HakkimizdaPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center max-w-3xl mx-auto">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Hakkımızda
+              {t.about_tag}
             </p>
             <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-6">
-              Doğal taşa
-              <span className="block hero-gold-text">tutku ile bağlıyız.</span>
+              {t.about_title1}
+              <span className="block hero-gold-text">{t.about_title2}</span>
             </h1>
             <p className="text-white/50 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-              Urla Stone, 15 yılı aşkın sektör deneyimine sahip üç kurucunun
-              ortak vizyonuyla doğdu. Doğal taşın eşsiz güzelliğini modern
-              mimariyle buluşturuyoruz.
+              {t.about_desc}
             </p>
           </div>
         </div>
@@ -145,32 +146,16 @@ export default function HakkimizdaPage() {
             {/* Sağ - Metin */}
             <div>
               <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-                Hikayemiz
+                {t.about_story_tag}
               </p>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-6 leading-tight">
-                Urla&apos;nın kalbinden
-                <span className="text-gold-400"> dünyaya.</span>
+                {t.about_story_title}
+                <span className="text-gold-400"> {t.about_story_gold}</span>
               </h2>
               <div className="space-y-4 text-white/50 text-sm sm:text-base leading-relaxed">
-                <p>
-                  Urla Stone, doğal taş sektöründe uzun yıllar farklı alanlarda
-                  deneyim kazanmış üç ortağın bir araya gelmesiyle kurulmuştur.
-                  İhracat, üretim ve mimari proje yönetimi alanlarında birbirini
-                  tamamlayan bu üç isim, sektöre yenilikçi bir bakış açısı
-                  getirmek amacıyla güçlerini birleştirmiştir.
-                </p>
-                <p>
-                  TUREKS gibi Türkiye&apos;nin önde gelen ihracatçı firmalarında
-                  edinilen tecrübe, Daymar Stone ile üretim süreçlerinde
-                  mükemmelleştirilen uzmanlık ve Rockshell gibi yenilikçi ürün
-                  serilerinin geliştirilmesi — tüm bu birikim Urla Stone
-                  çatısı altında buluşmuştur.
-                </p>
-                <p>
-                  Bugün İzmir Urla&apos;daki merkezimizden, Türkiye genelinde
-                  ve 50&apos;den fazla ülkede projelerimizle doğal taşın
-                  eşsiz dokusunu modern yaşam alanlarına taşıyoruz.
-                </p>
+                <p>{t.about_story_p1}</p>
+                <p>{t.about_story_p2}</p>
+                <p>{t.about_story_p3}</p>
               </div>
             </div>
           </div>
@@ -182,10 +167,10 @@ export default function HakkimizdaPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Ekibimiz
+              {t.about_team_tag}
             </p>
             <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
-              Kurucularımız
+              {t.about_team_title}
             </h2>
           </div>
 
@@ -227,10 +212,10 @@ export default function HakkimizdaPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Değerlerimiz
+              {t.about_values_tag}
             </p>
             <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
-              Bizi biz yapan ilkeler.
+              {t.about_values_title}
             </h2>
           </div>
 
@@ -264,11 +249,11 @@ export default function HakkimizdaPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-                Merkezimiz
+                {t.about_loc_tag}
               </p>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-6 leading-tight">
-                Urla&apos;dan dünyaya
-                <span className="text-gold-400"> uzanan yolculuk.</span>
+                {t.about_loc_title}
+                <span className="text-gold-400"> {t.about_loc_gold}</span>
               </h2>
               <div className="space-y-4 mb-8">
                 <div className="flex items-start gap-4">
@@ -276,8 +261,8 @@ export default function HakkimizdaPage() {
                     <MapPin size={16} className="text-gold-400" />
                   </div>
                   <div>
-                    <p className="text-white font-medium text-sm">Adres</p>
-                    <p className="text-white/40 text-sm">Altıntaş, İzmir Çeşme Cd. NO: 319, Urla/İzmir</p>
+                    <p className="text-white font-medium text-sm">{t.about_loc_address_label}</p>
+                    <p className="text-white/40 text-sm">{t.about_loc_address}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -285,8 +270,8 @@ export default function HakkimizdaPage() {
                     <Globe size={16} className="text-gold-400" />
                   </div>
                   <div>
-                    <p className="text-white font-medium text-sm">İhracat Ağı</p>
-                    <p className="text-white/40 text-sm">Avrupa, Ortadoğu, Kuzey Afrika ve daha fazlası</p>
+                    <p className="text-white font-medium text-sm">{t.about_loc_export_label}</p>
+                    <p className="text-white/40 text-sm">{t.about_loc_export_desc}</p>
                   </div>
                 </div>
               </div>
@@ -294,7 +279,7 @@ export default function HakkimizdaPage() {
                 href="/iletisim"
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
               >
-                İletişime Geç <ArrowRight size={16} />
+                {t.common_iletisim} <ArrowRight size={16} />
               </Link>
             </div>
 
@@ -318,18 +303,17 @@ export default function HakkimizdaPage() {
       <section className="py-20 md:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-4">
-            Projeniz için bizimle iletişime geçin.
+            {t.about_cta_title}
           </h2>
           <p className="text-white/40 text-sm sm:text-base mb-8 max-w-xl mx-auto">
-            Ücretsiz keşif ve fiyat teklifi için hemen formumuzu doldurun.
-            Uzman ekibimiz en kısa sürede size dönüş yapacaktır.
+            {t.about_cta_desc}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/iletisim"
               className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
             >
-              Teklif Al <ArrowRight size={16} />
+              {t.about_cta_btn} <ArrowRight size={16} />
             </Link>
             <a
               href="https://wa.me/905532322144"
@@ -337,7 +321,7 @@ export default function HakkimizdaPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 border border-white/[0.12] text-white/70 px-8 py-3.5 rounded-full text-sm hover:bg-white/[0.04] transition-colors"
             >
-              WhatsApp ile Ulaşın
+              {t.common_whatsapp}
             </a>
           </div>
         </div>

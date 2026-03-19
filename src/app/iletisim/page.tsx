@@ -1,9 +1,14 @@
+'use client'
+
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TeklifForm from '@/components/TeklifForm'
 import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function IletisimPage() {
+  const { t } = useLanguage()
+
   return (
     <main>
       <Navbar />
@@ -13,13 +18,13 @@ export default function IletisimPage() {
           {/* Header */}
           <div className="mb-16">
             <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
-              İletişim
+              {t.contact_tag}
             </p>
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-              Projeniz için <span className="italic text-gradient-gold">teklif alın.</span>
+              {t.contact_title_main} <span className="italic text-gradient-gold">{t.common_teklif_al}.</span>
             </h1>
             <p className="text-white/40 text-sm md:text-base max-w-xl font-mono">
-              Formu doldurun, 24 saat içinde detaylı teklifinizi hazırlayalım.
+              {t.contact_desc_main}
             </p>
           </div>
 
@@ -34,7 +39,7 @@ export default function IletisimPage() {
               {/* İletişim Kartı */}
               <div className="glass-card p-8">
                 <h3 className="font-heading text-lg font-bold text-white mb-6">
-                  Doğrudan Ulaşın
+                  {t.contact_direct}
                 </h3>
                 <ul className="space-y-5">
                   <li className="flex items-start gap-4">
@@ -42,7 +47,7 @@ export default function IletisimPage() {
                       <Phone size={16} className="text-gold-400" />
                     </div>
                     <div>
-                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">Telefon</p>
+                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">{t.contact_phone_label}</p>
                       <a href="tel:+905532322144" className="text-white text-sm hover:text-gold-400 transition-colors">
                         +90 553 232 2144
                       </a>
@@ -53,14 +58,14 @@ export default function IletisimPage() {
                       <MessageCircle size={16} className="text-gold-400" />
                     </div>
                     <div>
-                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">WhatsApp</p>
+                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">{t.contact_whatsapp_label}</p>
                       <a
                         href="https://wa.me/905532322144?text=Merhaba%2C%20do%C4%9Fal%20ta%C5%9F%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-white text-sm hover:text-gold-400 transition-colors"
                       >
-                        Mesaj Gönder
+                        {t.contact_send_msg}
                       </a>
                     </div>
                   </li>
@@ -69,7 +74,7 @@ export default function IletisimPage() {
                       <Mail size={16} className="text-gold-400" />
                     </div>
                     <div>
-                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">E-posta</p>
+                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">{t.contact_email_label}</p>
                       <a href="mailto:info@urlastone.com" className="text-white text-sm hover:text-gold-400 transition-colors">
                         info@urlastone.com
                       </a>
@@ -80,9 +85,9 @@ export default function IletisimPage() {
                       <MapPin size={16} className="text-gold-400" />
                     </div>
                     <div>
-                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">Adres</p>
-                      <p className="text-white text-sm">
-                        Altıntaş, İzmir Çeşme Cad.<br />No: 319, Urla/İzmir
+                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">{t.contact_address_label}</p>
+                      <p className="text-white text-sm whitespace-pre-line">
+                        {t.contact_address_value}
                       </p>
                     </div>
                   </li>
@@ -91,8 +96,8 @@ export default function IletisimPage() {
                       <Clock size={16} className="text-gold-400" />
                     </div>
                     <div>
-                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">Çalışma Saatleri</p>
-                      <p className="text-white text-sm">Pzt — Cmt: 08:00 — 18:00</p>
+                      <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-1">{t.contact_hours_label}</p>
+                      <p className="text-white text-sm">{t.contact_hours_value}</p>
                     </div>
                   </li>
                 </ul>
@@ -101,29 +106,29 @@ export default function IletisimPage() {
               {/* Süreç Kartı */}
               <div className="glass-card p-8">
                 <h3 className="font-heading text-lg font-bold text-white mb-6">
-                  Nasıl İlerliyor?
+                  {t.contact_process_title}
                 </h3>
                 <div className="space-y-6">
                   {[
                     {
                       step: '01',
-                      title: 'Formu Doldurun',
-                      desc: 'Proje detaylarınızı ve taş tercihlerinizi belirtin.',
+                      title: t.contact_step1_title,
+                      desc: t.contact_step1_desc,
                     },
                     {
                       step: '02',
-                      title: 'Sizi Arayalım',
-                      desc: '24 saat içinde uzman ekibimiz sizinle iletişime geçer.',
+                      title: t.contact_step2_title,
+                      desc: t.contact_step2_desc,
                     },
                     {
                       step: '03',
-                      title: 'Keşif Ziyareti',
-                      desc: 'Gerekirse proje alanını yerinde inceleyerek ölçü alırız.',
+                      title: t.contact_step3_title,
+                      desc: t.contact_step3_desc,
                     },
                     {
                       step: '04',
-                      title: 'Detaylı Teklif',
-                      desc: 'Taş seçimi, işçilik ve nakliye dahil fiyat teklifi sunulur.',
+                      title: t.contact_step4_title,
+                      desc: t.contact_step4_desc,
                     },
                   ].map((item) => (
                     <div key={item.step} className="flex gap-4">

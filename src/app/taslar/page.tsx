@@ -12,106 +12,109 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
-
-const rockshellModels = [
-  {
-    id: 'nature',
-    ad: 'Nature',
-    slogan: 'Doğanın ham güzelliği.',
-    aciklama: 'Doğal taşların üretim için kırılma sürecinden geçtikten sonraki yüzey formlarını olduğu gibi koruyarak inceltilmesiyle ortaya çıkar. En organik ve doğal görünümü sunan modelimizdir.',
-    ozellikler: ['Doğal kırık yüzey', 'Organik formlar', 'Cephe & iç mekan'],
-    kalinlik: '1.5 – 3 cm',
-    renk: '/rockshell-nature.jpg',
-  },
-  {
-    id: 'mix',
-    ad: 'Mix',
-    slogan: 'Düzenli ve düzensizin uyumu.',
-    aciklama: 'Bir kısmı ince ve yatay düzlemlerde ebatlanmış taşlarla, ebatlanmamış tombul taşların inceltilip karışımı sonucu ortaya çıkar. Modern ve geleneksel arası dengeyi yakalayan modeldir.',
-    ozellikler: ['Karma doku', 'Farklı ebatlar', 'Esnek uygulama'],
-    kalinlik: '1.5 – 3 cm',
-    renk: '/rockshell-mix.jpg',
-  },
-  {
-    id: 'geo',
-    ad: 'Geo',
-    slogan: 'Geometrik düzen, doğal doku.',
-    aciklama: 'Doğal taşların yatay düzlemde iki taraflı 5, 10 ve 15 cm yükseklikte ebatlanıp boy serbest olarak inceltilmesi sonucu ortaya çıkar. Düzenli çizgilerin doğal taş ile buluşmasıdır.',
-    ozellikler: ['3 farklı yükseklik', 'Serbest boy', 'Geometrik düzen'],
-    kalinlik: '1.5 – 2.5 cm',
-    renk: '/rockshell-geo.jpg',
-  },
-  {
-    id: 'line',
-    ad: 'Line',
-    slogan: 'İnce çizgilerin zarafeti.',
-    aciklama: 'Doğal taşların yatay düzlemde iki taraflı 3 cm yükseklikte ebatlanıp boy serbest olarak inceltilmesi sonucu ortaya çıkar. Minimal ve modern mekânlara mükemmel uyum sağlar.',
-    ozellikler: ['3 cm sabit yükseklik', 'Serbest boy', 'Minimal çizgiler'],
-    kalinlik: '1 – 2 cm',
-    renk: '/rockshell-line.jpg',
-  },
-]
-
-const tasSerileri = [
-  {
-    ad: 'Traverten',
-    kategori: 'Kireçtaşı',
-    renk: 'Bej / Krem / Fildişi',
-    foto: '/tas-traverten.jpg',
-    aciklama: 'Doğal gözenekli yapısıyla sıcak ve otantik bir görünüm sunar. Villa cepheleri ve havuz kenarlarının vazgeçilmezi.',
-    kullanim: ['Cephe Kaplama', 'Havuz Kenarı', 'Zemin Döşeme', 'İç Mekan'],
-  },
-  {
-    ad: 'Mermer',
-    kategori: 'Metamorfik',
-    renk: 'Beyaz / Gri / Yeşil',
-    foto: '/tas-mermer.jpg',
-    aciklama: 'Zarif damarlarıyla lüks mekânların vazgeçilmez taşı. Her parça benzersiz bir doğa eseridir.',
-    kullanim: ['İç Mekan', 'Tezgah', 'Banyo', 'Merdiven'],
-  },
-  {
-    ad: 'Bazalt',
-    kategori: 'Volkanik',
-    renk: 'Koyu Gri / Antrasit / Siyah',
-    foto: '/tas-bazalt.jpg',
-    aciklama: 'Yüksek dayanıklılığıyla dış mekân projelerinde idealdir. Sert iklim koşullarına dayanıklı yapısıyla öne çıkar.',
-    kullanim: ['Cephe Kaplama', 'Bahçe & Peyzaj', 'Yürüyüş Yolu'],
-  },
-  {
-    ad: 'Granit',
-    kategori: 'Plütonik',
-    renk: 'Gri / Pembe / Siyah',
-    foto: '/tas-granit.jpg',
-    aciklama: 'En sert doğal taşlardan biri. Aşınmaya son derece dayanıklı yapısıyla yoğun kullanım alanları için idealdir.',
-    kullanim: ['Zemin Döşeme', 'Tezgah', 'Merdiven', 'Dış Cephe'],
-  },
-  {
-    ad: 'Kayrak',
-    kategori: 'Metamorfik',
-    renk: 'Yeşil / Gri / Kahverengi',
-    foto: '/tas-kayrak.jpg',
-    aciklama: 'Tabakalı yapısıyla rustik ve doğal bir atmosfer yaratır. Bahçe projelerinin en sevilen taşıdır.',
-    kullanim: ['Bahçe & Peyzaj', 'Duvar Kaplama', 'Zemin Döşeme'],
-  },
-  {
-    ad: 'Kuvarsit',
-    kategori: 'Metamorfik',
-    renk: 'Beyaz / Gümüş / Altın',
-    foto: '/tas-kuvarsit.jpg',
-    aciklama: 'Parlak yüzeyi ve sert yapısıyla modern projelerde tercih edilir. Işıkla etkileşimi benzersiz bir görünüm sağlar.',
-    kullanim: ['İç Mekan', 'Duvar Kaplama', 'Özel Projeler'],
-  },
-]
-
-const kullanimAlanlari = [
-  { baslik: 'Cephe Kaplama', icon: Layers },
-  { baslik: 'İç Mekan', icon: Palette },
-  { baslik: 'Zemin Döşeme', icon: Ruler },
-  { baslik: 'Bahçe & Peyzaj', icon: Shield },
-]
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function TaslarPage() {
+  const { t } = useLanguage()
   const [activeModel, setActiveModel] = useState('nature')
+
+  const rockshellModels = [
+    {
+      id: 'nature',
+      ad: 'Nature',
+      slogan: t.stones_nature_slogan,
+      aciklama: t.stones_nature_desc,
+      ozellikler: [t.stones_nature_f1, t.stones_nature_f2, t.stones_nature_f3],
+      kalinlik: '1.5 – 3 cm',
+      renk: '/rockshell-nature.jpg',
+    },
+    {
+      id: 'mix',
+      ad: 'Mix',
+      slogan: t.stones_mix_slogan,
+      aciklama: t.stones_mix_desc,
+      ozellikler: [t.stones_mix_f1, t.stones_mix_f2, t.stones_mix_f3],
+      kalinlik: '1.5 – 3 cm',
+      renk: '/rockshell-mix.jpg',
+    },
+    {
+      id: 'geo',
+      ad: 'Geo',
+      slogan: t.stones_geo_slogan,
+      aciklama: t.stones_geo_desc,
+      ozellikler: [t.stones_geo_f1, t.stones_geo_f2, t.stones_geo_f3],
+      kalinlik: '1.5 – 2.5 cm',
+      renk: '/rockshell-geo.jpg',
+    },
+    {
+      id: 'line',
+      ad: 'Line',
+      slogan: t.stones_line_slogan,
+      aciklama: t.stones_line_desc,
+      ozellikler: [t.stones_line_f1, t.stones_line_f2, t.stones_line_f3],
+      kalinlik: '1 – 2 cm',
+      renk: '/rockshell-line.jpg',
+    },
+  ]
+
+  const tasSerileri = [
+    {
+      ad: t.stones_traverten_name,
+      kategori: t.stones_traverten_category,
+      renk: t.stones_traverten_color,
+      foto: '/tas-traverten.jpg',
+      aciklama: t.stones_traverten_desc,
+      kullanim: [t.stones_usage_cephe, t.stones_usage_havuz, t.stones_usage_zemin, t.stones_usage_ic_mekan],
+    },
+    {
+      ad: t.stones_mermer_name,
+      kategori: t.stones_mermer_category,
+      renk: t.stones_mermer_color,
+      foto: '/tas-mermer.jpg',
+      aciklama: t.stones_mermer_desc,
+      kullanim: [t.stones_usage_ic_mekan, t.stones_usage_tezgah, t.stones_usage_banyo, t.stones_usage_merdiven],
+    },
+    {
+      ad: t.stones_bazalt_name,
+      kategori: t.stones_bazalt_category,
+      renk: t.stones_bazalt_color,
+      foto: '/tas-bazalt.jpg',
+      aciklama: t.stones_bazalt_desc,
+      kullanim: [t.stones_usage_cephe, t.stones_usage_bahce, t.stones_usage_yuruyus],
+    },
+    {
+      ad: t.stones_granit_name,
+      kategori: t.stones_granit_category,
+      renk: t.stones_granit_color,
+      foto: '/tas-granit.jpg',
+      aciklama: t.stones_granit_desc,
+      kullanim: [t.stones_usage_zemin, t.stones_usage_tezgah, t.stones_usage_merdiven, t.stones_usage_dis_cephe],
+    },
+    {
+      ad: t.stones_kayrak_name,
+      kategori: t.stones_kayrak_category,
+      renk: t.stones_kayrak_color,
+      foto: '/tas-kayrak.jpg',
+      aciklama: t.stones_kayrak_desc,
+      kullanim: [t.stones_usage_bahce, t.stones_usage_duvar, t.stones_usage_zemin],
+    },
+    {
+      ad: t.stones_kuvarsit_name,
+      kategori: t.stones_kuvarsit_category,
+      renk: t.stones_kuvarsit_color,
+      foto: '/tas-kuvarsit.jpg',
+      aciklama: t.stones_kuvarsit_desc,
+      kullanim: [t.stones_usage_ic_mekan, t.stones_usage_duvar, t.stones_usage_ozel],
+    },
+  ]
+
+  const kullanimAlanlari = [
+    { baslik: t.stones_usage1_name, icon: Layers },
+    { baslik: t.stones_usage2_name, icon: Palette },
+    { baslik: t.stones_usage3_name, icon: Ruler },
+    { baslik: t.stones_usage4_name, icon: Shield },
+  ]
+
   const aktifModel = rockshellModels.find((m) => m.id === activeModel)!
 
   return (
@@ -124,15 +127,14 @@ export default function TaslarPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center max-w-3xl mx-auto">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Ürün Koleksiyonu
+              {t.stones_tag}
             </p>
             <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-6">
-              Doğanın milyonlarca yıllık
-              <span className="block hero-gold-text">eşsiz taşları.</span>
+              {t.stones_title1}
+              <span className="block hero-gold-text">{t.stones_title2}</span>
             </h1>
             <p className="text-white/50 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-              Rockshell teknolojisi ile doğal taşın eşsiz dokusunu ultra ince
-              panellere dönüştürüyoruz. Her model, farklı bir estetik anlayışı yansıtır.
+              {t.stones_desc}
             </p>
           </div>
         </div>
@@ -143,10 +145,10 @@ export default function TaslarPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Rockshell Serisi
+              {t.stones_rockshell_tag}
             </p>
             <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
-              4 farklı model, sonsuz olasılık.
+              {t.stones_rockshell_title}
             </h2>
           </div>
 
@@ -176,7 +178,7 @@ export default function TaslarPage() {
                   {aktifModel.ad}
                 </p>
                 <p className="text-white/20 text-xs font-mono mt-2">
-                  Ürün görseli eklenecek
+                  {t.stones_image_placeholder}
                 </p>
               </div>
             </div>
@@ -207,11 +209,11 @@ export default function TaslarPage() {
               {/* Specs */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-                  <p className="text-white/30 text-[10px] font-mono uppercase">Kalınlık</p>
+                  <p className="text-white/30 text-[10px] font-mono uppercase">{t.stones_thickness}</p>
                   <p className="text-white font-medium text-sm mt-1">{aktifModel.kalinlik}</p>
                 </div>
                 <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-                  <p className="text-white/30 text-[10px] font-mono uppercase">Teknoloji</p>
+                  <p className="text-white/30 text-[10px] font-mono uppercase">{t.stones_technology}</p>
                   <p className="text-white font-medium text-sm mt-1">Rockshell</p>
                 </div>
               </div>
@@ -220,7 +222,7 @@ export default function TaslarPage() {
                 href="/iletisim"
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
               >
-                Bu model için teklif al <ArrowRight size={16} />
+                {t.stones_teklif_btn} <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -232,14 +234,13 @@ export default function TaslarPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Taş Koleksiyonu
+              {t.stones_collection_tag}
             </p>
             <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-4">
-              Doğal taş çeşitlerimiz.
+              {t.stones_collection_title}
             </h2>
             <p className="text-white/40 text-sm max-w-xl mx-auto">
-              Her biri milyonlarca yılda oluşmuş, benzersiz dokuya sahip doğal taşlarımız
-              projenize karakter katar.
+              {t.stones_collection_desc}
             </p>
           </div>
 
@@ -286,7 +287,7 @@ export default function TaslarPage() {
                     href="/iletisim"
                     className="flex items-center gap-1 text-white/40 text-xs font-mono hover:text-gold-400 transition-colors"
                   >
-                    Teklif Al <ChevronRight size={12} />
+                    {t.common_teklif_al} <ChevronRight size={12} />
                   </Link>
                 </div>
               </div>
@@ -300,10 +301,10 @@ export default function TaslarPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              Uygulama Alanları
+              {t.stones_tag}
             </p>
             <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
-              Hayalinizde ne varsa.
+              {t.stones_usage_title}
             </h2>
           </div>
 
@@ -332,18 +333,17 @@ export default function TaslarPage() {
       <section className="py-20 md:py-24 bg-white/[0.02]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-4">
-            Projenize en uygun taşı birlikte seçelim.
+            {t.stones_cta_title}
           </h2>
           <p className="text-white/40 text-sm sm:text-base mb-8 max-w-xl mx-auto">
-            Numune talebi, fiyat teklifi veya teknik danışmanlık için
-            ekibimizle iletişime geçin.
+            {t.stones_cta_desc}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/iletisim"
               className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
             >
-              Teklif Al <ArrowRight size={16} />
+              {t.common_teklif_al} <ArrowRight size={16} />
             </Link>
             <a
               href="https://wa.me/905532322144"
@@ -351,7 +351,7 @@ export default function TaslarPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 border border-white/[0.12] text-white/70 px-8 py-3.5 rounded-full text-sm hover:bg-white/[0.04] transition-colors"
             >
-              WhatsApp ile Ulaşın
+              {t.common_whatsapp}
             </a>
           </div>
         </div>
