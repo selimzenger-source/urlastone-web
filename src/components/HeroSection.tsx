@@ -36,6 +36,7 @@ export default function HeroSection() {
       desc: t.slide3_desc,
       bgSize: 'cover',
       bgPos: 'center 30%',
+      expand: 15,
     },
     {
       image: '/slide-4.jpg',
@@ -53,7 +54,7 @@ export default function HeroSection() {
       gold: t.slide5_gold,
       desc: t.slide5_desc,
       bgSize: 'cover',
-      bgPos: 'center center',
+      bgPos: 'center 60%',
     },
     {
       image: '/slide-6.png',
