@@ -145,7 +145,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 z-[2] grain-overlay pointer-events-none" />
 
       {/* Main Content Area */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-7xl mx-auto px-6 md:px-12 pt-28 md:pt-32 pb-40 md:pb-20">
+      <div className="relative z-10 flex-1 flex flex-col justify-end md:justify-center w-full max-w-7xl mx-auto px-6 md:px-12 pt-28 md:pt-32 pb-24 md:pb-20">
         {/* Tag */}
         <div className={`mb-6 md:mb-8 transition-all duration-1000 delay-300 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           <div className="inline-flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2">
