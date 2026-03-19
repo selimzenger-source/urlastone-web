@@ -410,6 +410,9 @@ type TranslationKeys = {
   apps_delivery_date: string
   apps_description: string
   apps_address: string
+  apps_filter_all: string
+  apps_gallery_title: string
+  apps_showing_count: string
 
   // Simülasyon
   sim_tag: string
@@ -784,6 +787,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_delivery_date: 'Teslim Tarihi',
     apps_description: 'Proje Açıklaması',
     apps_address: 'Adres',
+    apps_filter_all: 'Tümü',
+    apps_gallery_title: 'Proje Galerisi',
+    apps_showing_count: 'proje gösteriliyor',
     sim_tag: 'AI SİMÜLASYON',
     sim_title: 'Mekanınızda',
     sim_gold: 'Doğal Taş Simülasyonu',
@@ -1150,6 +1156,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_delivery_date: 'Delivery Date',
     apps_description: 'Project Description',
     apps_address: 'Address',
+    apps_filter_all: 'All',
+    apps_gallery_title: 'Project Gallery',
+    apps_showing_count: 'projects shown',
     sim_tag: 'AI SIMULATION',
     sim_title: 'In Your Space',
     sim_gold: 'Natural Stone Simulation',
@@ -1516,6 +1525,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_delivery_date: 'Fecha de Entrega',
     apps_description: 'Descripción del Proyecto',
     apps_address: 'Dirección',
+    apps_filter_all: 'Todos',
+    apps_gallery_title: 'Galería de Proyectos',
+    apps_showing_count: 'proyectos mostrados',
     sim_tag: 'SIMULACIÓN IA',
     sim_title: 'En su espacio',
     sim_gold: 'Simulación de piedra natural',
@@ -1882,6 +1894,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_delivery_date: 'تاريخ التسليم',
     apps_description: 'وصف المشروع',
     apps_address: 'العنوان',
+    apps_filter_all: 'الكل',
+    apps_gallery_title: 'معرض المشاريع',
+    apps_showing_count: 'مشاريع معروضة',
     sim_tag: 'محاكاة ذكية',
     sim_title: 'في مساحتك',
     sim_gold: 'محاكاة الحجر الطبيعي',
@@ -2248,6 +2263,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_delivery_date: 'Lieferdatum',
     apps_description: 'Projektbeschreibung',
     apps_address: 'Adresse',
+    apps_filter_all: 'Alle',
+    apps_gallery_title: 'Projektgalerie',
+    apps_showing_count: 'Projekte angezeigt',
     sim_tag: 'KI-SIMULATION',
     sim_title: 'In Ihrem Raum',
     sim_gold: 'Natursteinsimulation',

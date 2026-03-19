@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2 } from 'lucide-react'
+import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import dynamic from 'next/dynamic'
@@ -36,6 +36,7 @@ export default function UygulamalarimPage() {
   const { t, locale } = useLanguage()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState<string>('all')
 
   useEffect(() => {
     fetch('/api/projects')
@@ -64,6 +65,10 @@ export default function UygulamalarimPage() {
     { value: projects.length > 0 ? `${new Set(projects.map((p) => p.city)).size}` : '35+', label: t.apps_total_cities, icon: MapPin },
     { value: projects.length > 0 ? `${new Set(projects.map((p) => p.country || 'Türkiye')).size}` : '12+', label: t.apps_total_countries, icon: Globe },
   ]
+
+  // Get unique categories from projects
+  const categories = [...new Set(projects.map((p) => p.category).filter(Boolean))]
+  const filteredProjects = activeCategory === 'all' ? projects : projects.filter((p) => p.category === activeCategory)
 
   return (
     <main className="bg-[#0a0a0a] text-white min-h-screen">
@@ -126,8 +131,49 @@ export default function UygulamalarimPage() {
       {projects.length > 0 ? (
         <section className="px-6 md:px-12 pb-24 md:pb-32">
           <div className="max-w-7xl mx-auto">
+            {/* Section Header + Category Filter */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+                <div>
+                  <h2 className="font-heading text-xl md:text-2xl font-bold">{t.apps_gallery_title}</h2>
+                  <p className="text-white/40 text-sm mt-1">
+                    {filteredProjects.length} {t.apps_showing_count}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-white/30">
+                  <Filter size={14} />
+                  <span className="text-xs font-mono uppercase tracking-wider">{activeCategory === 'all' ? t.apps_filter_all : activeCategory}</span>
+                </div>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <button
+                  onClick={() => setActiveCategory('all')}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-mono transition-all ${
+                    activeCategory === 'all'
+                      ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
+                      : 'bg-white/[0.04] text-white/50 border border-white/[0.08] hover:bg-white/[0.08]'
+                  }`}
+                >
+                  {t.apps_filter_all} ({projects.length})
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-mono transition-all ${
+                      activeCategory === cat
+                        ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
+                        : 'bg-white/[0.04] text-white/50 border border-white/[0.08] hover:bg-white/[0.08]'
+                    }`}
+                  >
+                    {cat} ({projects.filter((p) => p.category === cat).length})
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <div key={project.id} className="glass-card-hover overflow-hidden group">
                   {/* Photo */}
                   <div className="aspect-[16/10] overflow-hidden relative">
