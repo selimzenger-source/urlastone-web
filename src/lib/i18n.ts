@@ -98,6 +98,17 @@ type TranslationKeys = {
   process_step3_title: string
   process_step3_desc: string
 
+  // Referans
+  ref_tag: string
+  ref_title: string
+  ref_gold: string
+
+  // Instagram
+  insta_title1: string
+  insta_title2: string
+  insta_desc: string
+  insta_btn: string
+
   // CTA
   cta_title: string
   cta_sim_title: string
@@ -455,6 +466,13 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Rockshell teknolojisiyle Nature, Mix, Crazy ve Line ebat kategorilerinde özel kesim ve işleme yapıyoruz. Terminimize sadık kalarak üretimi tamamlıyoruz.',
     process_step3_title: 'Uygulama',
     process_step3_desc: '25 yıllık deneyime sahip uzman ekibimiz ile sahada kusursuz montaj gerçekleştiriyoruz. Projenizi anahtar teslim hayata geçiriyoruz.',
+    ref_tag: 'Referanslarımız',
+    ref_title: 'Güvendikleri',
+    ref_gold: 'marka',
+    insta_title1: 'Instagram\'dan',
+    insta_title2: 'canlı',
+    insta_desc: 'Projelerimizi, üretim süreçlerimizi ve yeni taşlarımızı Instagram hesabımızdan takip edin.',
+    insta_btn: 'Profili Görüntüle',
     cta_title: 'Hayalinizdeki mekânı birlikte tasarlayalım.',
     cta_sim_title: 'AI Simülasyon',
     cta_sim_step1: 'Fotoğraf yükle',
@@ -779,6 +797,13 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'With Rockshell technology, we perform custom cutting and processing in Nature, Mix, Crazy and Line size categories. We complete production on schedule.',
     process_step3_title: 'Installation',
     process_step3_desc: 'Our expert team with 25 years of experience delivers flawless on-site installation. We bring your project to life turnkey.',
+    ref_tag: 'Our References',
+    ref_title: 'The trusted',
+    ref_gold: 'brand',
+    insta_title1: 'Live from',
+    insta_title2: 'Instagram',
+    insta_desc: 'Follow our projects, production processes and new stones on our Instagram account.',
+    insta_btn: 'View Profile',
     cta_title: 'Let\'s design your dream space together.',
     cta_sim_title: 'AI Simulation',
     cta_sim_step1: 'Upload photo',
@@ -1103,6 +1128,13 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Con tecnología Rockshell, realizamos corte y procesamiento personalizado en categorías Nature, Mix, Crazy y Line. Completamos la producción según lo programado.',
     process_step3_title: 'Instalación',
     process_step3_desc: 'Nuestro equipo experto con 25 años de experiencia realiza una instalación impecable en obra. Llevamos su proyecto a la realidad llave en mano.',
+    ref_tag: 'Nuestras Referencias',
+    ref_title: 'La marca de',
+    ref_gold: 'confianza',
+    insta_title1: 'En vivo desde',
+    insta_title2: 'Instagram',
+    insta_desc: 'Siga nuestros proyectos, procesos de producción y nuevas piedras en nuestra cuenta de Instagram.',
+    insta_btn: 'Ver Perfil',
     cta_title: 'Diseñemos juntos el espacio de sus sueños.',
     cta_sim_title: 'Simulación IA',
     cta_sim_step1: 'Subir foto',
@@ -1427,6 +1459,13 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'بتقنية روكشيل، نقوم بالقص والمعالجة المخصصة في فئات Nature وMix وCrazy وLine. نكمل الإنتاج في الموعد المحدد.',
     process_step3_title: 'التركيب',
     process_step3_desc: 'فريقنا الخبير بخبرة 25 عاماً يقدم تركيباً مثالياً في الموقع. ننفذ مشروعك تسليم مفتاح.',
+    ref_tag: 'مراجعنا',
+    ref_title: 'العلامة التجارية',
+    ref_gold: 'الموثوقة',
+    insta_title1: 'مباشر من',
+    insta_title2: 'إنستاغرام',
+    insta_desc: 'تابعوا مشاريعنا وعمليات الإنتاج والأحجار الجديدة على حسابنا في إنستاغرام.',
+    insta_btn: 'عرض الملف الشخصي',
     cta_title: 'لنصمم معاً مساحة أحلامك.',
     cta_sim_title: 'محاكاة ذكية',
     cta_sim_step1: 'ارفع صورة',
@@ -1751,6 +1790,13 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Mit Rockshell-Technologie führen wir individuellen Zuschnitt und Verarbeitung in den Kategorien Nature, Mix, Crazy und Line durch. Wir schließen die Produktion termingerecht ab.',
     process_step3_title: 'Installation',
     process_step3_desc: 'Unser Expertenteam mit 25 Jahren Erfahrung liefert makellose Montage vor Ort. Wir verwirklichen Ihr Projekt schlüsselfertig.',
+    ref_tag: 'Unsere Referenzen',
+    ref_title: 'Die vertrauenswürdige',
+    ref_gold: 'Marke',
+    insta_title1: 'Live auf',
+    insta_title2: 'Instagram',
+    insta_desc: 'Folgen Sie unseren Projekten, Produktionsprozessen und neuen Steinen auf unserem Instagram-Konto.',
+    insta_btn: 'Profil ansehen',
     cta_title: 'Gestalten wir Ihren Traumraum gemeinsam.',
     cta_sim_title: 'KI-Simulation',
     cta_sim_step1: 'Foto hochladen',

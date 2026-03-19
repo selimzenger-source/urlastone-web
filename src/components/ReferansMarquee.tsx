@@ -1,5 +1,7 @@
 'use client'
 
+import { useLanguage } from '@/context/LanguageContext'
+
 // Sembolik 10 referans - müşteriden gerçek logolar gelince güncellenecek
 const referanslar = [
   'Kalyon İnşaat',
@@ -15,16 +17,17 @@ const referanslar = [
 ]
 
 export default function ReferansMarquee() {
+  const { t } = useLanguage()
   const items = [...referanslar, ...referanslar]
 
   return (
     <section className="border-t border-b border-white/[0.06] py-14 md:py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 mb-10">
         <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-3">
-          Referanslarımız
+          {t.ref_tag}
         </p>
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-white">
-          Güvendikleri <span className="italic text-gradient-gold">marka.</span>
+          {t.ref_title} <span className="italic text-gradient-gold">{t.ref_gold}</span>
         </h2>
       </div>
 

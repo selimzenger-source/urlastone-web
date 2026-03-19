@@ -94,12 +94,7 @@ export default function FeaturedStones() {
             {/* Content */}
             <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-between">
               {/* Top */}
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] text-white/50 tracking-wider uppercase bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    {stone.origin}
-                  </span>
-                </div>
+              <div className="flex justify-end items-start">
                 <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
                   <ArrowUpRight size={16} className="text-white group-hover:text-black transition-colors" />
                 </div>

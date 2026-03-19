@@ -2,8 +2,11 @@
 
 import { useEffect } from 'react'
 import { Instagram, ExternalLink } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function InstagramFeed() {
+  const { t } = useLanguage()
+
   useEffect(() => {
     // ElfSight platform script'ini dinamik olarak yükle
     if (typeof window !== 'undefined') {
@@ -30,13 +33,12 @@ export default function InstagramFeed() {
               </span>
             </div>
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-              Instagram&apos;dan
+              {t.insta_title1}
               <br />
-              <span className="italic text-gradient-gold">canlı</span>
+              <span className="italic text-gradient-gold">{t.insta_title2}</span>
             </h2>
             <p className="text-white/30 text-sm font-mono mt-4 max-w-md">
-              Projelerimizi, üretim süreçlerimizi ve yeni taşlarımızı
-              Instagram hesabımızdan takip edin.
+              {t.insta_desc}
             </p>
           </div>
           <a
@@ -45,7 +47,7 @@ export default function InstagramFeed() {
             rel="noopener noreferrer"
             className="btn-outline text-[13px]"
           >
-            Profili Görüntüle
+            {t.insta_btn}
             <ExternalLink size={14} />
           </a>
         </div>
