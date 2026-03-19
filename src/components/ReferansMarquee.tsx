@@ -27,7 +27,7 @@ export default function ReferansMarquee() {
           {t.ref_tag}
         </p>
         <h2 className="font-heading text-2xl md:text-3xl font-bold text-white">
-          {t.ref_title} <span className="italic text-gradient-gold">{t.ref_gold}</span>
+          {t.ref_title} <span className="text-gradient-gold">{t.ref_gold}</span>
         </h2>
       </div>
 

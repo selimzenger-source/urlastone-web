@@ -17,7 +17,6 @@ export default function HeroSection() {
       desc: t.slide1_desc,
       bgSize: 'cover',
       bgPos: 'center center',
-      expand: 10,
     },
     {
       image: '/slide-2.jpg',
@@ -26,7 +25,7 @@ export default function HeroSection() {
       gold: t.slide2_gold,
       desc: t.slide2_desc,
       bgSize: 'cover',
-      bgPos: 'center 25%',
+      bgPos: 'center 45%',
     },
     {
       image: '/slide-3.jpg',
@@ -35,8 +34,7 @@ export default function HeroSection() {
       gold: t.slide3_gold,
       desc: t.slide3_desc,
       bgSize: 'cover',
-      bgPos: 'center 30%',
-      expand: 15,
+      bgPos: 'center 45%',
     },
     {
       image: '/slide-4.jpg',
@@ -54,7 +52,7 @@ export default function HeroSection() {
       gold: t.slide5_gold,
       desc: t.slide5_desc,
       bgSize: 'cover',
-      bgPos: 'center 60%',
+      bgPos: 'center 55%',
     },
     {
       image: '/slide-6.png',
@@ -72,8 +70,7 @@ export default function HeroSection() {
       gold: t.slide7_gold,
       desc: t.slide7_desc,
       bgSize: 'cover',
-      bgPos: 'center 35%',
-      expand: 18,
+      bgPos: 'center 40%',
     },
     {
       image: '/slide-8.jpg',
@@ -82,8 +79,7 @@ export default function HeroSection() {
       gold: t.slide8_gold,
       desc: t.slide8_desc,
       bgSize: 'cover',
-      bgPos: 'center 65%',
-      expand: 35,
+      bgPos: 'center 55%',
     },
   ]
 
@@ -126,7 +122,7 @@ export default function HeroSection() {
           <div
             className="absolute transition-transform duration-[8000ms] ease-out"
             style={{
-              inset: slide.expand ? `-${slide.expand}%` : '0',
+              inset: '0',
               backgroundImage: `url(${slide.image})`,
               backgroundSize: slide.bgSize || 'cover',
               backgroundPosition: slide.bgPos || 'center center',

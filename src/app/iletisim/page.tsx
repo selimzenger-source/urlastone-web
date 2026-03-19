@@ -66,7 +66,7 @@ export default function IletisimPage() {
             {t.contact_tag}
           </p>
           <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            <span className="italic text-gradient-gold">{t.contact_title}</span>
+            <span className="text-gradient-gold">{t.contact_title}</span>
           </h1>
           <p className="text-white/40 text-sm md:text-base max-w-xl mx-auto font-mono">
             {t.contact_desc_main}
@@ -372,7 +372,7 @@ export default function IletisimPage() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">
-              <span className="italic text-gradient-gold">{t.faq_title}</span>
+              <span className="text-gradient-gold">{t.faq_title}</span>
             </h2>
             <p className="text-white/40 text-sm font-mono">{t.faq_desc}</p>
           </div>

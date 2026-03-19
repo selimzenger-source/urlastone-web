@@ -35,7 +35,7 @@ export default function InstagramFeed() {
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white">
               {t.insta_title1}
               <br />
-              <span className="italic text-gradient-gold">{t.insta_title2}</span>
+              <span className="text-gradient-gold">{t.insta_title2}</span>
             </h2>
             <p className="text-white/30 text-sm font-mono mt-4 max-w-md">
               {t.insta_desc}

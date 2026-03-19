@@ -191,7 +191,7 @@ export default function TaslarPage() {
               <h3 className="font-heading text-4xl sm:text-5xl font-bold text-white mb-2">
                 {aktifModel.ad}
               </h3>
-              <p className="text-white/60 text-lg italic mb-6">{aktifModel.slogan}</p>
+              <p className="text-white/60 text-lg mb-6">{aktifModel.slogan}</p>
               <p className="text-white/50 text-sm sm:text-base leading-relaxed mb-8">
                 {aktifModel.aciklama}
               </p>

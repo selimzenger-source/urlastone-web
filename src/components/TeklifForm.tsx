@@ -133,7 +133,7 @@ export default function TeklifForm() {
           {t.form_free_quote}
         </p>
         <h3 className="font-heading text-2xl font-bold text-white">
-          {t.form_title} <span className="italic text-gradient-gold">{t.form_title_gold}</span>
+          {t.form_title} <span className="text-gradient-gold">{t.form_title_gold}</span>
         </h3>
       </div>
 

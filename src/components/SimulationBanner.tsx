@@ -32,7 +32,7 @@ export default function SimulationBanner() {
                 <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
                   Taşı binanızda
                   <br />
-                  <span className="italic text-gradient-gold">görün.</span>
+                  <span className="text-gradient-gold">görün.</span>
                 </h2>
 
                 <p className="text-white/50 text-sm md:text-base font-mono leading-relaxed max-w-lg">
