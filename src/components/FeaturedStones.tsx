@@ -43,8 +43,8 @@ export default function FeaturedStones() {
       description: t.featured_kalker_desc,
       origin: t.featured_kalker_origin,
       image: '/featured-kalker.jpg',
-      bgSize: 'cover',
-      bgPos: 'center',
+      bgSize: '130%',
+      bgPos: 'center 50%',
     },
   ]
 
