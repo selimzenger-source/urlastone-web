@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Gem,
+  MapPin,
   LogOut,
   Menu,
   X,
@@ -16,14 +17,16 @@ import {
 import AdminOverview from './AdminOverview'
 import AdminTeklifler from './AdminTeklifler'
 import AdminTaslar from './AdminTaslar'
+import AdminProjeler from './AdminProjeler'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
   { id: 'teklifler', label: 'Teklif Talepleri', icon: MessageSquare },
   { id: 'taslar', label: 'Taş Yönetimi', icon: Gem },
+  { id: 'projeler', label: 'Proje Yönetimi', icon: MapPin },
 ]
 
-export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
+export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: () => void; adminPassword: string }) {
   const [activeTab, setActiveTab] = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -115,6 +118,7 @@ export default function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           {activeTab === 'overview' && <AdminOverview />}
           {activeTab === 'teklifler' && <AdminTeklifler />}
           {activeTab === 'taslar' && <AdminTaslar />}
+          {activeTab === 'projeler' && <AdminProjeler adminPassword={adminPassword} />}
         </div>
       </main>
     </div>

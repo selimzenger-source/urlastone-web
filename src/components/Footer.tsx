@@ -33,7 +33,7 @@ export default function Footer() {
               {[
                 { href: '/taslar', label: t.nav_taslarimiz },
                 { href: '/simulasyon', label: t.nav_simulasyon },
-                { href: '/uygulamalarim', label: t.nav_uygulamalar },
+                { href: '/uygulamalarimiz', label: t.nav_uygulamalar },
                 { href: '/hakkimizda', label: t.nav_hakkimizda },
                 { href: '/iletisim', label: t.nav_iletisim },
               ].map((link) => (

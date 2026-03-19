@@ -23,7 +23,7 @@ export default function AdminPage() {
   }
 
   if (authenticated) {
-    return <AdminDashboard onLogout={() => setAuthenticated(false)} />
+    return <AdminDashboard onLogout={() => setAuthenticated(false)} adminPassword={password} />
   }
 
   return (
