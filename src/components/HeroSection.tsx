@@ -10,41 +10,79 @@ export default function HeroSection() {
 
   const slides = [
     {
-      image: '/hero-1.png',
-      tag: t.hero_tag,
-      subtitle: t.hero_title1,
-      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
-      description: t.hero_desc,
+      image: '/slide-1.jpg',
+      tag: t.slide1_tag,
+      subtitle: t.slide1_subtitle,
+      gold: t.slide1_gold,
+      desc: t.slide1_desc,
+      bgSize: '110%',
+      bgPos: 'center 40%',
     },
     {
-      image: '/hero-2.png',
-      tag: t.hero_tag,
-      subtitle: t.hero_title1,
-      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
-      description: t.hero_desc,
+      image: '/slide-2.jpg',
+      tag: t.slide2_tag,
+      subtitle: t.slide2_subtitle,
+      gold: t.slide2_gold,
+      desc: t.slide2_desc,
+      bgSize: '115%',
+      bgPos: 'center 35%',
     },
     {
-      image: '/hero-3.png',
-      tag: t.hero_tag,
-      subtitle: t.hero_title1,
-      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
-      description: t.hero_desc,
+      image: '/slide-3.jpg',
+      tag: t.slide3_tag,
+      subtitle: t.slide3_subtitle,
+      gold: t.slide3_gold,
+      desc: t.slide3_desc,
+      bgSize: '120%',
+      bgPos: 'center 40%',
     },
     {
-      image: '/hero-4.png',
-      tag: t.hero_tag,
-      subtitle: t.hero_title1,
-      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
-      description: t.hero_desc,
+      image: '/slide-4.jpg',
+      tag: t.slide4_tag,
+      subtitle: t.slide4_subtitle,
+      gold: t.slide4_gold,
+      desc: t.slide4_desc,
+      bgSize: 'cover',
+      bgPos: 'center center',
     },
     {
-      image: '/hero-5.png',
-      tag: t.hero_tag,
-      subtitle: t.hero_title1,
-      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
-      description: t.hero_desc,
+      image: '/slide-5.jpg',
+      tag: t.slide5_tag,
+      subtitle: t.slide5_subtitle,
+      gold: t.slide5_gold,
+      desc: t.slide5_desc,
+      bgSize: 'cover',
+      bgPos: 'center center',
+    },
+    {
+      image: '/slide-6.png',
+      tag: t.slide6_tag,
+      subtitle: t.slide6_subtitle,
+      gold: t.slide6_gold,
+      desc: t.slide6_desc,
+      bgSize: 'cover',
+      bgPos: 'center center',
+    },
+    {
+      image: '/slide-7.jpg',
+      tag: t.slide7_tag,
+      subtitle: t.slide7_subtitle,
+      gold: t.slide7_gold,
+      desc: t.slide7_desc,
+      bgSize: '115%',
+      bgPos: 'center 45%',
+    },
+    {
+      image: '/slide-8.jpg',
+      tag: t.slide8_tag,
+      subtitle: t.slide8_subtitle,
+      gold: t.slide8_gold,
+      desc: t.slide8_desc,
+      bgSize: '110%',
+      bgPos: 'center 40%',
     },
   ]
+
   const [current, setCurrent] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [animating, setAnimating] = useState(false)
@@ -58,17 +96,17 @@ export default function HeroSection() {
 
   const next = useCallback(() => {
     goTo((current + 1) % slides.length)
-  }, [current, goTo])
+  }, [current, goTo, slides.length])
 
   const prev = useCallback(() => {
     goTo((current - 1 + slides.length) % slides.length)
-  }, [current, goTo])
+  }, [current, goTo, slides.length])
 
   useEffect(() => { setLoaded(true) }, [])
 
-  // Auto-slide
+  // Auto-slide every 7 seconds
   useEffect(() => {
-    const timer = setInterval(next, 6000)
+    const timer = setInterval(next, 7000)
     return () => clearInterval(timer)
   }, [next])
 
@@ -82,10 +120,13 @@ export default function HeroSection() {
           style={{ opacity: i === current ? 1 : 0 }}
         >
           <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[8000ms] ease-out"
+            className="absolute inset-0 transition-transform duration-[8000ms] ease-out"
             style={{
               backgroundImage: `url(${slide.image})`,
-              transform: i === current ? 'scale(1.08)' : 'scale(1)',
+              backgroundSize: slide.bgSize || 'cover',
+              backgroundPosition: slide.bgPos || 'center center',
+              backgroundRepeat: 'no-repeat',
+              transform: i === current ? 'scale(1.05)' : 'scale(1)',
             }}
           />
         </div>
@@ -119,13 +160,10 @@ export default function HeroSection() {
             {slides[current].subtitle}
           </p>
 
-          {/* Title */}
+          {/* Gold Title */}
           <h1 key={`title-${current}`} className="animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <span className="block font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold hero-gold-text leading-[1.3]">
-              {slides[current].title[0]}
-            </span>
-            <span className="block font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold hero-gold-text leading-[1.3]">
-              {slides[current].title[1]}
+              {slides[current].gold}
             </span>
           </h1>
 
@@ -136,7 +174,7 @@ export default function HeroSection() {
               className="font-mono text-[13px] md:text-sm text-white/50 leading-relaxed animate-fade-in-up"
               style={{ animationDelay: '0.3s' }}
             >
-              {slides[current].description}
+              {slides[current].desc}
             </p>
           </div>
 
@@ -152,12 +190,12 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          {/* Bottom stats */}
+          {/* Bottom stats - Updated: 1000+ proje, 15+ ulke, 25+ yil */}
           <div className={`mt-20 md:mt-28 pt-8 border-t border-white/[0.06] grid grid-cols-3 gap-8 max-w-2xl transition-all duration-1000 delay-[1300ms] ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {[
-              { number: '500+', label: t.hero_stat_proje },
-              { number: '50+', label: t.hero_stat_ulke },
-              { number: '15+', label: t.hero_stat_yil },
+              { number: '1000+', label: t.hero_stat_proje },
+              { number: '15+', label: t.hero_stat_ulke },
+              { number: '25+', label: t.hero_stat_yil },
             ].map((stat) => (
               <div key={stat.label}>
                 <div className="font-heading text-2xl md:text-3xl font-bold text-white">
@@ -189,7 +227,7 @@ export default function HeroSection() {
           <button
             onClick={prev}
             className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300"
-            aria-label="Önceki slayt"
+            aria-label="Onceki slayt"
           >
             <ChevronLeft size={16} />
           </button>
