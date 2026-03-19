@@ -52,7 +52,7 @@ export default function Navbar() {
             className="flex items-center gap-1.5 text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2.jpeg" alt="" className="w-6 h-6 rounded" />
+            <img src="/ur2-dark.png" alt="" className="w-6 h-6 rounded" />
           </Link>
           {navLinks.map((link) => (
             <Link
@@ -93,8 +93,8 @@ export default function Navbar() {
             className="flex items-center gap-3 py-3 text-white/70 font-medium text-lg hover:text-white transition-colors"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2.jpeg" alt="" className="w-7 h-7 rounded" />
-            {t.nav_anasayfa || 'Ana Sayfa'}
+            <img src="/ur2-dark.png" alt="" className="w-7 h-7 rounded" />
+            {t.nav_anasayfa}
           </Link>
           {navLinks.map((link) => (
             <Link
