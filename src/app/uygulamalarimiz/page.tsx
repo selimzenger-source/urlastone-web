@@ -67,7 +67,7 @@ export default function UygulamalarimPage() {
   ]
 
   // Get unique categories from projects
-  const categories = [...new Set(projects.map((p) => p.category).filter(Boolean))]
+  const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boolean)))
   const filteredProjects = activeCategory === 'all' ? projects : projects.filter((p) => p.category === activeCategory)
 
   return (

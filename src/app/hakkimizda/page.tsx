@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import {
@@ -18,36 +18,55 @@ import { useLanguage } from '@/context/LanguageContext'
 
 export default function HakkimizdaPage() {
   const { t } = useLanguage()
+  const [projectCount, setProjectCount] = useState(0)
+  const [stoneCount, setStoneCount] = useState(0)
+
+  // Calculate years of experience dynamically (founded ~2000)
+  const yearsExperience = new Date().getFullYear() - 2000
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setProjectCount(data.length)
+          // Count unique stone categories
+          const categories = new Set(data.map((p: { category?: string }) => p.category).filter(Boolean))
+          setStoneCount(categories.size)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const ekip = [
     {
       ad: 'Fatih At',
       unvan: t.about_team_fatih_title,
-      foto: '/ekip-fatih.jpg',
+      foto: 'https://urlastone.com/gallery_gen/ae94b0a1d63c8c4d5b7bb245211e5010_720x720_fit.jpg?ts=1753707019',
       bio: t.about_team_fatih_bio,
       linkedin: '#',
     },
     {
       ad: 'Özer Demirkırkan',
       unvan: t.about_team_ozer_title,
-      foto: '/ekip-ozer.jpg',
+      foto: 'https://urlastone.com/gallery_gen/245306831c8af2db19be49d8db2b4b1b_720x720_fit.jpg?ts=1753707019',
       bio: t.about_team_ozer_bio,
       linkedin: '#',
     },
     {
       ad: 'Cihan Zenger',
       unvan: t.about_team_cihan_title,
-      foto: '/ekip-cihan.jpg',
+      foto: 'https://urlastone.com/gallery_gen/7dc6e004ff2e4ef9083b959c48f4ea54_720x720_fit.jpg?ts=1753707019',
       bio: t.about_team_cihan_bio,
       linkedin: '#',
     },
   ]
 
   const stats = [
-    { sayi: '15+', etiket: t.about_stat1, icon: Award },
-    { sayi: '500+', etiket: t.about_stat2, icon: Building2 },
-    { sayi: '50+', etiket: t.about_stat3, icon: Globe },
-    { sayi: '20+', etiket: t.about_stat4, icon: Gem },
+    { sayi: `${yearsExperience}+`, etiket: t.about_stat1, icon: Award },
+    { sayi: projectCount > 0 ? `${projectCount}+` : '...', etiket: t.about_stat2, icon: Building2 },
+    { sayi: '15+', etiket: t.about_stat3, icon: Globe },
+    { sayi: stoneCount > 0 ? `${stoneCount}+` : '...', etiket: t.about_stat4, icon: Gem },
   ]
 
   const degerler = [
@@ -182,10 +201,12 @@ export default function HakkimizdaPage() {
               >
                 {/* Fotoğraf */}
                 <div className="aspect-[3/4] bg-white/[0.06] relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Users size={48} className="text-white/10" />
-                  </div>
-                  {/* Gerçek fotoğraf eklenince buraya img gelecek */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={kisi.foto}
+                    alt={kisi.ad}
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
                 </div>
 
