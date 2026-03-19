@@ -16,8 +16,8 @@ export default function HeroSection() {
       gold: t.slide1_gold,
       desc: t.slide1_desc,
       bgSize: 'cover',
-      bgPos: 'center 20%',
-      expand: 15,
+      bgPos: 'center center',
+      expand: 10,
     },
     {
       image: '/slide-2.jpg',
@@ -81,8 +81,8 @@ export default function HeroSection() {
       gold: t.slide8_gold,
       desc: t.slide8_desc,
       bgSize: 'cover',
-      bgPos: 'center 45%',
-      expand: 20,
+      bgPos: 'center 65%',
+      expand: 35,
     },
   ]
 
@@ -137,8 +137,8 @@ export default function HeroSection() {
       ))}
 
       {/* Dark overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-black/40 z-[1]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/80 to-transparent z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-black/20 z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/70 to-transparent z-[1]" />
 
       {/* Grain texture */}
       <div className="absolute inset-0 z-[2] grain-overlay pointer-events-none" />
