@@ -47,6 +47,13 @@ export default function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-8">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ur2.jpeg" alt="" className="w-6 h-6 rounded" />
+          </Link>
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -76,10 +83,19 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         className={`lg:hidden overflow-hidden transition-all duration-500 ${
-          isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="bg-black/95 backdrop-blur-xl border-t border-white/[0.06] px-6 py-8 space-y-2">
+        <div className="bg-[#0a0a0a] border-t border-white/[0.06] px-6 py-8 space-y-2">
+          <Link
+            href="/"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 py-3 text-white/70 font-medium text-lg hover:text-white transition-colors"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ur2.jpeg" alt="" className="w-7 h-7 rounded" />
+            {t.nav_anasayfa || 'Ana Sayfa'}
+          </Link>
           {navLinks.map((link) => (
             <Link
               key={link.href}
