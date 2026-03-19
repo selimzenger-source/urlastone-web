@@ -57,6 +57,7 @@ const tasSerileri = [
     ad: 'Traverten',
     kategori: 'Kireçtaşı',
     renk: 'Bej / Krem / Fildişi',
+    foto: '/tas-traverten.jpg',
     aciklama: 'Doğal gözenekli yapısıyla sıcak ve otantik bir görünüm sunar. Villa cepheleri ve havuz kenarlarının vazgeçilmezi.',
     kullanim: ['Cephe Kaplama', 'Havuz Kenarı', 'Zemin Döşeme', 'İç Mekan'],
   },
@@ -64,6 +65,7 @@ const tasSerileri = [
     ad: 'Mermer',
     kategori: 'Metamorfik',
     renk: 'Beyaz / Gri / Yeşil',
+    foto: '/tas-mermer.jpg',
     aciklama: 'Zarif damarlarıyla lüks mekânların vazgeçilmez taşı. Her parça benzersiz bir doğa eseridir.',
     kullanim: ['İç Mekan', 'Tezgah', 'Banyo', 'Merdiven'],
   },
@@ -71,6 +73,7 @@ const tasSerileri = [
     ad: 'Bazalt',
     kategori: 'Volkanik',
     renk: 'Koyu Gri / Antrasit / Siyah',
+    foto: '/tas-bazalt.jpg',
     aciklama: 'Yüksek dayanıklılığıyla dış mekân projelerinde idealdir. Sert iklim koşullarına dayanıklı yapısıyla öne çıkar.',
     kullanim: ['Cephe Kaplama', 'Bahçe & Peyzaj', 'Yürüyüş Yolu'],
   },
@@ -78,6 +81,7 @@ const tasSerileri = [
     ad: 'Granit',
     kategori: 'Plütonik',
     renk: 'Gri / Pembe / Siyah',
+    foto: '/tas-granit.jpg',
     aciklama: 'En sert doğal taşlardan biri. Aşınmaya son derece dayanıklı yapısıyla yoğun kullanım alanları için idealdir.',
     kullanim: ['Zemin Döşeme', 'Tezgah', 'Merdiven', 'Dış Cephe'],
   },
@@ -85,6 +89,7 @@ const tasSerileri = [
     ad: 'Kayrak',
     kategori: 'Metamorfik',
     renk: 'Yeşil / Gri / Kahverengi',
+    foto: '/tas-kayrak.jpg',
     aciklama: 'Tabakalı yapısıyla rustik ve doğal bir atmosfer yaratır. Bahçe projelerinin en sevilen taşıdır.',
     kullanim: ['Bahçe & Peyzaj', 'Duvar Kaplama', 'Zemin Döşeme'],
   },
@@ -92,6 +97,7 @@ const tasSerileri = [
     ad: 'Kuvarsit',
     kategori: 'Metamorfik',
     renk: 'Beyaz / Gümüş / Altın',
+    foto: '/tas-kuvarsit.jpg',
     aciklama: 'Parlak yüzeyi ve sert yapısıyla modern projelerde tercih edilir. Işıkla etkileşimi benzersiz bir görünüm sağlar.',
     kullanim: ['İç Mekan', 'Duvar Kaplama', 'Özel Projeler'],
   },
@@ -243,11 +249,14 @@ export default function TaslarPage() {
                 key={tas.ad}
                 className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-gold-400/20 transition-all duration-300"
               >
-                {/* Image placeholder */}
-                <div className="aspect-[16/10] bg-white/[0.04] flex items-center justify-center relative overflow-hidden">
-                  <p className="font-heading text-3xl font-bold text-white/10 group-hover:text-white/15 transition-colors">
-                    {tas.ad}
-                  </p>
+                {/* Image */}
+                <div className="aspect-[16/10] bg-white/[0.04] relative overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={tas.foto}
+                    alt={tas.ad}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
                 </div>
 
                 <div className="p-6">
