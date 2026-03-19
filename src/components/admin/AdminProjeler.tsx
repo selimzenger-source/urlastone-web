@@ -169,6 +169,26 @@ export default function AdminProjeler({ adminPassword }: Props) {
     }
   }
 
+  // Otomatik çeviri
+  const translateProject = async (projectId: string, project_name: string, description: string) => {
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ project_name, description }),
+      })
+      if (!res.ok) return
+      const translations = await res.json()
+      await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ translations }),
+      })
+    } catch {
+      // Çeviri başarısız olursa sessizce devam et
+    }
+  }
+
   // Kaydet
   const saveProject = async () => {
     if (!editProject || !editProject.project_name.trim() || !editProject.city.trim()) return
@@ -212,6 +232,11 @@ export default function AdminProjeler({ adminPassword }: Props) {
             })
           }
         }
+
+        // Otomatik çeviri (arka planda)
+        if (newProject.id && (editProject.project_name || editProject.description)) {
+          translateProject(newProject.id, editProject.project_name, editProject.description)
+        }
       } else if (editProject.id) {
         // Fotoğrafları yükle
         let newPhotoUrls: string[] = []
@@ -244,6 +269,11 @@ export default function AdminProjeler({ adminPassword }: Props) {
           const errData = await updateRes.json().catch(() => ({}))
           alert('Güncelleme hatası: ' + (errData.error || updateRes.statusText))
           return
+        }
+
+        // Otomatik çeviri (arka planda)
+        if (editProject.project_name || editProject.description) {
+          translateProject(editProject.id, editProject.project_name, editProject.description)
         }
       }
 

@@ -399,6 +399,17 @@ type TranslationKeys = {
   apps_total_projects: string
   apps_total_cities: string
   apps_total_countries: string
+  apps_details: string
+  apps_navigate: string
+  apps_all_projects: string
+  apps_back_all: string
+  apps_not_found: string
+  apps_product: string
+  apps_app_type: string
+  apps_contractor: string
+  apps_delivery_date: string
+  apps_description: string
+  apps_address: string
 
   // Simülasyon
   sim_tag: string
@@ -762,6 +773,17 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_projects: 'Tamamlanan Proje',
     apps_total_cities: 'Şehir',
     apps_total_countries: 'Ülke',
+    apps_details: 'Detayları Gör',
+    apps_navigate: 'Konuma Git',
+    apps_all_projects: 'Tüm Projeler',
+    apps_back_all: 'Tüm Projelere Dön',
+    apps_not_found: 'Proje bulunamadı',
+    apps_product: 'Ürün',
+    apps_app_type: 'Uygulama Tipi',
+    apps_contractor: 'Yapılan Firma',
+    apps_delivery_date: 'Teslim Tarihi',
+    apps_description: 'Proje Açıklaması',
+    apps_address: 'Adres',
     sim_tag: 'AI SİMÜLASYON',
     sim_title: 'Mekanınızda',
     sim_gold: 'Doğal Taş Simülasyonu',
@@ -1117,6 +1139,17 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_projects: 'Completed Projects',
     apps_total_cities: 'Cities',
     apps_total_countries: 'Countries',
+    apps_details: 'View Details',
+    apps_navigate: 'Get Directions',
+    apps_all_projects: 'All Projects',
+    apps_back_all: 'Back to All Projects',
+    apps_not_found: 'Project not found',
+    apps_product: 'Product',
+    apps_app_type: 'Application Type',
+    apps_contractor: 'Contractor',
+    apps_delivery_date: 'Delivery Date',
+    apps_description: 'Project Description',
+    apps_address: 'Address',
     sim_tag: 'AI SIMULATION',
     sim_title: 'In Your Space',
     sim_gold: 'Natural Stone Simulation',
@@ -1472,6 +1505,17 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_projects: 'Proyectos Completados',
     apps_total_cities: 'Ciudades',
     apps_total_countries: 'Países',
+    apps_details: 'Ver Detalles',
+    apps_navigate: 'Ir a Ubicación',
+    apps_all_projects: 'Todos los Proyectos',
+    apps_back_all: 'Volver a Todos los Proyectos',
+    apps_not_found: 'Proyecto no encontrado',
+    apps_product: 'Producto',
+    apps_app_type: 'Tipo de Aplicación',
+    apps_contractor: 'Contratista',
+    apps_delivery_date: 'Fecha de Entrega',
+    apps_description: 'Descripción del Proyecto',
+    apps_address: 'Dirección',
     sim_tag: 'SIMULACIÓN IA',
     sim_title: 'En su espacio',
     sim_gold: 'Simulación de piedra natural',
@@ -1827,6 +1871,17 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_projects: 'مشاريع منجزة',
     apps_total_cities: 'مدن',
     apps_total_countries: 'دول',
+    apps_details: 'عرض التفاصيل',
+    apps_navigate: 'انتقل إلى الموقع',
+    apps_all_projects: 'جميع المشاريع',
+    apps_back_all: 'العودة إلى جميع المشاريع',
+    apps_not_found: 'المشروع غير موجود',
+    apps_product: 'المنتج',
+    apps_app_type: 'نوع التطبيق',
+    apps_contractor: 'المقاول',
+    apps_delivery_date: 'تاريخ التسليم',
+    apps_description: 'وصف المشروع',
+    apps_address: 'العنوان',
     sim_tag: 'محاكاة ذكية',
     sim_title: 'في مساحتك',
     sim_gold: 'محاكاة الحجر الطبيعي',
@@ -2182,6 +2237,17 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_projects: 'Abgeschlossene Projekte',
     apps_total_cities: 'Städte',
     apps_total_countries: 'Länder',
+    apps_details: 'Details ansehen',
+    apps_navigate: 'Zum Standort',
+    apps_all_projects: 'Alle Projekte',
+    apps_back_all: 'Zurück zu allen Projekten',
+    apps_not_found: 'Projekt nicht gefunden',
+    apps_product: 'Produkt',
+    apps_app_type: 'Anwendungstyp',
+    apps_contractor: 'Auftragnehmer',
+    apps_delivery_date: 'Lieferdatum',
+    apps_description: 'Projektbeschreibung',
+    apps_address: 'Adresse',
     sim_tag: 'KI-SIMULATION',
     sim_title: 'In Ihrem Raum',
     sim_gold: 'Natursteinsimulation',

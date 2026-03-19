@@ -6,10 +6,23 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
+import type { Locale } from '@/lib/i18n'
+
+function getTranslated(project: Project, field: 'project_name' | 'description', locale: Locale): string {
+  if (locale === 'tr') return (project[field] as string) || ''
+  const t = project.translations
+  if (t && t[locale as keyof typeof t]) {
+    const val = t[locale as keyof typeof t]?.[field]
+    if (val) return val
+  }
+  return (project[field] as string) || ''
+}
 
 export default function ProjectDetailPage() {
   const params = useParams()
+  const { t, locale } = useLanguage()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPhoto, setCurrentPhoto] = useState(0)
@@ -43,10 +56,10 @@ export default function ProjectDetailPage() {
         <Navbar />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Building2 size={48} className="text-white/10" />
-          <p className="text-white/30">Proje bulunamadı</p>
+          <p className="text-white/30">{t.apps_not_found}</p>
           <Link href="/uygulamalarimiz" className="text-gold-400 text-sm font-mono hover:text-gold-300 transition-colors flex items-center gap-2">
             <ArrowLeft size={14} />
-            Tüm Projelere Dön
+            {t.apps_back_all}
           </Link>
         </div>
         <Footer />
@@ -61,11 +74,15 @@ export default function ProjectDetailPage() {
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr)
-      return d.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
+      const loc = locale === 'tr' ? 'tr-TR' : locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : locale === 'ar' ? 'ar-SA' : 'en-US'
+      return d.toLocaleDateString(loc, { year: 'numeric', month: 'long', day: 'numeric' })
     } catch {
       return dateStr
     }
   }
+
+  const projectName = getTranslated(project, 'project_name', locale)
+  const projectDesc = getTranslated(project, 'description', locale)
 
   return (
     <main className="bg-[#0a0a0a] text-white min-h-screen">
@@ -79,7 +96,7 @@ export default function ProjectDetailPage() {
             className="inline-flex items-center gap-2 text-white/40 text-sm font-mono hover:text-gold-400 transition-colors mb-8"
           >
             <ArrowLeft size={14} />
-            Tüm Projeler
+            {t.apps_all_projects}
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -92,7 +109,7 @@ export default function ProjectDetailPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photos[currentPhoto]}
-                      alt={project.project_name}
+                      alt={projectName}
                       className="w-full h-full object-cover"
                     />
                     {photos.length > 1 && (
@@ -152,7 +169,7 @@ export default function ProjectDetailPage() {
 
               {/* Title */}
               <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold">
-                {project.project_name}
+                {projectName}
               </h1>
 
               {/* Location */}
@@ -167,7 +184,7 @@ export default function ProjectDetailPage() {
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
                     <div className="flex items-center gap-2 text-white/30 text-xs font-mono mb-2">
                       <Layers size={12} />
-                      Ürün
+                      {t.apps_product}
                     </div>
                     <p className="text-white text-sm font-medium">{project.product}</p>
                   </div>
@@ -176,7 +193,7 @@ export default function ProjectDetailPage() {
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
                     <div className="flex items-center gap-2 text-white/30 text-xs font-mono mb-2">
                       <Hammer size={12} />
-                      Uygulama Tipi
+                      {t.apps_app_type}
                     </div>
                     <p className="text-white text-sm font-medium">{project.application_type}</p>
                   </div>
@@ -185,7 +202,7 @@ export default function ProjectDetailPage() {
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
                     <div className="flex items-center gap-2 text-white/30 text-xs font-mono mb-2">
                       <Building2 size={12} />
-                      Yapılan Firma
+                      {t.apps_contractor}
                     </div>
                     <p className="text-white text-sm font-medium">{project.contractor}</p>
                   </div>
@@ -194,7 +211,7 @@ export default function ProjectDetailPage() {
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
                     <div className="flex items-center gap-2 text-white/30 text-xs font-mono mb-2">
                       <Calendar size={12} />
-                      Teslim Tarihi
+                      {t.apps_delivery_date}
                     </div>
                     <p className="text-white text-sm font-medium">{formatDate(project.project_date)}</p>
                   </div>
@@ -202,11 +219,11 @@ export default function ProjectDetailPage() {
               </div>
 
               {/* Description */}
-              {project.description && (
+              {projectDesc && (
                 <div>
-                  <h3 className="text-white/30 text-xs font-mono mb-2">Proje Açıklaması</h3>
+                  <h3 className="text-white/30 text-xs font-mono mb-2">{t.apps_description}</h3>
                   <p className="text-white/60 text-sm leading-relaxed">
-                    {project.description}
+                    {projectDesc}
                   </p>
                 </div>
               )}
@@ -214,7 +231,7 @@ export default function ProjectDetailPage() {
               {/* Address & Navigate */}
               {project.address && (
                 <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-                  <p className="text-white/40 text-xs font-mono mb-2">📍 Adres</p>
+                  <p className="text-white/40 text-xs font-mono mb-2">{t.apps_address}</p>
                   <p className="text-white/70 text-sm mb-3">{project.address}</p>
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${project.lat},${project.lng}`}
@@ -222,7 +239,7 @@ export default function ProjectDetailPage() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold-400/10 border border-gold-400/20 text-gold-400 text-sm font-mono hover:bg-gold-400/20 transition-colors"
                   >
-                    🗺️ Konuma Git
+                    {t.apps_navigate}
                     <ArrowRight size={12} />
                   </a>
                 </div>
@@ -236,7 +253,7 @@ export default function ProjectDetailPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gold-400/10 border border-gold-400/20 text-gold-400 text-sm font-mono hover:bg-gold-400/20 transition-colors"
                 >
-                  🗺️ Konuma Git
+                  {t.apps_navigate}
                   <ArrowRight size={12} />
                 </a>
               )}

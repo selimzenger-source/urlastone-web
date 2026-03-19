@@ -8,20 +8,32 @@ import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
+import type { Locale } from '@/lib/i18n'
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false })
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string, locale: string) {
   try {
     const d = new Date(dateStr)
-    return d.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' })
+    const loc = locale === 'tr' ? 'tr-TR' : locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : locale === 'ar' ? 'ar-SA' : 'en-US'
+    return d.toLocaleDateString(loc, { year: 'numeric', month: 'long' })
   } catch {
     return dateStr
   }
 }
 
+function getTranslated(project: Project, field: 'project_name' | 'description', locale: Locale): string {
+  if (locale === 'tr') return (project[field] as string) || ''
+  const t = project.translations
+  if (t && t[locale as keyof typeof t]) {
+    const val = t[locale as keyof typeof t]?.[field]
+    if (val) return val
+  }
+  return (project[field] as string) || ''
+}
+
 export default function UygulamalarimPage() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -40,9 +52,9 @@ export default function UygulamalarimPage() {
     city: p.city,
     lat: p.lat,
     lng: p.lng,
-    project_name: p.project_name,
+    project_name: getTranslated(p, 'project_name', locale),
     address: p.address,
-    description: p.description,
+    description: getTranslated(p, 'description', locale),
     category: p.category,
     photos: p.photos || [],
   }))
@@ -123,7 +135,7 @@ export default function UygulamalarimPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={project.photos[0]}
-                        alt={project.project_name}
+                        alt={getTranslated(project, 'project_name', locale)}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
@@ -140,7 +152,7 @@ export default function UygulamalarimPage() {
                   {/* Info */}
                   <div className="p-5">
                     <h3 className="font-heading text-lg font-bold text-white mb-1">
-                      {project.project_name}
+                      {getTranslated(project, 'project_name', locale)}
                     </h3>
                     <div className="flex items-center gap-1.5 mb-2">
                       <MapPin size={12} className="text-gold-400" />
@@ -162,13 +174,13 @@ export default function UygulamalarimPage() {
                       )}
                       {project.project_date && (
                         <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
-                          {formatDate(project.project_date)}
+                          {formatDate(project.project_date, locale)}
                         </span>
                       )}
                     </div>
-                    {project.description && (
+                    {getTranslated(project, 'description', locale) && (
                       <p className="text-white/40 text-sm leading-relaxed line-clamp-2 mb-4">
-                        {project.description}
+                        {getTranslated(project, 'description', locale)}
                       </p>
                     )}
                     <div className="flex items-center gap-3">
@@ -176,7 +188,7 @@ export default function UygulamalarimPage() {
                         href={`/uygulamalarimiz/${project.id}`}
                         className="inline-flex items-center gap-2 text-white text-xs font-mono bg-white/[0.06] hover:bg-white/[0.12] px-3 py-1.5 rounded-full transition-colors"
                       >
-                        Detayları Gör
+                        {t.apps_details}
                         <ArrowRight size={10} />
                       </Link>
                       <a
@@ -186,7 +198,7 @@ export default function UygulamalarimPage() {
                         className="inline-flex items-center gap-2 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
                       >
                         <MapPin size={12} />
-                        Konuma Git
+                        {t.apps_navigate}
                       </a>
                     </div>
                   </div>

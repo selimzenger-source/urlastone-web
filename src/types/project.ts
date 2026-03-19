@@ -1,3 +1,12 @@
+export interface ProjectTranslation {
+  project_name?: string
+  description?: string
+}
+
+export type ProjectTranslations = {
+  [key in 'en' | 'es' | 'ar' | 'de']?: ProjectTranslation
+}
+
 export interface Project {
   id: string
   project_name: string
@@ -12,6 +21,7 @@ export interface Project {
   application_type: string | null
   contractor: string | null
   project_date: string | null
+  translations: ProjectTranslations | null
   photos: string[]
   active: boolean
   display_order: number
