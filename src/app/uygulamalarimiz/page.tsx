@@ -11,6 +11,15 @@ import type { Project } from '@/types/project'
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false })
 
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' })
+  } catch {
+    return dateStr
+  }
+}
+
 export default function UygulamalarimPage() {
   const { t } = useLanguage()
   const [projects, setProjects] = useState<Project[]>([])
@@ -153,7 +162,7 @@ export default function UygulamalarimPage() {
                       )}
                       {project.project_date && (
                         <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
-                          {project.project_date}
+                          {formatDate(project.project_date)}
                         </span>
                       )}
                     </div>

@@ -24,6 +24,15 @@ const AdminMapPicker = dynamic(() => import('./AdminMapPicker'), { ssr: false })
 const kategoriler = ['Konut', 'Ticari', 'Otel', 'Villa', 'Kamu', 'Peyzaj', 'Diğer']
 const uygulamaTipleri = ['Derzsiz', 'Derzli']
 
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' })
+  } catch {
+    return dateStr
+  }
+}
+
 interface Props {
   adminPassword: string
 }
@@ -393,7 +402,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 {project.project_date && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
                     <Calendar size={9} />
-                    {project.project_date}
+                    {formatDate(project.project_date)}
                   </span>
                 )}
               </div>
