@@ -32,7 +32,7 @@ export default function InstagramFeed() {
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white">
               Instagram&apos;dan
               <br />
-              <span className="italic text-gradient-gold">canlı.</span>
+              <span className="italic text-gradient-gold">canlı</span>
             </h2>
             <p className="text-white/30 text-sm font-mono mt-4 max-w-md">
               Projelerimizi, üretim süreçlerimizi ve yeni taşlarımızı
