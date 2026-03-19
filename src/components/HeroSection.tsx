@@ -15,8 +15,8 @@ export default function HeroSection() {
       subtitle: t.slide1_subtitle,
       gold: t.slide1_gold,
       desc: t.slide1_desc,
-      bgSize: '110%',
-      bgPos: 'center 40%',
+      bgSize: 'cover',
+      bgPos: 'center 30%',
     },
     {
       image: '/slide-2.jpg',
@@ -24,8 +24,8 @@ export default function HeroSection() {
       subtitle: t.slide2_subtitle,
       gold: t.slide2_gold,
       desc: t.slide2_desc,
-      bgSize: '115%',
-      bgPos: 'center 35%',
+      bgSize: 'cover',
+      bgPos: 'center 25%',
     },
     {
       image: '/slide-3.jpg',
@@ -33,8 +33,8 @@ export default function HeroSection() {
       subtitle: t.slide3_subtitle,
       gold: t.slide3_gold,
       desc: t.slide3_desc,
-      bgSize: '120%',
-      bgPos: 'center 40%',
+      bgSize: 'cover',
+      bgPos: 'center 30%',
     },
     {
       image: '/slide-4.jpg',
@@ -69,8 +69,8 @@ export default function HeroSection() {
       subtitle: t.slide7_subtitle,
       gold: t.slide7_gold,
       desc: t.slide7_desc,
-      bgSize: '115%',
-      bgPos: 'center 45%',
+      bgSize: 'cover',
+      bgPos: 'center 35%',
     },
     {
       image: '/slide-8.jpg',
@@ -78,8 +78,8 @@ export default function HeroSection() {
       subtitle: t.slide8_subtitle,
       gold: t.slide8_gold,
       desc: t.slide8_desc,
-      bgSize: '110%',
-      bgPos: 'center 40%',
+      bgSize: 'cover',
+      bgPos: 'center 30%',
     },
   ]
 
@@ -126,7 +126,7 @@ export default function HeroSection() {
               backgroundSize: slide.bgSize || 'cover',
               backgroundPosition: slide.bgPos || 'center center',
               backgroundRepeat: 'no-repeat',
-              transform: i === current ? 'scale(1.05)' : 'scale(1)',
+              transform: i === current ? 'scale(1.03)' : 'scale(1)',
             }}
           />
         </div>

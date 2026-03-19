@@ -5,8 +5,6 @@ import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 
-const stoneKeys = ['traverten', 'mermer', 'bazalt', 'kalker'] as const
-
 export default function FeaturedStones() {
   const { t } = useLanguage()
   const [hovered, setHovered] = useState<string | null>(null)
@@ -18,7 +16,6 @@ export default function FeaturedStones() {
       description: t.featured_traverten_desc,
       origin: t.featured_traverten_origin,
       image: '/featured-traverten.jpg',
-      code: 'TRV',
     },
     {
       id: 'mermer',
@@ -26,7 +23,6 @@ export default function FeaturedStones() {
       description: t.featured_mermer_desc,
       origin: t.featured_mermer_origin,
       image: '/featured-mermer.jpg',
-      code: 'MRMR',
     },
     {
       id: 'bazalt',
@@ -34,7 +30,6 @@ export default function FeaturedStones() {
       description: t.featured_bazalt_desc,
       origin: t.featured_bazalt_origin,
       image: '/featured-bazalt.jpg',
-      code: 'BZLT',
     },
     {
       id: 'kalker',
@@ -42,7 +37,6 @@ export default function FeaturedStones() {
       description: t.featured_kalker_desc,
       origin: t.featured_kalker_origin,
       image: '/featured-kalker.jpg',
-      code: 'KLKR',
     },
   ]
 
@@ -91,9 +85,6 @@ export default function FeaturedStones() {
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-[10px] text-white/50 tracking-wider uppercase bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
                     {stone.origin}
-                  </span>
-                  <span className="font-mono text-[10px] text-gold-400/70 tracking-wider bg-gold-400/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    {stone.code}
                   </span>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
