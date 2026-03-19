@@ -1,51 +1,43 @@
 'use client'
 
 import { Shield, Gem, Truck, Clock, Award, Sparkles } from 'lucide-react'
-
-const features = [
-  {
-    icon: Gem,
-    title: 'Premium Kalite',
-    description: 'En seçkin madenlerden, özenle seçilmiş doğal taşlar.',
-  },
-  {
-    icon: Shield,
-    title: 'Sonsuz Garanti',
-    description: 'Doğal taşın milyon yıllık ömrüne güvenerek garanti sunuyoruz.',
-  },
-  {
-    icon: Sparkles,
-    title: 'El İşçiliği',
-    description: 'Teknolojik kesim bantları ve usta el işçiliği.',
-  },
-  {
-    icon: Truck,
-    title: 'Türkiye Geneli',
-    description: 'Güvenli paketleme ile her yere teslimat.',
-  },
-  {
-    icon: Clock,
-    title: 'Hızlı Üretim',
-    description: 'Geniş stok alanı ile kısa sürede hazırlık.',
-  },
-  {
-    icon: Award,
-    title: '15+ Yıl',
-    description: 'Yüzlerce başarılı proje deneyimi.',
-  },
-]
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function WhyUsSection() {
+  const { t } = useLanguage()
+
+  const features = [
+    {
+      icon: Gem,
+      title: t.why1_title,
+      description: t.why1_desc,
+    },
+    {
+      icon: Sparkles,
+      title: t.why2_title,
+      description: t.why2_desc,
+    },
+    {
+      icon: Award,
+      title: t.why3_title,
+      description: t.why3_desc,
+    },
+    {
+      icon: Truck,
+      title: t.why4_title,
+      description: t.why4_desc,
+    },
+  ]
   return (
     <section className="section-padding border-t border-white/[0.06]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-16 md:mb-20">
           <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
-            Avantajlar
+            {t.why_tag}
           </p>
           <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-            Neden <span className="italic text-gradient-gold">Urlastone?</span>
+            {t.why_title}
           </h2>
         </div>
 

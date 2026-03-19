@@ -3,46 +3,48 @@
 import { useEffect, useState, useCallback } from 'react'
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
-
-const slides = [
-  {
-    image: '/hero-1.png',
-    tag: 'Cephe Kaplama',
-    subtitle: 'Doğanın milyonlarca yıllık',
-    title: ['Eşsiz', 'taşları.'],
-    description: 'Türkiye\'nin en seçkin madenlerinden çıkarılan doğal taş blokları, fabrikamızda teknolojik kesim bantları ve el işçiliği ile işlenerek projenize özel çözümler halinde sunulur.',
-  },
-  {
-    image: '/hero-2.png',
-    tag: 'Doğal Taş',
-    subtitle: 'Her mekânda farklı bir hikaye',
-    title: ['Zamansız', 'elegans.'],
-    description: 'Traverten, mermer, bazalt ve daha fazlası — her taş kendi benzersiz hikayesini taşır.',
-  },
-  {
-    image: '/hero-3.png',
-    tag: 'Villa Projesi',
-    subtitle: 'Madenden mekânınıza',
-    title: ['Kusursuz', 'işçilik.'],
-    description: 'Çeşitli teknolojik kesim bantları ve el işçiliğiyle, doğal taş yüzeylerini projenize özel hale getiriyoruz.',
-  },
-  {
-    image: '/hero-4.png',
-    tag: 'Usta İşi',
-    subtitle: 'Lüksü hissedin',
-    title: ['Doğal', 'zarafet.'],
-    description: 'Usta ellerden çıkan her taş, yılların deneyimini ve doğanın eşsiz dokusunu taşır.',
-  },
-  {
-    image: '/hero-5.png',
-    tag: 'Atölye',
-    subtitle: 'Sonsuz süreli garanti',
-    title: ['Kalıcı', 'güzellik.'],
-    description: 'Tabiatın bize vermiş olduğu doğal taşın milyon yıllık sürecine güvenerek, sonsuz süreli garantiyi veriyoruz.',
-  },
-]
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function HeroSection() {
+  const { t } = useLanguage()
+
+  const slides = [
+    {
+      image: '/hero-1.png',
+      tag: t.hero_tag,
+      subtitle: t.hero_title1,
+      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
+      description: t.hero_desc,
+    },
+    {
+      image: '/hero-2.png',
+      tag: t.hero_tag,
+      subtitle: t.hero_title1,
+      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
+      description: t.hero_desc,
+    },
+    {
+      image: '/hero-3.png',
+      tag: t.hero_tag,
+      subtitle: t.hero_title1,
+      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
+      description: t.hero_desc,
+    },
+    {
+      image: '/hero-4.png',
+      tag: t.hero_tag,
+      subtitle: t.hero_title1,
+      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
+      description: t.hero_desc,
+    },
+    {
+      image: '/hero-5.png',
+      tag: t.hero_tag,
+      subtitle: t.hero_title1,
+      title: [t.hero_title2.split(' ')[0], t.hero_title2.split(' ').slice(1).join(' ') || t.hero_title2],
+      description: t.hero_desc,
+    },
+  ]
   const [current, setCurrent] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [animating, setAnimating] = useState(false)
@@ -142,20 +144,20 @@ export default function HeroSection() {
           <div className={`mt-10 flex flex-col sm:flex-row gap-4 transition-all duration-1000 delay-[1100ms] ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <Link href="/simulasyon" className="btn-primary text-sm px-8 py-4">
               <Sparkles size={16} />
-              AI Simülasyon
+              {t.hero_btn_simulasyon}
               <ArrowRight size={16} />
             </Link>
             <Link href="/taslar" className="btn-outline text-sm px-8 py-4">
-              Koleksiyonu Keşfet
+              {t.hero_btn_koleksiyon}
             </Link>
           </div>
 
           {/* Bottom stats */}
           <div className={`mt-20 md:mt-28 pt-8 border-t border-white/[0.06] grid grid-cols-3 gap-8 max-w-2xl transition-all duration-1000 delay-[1300ms] ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {[
-              { number: '500+', label: 'Tamamlanan Proje' },
-              { number: '50+', label: 'Taş Çeşidi' },
-              { number: '15+', label: 'Yıllık Deneyim' },
+              { number: '500+', label: t.hero_stat_proje },
+              { number: '50+', label: t.hero_stat_ulke },
+              { number: '15+', label: t.hero_stat_yil },
             ].map((stat) => (
               <div key={stat.label}>
                 <div className="font-heading text-2xl md:text-3xl font-bold text-white">

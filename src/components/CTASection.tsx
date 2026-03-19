@@ -2,8 +2,11 @@
 
 import { ArrowRight, MessageCircle, Sparkles, Upload } from 'lucide-react'
 import Link from 'next/link'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function CTASection() {
+  const { t } = useLanguage()
+
   return (
     <section className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden border-t border-white/[0.06]">
       {/* Background accents */}
@@ -13,15 +16,13 @@ export default function CTASection() {
         {/* Header */}
         <div className="text-center mb-16">
           <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
-            Projeniz İçin
+            {t.cta_teklif_title}
           </p>
           <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            Hayalinizdeki mekânı
-            <br />
-            <span className="italic text-gradient-gold">birlikte tasarlayalım.</span>
+            {t.cta_title}
           </h2>
           <p className="text-white/40 text-sm md:text-base max-w-xl mx-auto font-mono">
-            Ücretsiz keşif ve fiyat teklifi için hemen iletişime geçin.
+            {t.cta_kesif} &mdash; {t.cta_fiyat}
           </p>
         </div>
 
@@ -38,26 +39,24 @@ export default function CTASection() {
                     <Sparkles size={18} className="text-gold-400" />
                   </div>
                   <span className="font-mono text-[11px] text-gold-400 tracking-wider uppercase">
-                    Yapay Zeka Destekli
+                    {t.cta_sim_title}
                   </span>
                 </div>
 
                 <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-3">
-                  Taşı binanızda{' '}
-                  <span className="italic text-gradient-gold">görün.</span>
+                  {t.cta_sim_title}
                 </h3>
 
                 <p className="text-white/50 text-sm font-mono leading-relaxed mb-8 max-w-md">
-                  Bina cephenizin fotoğrafını yükleyin, yapay zeka ile taşların
-                  binanıza nasıl görüneceğini anında keşfedin.
+                  {t.cta_sim_step1} &rarr; {t.cta_sim_step2} &rarr; {t.cta_sim_step3}
                 </p>
 
                 {/* Steps mini */}
                 <div className="flex flex-wrap gap-5 mb-8">
                   {[
-                    { icon: Upload, text: 'Fotoğraf yükle' },
-                    { icon: Sparkles, text: 'Taş seç' },
-                    { icon: ArrowRight, text: 'Sonucu gör' },
+                    { icon: Upload, text: t.cta_sim_step1 },
+                    { icon: Sparkles, text: t.cta_sim_step2 },
+                    { icon: ArrowRight, text: t.cta_sim_step3 },
                   ].map((step, i) => {
                     const Icon = step.icon
                     return (
@@ -72,7 +71,7 @@ export default function CTASection() {
                 </div>
 
                 <div className="inline-flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-medium text-sm group-hover:bg-gold-400 transition-colors duration-500">
-                  Simülasyonu Dene
+                  {t.cta_sim_btn}
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -89,26 +88,24 @@ export default function CTASection() {
                   <MessageCircle size={18} className="text-white/60" />
                 </div>
                 <span className="font-mono text-[11px] text-white/40 tracking-wider uppercase">
-                  İletişim
+                  {t.cta_teklif_title}
                 </span>
               </div>
 
               <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-3">
-                Hemen teklif{' '}
-                <span className="italic text-gradient-gold">alın.</span>
+                {t.cta_teklif_title}
               </h3>
 
               <p className="text-white/50 text-sm font-mono leading-relaxed mb-8 max-w-md">
-                Projenizin detaylarını paylaşın, 24 saat içinde size özel
-                fiyat teklifimizi hazırlayalım.
+                {t.cta_fiyat}
               </p>
 
               <ul className="space-y-3 mb-10">
                 {[
-                  'Ücretsiz keşif ziyareti',
-                  'Detaylı fiyat teklifi',
-                  'Taş seçimi danışmanlığı',
-                  'Nakliye & montaj dahil',
+                  t.cta_kesif,
+                  t.cta_fiyat,
+                  t.cta_danismanlik,
+                  t.cta_nakliye,
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-gold-400/60" />
@@ -120,7 +117,7 @@ export default function CTASection() {
 
             <div className="relative z-10 flex flex-col sm:flex-row gap-3">
               <Link href="/iletisim" className="btn-primary text-sm px-8 py-3.5 justify-center">
-                Teklif Al
+                {t.cta_teklif_btn}
                 <ArrowRight size={16} />
               </Link>
               <a
@@ -130,7 +127,7 @@ export default function CTASection() {
                 className="btn-outline text-sm px-8 py-3.5 justify-center"
               >
                 <MessageCircle size={16} />
-                WhatsApp
+                {t.cta_whatsapp}
               </a>
             </div>
           </div>

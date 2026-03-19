@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
+import { useLanguage } from '@/context/LanguageContext'
 
 // Müşterinin sitesindeki galeri resimleri + Unsplash'tan taş texture'ları
 const stones = [
@@ -51,6 +52,7 @@ const stones = [
 ]
 
 export default function FeaturedStones() {
+  const { t } = useLanguage()
   const [hovered, setHovered] = useState<string | null>(null)
 
   return (
@@ -60,12 +62,10 @@ export default function FeaturedStones() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
-              Koleksiyon
+              {t.featured_tag}
             </p>
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-              Doğal Taş
-              <br />
-              <span className="italic text-gradient-gold">Çeşitlerimiz</span>
+              {t.featured_title}
             </h2>
           </div>
           <p className="text-white/40 text-sm max-w-md font-mono leading-relaxed">
@@ -125,7 +125,7 @@ export default function FeaturedStones() {
       {/* View All */}
       <div className="max-w-7xl mx-auto mt-12 text-center">
         <Link href="/taslar" className="btn-outline">
-          Tüm Koleksiyonu Gör
+          {t.featured_btn}
           <ArrowUpRight size={14} />
         </Link>
       </div>

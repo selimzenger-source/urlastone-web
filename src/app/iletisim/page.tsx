@@ -147,7 +147,7 @@ export default function IletisimPage() {
           <div className="mt-20">
             <div className="glass-card overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3131.1!2d26.7636!3d38.3227!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14bbd862ed0fab99%3A0x2a65e5fbb7d4fb31!2sUrla%20Do%C4%9Fal%20Ta%C5%9F%20Pazar%C4%B1!5e0!3m2!1str!2str!4v1700000000000!5m2!1str!2str"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3131.5!2d26.734641!3d38.3248805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14bb932e921f61b1%3A0xa0c4c3685f54e796!2sURLA%20DO%C4%9EAL%20TA%C5%9E%20PAZARI%20-%20URLA%20STONE!5e0!3m2!1str!2str!4v1700000000000!5m2!1str!2str"
                 width="100%"
                 height="400"
                 style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(0.8) contrast(1.2)' }}

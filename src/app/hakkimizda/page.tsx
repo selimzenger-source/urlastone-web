@@ -301,7 +301,7 @@ export default function HakkimizdaPage() {
             {/* Harita */}
             <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-white/[0.06]">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3130.5!2d26.7645!3d38.3560!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14bbc1e10e11a3a7%3A0x5b0f0f0f0f0f0f0f!2sUrla%2C%20%C4%B0zmir!5e0!3m2!1str!2str!4v1"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3131.5!2d26.734641!3d38.3248805!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14bb932e921f61b1%3A0xa0c4c3685f54e796!2sURLA%20DO%C4%9EAL%20TA%C5%9E%20PAZARI%20-%20URLA%20STONE!5e0!3m2!1str!2str!4v1700000000000!5m2!1str!2str"
                 width="100%"
                 height="100%"
                 style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(0.8) contrast(1.2)' }}
