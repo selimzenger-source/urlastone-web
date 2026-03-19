@@ -387,6 +387,33 @@ type TranslationKeys = {
   form_source_referral: string
   form_source_other: string
 
+  // Uygulamalarımız
+  apps_tag: string
+  apps_title: string
+  apps_gold: string
+  apps_desc: string
+  apps_map_title: string
+  apps_map_desc: string
+  apps_coming_soon: string
+  apps_coming_desc: string
+  apps_total_projects: string
+  apps_total_cities: string
+  apps_total_countries: string
+
+  // Simülasyon
+  sim_tag: string
+  sim_title: string
+  sim_gold: string
+  sim_desc: string
+  sim_coming_soon: string
+  sim_coming_desc: string
+  sim_feature1_title: string
+  sim_feature1_desc: string
+  sim_feature2_title: string
+  sim_feature2_desc: string
+  sim_feature3_title: string
+  sim_feature3_desc: string
+
   // Common
   common_teklif_al: string
   common_whatsapp: string
@@ -397,7 +424,7 @@ const translations: Record<Locale, TranslationKeys> = {
   tr: {
     nav_taslarimiz: 'Taşlarımız',
     nav_simulasyon: 'AI Simülasyon',
-    nav_uygulamalar: 'Uygulamalarım',
+    nav_uygulamalar: 'Uygulamalarımız',
     nav_hakkimizda: 'Hakkımızda',
     nav_iletisim: 'İletişim',
     nav_anasayfa: 'Ana Sayfa',
@@ -724,6 +751,29 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Teklif Al',
     common_whatsapp: 'WhatsApp ile Ulaşın',
     common_iletisim: 'İletişime Geç',
+    apps_tag: 'UYGULAMALARIMIZ',
+    apps_title: 'Projelerimiz',
+    apps_gold: 'Türkiye Genelinde',
+    apps_desc: 'Türkiye\'nin dört bir yanında ve uluslararası projelerde Urlastone doğal taş uygulamaları',
+    apps_map_title: 'Proje Haritası',
+    apps_map_desc: 'Tamamlanan projelerimizi harita üzerinde keşfedin',
+    apps_coming_soon: 'Yakında',
+    apps_coming_desc: 'Proje detayları ve görseller hazırlanıyor. Tamamlanan projelerimiz yakında burada yayınlanacak.',
+    apps_total_projects: 'Tamamlanan Proje',
+    apps_total_cities: 'Şehir',
+    apps_total_countries: 'Ülke',
+    sim_tag: 'AI SİMÜLASYON',
+    sim_title: 'Mekanınızda',
+    sim_gold: 'Doğal Taş Simülasyonu',
+    sim_desc: 'Yapay zeka destekli simülasyon aracımız ile mekanınızda taşlarımızın nasıl görüneceğini önceden keşfedin',
+    sim_coming_soon: 'Yakında',
+    sim_coming_desc: 'AI destekli simülasyon aracımız geliştirme aşamasında. Çok yakında mekanınızın fotoğrafını yükleyerek taşlarımızı deneyebileceksiniz.',
+    sim_feature1_title: 'Fotoğraf Yükle',
+    sim_feature1_desc: 'Mekanınızın fotoğrafını yükleyin',
+    sim_feature2_title: 'Taş Seç',
+    sim_feature2_desc: 'Koleksiyonumuzdan taş türünü seçin',
+    sim_feature3_title: 'Sonucu Gör',
+    sim_feature3_desc: 'AI ile gerçekçi simülasyonu anında görün',
   },
 
   en: {
@@ -1056,6 +1106,29 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Get Quote',
     common_whatsapp: 'Reach via WhatsApp',
     common_iletisim: 'Contact Us',
+    apps_tag: 'OUR PROJECTS',
+    apps_title: 'Our Projects',
+    apps_gold: 'Across Turkey',
+    apps_desc: 'Urlastone natural stone applications across Turkey and international projects',
+    apps_map_title: 'Project Map',
+    apps_map_desc: 'Discover our completed projects on the map',
+    apps_coming_soon: 'Coming Soon',
+    apps_coming_desc: 'Project details and visuals are being prepared. Our completed projects will be published here soon.',
+    apps_total_projects: 'Completed Projects',
+    apps_total_cities: 'Cities',
+    apps_total_countries: 'Countries',
+    sim_tag: 'AI SIMULATION',
+    sim_title: 'In Your Space',
+    sim_gold: 'Natural Stone Simulation',
+    sim_desc: 'Preview how our stones will look in your space with our AI-powered simulation tool',
+    sim_coming_soon: 'Coming Soon',
+    sim_coming_desc: 'Our AI-powered simulation tool is under development. Very soon you will be able to upload a photo of your space and try our stones.',
+    sim_feature1_title: 'Upload Photo',
+    sim_feature1_desc: 'Upload a photo of your space',
+    sim_feature2_title: 'Select Stone',
+    sim_feature2_desc: 'Choose a stone type from our collection',
+    sim_feature3_title: 'See Result',
+    sim_feature3_desc: 'View realistic AI simulation instantly',
   },
 
   es: {
@@ -1388,6 +1461,29 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Cotización',
     common_whatsapp: 'Contactar por WhatsApp',
     common_iletisim: 'Contacto',
+    apps_tag: 'NUESTROS PROYECTOS',
+    apps_title: 'Nuestros Proyectos',
+    apps_gold: 'En toda Turquía',
+    apps_desc: 'Aplicaciones de piedra natural Urlastone en toda Turquía y proyectos internacionales',
+    apps_map_title: 'Mapa de Proyectos',
+    apps_map_desc: 'Descubra nuestros proyectos completados en el mapa',
+    apps_coming_soon: 'Próximamente',
+    apps_coming_desc: 'Se están preparando los detalles y las imágenes del proyecto. Nuestros proyectos completados se publicarán aquí pronto.',
+    apps_total_projects: 'Proyectos Completados',
+    apps_total_cities: 'Ciudades',
+    apps_total_countries: 'Países',
+    sim_tag: 'SIMULACIÓN IA',
+    sim_title: 'En su espacio',
+    sim_gold: 'Simulación de piedra natural',
+    sim_desc: 'Visualice cómo se verán nuestras piedras en su espacio con nuestra herramienta de simulación con IA',
+    sim_coming_soon: 'Próximamente',
+    sim_coming_desc: 'Nuestra herramienta de simulación con IA está en desarrollo. Muy pronto podrá subir una foto de su espacio y probar nuestras piedras.',
+    sim_feature1_title: 'Subir Foto',
+    sim_feature1_desc: 'Suba una foto de su espacio',
+    sim_feature2_title: 'Elegir Piedra',
+    sim_feature2_desc: 'Elija un tipo de piedra de nuestra colección',
+    sim_feature3_title: 'Ver Resultado',
+    sim_feature3_desc: 'Vea la simulación realista de IA al instante',
   },
 
   ar: {
@@ -1720,6 +1816,29 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'طلب عرض سعر',
     common_whatsapp: 'تواصل عبر واتساب',
     common_iletisim: 'اتصل بنا',
+    apps_tag: 'مشاريعنا',
+    apps_title: 'مشاريعنا',
+    apps_gold: 'في جميع أنحاء تركيا',
+    apps_desc: 'تطبيقات الحجر الطبيعي من أورلاستون في جميع أنحاء تركيا والمشاريع الدولية',
+    apps_map_title: 'خريطة المشاريع',
+    apps_map_desc: 'اكتشف مشاريعنا المنجزة على الخريطة',
+    apps_coming_soon: 'قريباً',
+    apps_coming_desc: 'يتم إعداد تفاصيل المشروع والصور. ستُنشر مشاريعنا المنجزة هنا قريباً.',
+    apps_total_projects: 'مشاريع منجزة',
+    apps_total_cities: 'مدن',
+    apps_total_countries: 'دول',
+    sim_tag: 'محاكاة ذكية',
+    sim_title: 'في مساحتك',
+    sim_gold: 'محاكاة الحجر الطبيعي',
+    sim_desc: 'شاهد كيف ستبدو أحجارنا في مساحتك باستخدام أداة المحاكاة بالذكاء الاصطناعي',
+    sim_coming_soon: 'قريباً',
+    sim_coming_desc: 'أداة المحاكاة بالذكاء الاصطناعي قيد التطوير. قريباً جداً ستتمكن من تحميل صورة لمساحتك وتجربة أحجارنا.',
+    sim_feature1_title: 'تحميل صورة',
+    sim_feature1_desc: 'حمّل صورة لمساحتك',
+    sim_feature2_title: 'اختر حجراً',
+    sim_feature2_desc: 'اختر نوع الحجر من مجموعتنا',
+    sim_feature3_title: 'شاهد النتيجة',
+    sim_feature3_desc: 'شاهد المحاكاة الواقعية بالذكاء الاصطناعي فوراً',
   },
 
   de: {
@@ -2052,6 +2171,29 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Angebot',
     common_whatsapp: 'Über WhatsApp Kontaktieren',
     common_iletisim: 'Kontakt',
+    apps_tag: 'UNSERE PROJEKTE',
+    apps_title: 'Unsere Projekte',
+    apps_gold: 'In der ganzen Türkei',
+    apps_desc: 'Urlastone Natursteinanwendungen in der gesamten Türkei und internationale Projekte',
+    apps_map_title: 'Projektkarte',
+    apps_map_desc: 'Entdecken Sie unsere abgeschlossenen Projekte auf der Karte',
+    apps_coming_soon: 'Demnächst',
+    apps_coming_desc: 'Projektdetails und Bilder werden vorbereitet. Unsere abgeschlossenen Projekte werden hier bald veröffentlicht.',
+    apps_total_projects: 'Abgeschlossene Projekte',
+    apps_total_cities: 'Städte',
+    apps_total_countries: 'Länder',
+    sim_tag: 'KI-SIMULATION',
+    sim_title: 'In Ihrem Raum',
+    sim_gold: 'Natursteinsimulation',
+    sim_desc: 'Sehen Sie mit unserem KI-gestützten Simulationstool vorher, wie unsere Steine in Ihrem Raum aussehen werden',
+    sim_coming_soon: 'Demnächst',
+    sim_coming_desc: 'Unser KI-gestütztes Simulationstool befindet sich in der Entwicklung. Sehr bald können Sie ein Foto Ihres Raums hochladen und unsere Steine ausprobieren.',
+    sim_feature1_title: 'Foto Hochladen',
+    sim_feature1_desc: 'Laden Sie ein Foto Ihres Raums hoch',
+    sim_feature2_title: 'Stein Wählen',
+    sim_feature2_desc: 'Wählen Sie einen Steintyp aus unserer Kollektion',
+    sim_feature3_title: 'Ergebnis Sehen',
+    sim_feature3_desc: 'Sehen Sie die realistische KI-Simulation sofort',
   },
 }
 
