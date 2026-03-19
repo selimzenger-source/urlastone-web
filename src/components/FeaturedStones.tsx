@@ -25,8 +25,8 @@ export default function FeaturedStones() {
       description: t.featured_mermer_desc,
       origin: t.featured_mermer_origin,
       image: '/featured-mermer.jpg',
-      bgSize: '140%',
-      bgPos: 'center 60%',
+      bgSize: 'cover',
+      bgPos: 'center',
     },
     {
       id: 'bazalt',
@@ -43,8 +43,8 @@ export default function FeaturedStones() {
       description: t.featured_kalker_desc,
       origin: t.featured_kalker_origin,
       image: '/featured-kalker.jpg',
-      bgSize: '130%',
-      bgPos: 'center 50%',
+      bgSize: 'cover',
+      bgPos: 'center',
     },
   ]
 
