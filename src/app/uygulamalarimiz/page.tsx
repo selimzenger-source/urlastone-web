@@ -162,16 +162,24 @@ export default function UygulamalarimPage() {
                         {project.description}
                       </p>
                     )}
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${project.lat},${project.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
-                    >
-                      <MapPin size={12} />
-                      Konuma Git
-                      <ArrowRight size={10} />
-                    </a>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/uygulamalarimiz/${project.id}`}
+                        className="inline-flex items-center gap-2 text-white text-xs font-mono bg-white/[0.06] hover:bg-white/[0.12] px-3 py-1.5 rounded-full transition-colors"
+                      >
+                        Detayları Gör
+                        <ArrowRight size={10} />
+                      </Link>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${project.lat},${project.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
+                      >
+                        <MapPin size={12} />
+                        Konuma Git
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}

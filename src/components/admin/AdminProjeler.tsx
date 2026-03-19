@@ -14,6 +14,7 @@ import {
   Navigation,
   Upload,
   Loader2,
+  Calendar,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -390,7 +391,8 @@ export default function AdminProjeler({ adminPassword }: Props) {
                   </span>
                 )}
                 {project.project_date && (
-                  <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                    <Calendar size={9} />
                     {project.project_date}
                   </span>
                 )}
@@ -536,13 +538,12 @@ export default function AdminProjeler({ adminPassword }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-white/40 text-xs font-mono mb-1.5">Tarih</label>
+                  <label className="block text-white/40 text-xs font-mono mb-1.5">Teslim Tarihi</label>
                   <input
-                    type="text"
+                    type="date"
                     value={editProject.project_date}
                     onChange={(e) => setEditProject({ ...editProject, project_date: e.target.value })}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                    placeholder="ör. Ağustos 2024"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/[0.15] transition-colors"
                   />
                 </div>
               </div>
