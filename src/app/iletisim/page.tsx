@@ -21,7 +21,7 @@ export default function IletisimPage() {
               {t.contact_tag}
             </p>
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-              {t.contact_title_main} <span className="italic text-gradient-gold">{t.common_teklif_al}.</span>
+              <span className="italic text-gradient-gold">{t.contact_title}</span>
             </h1>
             <p className="text-white/40 text-sm md:text-base max-w-xl font-mono">
               {t.contact_desc_main}
