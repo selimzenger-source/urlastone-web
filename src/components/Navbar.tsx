@@ -64,7 +64,7 @@ export default function Navbar() {
             </Link>
           ))}
           <LanguageSwitcher />
-          <Link href="/iletisim" className="btn-primary text-[13px] px-6 py-3">
+          <Link href="/teklif" className="btn-primary text-[13px] px-6 py-3">
             {t.nav_teklif}
             <ArrowRight size={14} />
           </Link>
@@ -109,7 +109,7 @@ export default function Navbar() {
           <div className="pt-4 space-y-4">
             <LanguageSwitcher variant="inline" />
             <Link
-              href="/iletisim"
+              href="/teklif"
               onClick={() => setIsOpen(false)}
               className="btn-primary w-full justify-center text-base py-4"
             >

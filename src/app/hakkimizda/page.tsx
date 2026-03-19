@@ -310,7 +310,7 @@ export default function HakkimizdaPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/iletisim"
+              href="/teklif"
               className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
             >
               {t.about_cta_btn} <ArrowRight size={16} />

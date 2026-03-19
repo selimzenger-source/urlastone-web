@@ -219,7 +219,7 @@ export default function TaslarPage() {
               </div>
 
               <Link
-                href="/iletisim"
+                href="/teklif"
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
               >
                 {t.stones_teklif_btn} <ArrowRight size={16} />
@@ -284,7 +284,7 @@ export default function TaslarPage() {
                   </div>
 
                   <Link
-                    href="/iletisim"
+                    href="/teklif"
                     className="flex items-center gap-1 text-white/40 text-xs font-mono hover:text-gold-400 transition-colors"
                   >
                     {t.common_teklif_al} <ChevronRight size={12} />
@@ -340,7 +340,7 @@ export default function TaslarPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/iletisim"
+              href="/teklif"
               className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
             >
               {t.common_teklif_al} <ArrowRight size={16} />

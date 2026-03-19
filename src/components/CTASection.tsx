@@ -116,7 +116,7 @@ export default function CTASection() {
             </div>
 
             <div className="relative z-10 flex flex-col sm:flex-row gap-3">
-              <Link href="/iletisim" className="btn-primary text-sm px-8 py-3.5 justify-center">
+              <Link href="/teklif" className="btn-primary text-sm px-8 py-3.5 justify-center">
                 {t.cta_teklif_btn}
                 <ArrowRight size={16} />
               </Link>

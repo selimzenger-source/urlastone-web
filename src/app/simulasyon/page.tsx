@@ -65,7 +65,7 @@ export default function SimulasyonPage() {
             <p className="text-white/40 text-sm md:text-base max-w-lg mx-auto mb-8">
               {t.sim_coming_desc}
             </p>
-            <Link href="/iletisim" className="btn-primary text-sm">
+            <Link href="/teklif" className="btn-primary text-sm">
               {t.common_teklif_al}
               <ArrowRight size={14} />
             </Link>
