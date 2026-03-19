@@ -17,6 +17,7 @@ export default function HeroSection() {
       desc: t.slide1_desc,
       bgSize: 'cover',
       bgPos: 'center 20%',
+      expand: 15,
     },
     {
       image: '/slide-2.jpg',
@@ -71,6 +72,7 @@ export default function HeroSection() {
       desc: t.slide7_desc,
       bgSize: 'cover',
       bgPos: 'center 35%',
+      expand: 18,
     },
     {
       image: '/slide-8.jpg',
@@ -79,7 +81,8 @@ export default function HeroSection() {
       gold: t.slide8_gold,
       desc: t.slide8_desc,
       bgSize: 'cover',
-      bgPos: 'center 20%',
+      bgPos: 'center 45%',
+      expand: 20,
     },
   ]
 
@@ -120,8 +123,9 @@ export default function HeroSection() {
           style={{ opacity: i === current ? 1 : 0 }}
         >
           <div
-            className="absolute inset-0 transition-transform duration-[8000ms] ease-out"
+            className="absolute transition-transform duration-[8000ms] ease-out"
             style={{
+              inset: slide.expand ? `-${slide.expand}%` : '0',
               backgroundImage: `url(${slide.image})`,
               backgroundSize: slide.bgSize || 'cover',
               backgroundPosition: slide.bgPos || 'center center',
