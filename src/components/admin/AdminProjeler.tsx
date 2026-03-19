@@ -41,6 +41,7 @@ interface EditProject {
   id?: string
   project_name: string
   city: string
+  country: string
   address: string
   lat: number
   lng: number
@@ -58,6 +59,7 @@ interface EditProject {
 const emptyProject: EditProject = {
   project_name: '',
   city: '',
+  country: 'Türkiye',
   address: '',
   lat: 0,
   lng: 0,
@@ -125,6 +127,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
       id: project.id,
       project_name: project.project_name,
       city: project.city,
+      country: project.country || 'Türkiye',
       address: project.address || '',
       lat: project.lat,
       lng: project.lng,
@@ -180,6 +183,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
           body: JSON.stringify({
             project_name: editProject.project_name,
             city: editProject.city,
+            country: editProject.country || 'Türkiye',
             address: editProject.address || null,
             lat: editProject.lat,
             lng: editProject.lng,
@@ -195,6 +199,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
           }),
         })
         const newProject = await res.json()
+        if (!res.ok) { alert('Kaydetme hatası: ' + (newProject.error || 'Bilinmeyen hata')); return }
 
         // Fotoğrafları yükle
         if (pendingFiles.length && newProject.id) {
@@ -214,12 +219,13 @@ export default function AdminProjeler({ adminPassword }: Props) {
           newPhotoUrls = await uploadPhotos(editProject.id, pendingFiles)
         }
 
-        await fetch(`/api/projects/${editProject.id}`, {
+        const updateRes = await fetch(`/api/projects/${editProject.id}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify({
             project_name: editProject.project_name,
             city: editProject.city,
+            country: editProject.country || 'Türkiye',
             address: editProject.address || null,
             lat: editProject.lat,
             lng: editProject.lng,
@@ -234,13 +240,18 @@ export default function AdminProjeler({ adminPassword }: Props) {
             display_order: editProject.display_order,
           }),
         })
+        if (!updateRes.ok) {
+          const errData = await updateRes.json().catch(() => ({}))
+          alert('Güncelleme hatası: ' + (errData.error || updateRes.statusText))
+          return
+        }
       }
 
       await fetchProjects()
       setEditProject(null)
       setPendingFiles([])
-    } catch {
-      // hata
+    } catch (err) {
+      alert('Bir hata oluştu: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'))
     } finally {
       setSaving(false)
     }
@@ -378,7 +389,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
               </div>
               <div className="flex items-center gap-1.5 mb-2">
                 <MapPin size={11} className="text-gold-400 flex-shrink-0" />
-                <p className="text-white/30 text-xs font-mono truncate">{project.city}</p>
+                <p className="text-white/30 text-xs font-mono truncate">{project.city}{project.country && project.country !== 'Türkiye' ? `, ${project.country}` : ''}</p>
               </div>
               {project.product && (
                 <p className="text-white/50 text-[11px] font-mono mb-1 truncate">{project.product}</p>
@@ -557,16 +568,28 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 </div>
               </div>
 
-              {/* Şehir */}
-              <div>
-                <label className="block text-white/40 text-xs font-mono mb-1.5">Şehir *</label>
-                <input
-                  type="text"
-                  value={editProject.city}
-                  onChange={(e) => setEditProject({ ...editProject, city: e.target.value })}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                  placeholder="ör. İstanbul"
-                />
+              {/* Şehir & Ülke */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white/40 text-xs font-mono mb-1.5">Şehir *</label>
+                  <input
+                    type="text"
+                    value={editProject.city}
+                    onChange={(e) => setEditProject({ ...editProject, city: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    placeholder="ör. İstanbul"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/40 text-xs font-mono mb-1.5">Ülke</label>
+                  <input
+                    type="text"
+                    value={editProject.country}
+                    onChange={(e) => setEditProject({ ...editProject, country: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    placeholder="ör. Türkiye"
+                  />
+                </div>
               </div>
 
               {/* Adres */}

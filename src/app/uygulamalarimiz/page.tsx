@@ -50,7 +50,7 @@ export default function UygulamalarimPage() {
   const stats = [
     { value: projects.length > 0 ? `${projects.length}` : '150+', label: t.apps_total_projects, icon: Building2 },
     { value: projects.length > 0 ? `${new Set(projects.map((p) => p.city)).size}` : '35+', label: t.apps_total_cities, icon: MapPin },
-    { value: '12+', label: t.apps_total_countries, icon: Globe },
+    { value: projects.length > 0 ? `${new Set(projects.map((p) => p.country || 'Türkiye')).size}` : '12+', label: t.apps_total_countries, icon: Globe },
   ]
 
   return (

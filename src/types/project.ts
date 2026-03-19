@@ -2,6 +2,7 @@ export interface Project {
   id: string
   project_name: string
   city: string
+  country: string | null
   address: string | null
   lat: number
   lng: number
