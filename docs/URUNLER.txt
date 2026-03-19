@@ -1,0 +1,101 @@
+ÜRÜNLERİMİZİN PATENLİ ADI ROCKSHELL
+
+2 FARKLI KATEGORİLENDİRME...
+
+1. KATEGORİLENDİRME
+(EBATINA GÖRE)
+
+ALT 4 KATEGORİ VAR...
+
+NATURE MİX CRAZY LİNE (BU KATEGORİLER DEĞİŞMEZ YENİSİ EKLENMEZ) (ŞUAN GEO YAZIYOR ONUN YERONE CRAZY)
+
+
+NATUREDE 
+
+NİHAİ ÜRÜN 1) CLASSIC     (TÜR: TRV   KOD:  RKS 1   )
+NİHAİ ÜRÜN 2) SCABAS      (TÜR: TRV   KOD:  RKS 2   )
+NİHAİ ÜRÜN 3) SILVER      (TÜR: TRV   KOD:  RKS 3   )
+NİHAİ ÜRÜN 4) NOCHE       (TÜR: TRV   KOD:  RKS 4   )
+NİHAİ ÜRÜN 5) ANTICO      (TÜR: TRV  KOD:   RKS 5  )
+NİHAİ ÜRÜN 6) TOROS       (TÜR: MRMR  KOD:   RKS 6  )
+NİHAİ ÜRÜN 7) OREN        (TÜR: KLKR  KOD:   RKS 7  )
+NİHAİ ÜRÜN 8) AFYON GREY  (TÜR: MRMR  KOD:   RKS 8  )
+NİHAİ ÜRÜN 9) MUGLA       (TÜR: MRMR  KOD:   RKS 9  )
+NİHAİ ÜRÜN 10) BRYAT      (TÜR: BZLT  KOD:   RKS 13)
+
+
+
+MIX
+
+TRIO MIX                  (TÜR: TRV   KOD: EBT 123   )
+CLASSIC MIX                (TÜR: TRV   KOD: EBT 1    )
+CLASSIC EXCLUSIVE MIX      (TÜR: TRV   KOD: EXC 1    )
+SCABAS MIX                 (TÜR: TRV   KOD: EBT 2    )
+SCABAS EXCLUSIVE MIX       (TÜR: TRV   KOD: EXC 2    )
+SILVER MIX                 (TÜR: TRV   KOD: EBT 3    )
+SILVER EXCLUSIVE MIX       (TÜR: TRV   KOD: EXC 3    )
+NOCHE MIX                  (TÜR: TRV   KOD: EBT 4    )
+NOCHE EXCLUSIVE MIX        (TÜR: TRV   KOD: EXC 4    )
+ANTICO MIX                 (TÜR: TRV   KOD: EBT 5    )
+ANTICO EXLUSIVE MIX        (TÜR: TRV   KOD: EXC 5    )
+OREN MIX                   (TÜR: KLKR  KOD: EBT 7    )
+OREN EXCLUSIVE MIX         (TÜR: KLKR KOD: EXC 7     )
+AFYON GREY MIX             (TÜR: MRMR  KOD: EBT 8    )
+BRYAT MIX                  (TÜR: BZLT  KOD: EBT13    )
+
+
+CRAZY
+
+BAZALT CRAZY               (TÜR: BZLT KOD:  CRY 13  )  
+CLASSIC CRAZY              (TÜR: TRV   KOD: CRY 1   )
+SILVER CRAZY               (TÜR: TRV   KOD: CRY 3   )
+NOCHE CRAZY                (TÜR: TRV   KOD: CRY 4   )
+AFYON CRAZY                (TÜR: MRMR  KOD: CRY 8   )
+KEMALPASA CRAZY            (TÜR: MRMR  KOD: CRY 14  )
+
+LINE
+
+CLASSIC LINE               (TÜR: TRV   KOD: KYK 1    )
+SCABAS LINE                (TÜR: TRV   KOD: KYK 2    )
+SILVER LINE                (TÜR: TRV KOD:   KYK 3    )
+OREN LINE                  (TÜR: KLKR  KOD: KYK 7    )
+
+
+ŞİMDİ BU 1 GÖSTERİM... 2. GÖSTERİM İSE TÜRÜNE GÖRE
+
+MERMER   MRMR
+BAZALT   BZLT
+TRAVERTEN TRV
+KALKER    KLKR
+
+
+
+https://urlastone-web.vercel.app/taslar
+
+BÖLÜMÜNDE 1 ALT TAGERİŞEKLİNDE GÖSTERİMİMİZ GÜZEL AMA ALT KADEGORİDEKİ ÜRÜNLERDE ACILMALI VE TIKLANDIGINDA RESİM EK 1 DE GÖSTERİLDİĞİ GİBİ RESİM EK 2 YE TASARIMA UYGUN EKLENECEK https://urlastone.com/%C3%9Cr%C3%BCnler/ DEN CEKEBİLİRSİN...
+
+
+RESİM EK 2 DEKİ BÖLÜMÜMÜZEDE TAŞ TÜRLERİNE GÖRE  MERMER 
+MERMER   MRMR
+BAZALT   BZLT
+TRAVERTEN TRV
+KALKER    KLKR
+
+ OLARAK BURAYA TIKLANDIGINDA TÜR AYRIMI YAPMADAN BÜTÜN ÜRÜNLERİN GÖSTERİMİ OLACAK TRAVERTANA AİT... TEKLİF AL NİHAİ ÜRÜNDE GÖRÜNÜR... 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

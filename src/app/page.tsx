@@ -3,7 +3,6 @@ import HeroSection from '@/components/HeroSection'
 import FeaturedStones from '@/components/FeaturedStones'
 import ProcessSection from '@/components/ProcessSection'
 import ReferansMarquee from '@/components/ReferansMarquee'
-import WhyUsSection from '@/components/WhyUsSection'
 import InstagramFeed from '@/components/InstagramFeed'
 import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
@@ -16,7 +15,6 @@ export default function Home() {
       <InstagramFeed />
       <FeaturedStones />
       <ProcessSection />
-      <WhyUsSection />
       <ReferansMarquee />
       <CTASection />
       <Footer />
