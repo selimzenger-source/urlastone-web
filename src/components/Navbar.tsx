@@ -3,18 +3,21 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, ArrowRight } from 'lucide-react'
-
-const navLinks = [
-  { href: '/taslar', label: 'Taşlarımız' },
-  { href: '/simulasyon', label: 'AI Simülasyon' },
-  { href: '/uygulamalarim', label: 'Uygulamalarım' },
-  { href: '/hakkimizda', label: 'Hakkımızda' },
-  { href: '/iletisim', label: 'İletişim' },
-]
+import LanguageSwitcher from './LanguageSwitcher'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { t } = useLanguage()
+
+  const navLinks = [
+    { href: '/taslar', label: t.nav_taslarimiz },
+    { href: '/simulasyon', label: t.nav_simulasyon },
+    { href: '/uygulamalarim', label: t.nav_uygulamalar },
+    { href: '/hakkimizda', label: t.nav_hakkimizda },
+    { href: '/iletisim', label: t.nav_iletisim },
+  ]
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -53,8 +56,9 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <LanguageSwitcher />
           <Link href="/iletisim" className="btn-primary text-[13px] px-6 py-3">
-            Teklif Al
+            {t.nav_teklif}
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -86,13 +90,14 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-4">
+          <div className="pt-4 flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/iletisim"
               onClick={() => setIsOpen(false)}
-              className="btn-primary w-full justify-center text-base py-4"
+              className="btn-primary flex-1 justify-center text-base py-4"
             >
-              Teklif Al
+              {t.nav_teklif}
               <ArrowRight size={16} />
             </Link>
           </div>
