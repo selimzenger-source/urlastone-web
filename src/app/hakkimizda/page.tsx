@@ -12,6 +12,9 @@ import {
   Building2,
   Gem,
   ArrowRight,
+  Facebook,
+  Instagram,
+  Linkedin,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
@@ -44,21 +47,27 @@ export default function HakkimizdaPage() {
       unvan: t.about_team_fatih_title,
       foto: 'https://urlastone.com/gallery_gen/ae94b0a1d63c8c4d5b7bb245211e5010_720x720_fit.jpg?ts=1753707019',
       bio: t.about_team_fatih_bio,
-      linkedin: '#',
+      facebook: 'https://www.facebook.com/fatih.at.18',
+      instagram: 'https://www.instagram.com/fatih.at/',
+      linkedin: 'https://www.linkedin.com/company/urla-stone/',
     },
     {
       ad: 'Özer Demirkırkan',
       unvan: t.about_team_ozer_title,
       foto: 'https://urlastone.com/gallery_gen/245306831c8af2db19be49d8db2b4b1b_720x720_fit.jpg?ts=1753707019',
       bio: t.about_team_ozer_bio,
-      linkedin: '#',
+      facebook: 'https://www.facebook.com/ozer.demirkirkan',
+      instagram: 'https://www.instagram.com/ozerdemirkirkan',
+      linkedin: 'https://www.linkedin.com/in/ozer-demirkirkan-6a9298122/',
     },
     {
       ad: 'Cihan Zenger',
       unvan: t.about_team_cihan_title,
       foto: 'https://urlastone.com/gallery_gen/7dc6e004ff2e4ef9083b959c48f4ea54_720x720_fit.jpg?ts=1753707019',
       bio: t.about_team_cihan_bio,
-      linkedin: '#',
+      facebook: 'https://www.facebook.com/cihan.zenger.7',
+      instagram: 'https://www.instagram.com/cihan.zenger/',
+      linkedin: 'https://www.linkedin.com/in/cihan-zenger-241a7820a/',
     },
   ]
 
@@ -216,9 +225,26 @@ export default function HakkimizdaPage() {
                 <p className="text-gold-400 text-xs font-mono mb-3">
                   {kisi.unvan}
                 </p>
-                <p className="text-white/40 text-sm leading-relaxed px-2">
+                <p className="text-white/40 text-sm leading-relaxed px-2 mb-4">
                   {kisi.bio}
                 </p>
+                <div className="flex items-center justify-center gap-3">
+                  {kisi.facebook && (
+                    <a href={kisi.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-white/40 hover:bg-gold-400/20 hover:text-gold-400 transition-all duration-300">
+                      <Facebook size={14} />
+                    </a>
+                  )}
+                  {kisi.instagram && (
+                    <a href={kisi.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-white/40 hover:bg-gold-400/20 hover:text-gold-400 transition-all duration-300">
+                      <Instagram size={14} />
+                    </a>
+                  )}
+                  {kisi.linkedin && (
+                    <a href={kisi.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-white/40 hover:bg-gold-400/20 hover:text-gold-400 transition-all duration-300">
+                      <Linkedin size={14} />
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>
