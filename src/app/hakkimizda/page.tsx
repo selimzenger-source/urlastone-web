@@ -193,35 +193,32 @@ export default function HakkimizdaPage() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {ekip.map((kisi) => (
               <div
                 key={kisi.ad}
-                className="group bg-white/[0.03] border border-white/[0.06] rounded-3xl overflow-hidden hover:border-white/[0.12] transition-all duration-300"
+                className="group text-center"
               >
-                {/* Fotoğraf */}
-                <div className="aspect-[3/4] bg-white/[0.06] relative overflow-hidden">
+                {/* Fotoğraf - kompakt yuvarlak */}
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden mx-auto mb-5 border-2 border-white/[0.08] group-hover:border-gold-400/30 transition-all duration-300">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={kisi.foto}
                     alt={kisi.ad}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
                 </div>
 
                 {/* Bilgi */}
-                <div className="p-6 -mt-12 relative">
-                  <h3 className="font-heading text-xl font-bold text-white mb-1">
-                    {kisi.ad}
-                  </h3>
-                  <p className="text-gold-400 text-xs font-mono mb-4">
-                    {kisi.unvan}
-                  </p>
-                  <p className="text-white/40 text-sm leading-relaxed">
-                    {kisi.bio}
-                  </p>
-                </div>
+                <h3 className="font-heading text-lg font-bold text-white mb-1">
+                  {kisi.ad}
+                </h3>
+                <p className="text-gold-400 text-xs font-mono mb-3">
+                  {kisi.unvan}
+                </p>
+                <p className="text-white/40 text-sm leading-relaxed px-2">
+                  {kisi.bio}
+                </p>
               </div>
             ))}
           </div>
