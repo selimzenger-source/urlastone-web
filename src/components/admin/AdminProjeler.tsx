@@ -21,6 +21,7 @@ import type { Project } from '@/types/project'
 const AdminMapPicker = dynamic(() => import('./AdminMapPicker'), { ssr: false })
 
 const kategoriler = ['Konut', 'Ticari', 'Otel', 'Villa', 'Kamu', 'Peyzaj', 'Diğer']
+const uygulamaTipleri = ['Derzsiz', 'Derzli']
 
 interface Props {
   adminPassword: string
@@ -35,6 +36,10 @@ interface EditProject {
   lng: number
   description: string
   category: string
+  product: string
+  application_type: string
+  contractor: string
+  project_date: string
   photos: string[]
   active: boolean
   display_order: number
@@ -48,6 +53,10 @@ const emptyProject: EditProject = {
   lng: 0,
   description: '',
   category: '',
+  product: '',
+  application_type: '',
+  contractor: '',
+  project_date: '',
   photos: [],
   active: true,
   display_order: 0,
@@ -111,6 +120,10 @@ export default function AdminProjeler({ adminPassword }: Props) {
       lng: project.lng,
       description: project.description || '',
       category: project.category,
+      product: project.product || '',
+      application_type: project.application_type || '',
+      contractor: project.contractor || '',
+      project_date: project.project_date || '',
       photos: project.photos || [],
       active: project.active,
       display_order: project.display_order,
@@ -162,6 +175,10 @@ export default function AdminProjeler({ adminPassword }: Props) {
             lng: editProject.lng,
             description: editProject.description || null,
             category: editProject.category,
+            product: editProject.product || null,
+            application_type: editProject.application_type || null,
+            contractor: editProject.contractor || null,
+            project_date: editProject.project_date || null,
             photos: [],
             active: editProject.active,
             display_order: editProject.display_order,
@@ -198,6 +215,10 @@ export default function AdminProjeler({ adminPassword }: Props) {
             lng: editProject.lng,
             description: editProject.description || null,
             category: editProject.category,
+            product: editProject.product || null,
+            application_type: editProject.application_type || null,
+            contractor: editProject.contractor || null,
+            project_date: editProject.project_date || null,
             photos: [...editProject.photos, ...newPhotoUrls],
             active: editProject.active,
             display_order: editProject.display_order,
@@ -349,14 +370,31 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 <MapPin size={11} className="text-gold-400 flex-shrink-0" />
                 <p className="text-white/30 text-xs font-mono truncate">{project.city}</p>
               </div>
+              {project.product && (
+                <p className="text-white/50 text-[11px] font-mono mb-1 truncate">{project.product}</p>
+              )}
               {project.description && (
                 <p className="text-white/40 text-xs leading-relaxed mb-3 line-clamp-2">
                   {project.description}
                 </p>
               )}
-              <span className="px-2 py-0.5 rounded-full bg-gold-400/10 text-gold-400 text-[10px] font-mono">
-                {project.category}
-              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {project.category && (
+                  <span className="px-2 py-0.5 rounded-full bg-gold-400/10 text-gold-400 text-[10px] font-mono">
+                    {project.category}
+                  </span>
+                )}
+                {project.application_type && (
+                  <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                    {project.application_type}
+                  </span>
+                )}
+                {project.project_date && (
+                  <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                    {project.project_date}
+                  </span>
+                )}
+              </div>
 
               {/* Actions */}
               <div className="flex items-center gap-2 pt-3 mt-3 border-t border-white/[0.06]">
@@ -443,17 +481,32 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 />
               </div>
 
-              {/* Şehir & Kategori */}
+              {/* Ürün */}
+              <div>
+                <label className="block text-white/40 text-xs font-mono mb-1.5">Ürün</label>
+                <input
+                  type="text"
+                  value={editProject.product}
+                  onChange={(e) => setEditProject({ ...editProject, product: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                  placeholder="ör. RKS-1 Classic Nature Rockshell"
+                />
+              </div>
+
+              {/* Uygulama Tipi & Kategori */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-white/40 text-xs font-mono mb-1.5">Şehir *</label>
-                  <input
-                    type="text"
-                    value={editProject.city}
-                    onChange={(e) => setEditProject({ ...editProject, city: e.target.value })}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                    placeholder="ör. İstanbul"
-                  />
+                  <label className="block text-white/40 text-xs font-mono mb-1.5">Uygulama Tipi</label>
+                  <select
+                    value={editProject.application_type}
+                    onChange={(e) => setEditProject({ ...editProject, application_type: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/[0.15] transition-colors appearance-none"
+                  >
+                    <option value="" className="bg-[#111]">Seçin</option>
+                    {uygulamaTipleri.map((t) => (
+                      <option key={t} value={t} className="bg-[#111]">{t}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-white/40 text-xs font-mono mb-1.5">Kategori</label>
@@ -468,6 +521,42 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Yapılan Firma & Tarih */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white/40 text-xs font-mono mb-1.5">Yapılan Firma</label>
+                  <input
+                    type="text"
+                    value={editProject.contractor}
+                    onChange={(e) => setEditProject({ ...editProject, contractor: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    placeholder="ör. Ery Yapı"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/40 text-xs font-mono mb-1.5">Tarih</label>
+                  <input
+                    type="text"
+                    value={editProject.project_date}
+                    onChange={(e) => setEditProject({ ...editProject, project_date: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    placeholder="ör. Ağustos 2024"
+                  />
+                </div>
+              </div>
+
+              {/* Şehir */}
+              <div>
+                <label className="block text-white/40 text-xs font-mono mb-1.5">Şehir *</label>
+                <input
+                  type="text"
+                  value={editProject.city}
+                  onChange={(e) => setEditProject({ ...editProject, city: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                  placeholder="ör. İstanbul"
+                />
               </div>
 
               {/* Adres */}

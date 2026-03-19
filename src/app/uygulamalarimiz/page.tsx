@@ -133,27 +133,45 @@ export default function UygulamalarimPage() {
                     <h3 className="font-heading text-lg font-bold text-white mb-1">
                       {project.project_name}
                     </h3>
-                    <div className="flex items-center gap-1.5 mb-3">
+                    <div className="flex items-center gap-1.5 mb-2">
                       <MapPin size={12} className="text-gold-400" />
                       <span className="text-white/40 text-xs font-mono">{project.city}</span>
+                    </div>
+                    {project.product && (
+                      <p className="text-white/50 text-xs font-mono mb-2">{project.product}</p>
+                    )}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {project.application_type && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                          {project.application_type}
+                        </span>
+                      )}
+                      {project.contractor && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                          {project.contractor}
+                        </span>
+                      )}
+                      {project.project_date && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 text-[10px] font-mono">
+                          {project.project_date}
+                        </span>
+                      )}
                     </div>
                     {project.description && (
                       <p className="text-white/40 text-sm leading-relaxed line-clamp-2 mb-4">
                         {project.description}
                       </p>
                     )}
-                    {project.address && (
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${project.lat},${project.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
-                      >
-                        <MapPin size={12} />
-                        Konuma Git
-                        <ArrowRight size={10} />
-                      </a>
-                    )}
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${project.lat},${project.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
+                    >
+                      <MapPin size={12} />
+                      Konuma Git
+                      <ArrowRight size={10} />
+                    </a>
                   </div>
                 </div>
               ))}

@@ -7,6 +7,10 @@ export interface Project {
   lng: number
   description: string | null
   category: string
+  product: string | null
+  application_type: string | null
+  contractor: string | null
+  project_date: string | null
   photos: string[]
   active: boolean
   display_order: number
