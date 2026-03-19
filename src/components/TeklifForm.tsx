@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { Send, Upload, X, CheckCircle, Loader2 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Send, Upload, X, CheckCircle, Loader2, ChevronDown } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { turkishCities, cityDistricts } from '@/lib/turkey-cities'
 
 interface FormData {
   adSoyad: string
   telefon: string
   email: string
+  ulke: string
   il: string
   ilce: string
   projeTipi: string
@@ -59,6 +61,7 @@ export default function TeklifForm() {
     adSoyad: '',
     telefon: '',
     email: '',
+    ulke: 'Türkiye',
     il: '',
     ilce: '',
     projeTipi: '',
@@ -72,8 +75,46 @@ export default function TeklifForm() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [basarili, setBasarili] = useState(false)
 
+  // City autocomplete state
+  const [cityQuery, setCityQuery] = useState('')
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false)
+  const cityRef = useRef<HTMLDivElement>(null)
+
+  const isTurkiye = form.ulke === 'Türkiye'
+
+  // Filter cities based on query
+  const filteredCities = cityQuery.length > 0
+    ? turkishCities.filter(c => c.toLowerCase().startsWith(cityQuery.toLowerCase()))
+    : turkishCities
+
+  // Get districts for selected city
+  const availableDistricts = isTurkiye && form.il ? (cityDistricts[form.il] || []) : []
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setShowCitySuggestions(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setForm(prev => ({ ...prev, ulke: val, il: '', ilce: '' }))
+    setCityQuery('')
+  }
+
+  const selectCity = (city: string) => {
+    setForm(prev => ({ ...prev, il: city, ilce: '' }))
+    setCityQuery(city)
+    setShowCitySuggestions(false)
   }
 
   const handleTasToggle = (tas: string) => {
@@ -126,6 +167,8 @@ export default function TeklifForm() {
     )
   }
 
+  const inputClass = "w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
+
   return (
     <form onSubmit={handleSubmit} className="glass-card p-8 md:p-10">
       <div className="mb-8">
@@ -151,7 +194,7 @@ export default function TeklifForm() {
               value={form.adSoyad}
               onChange={handleChange}
               placeholder={t.form_name_placeholder}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
+              className={inputClass}
             />
           </div>
           <div>
@@ -165,7 +208,7 @@ export default function TeklifForm() {
               value={form.telefon}
               onChange={handleChange}
               placeholder={t.form_phone_placeholder}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
+              className={inputClass}
             />
           </div>
         </div>
@@ -180,38 +223,114 @@ export default function TeklifForm() {
             value={form.email}
             onChange={handleChange}
             placeholder={t.form_email_placeholder}
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
+            className={inputClass}
           />
         </div>
 
-        {/* Konum */}
+        {/* Ülke */}
+        <div>
+          <label className="block text-white/50 text-xs font-mono mb-2">
+            {t.form_country_label} <span className="text-gold-400">*</span>
+          </label>
+          <input
+            type="text"
+            name="ulke"
+            required
+            value={form.ulke}
+            onChange={handleCountryChange}
+            className={inputClass}
+          />
+        </div>
+
+        {/* İl / İlçe */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          {/* İl */}
+          <div ref={cityRef} className="relative">
             <label className="block text-white/50 text-xs font-mono mb-2">
               {t.form_city_label} <span className="text-gold-400">*</span>
             </label>
-            <input
-              type="text"
-              name="il"
-              required
-              value={form.il}
-              onChange={handleChange}
-              placeholder={t.form_city_placeholder}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
-            />
+            {isTurkiye ? (
+              <>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={cityQuery}
+                    onChange={(e) => {
+                      setCityQuery(e.target.value)
+                      setShowCitySuggestions(true)
+                      if (form.il && e.target.value !== form.il) {
+                        setForm(prev => ({ ...prev, il: '', ilce: '' }))
+                      }
+                    }}
+                    onFocus={() => setShowCitySuggestions(true)}
+                    placeholder={t.form_city_placeholder}
+                    className={inputClass}
+                    required={!form.il}
+                  />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
+                </div>
+                {showCitySuggestions && filteredCities.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto rounded-xl bg-[#1a1a1a] border border-white/[0.12] shadow-2xl">
+                    {filteredCities.map(city => (
+                      <button
+                        key={city}
+                        type="button"
+                        onClick={() => selectCity(city)}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          form.il === city
+                            ? 'bg-gold-400/20 text-gold-400'
+                            : 'text-white/70 hover:bg-white/[0.06]'
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showCitySuggestions && filteredCities.length === 0 && cityQuery.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 rounded-xl bg-[#1a1a1a] border border-white/[0.12] shadow-2xl px-4 py-3 text-white/30 text-sm">
+                    Sonuç bulunamadı
+                  </div>
+                )}
+              </>
+            ) : (
+              <input
+                type="text"
+                name="il"
+                value={form.il}
+                onChange={handleChange}
+                placeholder={t.form_city_placeholder}
+                className={inputClass}
+              />
+            )}
           </div>
+
+          {/* İlçe */}
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
               {t.form_district_label}
             </label>
-            <input
-              type="text"
-              name="ilce"
-              value={form.ilce}
-              onChange={handleChange}
-              placeholder={t.form_district_placeholder}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
-            />
+            {isTurkiye && form.il && availableDistricts.length > 0 ? (
+              <select
+                value={form.ilce}
+                onChange={(e) => setForm(prev => ({ ...prev, ilce: e.target.value }))}
+                className={`${inputClass} appearance-none cursor-pointer`}
+              >
+                <option value="" className="bg-[#1a1a1a]">{t.form_district_placeholder}</option>
+                {availableDistricts.map(district => (
+                  <option key={district} value={district} className="bg-[#1a1a1a]">{district}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={isTurkiye ? '' : form.ilce}
+                onChange={(e) => setForm(prev => ({ ...prev, ilce: e.target.value }))}
+                placeholder={isTurkiye ? (form.il ? t.form_district_placeholder : 'Önce il seçin') : t.form_district_placeholder}
+                disabled={isTurkiye && !form.il}
+                className={`${inputClass} ${isTurkiye && !form.il ? 'opacity-40 cursor-not-allowed' : ''}`}
+              />
+            )}
           </div>
         </div>
 
@@ -226,7 +345,7 @@ export default function TeklifForm() {
               required
               value={form.projeTipi}
               onChange={handleChange}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/40 transition-colors appearance-none cursor-pointer"
+              className={`${inputClass} appearance-none cursor-pointer`}
             >
               <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
               {projeTipleri.map(tip => (
@@ -242,7 +361,7 @@ export default function TeklifForm() {
               name="metrekare"
               value={form.metrekare}
               onChange={handleChange}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/40 transition-colors appearance-none cursor-pointer"
+              className={`${inputClass} appearance-none cursor-pointer`}
             >
               <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
               {metrekareSecenekleri.map(m => (
@@ -334,7 +453,7 @@ export default function TeklifForm() {
             onChange={handleChange}
             rows={4}
             placeholder={t.form_notes_placeholder}
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors resize-none"
+            className={`${inputClass} resize-none`}
           />
         </div>
 
@@ -347,7 +466,7 @@ export default function TeklifForm() {
             name="kaynak"
             value={form.kaynak}
             onChange={handleChange}
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/40 transition-colors appearance-none cursor-pointer"
+            className={`${inputClass} appearance-none cursor-pointer`}
           >
             <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
             {kaynakSecenekleri.map(k => (

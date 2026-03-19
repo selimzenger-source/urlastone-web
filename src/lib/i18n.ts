@@ -338,6 +338,7 @@ type TranslationKeys = {
   form_phone_placeholder: string
   form_email_label: string
   form_email_placeholder: string
+  form_country_label: string
   form_city_label: string
   form_city_placeholder: string
   form_district_label: string
@@ -722,6 +723,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_placeholder: '05XX XXX XX XX',
     form_email_label: 'E-posta',
     form_email_placeholder: 'ornek@mail.com',
+    form_country_label: 'Ülke',
     form_city_label: 'İl',
     form_city_placeholder: 'Örn: İzmir',
     form_district_label: 'İlçe',
@@ -1091,6 +1093,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_placeholder: '+1 XXX XXX XXXX',
     form_email_label: 'Email',
     form_email_placeholder: 'example@mail.com',
+    form_country_label: 'Country',
     form_city_label: 'City',
     form_city_placeholder: 'e.g. Istanbul',
     form_district_label: 'District',
@@ -1460,6 +1463,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_placeholder: '+34 XXX XXX XXX',
     form_email_label: 'Correo Electrónico',
     form_email_placeholder: 'ejemplo@mail.com',
+    form_country_label: 'País',
     form_city_label: 'Ciudad',
     form_city_placeholder: 'Ej: Madrid',
     form_district_label: 'Distrito',
@@ -1829,6 +1833,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_placeholder: '+XXX XXX XXX XXXX',
     form_email_label: 'البريد الإلكتروني',
     form_email_placeholder: 'example@mail.com',
+    form_country_label: 'البلد',
     form_city_label: 'المدينة',
     form_city_placeholder: 'مثال: إسطنبول',
     form_district_label: 'المنطقة',
@@ -2198,6 +2203,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_placeholder: '+49 XXX XXX XXXX',
     form_email_label: 'E-Mail',
     form_email_placeholder: 'beispiel@mail.com',
+    form_country_label: 'Land',
     form_city_label: 'Stadt',
     form_city_placeholder: 'z.B. Berlin',
     form_district_label: 'Bezirk',
