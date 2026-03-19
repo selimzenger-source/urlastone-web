@@ -76,7 +76,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         className={`lg:hidden overflow-hidden transition-all duration-500 ${
-          isOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="bg-black/95 backdrop-blur-xl border-t border-white/[0.06] px-6 py-8 space-y-2">
@@ -90,12 +90,12 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-4 flex items-center gap-3">
-            <LanguageSwitcher />
+          <div className="pt-4 space-y-4">
+            <LanguageSwitcher variant="inline" />
             <Link
               href="/iletisim"
               onClick={() => setIsOpen(false)}
-              className="btn-primary flex-1 justify-center text-base py-4"
+              className="btn-primary w-full justify-center text-base py-4"
             >
               {t.nav_teklif}
               <ArrowRight size={16} />

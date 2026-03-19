@@ -19,7 +19,11 @@ function getFlagUrl(langCode: string, width = 40) {
   return `https://flagcdn.com/w${width}/${cc}.png`
 }
 
-export default function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  variant?: 'dropdown' | 'inline'
+}
+
+export default function LanguageSwitcher({ variant = 'dropdown' }: LanguageSwitcherProps) {
   const { locale, setLocale } = useLanguage()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -36,6 +40,36 @@ export default function LanguageSwitcher() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Mobil: inline bayrak butonları (yan yana)
+  if (variant === 'inline') {
+    return (
+      <div className="flex items-center gap-2">
+        {languages.map((lang) => (
+          <button
+            key={lang.code}
+            onClick={() => setLocale(lang.code as Locale)}
+            className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+              locale === lang.code
+                ? 'bg-white/[0.12] ring-2 ring-gold-400/50'
+                : 'bg-white/[0.04] hover:bg-white/[0.08]'
+            }`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={getFlagUrl(lang.code, 40)}
+              alt={lang.label}
+              className="w-5 h-3.5 object-cover rounded-[2px]"
+            />
+            {locale === lang.code && (
+              <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-gold-400" />
+            )}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  // Masaüstü: dropdown
   return (
     <div ref={ref} className="relative">
       <button
