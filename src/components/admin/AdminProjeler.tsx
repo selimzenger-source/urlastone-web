@@ -114,10 +114,25 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
   useEffect(() => { fetchProjects() }, [])
 
-  // Ürünleri yükle
+  // Ürünleri yükle (tam isim: "RKS-1 Classic Nature Rockshell" formatında)
   useEffect(() => {
     fetch('/api/products').then(r => r.json()).then(data => {
-      if (Array.isArray(data)) setProducts(data.map((p: { id: string; name: string; code: string }) => ({ id: p.id, name: p.name, code: p.code })))
+      if (Array.isArray(data)) setProducts(data.map((p: any) => {
+        // Kod: "RKS 1" → "RKS-1"
+        const code = (p.code || '').replace(/\s+/g, '-')
+        // Kategori slug'ına göre tam isim oluştur
+        const catSlug = p.category?.slug || ''
+        let fullName = p.name || ''
+        // RKS (nature) ürünlerinde "Nature" isimde yok, ekle
+        if (catSlug === 'nature' && !fullName.toLowerCase().includes('nature')) {
+          fullName = `${fullName} Nature`
+        }
+        // Tüm ürünlere "Rockshell" ekle
+        if (!fullName.toLowerCase().includes('rockshell')) {
+          fullName = `${fullName} Rockshell`
+        }
+        return { id: p.id, name: fullName, code }
+      }))
     }).catch(() => {})
   }, [])
 
@@ -160,53 +175,92 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const [mapsError, setMapsError] = useState('')
   const [searchingLocation, setSearchingLocation] = useState(false)
 
-  const handleMapsUrl = () => {
-    if (!mapsUrl.trim()) return
-
-    // Önce URL'den koordinat çekmeyi dene
-    const coords = parseGoogleMapsUrl(mapsUrl)
-    if (coords && editProject) {
-      setEditProject({ ...editProject, lat: coords.lat, lng: coords.lng })
-      setMapsUrl('')
-      setMapsError('')
-      return
-    }
-
-    // URL'de koordinat yoksa, metin olarak adresi ara (Nominatim)
+  const handleMapsUrl = async () => {
+    if (!mapsUrl.trim() || !editProject) return
     setSearchingLocation(true)
     setMapsError('')
-    const query = mapsUrl.replace(/https?:\/\/[^\s]+/g, '').trim() || mapsUrl
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`, {
-      headers: { 'Accept-Language': 'tr' }
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data && data.length > 0 && editProject) {
-          const result = data[0]
-          const addr = result.address || {}
-          const city = addr.province || addr.city || addr.town || addr.county || ''
-          const country = addr.country || 'Türkiye'
-          const district = addr.suburb || addr.district || addr.town || addr.village || ''
-          const fullAddress = result.display_name || ''
-          // Kısa adres oluştur
-          const shortAddress = [district, city].filter(Boolean).join(', ')
+
+    try {
+      // Önce client-side URL parse dene (hızlı)
+      const coords = parseGoogleMapsUrl(mapsUrl)
+      if (coords) {
+        // Koordinatları bulduk, ters geocoding ile şehir/ülke al
+        const revRes = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`,
+          { headers: { 'Accept-Language': 'tr', 'User-Agent': 'UrlastoneAdmin/1.0' } }
+        )
+        const revData = await revRes.json()
+        const addr = revData?.address || {}
+        const city = addr.province || addr.city || addr.town || addr.county || ''
+        const country = addr.country || 'Türkiye'
+        const district = addr.suburb || addr.district || addr.town || addr.village || ''
+        const shortAddress = [district, city].filter(Boolean).join(', ')
+
+        setEditProject({
+          ...editProject,
+          lat: coords.lat,
+          lng: coords.lng,
+          city: city || editProject.city,
+          country: country || editProject.country,
+          address: shortAddress || editProject.address,
+        })
+        setMapsUrl('')
+        setSearchingLocation(false)
+        return
+      }
+
+      // Client-side bulamadı - sunucu tarafı API kullan
+      const isUrl = mapsUrl.includes('google.com/maps') || mapsUrl.includes('goo.gl') || mapsUrl.includes('maps.app')
+      const body = isUrl ? { url: mapsUrl } : { query: mapsUrl }
+
+      const res = await fetch('/api/resolve-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.lat && data.lng) {
+          // Eğer API şehir/ülke döndüyse kullan, yoksa ters geocoding yap
+          let city = data.city || ''
+          let country = data.country || 'Türkiye'
+          let address = data.address || ''
+
+          if (!city && data.lat) {
+            const revRes = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.lat}&lon=${data.lng}&addressdetails=1`,
+              { headers: { 'Accept-Language': 'tr', 'User-Agent': 'UrlastoneAdmin/1.0' } }
+            )
+            const revData = await revRes.json()
+            const addr = revData?.address || {}
+            city = addr.province || addr.city || addr.town || addr.county || ''
+            country = addr.country || 'Türkiye'
+            const district = addr.suburb || addr.district || addr.town || addr.village || ''
+            address = [district, city].filter(Boolean).join(', ')
+          }
 
           setEditProject({
             ...editProject,
-            lat: parseFloat(result.lat),
-            lng: parseFloat(result.lon),
-            city: editProject.city || city,
-            country: editProject.country || country,
-            address: editProject.address || shortAddress || fullAddress.split(',').slice(0, 3).join(','),
+            lat: data.lat,
+            lng: data.lng,
+            city: city || editProject.city,
+            country: country || editProject.country,
+            address: address || editProject.address,
           })
           setMapsUrl('')
           setMapsError('')
         } else {
-          setMapsError('Konum bulunamadı. Daha detaylı adres veya koordinat girin.')
+          setMapsError('Konum bulunamadı. Mekan adını yazarak deneyin.')
         }
-      })
-      .catch(() => setMapsError('Arama hatası. Tekrar deneyin.'))
-      .finally(() => setSearchingLocation(false))
+      } else {
+        setMapsError('Konum bulunamadı. Mekan adını yazarak deneyin.')
+      }
+    } catch {
+      setMapsError('Arama hatası. Tekrar deneyin.')
+    } finally {
+      setSearchingLocation(false)
+    }
   }
 
   const filteredProducts = products.filter(p =>
@@ -609,10 +663,10 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
       {/* Edit / New Modal */}
       {editProject && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-start md:items-center justify-center p-0 md:p-4 overflow-y-auto" onClick={() => !saving && setEditProject(null)}>
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-start md:items-center justify-center p-0 md:p-4 overflow-y-auto" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setEditProject(null) }}>
           <div
             className="bg-[#111] border-0 md:border border-white/[0.08] md:rounded-2xl w-full max-w-lg min-h-screen md:min-h-0 md:max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="sticky top-0 z-10 bg-[#111] flex items-center justify-between p-4 md:p-6 border-b border-white/[0.06]">
@@ -777,7 +831,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     onChange={(e) => setMapsUrl(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleMapsUrl())}
                     className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                    placeholder="Mekan adı veya adres yaz... (ör: Samadhi Alaçatı)"
+                    placeholder="Google Maps linki yapıştır veya mekan adı yaz..."
                   />
                   <button
                     type="button"
