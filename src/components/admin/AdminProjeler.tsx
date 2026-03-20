@@ -102,7 +102,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
   // Projeleri yükle
   const fetchProjects = async () => {
     try {
-      const res = await fetch('/api/projects')
+      const res = await fetch('/api/projects?all=true')
       if (res.ok) {
         const data = await res.json()
         setProjects(data)
@@ -477,6 +477,8 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
   // Aktif/Pasif toggle
   const toggleActive = async (project: Project) => {
+    const action = project.active ? 'pasife almak' : 'aktife almak'
+    if (!confirm(`"${project.project_name}" projesini ${action} istediğinize emin misiniz?`)) return
     await fetch(`/api/projects/${project.id}`, {
       method: 'PUT',
       headers,

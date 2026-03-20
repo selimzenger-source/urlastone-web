@@ -7,13 +7,22 @@ function validateAdmin(request: NextRequest): boolean {
   return auth === `Bearer ${password}`
 }
 
-// GET — public: tüm aktif projeleri getir
-export async function GET() {
-  const { data, error } = await supabaseAdmin
+// GET — public: aktif projeleri getir, admin: tüm projeleri getir
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const all = searchParams.get('all') === 'true'
+
+  let query = supabaseAdmin
     .from('projects')
     .select('*')
-    .eq('active', true)
     .order('display_order', { ascending: true })
+
+  // Admin değilse sadece aktif projeleri göster
+  if (!all) {
+    query = query.eq('active', true)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
