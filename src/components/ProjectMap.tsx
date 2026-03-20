@@ -163,7 +163,7 @@ function PhotoSlider({ photos, alt }: { photos: string[]; alt: string }) {
   if (!photos.length) return null
 
   return (
-    <div style={{ width: '100%', height: '150px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '180px', position: 'relative', overflow: 'hidden' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photos[current]}

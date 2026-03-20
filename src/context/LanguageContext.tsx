@@ -22,6 +22,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('urlastone-lang') as Locale | null
     if (saved && ['tr', 'en', 'es', 'ar', 'de'].includes(saved)) {
       setLocaleState(saved)
+      if (saved === 'ar') document.documentElement.dir = 'rtl'
+    } else {
+      // Tarayıcı diline göre otomatik dil seçimi
+      const browserLang = (navigator.language || '').toLowerCase()
+      let detected: Locale = 'en' // Varsayılan: İngilizce
+      if (browserLang.startsWith('tr')) detected = 'tr'
+      else if (browserLang.startsWith('de')) detected = 'de'
+      else if (browserLang.startsWith('es')) detected = 'es'
+      else if (browserLang.startsWith('ar')) detected = 'ar'
+      setLocaleState(detected)
+      if (detected === 'ar') document.documentElement.dir = 'rtl'
     }
   }, [])
 
