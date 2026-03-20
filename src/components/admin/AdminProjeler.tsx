@@ -176,13 +176,29 @@ export default function AdminProjeler({ adminPassword }: Props) {
     setSearchingLocation(true)
     setMapsError('')
     const query = mapsUrl.replace(/https?:\/\/[^\s]+/g, '').trim() || mapsUrl
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`, {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`, {
       headers: { 'Accept-Language': 'tr' }
     })
       .then(r => r.json())
       .then(data => {
         if (data && data.length > 0 && editProject) {
-          setEditProject({ ...editProject, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) })
+          const result = data[0]
+          const addr = result.address || {}
+          const city = addr.province || addr.city || addr.town || addr.county || ''
+          const country = addr.country || 'Türkiye'
+          const district = addr.suburb || addr.district || addr.town || addr.village || ''
+          const fullAddress = result.display_name || ''
+          // Kısa adres oluştur
+          const shortAddress = [district, city].filter(Boolean).join(', ')
+
+          setEditProject({
+            ...editProject,
+            lat: parseFloat(result.lat),
+            lng: parseFloat(result.lon),
+            city: editProject.city || city,
+            country: editProject.country || country,
+            address: editProject.address || shortAddress || fullAddress.split(',').slice(0, 3).join(','),
+          })
           setMapsUrl('')
           setMapsError('')
         } else {
