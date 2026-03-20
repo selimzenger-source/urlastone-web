@@ -19,6 +19,7 @@ interface StoneType {
   id: string
   name: string
   code: string
+  image_url?: string | null
 }
 
 interface Category {
@@ -27,6 +28,7 @@ interface Category {
   slug: string
   description: string
   thickness: string
+  image_url?: string | null
 }
 
 interface Product {
@@ -91,12 +93,18 @@ export default function TaslarPage() {
     },
   }
 
-  // Stone type display info
+  // Stone type display info (fallback images if no DB image)
   const stoneTypeInfo: Record<string, { name: string; desc: string; foto: string }> = {
     TRV: { name: t.stones_traverten_name, desc: t.stones_traverten_desc, foto: '/featured-traverten.jpg' },
     MRMR: { name: t.stones_mermer_name, desc: t.stones_mermer_desc, foto: '/featured-mermer.jpg' },
     BZLT: { name: t.stones_bazalt_name, desc: t.stones_bazalt_desc, foto: '/featured-bazalt.jpg' },
     KLKR: { name: t.stones_kalker_name, desc: t.stones_kalker_desc, foto: '/featured-kalker.jpg' },
+  }
+
+  // Use DB image_url if available, fallback to hardcoded
+  const getStoneTypeImage = (st: StoneType) => {
+    if (st.image_url) return st.image_url
+    return stoneTypeInfo[st.code]?.foto || '/featured-traverten.jpg'
   }
 
   const kullanimAlanlari = [
@@ -153,19 +161,39 @@ export default function TaslarPage() {
             </h2>
           </div>
 
-          {/* Category Tabs */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {/* Category Cards */}
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.slug)}
-                className={`px-6 py-3 rounded-full text-sm font-mono transition-all duration-300 ${
+                className={`group w-[130px] sm:w-[150px] rounded-2xl p-3 transition-all duration-300 text-center ${
                   activeCategory === cat.slug
-                    ? 'bg-white text-black'
-                    : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
+                    ? 'bg-white/[0.06] border-2 border-gold-400 scale-[1.02]'
+                    : 'bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.15] hover:bg-white/[0.05]'
                 }`}
               >
-                {cat.name}
+                <div className="aspect-square rounded-xl bg-white/[0.04] mb-2.5 overflow-hidden flex items-center justify-center">
+                  {cat.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={cat.image_url}
+                      alt={cat.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className={`font-heading text-3xl font-bold ${
+                      activeCategory === cat.slug ? 'text-gold-400/20' : 'text-white/10'
+                    }`}>
+                      {cat.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <h4 className={`font-heading text-sm font-semibold transition-colors ${
+                  activeCategory === cat.slug ? 'text-gold-400' : 'text-white'
+                }`}>
+                  {cat.name}
+                </h4>
               </button>
             ))}
           </div>
@@ -273,7 +301,7 @@ export default function TaslarPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={info.foto}
+                    src={getStoneTypeImage(st)}
                     alt={info.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />

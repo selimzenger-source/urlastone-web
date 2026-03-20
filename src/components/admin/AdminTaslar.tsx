@@ -306,6 +306,10 @@ export default function AdminTaslar() {
           </div>
         )}
 
+        <p className="text-white/20 text-[10px] font-mono mb-4">
+          📐 Önerilen boyut: 800×600px (4:3 oran) · JPG, PNG, WebP · Max 5MB
+        </p>
+
         {/* Stone Type Cards - Visual Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stoneTypes.map(st => {
@@ -456,6 +460,10 @@ export default function AdminTaslar() {
             {formError && <p className="text-red-400 text-xs mt-2">{formError}</p>}
           </div>
         )}
+
+        <p className="text-white/20 text-[10px] font-mono mb-4">
+          📐 Önerilen boyut: 600×600px (kare) · JPG, PNG, WebP · Max 5MB
+        </p>
 
         {/* Category Cards - Visual Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
