@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import ReferansMarquee from '@/components/ReferansMarquee'
 import {
   Award,
   Globe,
@@ -377,6 +378,7 @@ export default function HakkimizdaPage() {
         </div>
       </section>
 
+      <ReferansMarquee />
       <Footer />
     </main>
   )
