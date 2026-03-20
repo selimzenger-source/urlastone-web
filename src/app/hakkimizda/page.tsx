@@ -52,7 +52,7 @@ export default function HakkimizdaPage() {
     {
       ad: 'Fatih At',
       unvan: t.about_team_fatih_title,
-      foto: 'https://urlastone.com/gallery_gen/ae94b0a1d63c8c4d5b7bb245211e5010_720x720_fit.jpg?ts=1753707019',
+      foto: '/team-fatih.jpg',
       bio: t.about_team_fatih_bio,
       facebook: 'https://www.facebook.com/fatih.at.18',
       instagram: 'https://www.instagram.com/fatih.at/',
@@ -61,7 +61,7 @@ export default function HakkimizdaPage() {
     {
       ad: 'Özer Demirkırkan',
       unvan: t.about_team_ozer_title,
-      foto: 'https://urlastone.com/gallery_gen/245306831c8af2db19be49d8db2b4b1b_720x720_fit.jpg?ts=1753707019',
+      foto: '/team-ozer.jpg',
       bio: t.about_team_ozer_bio,
       facebook: 'https://www.facebook.com/ozer.demirkirkan',
       instagram: 'https://www.instagram.com/ozerdemirkirkan',
@@ -70,7 +70,7 @@ export default function HakkimizdaPage() {
     {
       ad: 'Cihan Zenger',
       unvan: t.about_team_cihan_title,
-      foto: 'https://urlastone.com/gallery_gen/7dc6e004ff2e4ef9083b959c48f4ea54_720x720_fit.jpg?ts=1753707019',
+      foto: '/team-cihan.jpg',
       bio: t.about_team_cihan_bio,
       facebook: 'https://www.facebook.com/cihan.zenger.7',
       instagram: 'https://www.instagram.com/cihan.zenger/',

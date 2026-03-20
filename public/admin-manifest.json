@@ -1,6 +1,6 @@
 {
-  "name": "URLASTONE Admin Panel",
-  "short_name": "URLASTONE Admin",
+  "name": "Admin Panel",
+  "short_name": "Admin Panel",
   "description": "URLASTONE Yönetim Paneli",
   "start_url": "/admin",
   "scope": "/admin",
