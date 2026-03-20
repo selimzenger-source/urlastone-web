@@ -15,7 +15,7 @@ export default function PWAInstallPrompt() {
   const [isIOS, setIsIOS] = useState(false)
   const [showIOSGuide, setShowIOSGuide] = useState(false)
   const pathname = usePathname()
-  const isAdmin = pathname?.startsWith('/admin')
+  const isAdmin = pathname?.startsWith('/admin') ?? false
 
   useEffect(() => {
     if (isAdmin) return
