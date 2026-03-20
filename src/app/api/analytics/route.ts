@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 // POST - Record a page view (public, no auth needed)
 export async function POST(req: NextRequest) {
   try {
-    const { page, referrer, session_id, device } = await req.json()
+    const { page, referrer, session_id, device, language } = await req.json()
 
     if (!page) {
       return NextResponse.json({ error: 'page required' }, { status: 400 })
@@ -15,11 +15,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
+    // Vercel provides country code via header
+    const country = req.headers.get('x-vercel-ip-country') || null
+    const city = req.headers.get('x-vercel-ip-city') || null
+
     await supabaseAdmin.from('page_views').insert({
       page,
       referrer: referrer || null,
       session_id: session_id || null,
       device: device || 'desktop',
+      country: country || null,
+      city: city ? decodeURIComponent(city) : null,
+      language: language || null,
     })
 
     return NextResponse.json({ ok: true })
