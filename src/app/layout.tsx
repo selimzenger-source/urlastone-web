@@ -19,12 +19,26 @@ export const metadata: Metadata = {
     siteName: 'URLASTONE',
     locale: 'tr_TR',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1080,
+        height: 1080,
+        alt: 'URLASTONE - Doğal Taş',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'URLASTONE | Doğal Taş - Urla, İzmir',
     description: 'Milyon yıllık doğal taşları, modern mimariye taşıyoruz.',
+    images: ['/og-image.jpg'],
   },
+  icons: {
+    icon: '/og-image.jpg',
+    apple: '/apple-touch-icon.jpg',
+  },
+  manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,
