@@ -123,7 +123,7 @@ export default function UygulamalarimPage() {
               <h2 className="font-heading text-xl md:text-2xl font-bold">{t.apps_map_title}</h2>
               <p className="text-white/40 text-sm mt-1">{t.apps_map_desc}</p>
             </div>
-            <div className="h-[400px] md:h-[600px]">
+            <div className="h-[500px] md:h-[600px]">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 size={32} className="animate-spin text-white/20" />

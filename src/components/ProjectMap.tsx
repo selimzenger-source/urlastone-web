@@ -291,6 +291,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
+              position: 'relative',
               width: '100%', maxWidth: '400px',
               background: '#1a1a1a',
               borderRadius: '16px 16px 0 0',
@@ -303,24 +304,41 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               overflowY: 'auto',
             }}
           >
-            {/* Close button */}
-            <button
-              onClick={() => setSelected(null)}
-              style={{
-                position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-                width: '36px', height: '36px', borderRadius: '50%',
-                background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
-                color: 'white', fontSize: '20px', fontWeight: 300,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                lineHeight: 1,
-              }}
-            >
-              ✕
-            </button>
-
             {/* Photo Slider */}
             {selected.photos && selected.photos.length > 0 && (
-              <PhotoSlider photos={selected.photos} alt={selected.project_name || selected.city} />
+              <div style={{ position: 'relative' }}>
+                <PhotoSlider photos={selected.photos} alt={selected.project_name || selected.city} />
+                {/* Close button — fotoğrafın sağ üstünde */}
+                <button
+                  onClick={() => setSelected(null)}
+                  style={{
+                    position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
+                    color: 'white', fontSize: '18px', fontWeight: 300,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    lineHeight: 1,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            {/* Fotoğraf yoksa close button */}
+            {(!selected.photos || selected.photos.length === 0) && (
+              <button
+                onClick={() => setSelected(null)}
+                style={{
+                  position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'white', fontSize: '18px', fontWeight: 300,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  lineHeight: 1,
+                }}
+              >
+                ✕
+              </button>
             )}
 
             <div style={{ padding: '14px 16px 20px' }}>
@@ -332,12 +350,11 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               <div style={{ fontSize: '12px', color: '#b39345', fontWeight: 600, marginBottom: '8px' }}>
                 {selected.city}{selected.category ? ` · ${selected.category}` : ''}
               </div>
-              {/* Description */}
+              {/* Description — tam metin */}
               {selected.description && (
                 <div style={{
                   fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '10px',
-                  lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                  lineHeight: '1.6',
                 }}>
                   {selected.description}
                 </div>
