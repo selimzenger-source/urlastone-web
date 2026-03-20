@@ -211,8 +211,6 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
       zoomControl={true}
       attributionControl={false}
-      tap={true}
-      tapTolerance={15}
     >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
