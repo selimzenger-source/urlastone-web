@@ -981,14 +981,14 @@ export default function AdminProjeler({ adminPassword }: Props) {
                               newPhotos.unshift(url)
                               setEditProject({ ...editProject, photos: newPhotos })
                             }}
-                            className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono text-gold-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity border border-gold-400/30"
+                            className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-mono text-gold-400 border border-gold-400/40 hover:bg-gold-400/20 transition-colors cursor-pointer"
                           >
                             Kapak Yap
                           </button>
                         )}
                         <button
                           onClick={() => removePhoto(i)}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/90 flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
                         >
                           <X size={10} className="text-white" />
                         </button>
@@ -1007,7 +1007,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
                         </div>
                         <button
                           onClick={() => removePendingFile(i)}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/90 flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
                         >
                           <X size={10} className="text-white" />
                         </button>
