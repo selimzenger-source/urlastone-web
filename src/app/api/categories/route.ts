@@ -38,10 +38,17 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { id, ...updates } = body
+  const { id, _delete, ...updates } = body
 
   if (!id) {
     return NextResponse.json({ error: 'id required' }, { status: 400 })
+  }
+
+  // Handle delete via PUT with _delete flag
+  if (_delete) {
+    const { error } = await supabaseAdmin.from('categories').delete().eq('id', id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
   }
 
   const { data, error } = await supabaseAdmin

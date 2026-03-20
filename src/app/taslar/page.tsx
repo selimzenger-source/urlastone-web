@@ -26,8 +26,12 @@ interface Category {
   id: string
   name: string
   slug: string
-  description: string
-  thickness: string
+  description?: string
+  thickness?: string
+  slogan?: string
+  feature1?: string
+  feature2?: string
+  feature3?: string
   image_url?: string | null
 }
 
@@ -65,33 +69,32 @@ export default function TaslarPage() {
     })
   }, [])
 
-  // Category descriptions from i18n
-  const categoryInfo: Record<string, { slogan: string; desc: string; features: string[]; thickness: string }> = {
-    nature: {
-      slogan: t.stones_nature_slogan,
-      desc: t.stones_nature_desc,
-      features: [t.stones_nature_f1, t.stones_nature_f2, t.stones_nature_f3],
-      thickness: '1.5 – 3 cm',
-    },
-    mix: {
-      slogan: t.stones_mix_slogan,
-      desc: t.stones_mix_desc,
-      features: [t.stones_mix_f1, t.stones_mix_f2, t.stones_mix_f3],
-      thickness: '1.5 – 3 cm',
-    },
-    crazy: {
-      slogan: t.stones_crazy_slogan,
-      desc: t.stones_crazy_desc,
-      features: [t.stones_crazy_f1, t.stones_crazy_f2, t.stones_crazy_f3],
-      thickness: '1.5 – 2.5 cm',
-    },
-    line: {
-      slogan: t.stones_line_slogan,
-      desc: t.stones_line_desc,
-      features: [t.stones_line_f1, t.stones_line_f2, t.stones_line_f3],
-      thickness: '1 – 2 cm',
-    },
+  // Category descriptions: DB values override i18n fallbacks
+  const i18nFallback: Record<string, { slogan: string; desc: string; features: string[]; thickness: string }> = {
+    nature: { slogan: t.stones_nature_slogan, desc: t.stones_nature_desc, features: [t.stones_nature_f1, t.stones_nature_f2, t.stones_nature_f3], thickness: '1.5 – 3 cm' },
+    mix: { slogan: t.stones_mix_slogan, desc: t.stones_mix_desc, features: [t.stones_mix_f1, t.stones_mix_f2, t.stones_mix_f3], thickness: '1.5 – 3 cm' },
+    crazy: { slogan: t.stones_crazy_slogan, desc: t.stones_crazy_desc, features: [t.stones_crazy_f1, t.stones_crazy_f2, t.stones_crazy_f3], thickness: '1.5 – 2.5 cm' },
+    line: { slogan: t.stones_line_slogan, desc: t.stones_line_desc, features: [t.stones_line_f1, t.stones_line_f2, t.stones_line_f3], thickness: '1 – 2 cm' },
   }
+
+  // Build categoryInfo using DB fields when available, fallback to i18n
+  const getCategoryInfo = (slug: string) => {
+    const fb = i18nFallback[slug] || { slogan: '', desc: '', features: [], thickness: '' }
+    const cat = categories.find(c => c.slug === slug)
+    if (!cat) return fb
+    return {
+      slogan: cat.slogan || fb.slogan,
+      desc: cat.description || fb.desc,
+      features: [cat.feature1 || fb.features[0] || '', cat.feature2 || fb.features[1] || '', cat.feature3 || fb.features[2] || ''].filter(Boolean),
+      thickness: cat.thickness || fb.thickness,
+    }
+  }
+
+  const categoryInfo = Object.fromEntries(
+    [...Object.keys(i18nFallback), ...categories.map(c => c.slug)]
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .map(slug => [slug, getCategoryInfo(slug)])
+  )
 
   // Stone type display info (fallback images if no DB image)
   const stoneTypeInfo: Record<string, { name: string; desc: string; foto: string }> = {
