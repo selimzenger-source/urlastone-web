@@ -77,6 +77,16 @@ export default function AdminTaslar() {
   const [selectedStoneType, setSelectedStoneType] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
+  // Fallback images for stone types (already in /public/)
+  const stoneTypeFallback: Record<string, string> = {
+    TRV: '/featured-traverten.jpg',
+    MRMR: '/featured-mermer.jpg',
+    BZLT: '/featured-bazalt.jpg',
+    KLKR: '/featured-kalker.jpg',
+  }
+
+  const getStoneTypeImage = (st: StoneType) => st.image_url || stoneTypeFallback[st.code] || null
+
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
   const fetchData = async () => {
@@ -326,9 +336,9 @@ export default function AdminTaslar() {
               >
                 {/* Image */}
                 <div className="aspect-[4/3] bg-white/[0.04] relative overflow-hidden">
-                  {st.image_url ? (
+                  {getStoneTypeImage(st) ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={st.image_url} alt={st.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={getStoneTypeImage(st)!} alt={st.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                       <ImageIcon size={24} className="text-white/10" />
@@ -372,9 +382,9 @@ export default function AdminTaslar() {
             <div className="mt-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  {st.image_url && (
+                  {getStoneTypeImage(st) && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={st.image_url} alt={st.name} className="w-10 h-10 rounded-lg object-cover" />
+                    <img src={getStoneTypeImage(st)!} alt={st.name} className="w-10 h-10 rounded-lg object-cover" />
                   )}
                   <div>
                     <h4 className="text-white text-sm font-heading font-semibold">{st.name}</h4>
