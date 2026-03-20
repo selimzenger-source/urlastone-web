@@ -1,14 +1,9 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'mail.urlastone.com',
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: Number(process.env.SMTP_PORT) === 465,
-  auth: {
-    user: process.env.SMTP_USER || 'info@urlastone.com',
-    pass: process.env.SMTP_PASS,
-  },
-})
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@urlastone.com'
 
 interface TeklifData {
   ad_soyad: string
@@ -100,8 +95,8 @@ export async function sendCustomerConfirmation(data: TeklifData) {
 </body>
 </html>`
 
-  await transporter.sendMail({
-    from: `"URLASTONE" <${process.env.SMTP_USER || 'info@urlastone.com'}>`,
+  await resend.emails.send({
+    from: `URLASTONE <${FROM_EMAIL}>`,
     to: data.email,
     subject: 'Teklif Talebiniz Alındı — URLASTONE',
     html,
@@ -110,8 +105,6 @@ export async function sendCustomerConfirmation(data: TeklifData) {
 
 // Admin'e giden bildirim maili
 export async function sendAdminNotification(data: TeklifData) {
-  const adminEmail = process.env.SMTP_USER || 'info@urlastone.com'
-
   const html = `
 <!DOCTYPE html>
 <html>
@@ -121,7 +114,7 @@ export async function sendAdminNotification(data: TeklifData) {
 
     <!-- Header -->
     <div style="background:#0a0a0a;padding:20px 24px;border-bottom:3px solid #b39345;">
-      <h1 style="margin:0;font-size:16px;color:#b39345;letter-spacing:2px;">🔔 YENİ TEKLİF TALEBİ</h1>
+      <h1 style="margin:0;font-size:16px;color:#b39345;letter-spacing:2px;">YENİ TEKLİF TALEBİ</h1>
     </div>
 
     <!-- Body -->
@@ -182,9 +175,9 @@ export async function sendAdminNotification(data: TeklifData) {
 </body>
 </html>`
 
-  await transporter.sendMail({
-    from: `"URLASTONE Web" <${adminEmail}>`,
-    to: adminEmail,
+  await resend.emails.send({
+    from: `URLASTONE Web <${FROM_EMAIL}>`,
+    to: ADMIN_EMAIL,
     subject: `Yeni Teklif: ${data.ad_soyad} — ${data.proje_tipi}`,
     html,
   })
