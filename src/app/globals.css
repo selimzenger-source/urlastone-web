@@ -167,6 +167,31 @@
   right: 0 !important;
 }
 
+/* Marker cluster overrides - gold theme */
+.custom-cluster-marker {
+  background: transparent !important;
+}
+
+.marker-cluster {
+  background: transparent !important;
+}
+
+.marker-cluster div {
+  background: transparent !important;
+}
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: transparent !important;
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: transparent !important;
+}
+
 /* Instagram embed responsive */
 .instagram-embed-container iframe {
   max-width: 100% !important;
