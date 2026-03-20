@@ -9,7 +9,10 @@ import {
   Image as ImageIcon,
   Upload,
   Save,
-  ChevronDown,
+  Edit3,
+  Camera,
+  Layers,
+  Grid3X3,
 } from 'lucide-react'
 
 interface StoneType {
@@ -17,12 +20,16 @@ interface StoneType {
   name: string
   code: string
   sort_order: number
+  image_url?: string | null
 }
 
 interface Category {
   id: string
   name: string
   slug: string
+  thickness?: string
+  description?: string
+  image_url?: string | null
 }
 
 interface Product {
@@ -56,10 +63,19 @@ export default function AdminTaslar() {
   const [showNewStoneType, setShowNewStoneType] = useState(false)
   const [newStoneType, setNewStoneType] = useState({ name: '', code: '' })
 
+  // New category form
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategory, setNewCategory] = useState({ name: '', slug: '', thickness: '' })
+
   // Image upload
   const [uploadingId, setUploadingId] = useState<string | null>(null)
+  const [uploadTarget, setUploadTarget] = useState<'product' | 'stone_type' | 'category'>('product')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  // Selected items for preview
+  const [selectedStoneType, setSelectedStoneType] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
@@ -90,7 +106,6 @@ export default function AdminTaslar() {
       setFormError('Tüm alanları doldurun')
       return
     }
-    // Check if code already exists
     const existing = products.find(p => p.code.toLowerCase() === newProduct.code.toLowerCase())
     if (existing) {
       setFormError(`"${newProduct.code}" kodu zaten kullanılıyor (${existing.name})`)
@@ -121,23 +136,35 @@ export default function AdminTaslar() {
     fetchData()
   }
 
-  const handleImageUpload = async (productId: string, file: File) => {
+  const handleImageUpload = async (file: File) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
       alert('Sadece JPG, PNG veya WebP formatında resim yükleyebilirsiniz')
       return
     }
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       alert('Resim boyutu en fazla 5MB olabilir')
       return
     }
-    setUploadingId(productId)
+    if (!uploadingId) return
+
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('product_id', productId)
 
-    const res = await fetch('/api/products/upload', {
+    let endpoint = ''
+    if (uploadTarget === 'product') {
+      formData.append('product_id', uploadingId)
+      endpoint = '/api/products/upload'
+    } else if (uploadTarget === 'stone_type') {
+      formData.append('stone_type_id', uploadingId)
+      endpoint = '/api/stone-types/upload'
+    } else if (uploadTarget === 'category') {
+      formData.append('category_id', uploadingId)
+      endpoint = '/api/categories/upload'
+    }
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'x-admin-password': password },
       body: formData,
@@ -148,6 +175,12 @@ export default function AdminTaslar() {
     }
     setUploadingId(null)
     fetchData()
+  }
+
+  const triggerUpload = (id: string, target: 'product' | 'stone_type' | 'category') => {
+    setUploadingId(id)
+    setUploadTarget(target)
+    fileInputRef.current?.click()
   }
 
   const handleCreateStoneType = async () => {
@@ -173,6 +206,32 @@ export default function AdminTaslar() {
     }
     setNewStoneType({ name: '', code: '' })
     setShowNewStoneType(false)
+    fetchData()
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCategory.name || !newCategory.slug) {
+      setFormError('Kategori adı ve slug zorunludur')
+      return
+    }
+    const existing = categories.find(c => c.slug.toLowerCase() === newCategory.slug.toLowerCase())
+    if (existing) {
+      setFormError(`"${newCategory.slug}" slug zaten kullanılıyor`)
+      return
+    }
+    setFormError('')
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ ...newCategory, sort_order: categories.length + 1 }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setFormError(data.error || 'Kategori eklenirken hata oluştu')
+      return
+    }
+    setNewCategory({ name: '', slug: '', thickness: '' })
+    setShowNewCategory(false)
     fetchData()
   }
 
@@ -204,12 +263,15 @@ export default function AdminTaslar() {
         </div>
       </div>
 
-      {/* Stone Types Section */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-medium text-sm">Taş Türleri</h3>
+      {/* ═══════ TAŞ TÜRLERİ ═══════ */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 md:p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Layers size={16} className="text-gold-400" />
+            <h3 className="text-white font-heading font-semibold text-sm">Taş Türleri</h3>
+          </div>
           <button
-            onClick={() => setShowNewStoneType(true)}
+            onClick={() => { setShowNewStoneType(true); setFormError('') }}
             className="flex items-center gap-1.5 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
           >
             <Plus size={12} /> Yeni Tür
@@ -217,46 +279,293 @@ export default function AdminTaslar() {
         </div>
 
         {showNewStoneType && (
-          <div className="flex gap-3 mb-4">
-            <input
-              type="text"
-              value={newStoneType.name}
-              onChange={(e) => setNewStoneType(p => ({ ...p, name: e.target.value }))}
-              placeholder="Tür Adı (ör: Oniks)"
-              className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
-            />
-            <input
-              type="text"
-              value={newStoneType.code}
-              onChange={(e) => setNewStoneType(p => ({ ...p, code: e.target.value.toUpperCase() }))}
-              placeholder="Kod (ör: ONKS)"
-              className="w-28 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
-            />
-            <button onClick={handleCreateStoneType} className="px-4 py-2 bg-white text-black rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors">
-              Ekle
-            </button>
-            <button onClick={() => { setShowNewStoneType(false); setFormError('') }} className="p-2 text-white/30 hover:text-white">
-              <X size={14} />
-            </button>
+          <div className="bg-white/[0.03] border border-gold-400/20 rounded-xl p-4 mb-5">
+            <div className="flex gap-3 flex-wrap">
+              <input
+                type="text"
+                value={newStoneType.name}
+                onChange={(e) => setNewStoneType(p => ({ ...p, name: e.target.value }))}
+                placeholder="Tür Adı (ör: Oniks)"
+                className="flex-1 min-w-[140px] bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+              />
+              <input
+                type="text"
+                value={newStoneType.code}
+                onChange={(e) => setNewStoneType(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                placeholder="Kod (ör: ONKS)"
+                className="w-28 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+              />
+              <button onClick={handleCreateStoneType} className="px-4 py-2 bg-white text-black rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors">
+                Ekle
+              </button>
+              <button onClick={() => { setShowNewStoneType(false); setFormError('') }} className="p-2 text-white/30 hover:text-white">
+                <X size={14} />
+              </button>
+            </div>
+            {formError && <p className="text-red-400 text-xs mt-2">{formError}</p>}
           </div>
         )}
-        {showNewStoneType && formError && (
-          <p className="text-red-400 text-xs mb-4 -mt-2">{formError}</p>
-        )}
 
-        <div className="flex flex-wrap gap-2">
-          {stoneTypes.map(st => (
-            <span key={st.id} className="px-3 py-1.5 rounded-full bg-gold-400/10 text-gold-400 text-xs font-mono">
-              {st.name} ({st.code}) — {products.filter(p => p.stone_type?.code === st.code).length} ürün
-            </span>
-          ))}
+        {/* Stone Type Cards - Visual Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {stoneTypes.map(st => {
+            const productCount = products.filter(p => p.stone_type?.code === st.code).length
+            const isSelected = selectedStoneType === st.id
+
+            return (
+              <div
+                key={st.id}
+                onClick={() => setSelectedStoneType(isSelected ? null : st.id)}
+                className={`group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${
+                  isSelected ? 'ring-2 ring-gold-400 scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'
+                }`}
+              >
+                {/* Image */}
+                <div className="aspect-[4/3] bg-white/[0.04] relative overflow-hidden">
+                  {st.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={st.image_url} alt={st.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                      <ImageIcon size={24} className="text-white/10" />
+                      <span className="text-white/15 text-[10px] font-mono">Resim ekle</span>
+                    </div>
+                  )}
+
+                  {/* Upload overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); triggerUpload(st.id, 'stone_type') }}
+                      className="p-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
+                      title="Resim Yükle/Değiştir"
+                    >
+                      <Camera size={16} className="text-white" />
+                    </button>
+                  </div>
+
+                  {/* Badge */}
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
+                    <span className="text-gold-400 text-[9px] font-mono font-bold">{st.code}</span>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="bg-white/[0.03] p-3">
+                  <h4 className="text-white text-sm font-heading font-semibold">{st.name}</h4>
+                  <p className="text-white/30 text-[10px] font-mono mt-0.5">{productCount} ürün</p>
+                </div>
+              </div>
+            )
+          })}
         </div>
+
+        {/* Selected Stone Type Detail */}
+        {selectedStoneType && (() => {
+          const st = stoneTypes.find(s => s.id === selectedStoneType)
+          if (!st) return null
+          const stProducts = products.filter(p => p.stone_type_id === st.id)
+          return (
+            <div className="mt-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  {st.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={st.image_url} alt={st.name} className="w-10 h-10 rounded-lg object-cover" />
+                  )}
+                  <div>
+                    <h4 className="text-white text-sm font-heading font-semibold">{st.name}</h4>
+                    <p className="text-white/30 text-[10px] font-mono">{st.code} · {stProducts.length} ürün</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedStoneType(null)} className="p-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12]">
+                  <X size={12} className="text-white/60" />
+                </button>
+              </div>
+              {stProducts.length > 0 ? (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {stProducts.map(p => (
+                    <div key={p.id} className="flex-shrink-0 w-16">
+                      <div className="w-16 h-16 rounded-lg bg-white/[0.04] overflow-hidden">
+                        {p.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon size={12} className="text-white/10" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-white/40 text-[8px] font-mono text-center mt-1 truncate">{p.code}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/20 text-xs font-mono text-center py-3">Bu türde ürün yok</p>
+              )}
+            </div>
+          )
+        })()}
       </div>
 
+      {/* ═══════ KATEGORİLER ═══════ */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 md:p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <Grid3X3 size={16} className="text-purple-400" />
+            <h3 className="text-white font-heading font-semibold text-sm">Kategoriler</h3>
+          </div>
+          <button
+            onClick={() => { setShowNewCategory(true); setFormError('') }}
+            className="flex items-center gap-1.5 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
+          >
+            <Plus size={12} /> Yeni Kategori
+          </button>
+        </div>
+
+        {showNewCategory && (
+          <div className="bg-white/[0.03] border border-gold-400/20 rounded-xl p-4 mb-5">
+            <div className="flex gap-3 flex-wrap">
+              <input
+                type="text"
+                value={newCategory.name}
+                onChange={(e) => setNewCategory(p => ({ ...p, name: e.target.value }))}
+                placeholder="Kategori Adı (ör: Wave)"
+                className="flex-1 min-w-[140px] bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+              />
+              <input
+                type="text"
+                value={newCategory.slug}
+                onChange={(e) => setNewCategory(p => ({ ...p, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
+                placeholder="Slug (ör: wave)"
+                className="w-28 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+              />
+              <input
+                type="text"
+                value={newCategory.thickness}
+                onChange={(e) => setNewCategory(p => ({ ...p, thickness: e.target.value }))}
+                placeholder="Kalınlık (ör: 1.5 – 3 cm)"
+                className="w-40 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+              />
+              <button onClick={handleCreateCategory} className="px-4 py-2 bg-white text-black rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors">
+                Ekle
+              </button>
+              <button onClick={() => { setShowNewCategory(false); setFormError('') }} className="p-2 text-white/30 hover:text-white">
+                <X size={14} />
+              </button>
+            </div>
+            {formError && <p className="text-red-400 text-xs mt-2">{formError}</p>}
+          </div>
+        )}
+
+        {/* Category Cards - Visual Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {categories.map(cat => {
+            const productCount = products.filter(p => p.category?.slug === cat.slug).length
+            const isSelected = selectedCategory === cat.id
+
+            return (
+              <div
+                key={cat.id}
+                onClick={() => setSelectedCategory(isSelected ? null : cat.id)}
+                className={`group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${
+                  isSelected ? 'ring-2 ring-purple-400 scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'
+                }`}
+              >
+                {/* Image */}
+                <div className="aspect-square bg-white/[0.04] relative overflow-hidden">
+                  {cat.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                      <ImageIcon size={24} className="text-white/10" />
+                      <span className="text-white/15 text-[10px] font-mono">Resim ekle</span>
+                    </div>
+                  )}
+
+                  {/* Upload overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); triggerUpload(cat.id, 'category') }}
+                      className="p-2.5 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
+                      title="Resim Yükle/Değiştir"
+                    >
+                      <Camera size={16} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="bg-white/[0.03] p-3">
+                  <h4 className="text-white text-sm font-heading font-semibold">{cat.name}</h4>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <p className="text-white/30 text-[10px] font-mono">{productCount} ürün</p>
+                    {cat.thickness && (
+                      <p className="text-gold-400/60 text-[9px] font-mono">{cat.thickness}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Selected Category Detail */}
+        {selectedCategory && (() => {
+          const cat = categories.find(c => c.id === selectedCategory)
+          if (!cat) return null
+          const catProducts = products.filter(p => p.category_id === cat.id)
+          return (
+            <div className="mt-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  {cat.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cat.image_url} alt={cat.name} className="w-10 h-10 rounded-lg object-cover" />
+                  )}
+                  <div>
+                    <h4 className="text-white text-sm font-heading font-semibold">{cat.name}</h4>
+                    <p className="text-white/30 text-[10px] font-mono">
+                      {cat.slug} · {catProducts.length} ürün
+                      {cat.thickness && ` · ${cat.thickness}`}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedCategory(null)} className="p-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12]">
+                  <X size={12} className="text-white/60" />
+                </button>
+              </div>
+              {catProducts.length > 0 ? (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {catProducts.map(p => (
+                    <div key={p.id} className="flex-shrink-0 w-16">
+                      <div className="w-16 h-16 rounded-lg bg-white/[0.04] overflow-hidden">
+                        {p.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon size={12} className="text-white/10" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-white/40 text-[8px] font-mono text-center mt-1 truncate">{p.code}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/20 text-xs font-mono text-center py-3">Bu kategoride ürün yok</p>
+              )}
+            </div>
+          )
+        })()}
+      </div>
+
+      {/* ═══════ ÜRÜNLER ═══════ */}
       {/* Header + Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
+          <div className="relative flex-1 min-w-[180px] max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
             <input
               type="text"
@@ -288,7 +597,7 @@ export default function AdminTaslar() {
           </select>
         </div>
         <button
-          onClick={() => setShowNewProduct(true)}
+          onClick={() => { setShowNewProduct(true); setFormError('') }}
           className="inline-flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
         >
           <Plus size={16} /> Yeni Ürün
@@ -340,6 +649,9 @@ export default function AdminTaslar() {
               ))}
             </select>
           </div>
+          <p className="text-white/20 text-[10px] font-mono mt-2">
+            💡 Ürün eklendikten sonra ürün kartının üzerine gelerek resim yükleyebilirsiniz
+          </p>
           {formError && (
             <p className="mt-3 text-red-400 text-xs">{formError}</p>
           )}
@@ -365,16 +677,16 @@ export default function AdminTaslar() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
               ) : (
-                <ImageIcon size={24} className="text-white/10" />
+                <div className="flex flex-col items-center gap-1">
+                  <ImageIcon size={24} className="text-white/10" />
+                  <span className="text-white/10 text-[9px] font-mono">Resim yükle</span>
+                </div>
               )}
 
               {/* Upload overlay */}
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <button
-                  onClick={() => {
-                    setUploadingId(product.id)
-                    fileInputRef.current?.click()
-                  }}
+                  onClick={() => triggerUpload(product.id, 'product')}
                   className="p-2 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
                   title="Resim Yükle"
                 >
@@ -424,7 +736,7 @@ export default function AdminTaslar() {
         onChange={(e) => {
           const file = e.target.files?.[0]
           if (file && uploadingId) {
-            handleImageUpload(uploadingId, file)
+            handleImageUpload(file)
           }
           e.target.value = ''
         }}
