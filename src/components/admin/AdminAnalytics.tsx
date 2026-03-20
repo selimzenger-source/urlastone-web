@@ -44,16 +44,24 @@ export default function AdminAnalytics() {
     )
   }
 
-  if (!data) {
+  if (!data || !data.today) {
     return <p className="text-white/40 text-center py-10">Veri yüklenemedi</p>
   }
 
-  const maxChartViews = Math.max(...data.dailyChart.map(d => d.views), 1)
-  const totalDevices = Object.values(data.devices).reduce((a, b) => a + b, 0) || 1
+  const dailyChart = data.dailyChart || []
+  const topPages = data.topPages || []
+  const devices = data.devices || {}
+  const topReferrers = data.topReferrers || []
+  const today = data.today || { views: 0, visitors: 0 }
+  const week = data.week || { views: 0, visitors: 0 }
+  const month = data.month || { views: 0, visitors: 0 }
+
+  const maxChartViews = dailyChart.length > 0 ? Math.max(...dailyChart.map(d => d.views), 1) : 1
+  const totalDevices = Object.values(devices).reduce((a: number, b: number) => a + b, 0) || 1
 
   // Calculate week-over-week change
-  const thisWeekViews = data.dailyChart.slice(-7).reduce((sum, d) => sum + d.views, 0)
-  const lastWeekViews = data.dailyChart.slice(0, 7).reduce((sum, d) => sum + d.views, 0)
+  const thisWeekViews = dailyChart.slice(-7).reduce((sum, d) => sum + d.views, 0)
+  const lastWeekViews = dailyChart.slice(0, 7).reduce((sum, d) => sum + d.views, 0)
   const weekChange = lastWeekViews > 0
     ? Math.round(((thisWeekViews - lastWeekViews) / lastWeekViews) * 100)
     : thisWeekViews > 0 ? 100 : 0
@@ -65,22 +73,22 @@ export default function AdminAnalytics() {
         <StatCard
           icon={Eye}
           label="Bugün"
-          value={data.today.views.toString()}
-          sub={`${data.today.visitors} tekil`}
+          value={today.views.toString()}
+          sub={`${today.visitors} tekil`}
           color="text-gold-400"
         />
         <StatCard
           icon={Users}
           label="Bu Hafta"
-          value={data.week.views.toString()}
-          sub={`${data.week.visitors} tekil`}
+          value={week.views.toString()}
+          sub={`${week.visitors} tekil`}
           color="text-blue-400"
         />
         <StatCard
           icon={BarChart3}
           label="Bu Ay"
-          value={data.month.views.toString()}
-          sub={`${data.month.visitors} tekil`}
+          value={month.views.toString()}
+          sub={`${month.visitors} tekil`}
           color="text-purple-400"
         />
         <StatCard
@@ -109,13 +117,13 @@ export default function AdminAnalytics() {
 
         {/* Bar Chart */}
         <div className="flex items-end gap-1 md:gap-2 h-40 md:h-52">
-          {data.dailyChart.map((day, i) => {
+          {dailyChart.map((day, i) => {
             const viewH = (day.views / maxChartViews) * 100
             const visitorH = (day.visitors / maxChartViews) * 100
             const dateObj = new Date(day.date)
             const dayLabel = dateObj.toLocaleDateString('tr-TR', { day: 'numeric' })
             const weekDay = dateObj.toLocaleDateString('tr-TR', { weekday: 'short' })
-            const isToday = i === data.dailyChart.length - 1
+            const isToday = i === dailyChart.length - 1
 
             return (
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1 group relative">
@@ -156,12 +164,12 @@ export default function AdminAnalytics() {
             <span className="text-white/30 text-[10px] font-mono">bu ay</span>
           </div>
 
-          {data.topPages.length === 0 ? (
+          {topPages.length === 0 ? (
             <p className="text-white/20 text-sm font-mono text-center py-8">Henüz veri yok</p>
           ) : (
             <div className="space-y-3">
-              {data.topPages.map((p, i) => {
-                const maxCount = data.topPages[0]?.count || 1
+              {topPages.map((p, i) => {
+                const maxCount = topPages[0]?.count || 1
                 const pct = (p.count / maxCount) * 100
                 return (
                   <div key={p.page} className="group">
@@ -192,11 +200,11 @@ export default function AdminAnalytics() {
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-6">
             <h3 className="font-heading text-sm md:text-base font-semibold text-white mb-4">Cihaz Dağılımı</h3>
 
-            {totalDevices <= 1 && Object.keys(data.devices).length === 0 ? (
+            {totalDevices <= 1 && Object.keys(devices).length === 0 ? (
               <p className="text-white/20 text-sm font-mono text-center py-4">Henüz veri yok</p>
             ) : (
               <div className="space-y-3">
-                {Object.entries(data.devices).sort((a, b) => b[1] - a[1]).map(([device, count]) => {
+                {Object.entries(devices).sort((a, b) => b[1] - a[1]).map(([device, count]) => {
                   const pct = Math.round((count / totalDevices) * 100)
                   const Icon = device === 'mobile' ? Smartphone : Monitor
                   const label = device === 'mobile' ? 'Mobil' : device === 'tablet' ? 'Tablet' : 'Masaüstü'
@@ -229,14 +237,14 @@ export default function AdminAnalytics() {
               <Globe size={14} className="text-green-400" />
             </div>
 
-            {data.topReferrers.length === 0 ? (
+            {topReferrers.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-white/20 text-sm font-mono">Henüz veri yok</p>
                 <p className="text-white/10 text-[10px] font-mono mt-1">Direkt ziyaretler burada görünmez</p>
               </div>
             ) : (
               <div className="space-y-2.5">
-                {data.topReferrers.map(r => (
+                {topReferrers.map(r => (
                   <div key={r.source} className="flex items-center justify-between">
                     <span className="text-white/60 text-xs truncate max-w-[140px]">{r.source}</span>
                     <span className="text-white font-mono text-xs">{r.count}</span>
