@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TeklifForm from '@/components/TeklifForm'
@@ -30,7 +31,9 @@ export default function TeklifPage() {
       {/* Form Section */}
       <section className="px-6 md:px-12 pb-20">
         <div className="max-w-3xl mx-auto">
-          <TeklifForm />
+          <Suspense fallback={<div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>}>
+            <TeklifForm />
+          </Suspense>
         </div>
       </section>
 

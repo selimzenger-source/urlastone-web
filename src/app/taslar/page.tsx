@@ -463,7 +463,7 @@ export default function TaslarPage() {
               </div>
 
               <Link
-                href="/teklif"
+                href={`/teklif?product=${encodeURIComponent(selectedProduct.code)}`}
                 onClick={() => setSelectedProduct(null)}
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
               >
