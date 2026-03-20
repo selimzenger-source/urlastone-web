@@ -1,28 +1,24 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { useMemo, useState, useEffect, useCallback } from 'react'
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Mobilde tap handler + touch delay sorunlarını kökten çöz
+// Mobilde Leaflet tap handler sorun çıkarıyor — devre dışı bırak
 function MobileTapFix() {
   const map = useMap()
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = map as any
-    // Leaflet'in tap handler'ını devre dışı bırak
     if (m.tap) m.tap.disable()
-
-    // Harita container'ına touch-action CSS ekle
-    const container = map.getContainer()
-    container.style.touchAction = 'manipulation'
+    map.getContainer().style.touchAction = 'manipulation'
   }, [map])
   return null
 }
 
-// Icon cache — aynı URL için tekrar DivIcon oluşturmayı önler (500+ projede önemli)
+// Icon cache — 500+ projede performans için
 const iconCache = new Map<string, L.DivIcon>()
 
 const createPhotoIcon = (photoUrl?: string) => {
@@ -52,7 +48,6 @@ const createPhotoIcon = (photoUrl?: string) => {
       " /></div>`,
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
-      popupAnchor: [0, -(size / 2 + 4)],
     })
   } else {
     icon = new L.DivIcon({
@@ -67,7 +62,6 @@ const createPhotoIcon = (photoUrl?: string) => {
       "></div>`,
       iconSize: [24, 24],
       iconAnchor: [12, 12],
-      popupAnchor: [0, -14],
     })
   }
 
@@ -75,13 +69,12 @@ const createPhotoIcon = (photoUrl?: string) => {
   return icon
 }
 
-// Cluster icon - birden fazla proje üst üsteyken sayı + fotoğraf stack
+// Cluster icon
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createClusterCustomIcon = (cluster: any) => {
   const count = cluster.getChildCount()
   const markers = cluster.getAllChildMarkers()
 
-  // İlk 3 projenin fotoğrafını al (stack efekti için)
   const photos: string[] = []
   for (const m of markers) {
     const src = m?.options?.icon?.options?.html?.match(/src="([^"]+)"/)
@@ -92,7 +85,6 @@ const createClusterCustomIcon = (cluster: any) => {
   if (count >= 10) size = 72
   if (count >= 50) size = 80
 
-  // Fotoğraf varsa stack göster
   if (photos.length > 0) {
     const stackHtml = photos.length >= 2
       ? `<div style="
@@ -135,7 +127,6 @@ const createClusterCustomIcon = (cluster: any) => {
     })
   }
 
-  // Fotoğraf yoksa sadece gold sayı dairesi
   return new L.DivIcon({
     html: `<div style="
       width: ${size}px; height: ${size}px;
@@ -166,13 +157,13 @@ interface Location {
   photos?: string[]
 }
 
+// Fotoğraf slider — kart içinde
 function PhotoSlider({ photos, alt }: { photos: string[]; alt: string }) {
   const [current, setCurrent] = useState(0)
-
   if (!photos.length) return null
 
   return (
-    <div style={{ width: '100%', height: '220px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '200px', position: 'relative', overflow: 'hidden' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photos[current]}
@@ -231,162 +222,167 @@ interface MapLabels {
 }
 
 export default function ProjectMap({ locations, labels }: { locations: Location[]; labels?: MapLabels }) {
-  const detailsText = labels?.details || 'Detayları Gör →'
+  const detailsText = labels?.details || 'Detayları Gör'
   const navigateText = labels?.navigate || 'Konuma Git'
+  const [selected, setSelected] = useState<Location | null>(null)
 
-  // Icon'ları memoize et — locations değişmedikçe yeniden hesaplanmaz
   const markerIcons = useMemo(() => {
     return locations.map(loc => createPhotoIcon(loc.photos?.[0]))
   }, [locations])
 
+  // Marker tıklanınca — Leaflet Popup yerine kendi kartımızı göster
+  const handleMarkerClick = useCallback((loc: Location) => {
+    setSelected(loc)
+  }, [])
+
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-    <MapContainer
-      center={[39.0, 35.0]}
-      zoom={6}
-      minZoom={5}
-      maxZoom={15}
-      style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
-      zoomControl={true}
-      attributionControl={false}
-      closePopupOnClick={false}
-    >
-      <MobileTapFix />
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      />
-      <MarkerClusterGroup
-        iconCreateFunction={createClusterCustomIcon}
-        maxClusterRadius={80}
-        spiderfyOnMaxZoom={true}
-        showCoverageOnHover={false}
-        zoomToBoundsOnClick={true}
-        animate={true}
-        animateAddingMarkers={false}
-        disableClusteringAtZoom={14}
-        spiderfyDistanceMultiplier={2}
-        chunkedLoading={true}
-        chunkInterval={200}
-        chunkDelay={50}
-        removeOutsideVisibleBounds={true}
+      <MapContainer
+        center={[39.0, 35.0]}
+        zoom={6}
+        minZoom={5}
+        maxZoom={15}
+        style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
+        zoomControl={true}
+        attributionControl={false}
       >
-        {locations.map((loc, i) => (
-          <Marker
-            key={loc.id || i}
-            position={[loc.lat, loc.lng]}
-            icon={markerIcons[i]}
-            eventHandlers={{
-              click: (e) => {
-                // Mobilde ghost click'i engelle — marker tıklanınca popup'ı aç ve event'i durdur
-                L.DomEvent.stopPropagation(e.originalEvent)
-              },
+        <MobileTapFix />
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        />
+        <MarkerClusterGroup
+          iconCreateFunction={createClusterCustomIcon}
+          maxClusterRadius={80}
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+          zoomToBoundsOnClick={true}
+          animate={true}
+          animateAddingMarkers={false}
+          disableClusteringAtZoom={14}
+          spiderfyDistanceMultiplier={2}
+          chunkedLoading={true}
+          chunkInterval={200}
+          chunkDelay={50}
+          removeOutsideVisibleBounds={true}
+        >
+          {locations.map((loc, i) => (
+            <Marker
+              key={loc.id || i}
+              position={[loc.lat, loc.lng]}
+              icon={markerIcons[i]}
+              eventHandlers={{
+                click: () => handleMarkerClick(loc),
+              }}
+            />
+          ))}
+        </MarkerClusterGroup>
+      </MapContainer>
+
+      {/* Proje Kartı — Leaflet Popup yerine kendi React overlay'imiz */}
+      {selected && (
+        <div
+          onClick={() => setSelected(null)}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 1000,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.4)',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: '400px',
+              background: '#1a1a1a',
+              borderRadius: '16px 16px 0 0',
+              border: '1px solid rgba(179, 147, 69, 0.3)',
+              borderBottom: 'none',
+              fontFamily: 'Inter, sans-serif',
+              overflow: 'hidden',
+              animation: 'slideUp 0.3s ease-out',
+              maxHeight: '80%',
+              overflowY: 'auto',
             }}
           >
-            <Popup closeOnClick={false} autoPan={true} keepInView={true} autoClose={false}>
-              <div style={{
-                background: '#1a1a1a',
-                color: 'white',
-                padding: '0',
-                borderRadius: '14px',
-                border: '1px solid rgba(179, 147, 69, 0.3)',
-                minWidth: '300px',
-                maxWidth: '340px',
-                fontFamily: 'Inter, sans-serif',
-                overflow: 'hidden',
-                position: 'relative',
-              }}>
-                {/* Custom close button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    let el = e.currentTarget as HTMLElement | null
-                    while (el && !el.classList.contains('leaflet-popup')) {
-                      el = el.parentElement
-                    }
-                    if (el) {
-                      const closeBtn = el.querySelector('a.leaflet-popup-close-button') as HTMLElement
-                      if (closeBtn) closeBtn.click()
-                    }
-                  }}
+            {/* Close button */}
+            <button
+              onClick={() => setSelected(null)}
+              style={{
+                position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
+                color: 'white', fontSize: '20px', fontWeight: 300,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+
+            {/* Photo Slider */}
+            {selected.photos && selected.photos.length > 0 && (
+              <PhotoSlider photos={selected.photos} alt={selected.project_name || selected.city} />
+            )}
+
+            <div style={{ padding: '14px 16px 20px' }}>
+              {/* Project Name */}
+              <div style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px', color: 'white' }}>
+                {selected.project_name || selected.city}
+              </div>
+              {/* City & Category */}
+              <div style={{ fontSize: '12px', color: '#b39345', fontWeight: 600, marginBottom: '8px' }}>
+                {selected.city}{selected.category ? ` · ${selected.category}` : ''}
+              </div>
+              {/* Description */}
+              {selected.description && (
+                <div style={{
+                  fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '10px',
+                  lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                }}>
+                  {selected.description}
+                </div>
+              )}
+              {/* Address */}
+              {selected.address && (
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>
+                  📍 {selected.address}
+                </div>
+              )}
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {selected.id && (
+                  <a
+                    href={`/uygulamalarimiz/${selected.id}`}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 16px', borderRadius: '20px',
+                      background: 'rgba(255, 255, 255, 0.08)', color: 'white',
+                      fontSize: '12px', fontWeight: 600, textDecoration: 'none',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                    }}
+                  >
+                    {detailsText} →
+                  </a>
+                )}
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${selected.lat},${selected.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
-                    position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-                    width: '36px', height: '36px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
-                    color: 'white', fontSize: '20px', fontWeight: 300,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    lineHeight: 1,
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '8px 16px', borderRadius: '20px',
+                    background: 'rgba(179, 147, 69, 0.15)', color: '#b39345',
+                    fontSize: '12px', fontWeight: 600, textDecoration: 'none',
+                    border: '1px solid rgba(179, 147, 69, 0.25)',
                   }}
                 >
-                  ✕
-                </button>
-                {/* Photo Slider */}
-                {loc.photos && loc.photos.length > 0 && (
-                  <PhotoSlider photos={loc.photos} alt={loc.project_name || loc.city} />
-                )}
-                <div style={{ padding: '14px 16px' }}>
-                  {/* Project Name */}
-                  <div style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>
-                    {loc.project_name || loc.city}
-                  </div>
-                  {/* City & Category */}
-                  <div style={{ fontSize: '12px', color: '#b39345', fontWeight: 600, marginBottom: '8px' }}>
-                    {loc.city}{loc.category ? ` · ${loc.category}` : ''}
-                  </div>
-                  {/* Description - max 2 lines */}
-                  {loc.description && (
-                    <div style={{
-                      fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '10px',
-                      lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                    }}>
-                      {loc.description}
-                    </div>
-                  )}
-                  {/* Address */}
-                  {loc.address && (
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>
-                      📍 {loc.address}
-                    </div>
-                  )}
-                  {/* Action buttons */}
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {loc.id && (
-                      <a
-                        href={`/uygulamalarimiz/${loc.id}`}
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '6px',
-                          padding: '8px 16px', borderRadius: '20px',
-                          background: 'rgba(255, 255, 255, 0.08)', color: 'white',
-                          fontSize: '12px', fontWeight: 600, textDecoration: 'none',
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
-                        }}
-                      >
-                        {detailsText} →
-                      </a>
-                    )}
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '6px',
-                        padding: '8px 16px', borderRadius: '20px',
-                        background: 'rgba(179, 147, 69, 0.15)', color: '#b39345',
-                        fontSize: '12px', fontWeight: 600, textDecoration: 'none',
-                        border: '1px solid rgba(179, 147, 69, 0.25)',
-                      }}
-                    >
-                      🗺️ {navigateText}
-                    </a>
-                  </div>
-                </div>
+                  🗺️ {navigateText}
+                </a>
               </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MarkerClusterGroup>
-    </MapContainer>
-
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
