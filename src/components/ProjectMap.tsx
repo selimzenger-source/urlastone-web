@@ -1,10 +1,24 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { useMemo, useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+
+// Mobilde tap handler'ı devre dışı bırak — DivIcon ile çakışıyor
+function MobileTapFix() {
+  const map = useMap()
+  useEffect(() => {
+    // Leaflet tap handler mobilde 200ms gecikme + ghost click sorunu yaratıyor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const m = map as any
+    if (m.tap) {
+      m.tap.disable()
+    }
+  }, [map])
+  return null
+}
 
 // Icon cache — aynı URL için tekrar DivIcon oluşturmayı önler (500+ projede önemli)
 const iconCache = new Map<string, L.DivIcon>()
@@ -234,6 +248,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       zoomControl={true}
       attributionControl={false}
     >
+      <MobileTapFix />
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       />

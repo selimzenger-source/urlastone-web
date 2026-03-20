@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { LanguageProvider } from '@/context/LanguageContext'
-import PWAInstallPrompt from '@/components/PWAInstallPrompt'
+// PWA Install Prompt kaldirildi - mobilde gereksiz cikiyordu
+// import PWAInstallPrompt from '@/components/PWAInstallPrompt'
 import PageTracker from '@/components/PageTracker'
 
 export const metadata: Metadata = {
@@ -71,7 +72,6 @@ export default function RootLayout({
         <LanguageProvider>
           {children}
           <PageTracker />
-          <PWAInstallPrompt />
         </LanguageProvider>
       </body>
     </html>
