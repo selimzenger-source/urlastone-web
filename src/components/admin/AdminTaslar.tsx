@@ -46,6 +46,7 @@ export default function AdminTaslar() {
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
   const [filterType, setFilterType] = useState('')
+  const [formError, setFormError] = useState('')
 
   // New product form
   const [showNewProduct, setShowNewProduct] = useState(false)
@@ -85,12 +86,27 @@ export default function AdminTaslar() {
   })
 
   const handleCreateProduct = async () => {
-    if (!newProduct.name || !newProduct.code || !newProduct.category_id || !newProduct.stone_type_id) return
-    await fetch('/api/products', {
+    if (!newProduct.name || !newProduct.code || !newProduct.category_id || !newProduct.stone_type_id) {
+      setFormError('Tüm alanları doldurun')
+      return
+    }
+    // Check if code already exists
+    const existing = products.find(p => p.code.toLowerCase() === newProduct.code.toLowerCase())
+    if (existing) {
+      setFormError(`"${newProduct.code}" kodu zaten kullanılıyor (${existing.name})`)
+      return
+    }
+    setFormError('')
+    const res = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
       body: JSON.stringify(newProduct),
     })
+    if (!res.ok) {
+      const data = await res.json()
+      setFormError(data.error || 'Ürün eklenirken hata oluştu')
+      return
+    }
     setNewProduct({ name: '', code: '', category_id: '', stone_type_id: '' })
     setShowNewProduct(false)
     fetchData()
@@ -106,28 +122,55 @@ export default function AdminTaslar() {
   }
 
   const handleImageUpload = async (productId: string, file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      alert('Sadece JPG, PNG veya WebP formatında resim yükleyebilirsiniz')
+      return
+    }
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      alert('Resim boyutu en fazla 5MB olabilir')
+      return
+    }
     setUploadingId(productId)
     const formData = new FormData()
     formData.append('file', file)
     formData.append('product_id', productId)
 
-    await fetch('/api/products/upload', {
+    const res = await fetch('/api/products/upload', {
       method: 'POST',
       headers: { 'x-admin-password': password },
       body: formData,
     })
 
+    if (!res.ok) {
+      alert('Resim yüklenirken hata oluştu')
+    }
     setUploadingId(null)
     fetchData()
   }
 
   const handleCreateStoneType = async () => {
-    if (!newStoneType.name || !newStoneType.code) return
-    await fetch('/api/stone-types', {
+    if (!newStoneType.name || !newStoneType.code) {
+      setFormError('Tür adı ve kodu zorunludur')
+      return
+    }
+    const existing = stoneTypes.find(st => st.code.toLowerCase() === newStoneType.code.toLowerCase())
+    if (existing) {
+      setFormError(`"${newStoneType.code}" kodu zaten kullanılıyor (${existing.name})`)
+      return
+    }
+    setFormError('')
+    const res = await fetch('/api/stone-types', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
       body: JSON.stringify({ ...newStoneType, sort_order: stoneTypes.length + 1 }),
     })
+    if (!res.ok) {
+      const data = await res.json()
+      setFormError(data.error || 'Tür eklenirken hata oluştu')
+      return
+    }
     setNewStoneType({ name: '', code: '' })
     setShowNewStoneType(false)
     fetchData()
@@ -192,10 +235,13 @@ export default function AdminTaslar() {
             <button onClick={handleCreateStoneType} className="px-4 py-2 bg-white text-black rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors">
               Ekle
             </button>
-            <button onClick={() => setShowNewStoneType(false)} className="p-2 text-white/30 hover:text-white">
+            <button onClick={() => { setShowNewStoneType(false); setFormError('') }} className="p-2 text-white/30 hover:text-white">
               <X size={14} />
             </button>
           </div>
+        )}
+        {showNewStoneType && formError && (
+          <p className="text-red-400 text-xs mb-4 -mt-2">{formError}</p>
         )}
 
         <div className="flex flex-wrap gap-2">
@@ -294,6 +340,9 @@ export default function AdminTaslar() {
               ))}
             </select>
           </div>
+          {formError && (
+            <p className="mt-3 text-red-400 text-xs">{formError}</p>
+          )}
           <button
             onClick={handleCreateProduct}
             className="mt-4 inline-flex items-center gap-2 bg-white text-black px-5 py-2 rounded-full text-xs font-medium hover:bg-stone-200 transition-colors"
@@ -370,7 +419,7 @@ export default function AdminTaslar() {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0]

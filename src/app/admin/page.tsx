@@ -17,13 +17,14 @@ export default function AdminPage() {
     if (password === ADMIN_PASSWORD) {
       setAuthenticated(true)
       setError('')
+      localStorage.setItem('admin_pw', password)
     } else {
       setError('Şifre yanlış')
     }
   }
 
   if (authenticated) {
-    return <AdminDashboard onLogout={() => setAuthenticated(false)} adminPassword={password} />
+    return <AdminDashboard onLogout={() => { setAuthenticated(false); localStorage.removeItem('admin_pw') }} adminPassword={password} />
   }
 
   return (

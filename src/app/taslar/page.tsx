@@ -93,10 +93,10 @@ export default function TaslarPage() {
 
   // Stone type display info
   const stoneTypeInfo: Record<string, { name: string; desc: string; foto: string }> = {
-    TRV: { name: t.stones_traverten_name, desc: t.stones_traverten_desc, foto: '/tas-traverten.jpg' },
-    MRMR: { name: t.stones_mermer_name, desc: t.stones_mermer_desc, foto: '/tas-mermer.jpg' },
-    BZLT: { name: t.stones_bazalt_name, desc: t.stones_bazalt_desc, foto: '/tas-bazalt.jpg' },
-    KLKR: { name: t.stones_kalker_name, desc: t.stones_kalker_desc, foto: '/tas-kalker.jpg' },
+    TRV: { name: t.stones_traverten_name, desc: t.stones_traverten_desc, foto: '/featured-traverten.jpg' },
+    MRMR: { name: t.stones_mermer_name, desc: t.stones_mermer_desc, foto: '/featured-mermer.jpg' },
+    BZLT: { name: t.stones_bazalt_name, desc: t.stones_bazalt_desc, foto: '/featured-bazalt.jpg' },
+    KLKR: { name: t.stones_kalker_name, desc: t.stones_kalker_desc, foto: '/featured-kalker.jpg' },
   }
 
   const kullanimAlanlari = [
@@ -141,8 +141,109 @@ export default function TaslarPage() {
         </div>
       </section>
 
-      {/* Taş Türleri - 4 Kart */}
+      {/* Rockshell Serisi - Kategoriler */}
       <section className="py-20 md:py-28 border-t border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16">
+            <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
+              {t.stones_rockshell_tag}
+            </p>
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
+              {t.stones_rockshell_title}
+            </h2>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.slug)}
+                className={`px-6 py-3 rounded-full text-sm font-mono transition-all duration-300 ${
+                  activeCategory === cat.slug
+                    ? 'bg-white text-black'
+                    : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Category Info + Products */}
+          {aktifInfo && (
+            <div className="mb-12">
+              <div className="max-w-3xl mx-auto text-center mb-12">
+                <p className="text-gold-400 text-xs font-mono tracking-[0.2em] uppercase mb-2">Rockshell</p>
+                <h3 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-2">
+                  {categories.find(c => c.slug === activeCategory)?.name}
+                </h3>
+                <p className="text-white/60 text-lg mb-4">{aktifInfo.slogan}</p>
+                <p className="text-white/40 text-sm leading-relaxed mb-6">{aktifInfo.desc}</p>
+
+                <div className="flex flex-wrap justify-center gap-4 mb-6">
+                  {aktifInfo.features.map((f) => (
+                    <div key={f} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gold-400" />
+                      <span className="text-white/50 text-sm">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="inline-flex gap-4">
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-6 py-3">
+                    <p className="text-white/30 text-[10px] font-mono uppercase">{t.stones_thickness}</p>
+                    <p className="text-white font-medium text-sm mt-1">{aktifInfo.thickness}</p>
+                  </div>
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-6 py-3">
+                    <p className="text-white/30 text-[10px] font-mono uppercase">{t.stones_technology}</p>
+                    <p className="text-white font-medium text-sm mt-1">Rockshell</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Products Grid */}
+              {loading ? (
+                <div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>
+              ) : categoryProducts.length === 0 ? (
+                <div className="text-center py-12 text-white/30 font-mono text-sm">Bu kategoride ürün bulunamadı</div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {categoryProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => setSelectedProduct(product)}
+                      className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 hover:border-gold-400/30 transition-all duration-300 text-center"
+                    >
+                      <div className="aspect-square rounded-xl bg-white/[0.04] mb-3 overflow-hidden flex items-center justify-center">
+                        {product.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="text-white/10 font-heading text-3xl font-bold">
+                            {product.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <h4 className="font-heading text-sm font-semibold text-white mb-1">
+                        {product.name}
+                      </h4>
+                      <p className="text-white/30 text-[10px] font-mono">{product.code}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Taş Türleri - 4 Kart */}
+      <section className="py-20 md:py-28 bg-white/[0.02] border-t border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
@@ -211,107 +312,6 @@ export default function TaslarPage() {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {stoneTypeProducts.map((product) => (
-                    <button
-                      key={product.id}
-                      onClick={() => setSelectedProduct(product)}
-                      className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 hover:border-gold-400/30 transition-all duration-300 text-center"
-                    >
-                      <div className="aspect-square rounded-xl bg-white/[0.04] mb-3 overflow-hidden flex items-center justify-center">
-                        {product.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="text-white/10 font-heading text-3xl font-bold">
-                            {product.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <h4 className="font-heading text-sm font-semibold text-white mb-1">
-                        {product.name}
-                      </h4>
-                      <p className="text-white/30 text-[10px] font-mono">{product.code}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Rockshell Serisi - Kategoriler */}
-      <section className="py-20 md:py-28 bg-white/[0.02] border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
-              {t.stones_rockshell_tag}
-            </p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
-              {t.stones_rockshell_title}
-            </h2>
-          </div>
-
-          {/* Category Tabs */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.slug)}
-                className={`px-6 py-3 rounded-full text-sm font-mono transition-all duration-300 ${
-                  activeCategory === cat.slug
-                    ? 'bg-white text-black'
-                    : 'bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Category Info + Products */}
-          {aktifInfo && (
-            <div className="mb-12">
-              <div className="max-w-3xl mx-auto text-center mb-12">
-                <p className="text-gold-400 text-xs font-mono tracking-[0.2em] uppercase mb-2">Rockshell</p>
-                <h3 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-2">
-                  {categories.find(c => c.slug === activeCategory)?.name}
-                </h3>
-                <p className="text-white/60 text-lg mb-4">{aktifInfo.slogan}</p>
-                <p className="text-white/40 text-sm leading-relaxed mb-6">{aktifInfo.desc}</p>
-
-                <div className="flex flex-wrap justify-center gap-4 mb-6">
-                  {aktifInfo.features.map((f) => (
-                    <div key={f} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-gold-400" />
-                      <span className="text-white/50 text-sm">{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="inline-flex gap-4">
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-6 py-3">
-                    <p className="text-white/30 text-[10px] font-mono uppercase">{t.stones_thickness}</p>
-                    <p className="text-white font-medium text-sm mt-1">{aktifInfo.thickness}</p>
-                  </div>
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-6 py-3">
-                    <p className="text-white/30 text-[10px] font-mono uppercase">{t.stones_technology}</p>
-                    <p className="text-white font-medium text-sm mt-1">Rockshell</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Products Grid */}
-              {loading ? (
-                <div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>
-              ) : categoryProducts.length === 0 ? (
-                <div className="text-center py-12 text-white/30 font-mono text-sm">Bu kategoride ürün bulunamadı</div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {categoryProducts.map((product) => (
                     <button
                       key={product.id}
                       onClick={() => setSelectedProduct(product)}

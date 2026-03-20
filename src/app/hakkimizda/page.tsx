@@ -33,9 +33,15 @@ export default function HakkimizdaPage() {
       .then((data) => {
         if (Array.isArray(data)) {
           setProjectCount(data.length)
-          // Count unique stone categories
-          const categories = new Set(data.map((p: { category?: string }) => p.category).filter(Boolean))
-          setStoneCount(categories.size)
+        }
+      })
+      .catch(() => {})
+
+    fetch('/api/products')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setStoneCount(data.length)
         }
       })
       .catch(() => {})
