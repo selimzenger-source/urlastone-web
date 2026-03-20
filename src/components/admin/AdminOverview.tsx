@@ -1,27 +1,18 @@
 'use client'
 
-import { TrendingUp, Users, FileText, Eye, MessageSquare, Gem } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { TrendingUp, Users, Eye, MessageSquare, Gem, Loader2, Star, FolderOpen } from 'lucide-react'
 
-const stats = [
-  { label: 'Toplam Ziyaretçi', value: '2.847', change: '+12%', icon: Users, color: 'text-blue-400' },
-  { label: 'Sayfa Görüntüleme', value: '8.432', change: '+8%', icon: Eye, color: 'text-purple-400' },
-  { label: 'Teklif Talepleri', value: '24', change: '+3', icon: MessageSquare, color: 'text-gold-400' },
-  { label: 'Dönüşüm Oranı', value: '%2.4', change: '+0.3%', icon: TrendingUp, color: 'text-green-400' },
-]
-
-const recentTeklifler = [
-  { id: 1, ad: 'Mehmet Yılmaz', il: 'İzmir', tip: 'Cephe Kaplama', tarih: '2 saat önce', durum: 'Yeni' },
-  { id: 2, ad: 'Ayşe Kara', il: 'İstanbul', tip: 'İç Mekan', tarih: '5 saat önce', durum: 'İletişime Geçildi' },
-  { id: 3, ad: 'Ali Demir', il: 'Ankara', tip: 'Zemin Döşeme', tarih: '1 gün önce', durum: 'Teklif Verildi' },
-  { id: 4, ad: 'Fatma Öz', il: 'Muğla', tip: 'Bahçe & Peyzaj', tarih: '2 gün önce', durum: 'Onaylandı' },
-]
-
-const popularTaslar = [
-  { name: 'Traverten', views: 342, teklifler: 8 },
-  { name: 'Mermer', views: 287, teklifler: 6 },
-  { name: 'Bazalt', views: 198, teklifler: 4 },
-  { name: 'Granit', views: 156, teklifler: 3 },
-]
+interface Teklif {
+  id: string
+  ad_soyad: string
+  il: string
+  proje_tipi: string
+  durum: string
+  tas_tercihi: string[]
+  kaynak: string | null
+  created_at: string
+}
 
 const durumRenk: Record<string, string> = {
   'Yeni': 'bg-blue-400/10 text-blue-400',
@@ -32,6 +23,76 @@ const durumRenk: Record<string, string> = {
 }
 
 export default function AdminOverview() {
+  const [teklifler, setTeklifler] = useState<Teklif[]>([])
+  const [loading, setLoading] = useState(true)
+  const [referansCount, setReferansCount] = useState(0)
+  const [projectCount, setProjectCount] = useState(0)
+
+  useEffect(() => {
+    const pw = localStorage.getItem('admin_pw') || ''
+    Promise.all([
+      fetch('/api/teklifler', { headers: { 'x-admin-password': pw } }).then(r => r.json()),
+      fetch('/api/referanslar').then(r => r.json()),
+      fetch('/api/projects').then(r => r.json()),
+    ]).then(([tData, rData, pData]) => {
+      if (Array.isArray(tData)) setTeklifler(tData)
+      if (Array.isArray(rData)) setReferansCount(rData.length)
+      if (Array.isArray(pData)) setProjectCount(pData.length)
+      setLoading(false)
+    }).catch(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={20} className="animate-spin text-white/30" />
+      </div>
+    )
+  }
+
+  const yeniCount = teklifler.filter(t => t.durum === 'Yeni').length
+  const onayCount = teklifler.filter(t => t.durum === 'Onaylandı').length
+  const conversionRate = teklifler.length > 0 ? ((onayCount / teklifler.length) * 100).toFixed(1) : '0'
+
+  // Count stone preferences across all teklifler
+  const tasCounts: Record<string, number> = {}
+  teklifler.forEach(t => {
+    t.tas_tercihi?.forEach(tas => {
+      tasCounts[tas] = (tasCounts[tas] || 0) + 1
+    })
+  })
+  const popularTaslar = Object.entries(tasCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+  const maxTasCount = popularTaslar.length > 0 ? popularTaslar[0][1] : 1
+
+  // Count sources
+  const kaynakCounts: Record<string, number> = {}
+  teklifler.forEach(t => {
+    if (t.kaynak) kaynakCounts[t.kaynak] = (kaynakCounts[t.kaynak] || 0) + 1
+  })
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr)
+    const now = new Date()
+    const diffMs = now.getTime() - d.getTime()
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
+    if (diffHrs < 1) return 'Az önce'
+    if (diffHrs < 24) return `${diffHrs} saat önce`
+    const diffDays = Math.floor(diffHrs / 24)
+    if (diffDays < 7) return `${diffDays} gün önce`
+    return d.toLocaleDateString('tr-TR')
+  }
+
+  const recentTeklifler = teklifler.slice(0, 5)
+
+  const stats = [
+    { label: 'Teklif Talepleri', value: teklifler.length.toString(), change: `${yeniCount} yeni`, icon: MessageSquare, color: 'text-gold-400' },
+    { label: 'Onaylanan', value: onayCount.toString(), change: `%${conversionRate}`, icon: TrendingUp, color: 'text-green-400' },
+    { label: 'Projeler', value: projectCount.toString(), change: 'kayıtlı', icon: FolderOpen, color: 'text-purple-400' },
+    { label: 'Referanslar', value: referansCount.toString(), change: 'aktif', icon: Star, color: 'text-blue-400' },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
@@ -42,7 +103,7 @@ export default function AdminOverview() {
             <div key={stat.label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <Icon size={20} className={stat.color} />
-                <span className="text-green-400 text-xs font-mono">{stat.change}</span>
+                <span className="text-white/40 text-xs font-mono">{stat.change}</span>
               </div>
               <p className="font-heading text-2xl font-bold text-white">{stat.value}</p>
               <p className="text-white/40 text-xs font-mono mt-1">{stat.label}</p>
@@ -56,54 +117,77 @@ export default function AdminOverview() {
         <div className="lg:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-heading text-base font-semibold text-white">Son Teklif Talepleri</h3>
-            <span className="text-white/30 text-xs font-mono">Son 7 gün</span>
+            <span className="text-white/30 text-xs font-mono">{teklifler.length} toplam</span>
           </div>
 
-          <div className="space-y-3">
-            {recentTeklifler.map((t) => (
-              <div key={t.id} className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0">
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">{t.ad}</p>
-                  <p className="text-white/40 text-xs font-mono">{t.il} · {t.tip}</p>
-                </div>
-                <div className="flex items-center gap-3 ml-4">
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono ${durumRenk[t.durum]}`}>
-                    {t.durum}
-                  </span>
-                  <span className="text-white/30 text-[10px] font-mono hidden sm:block">{t.tarih}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Popüler Taşlar */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-heading text-base font-semibold text-white">Popüler Taşlar</h3>
-            <Gem size={16} className="text-gold-400" />
-          </div>
-
-          <div className="space-y-4">
-            {popularTaslar.map((tas, i) => (
-              <div key={tas.name} className="flex items-center gap-3">
-                <span className="font-heading text-lg font-bold text-white/20 w-6">{i + 1}</span>
-                <div className="flex-1">
-                  <p className="text-white text-sm">{tas.name}</p>
-                  <div className="flex gap-3 mt-1">
-                    <span className="text-white/30 text-[10px] font-mono">{tas.views} görüntüleme</span>
-                    <span className="text-gold-400/60 text-[10px] font-mono">{tas.teklifler} teklif</span>
+          {recentTeklifler.length === 0 ? (
+            <p className="text-white/20 text-sm font-mono text-center py-8">Henüz teklif talebi yok</p>
+          ) : (
+            <div className="space-y-3">
+              {recentTeklifler.map((t) => (
+                <div key={t.id} className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{t.ad_soyad}</p>
+                    <p className="text-white/40 text-xs font-mono">{t.il} · {t.proje_tipi}</p>
+                  </div>
+                  <div className="flex items-center gap-3 ml-4">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono ${durumRenk[t.durum] || 'bg-white/10 text-white/40'}`}>
+                      {t.durum}
+                    </span>
+                    <span className="text-white/30 text-[10px] font-mono hidden sm:block">{formatDate(t.created_at)}</span>
                   </div>
                 </div>
-                <div className="w-16 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gold-400/60 rounded-full"
-                    style={{ width: `${(tas.views / 342) * 100}%` }}
-                  />
-                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar Stats */}
+        <div className="space-y-6">
+          {/* Popüler Taşlar */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-heading text-base font-semibold text-white">Popüler Taşlar</h3>
+              <Gem size={16} className="text-gold-400" />
+            </div>
+
+            {popularTaslar.length === 0 ? (
+              <p className="text-white/20 text-sm font-mono text-center py-4">Veri yok</p>
+            ) : (
+              <div className="space-y-4">
+                {popularTaslar.map(([name, count], i) => (
+                  <div key={name} className="flex items-center gap-3">
+                    <span className="font-heading text-lg font-bold text-white/20 w-6">{i + 1}</span>
+                    <div className="flex-1">
+                      <p className="text-white text-sm">{name}</p>
+                      <span className="text-gold-400/60 text-[10px] font-mono">{count} teklif</span>
+                    </div>
+                    <div className="w-16 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gold-400/60 rounded-full"
+                        style={{ width: `${(count / maxTasCount) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
+
+          {/* Kaynak Dağılımı */}
+          {Object.keys(kaynakCounts).length > 0 && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+              <h3 className="font-heading text-base font-semibold text-white mb-4">Ziyaretçi Kaynağı</h3>
+              <div className="space-y-3">
+                {Object.entries(kaynakCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) => (
+                  <div key={name} className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm">{name}</span>
+                    <span className="text-white font-mono text-sm">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -141,10 +141,29 @@ export default function TeklifForm() {
     e.preventDefault()
     setGonderiliyor(true)
 
-    // TODO: API endpoint'e gönderim (Resend / Next.js API route)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    setBasarili(true)
+    try {
+      const res = await fetch('/api/teklifler', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ad_soyad: form.adSoyad,
+          telefon: form.telefon,
+          email: form.email,
+          ulke: form.ulke,
+          il: form.il,
+          ilce: form.ilce,
+          proje_tipi: form.projeTipi,
+          tas_tercihi: form.tasTermihi,
+          metrekare: form.metrekare,
+          aciklama: form.aciklama,
+          kaynak: form.kaynak,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      setBasarili(true)
+    } catch {
+      alert('Bir hata oluştu. Lütfen tekrar deneyin.')
+    }
     setGonderiliyor(false)
   }
 

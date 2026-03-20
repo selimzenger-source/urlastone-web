@@ -1,10 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
-  Filter,
-  ChevronDown,
   Phone,
   Mail,
   MapPin,
@@ -12,59 +10,29 @@ import {
   Image as ImageIcon,
   X,
   Eye,
+  Loader2,
+  Trash2,
 } from 'lucide-react'
 
 type Durum = 'Yeni' | 'İletişime Geçildi' | 'Teklif Verildi' | 'Onaylandı' | 'Reddedildi'
 
 interface Teklif {
-  id: number
-  ad: string
+  id: string
+  ad_soyad: string
   telefon: string
-  email: string
+  email: string | null
+  ulke: string
   il: string
-  ilce: string
-  projeTipi: string
-  metrekare: string
-  taslar: string[]
-  aciklama: string
-  kaynak: string
-  tarih: string
+  ilce: string | null
+  proje_tipi: string
+  metrekare: string | null
+  tas_tercihi: string[]
+  aciklama: string | null
+  kaynak: string | null
+  foto_urls: string[]
   durum: Durum
-  fotograflar: number
+  created_at: string
 }
-
-const mockTeklifler: Teklif[] = [
-  {
-    id: 1, ad: 'Mehmet Yılmaz', telefon: '0532 111 22 33', email: 'mehmet@email.com',
-    il: 'İzmir', ilce: 'Urla', projeTipi: 'Cephe Kaplama', metrekare: '50-100 m²',
-    taslar: ['Traverten', 'Mermer'], aciklama: 'Villa cephesi için doğal taş kaplama istiyorum.',
-    kaynak: 'Google', tarih: '2026-03-19', durum: 'Yeni', fotograflar: 3,
-  },
-  {
-    id: 2, ad: 'Ayşe Kara', telefon: '0544 222 33 44', email: 'ayse@email.com',
-    il: 'İstanbul', ilce: 'Kadıköy', projeTipi: 'İç Mekan', metrekare: '20-50 m²',
-    taslar: ['Mermer'], aciklama: 'Banyo ve mutfak tezgahı için mermer arıyorum.',
-    kaynak: 'Instagram', tarih: '2026-03-18', durum: 'İletişime Geçildi', fotograflar: 1,
-  },
-  {
-    id: 3, ad: 'Ali Demir', telefon: '0555 333 44 55', email: 'ali@email.com',
-    il: 'Ankara', ilce: 'Çankaya', projeTipi: 'Zemin Döşeme', metrekare: '100-200 m²',
-    taslar: ['Bazalt', 'Granit'], aciklama: 'Ofis zemin döşemesi yapılacak.',
-    kaynak: 'Referans', tarih: '2026-03-17', durum: 'Teklif Verildi', fotograflar: 0,
-  },
-  {
-    id: 4, ad: 'Fatma Öz', telefon: '0533 444 55 66', email: 'fatma@email.com',
-    il: 'Muğla', ilce: 'Bodrum', projeTipi: 'Bahçe & Peyzaj', metrekare: '200+ m²',
-    taslar: ['Traverten', 'Bazalt'], aciklama: 'Bahçe yürüyüş yolları ve havuz çevresi.',
-    kaynak: 'Google', tarih: '2026-03-15', durum: 'Onaylandı', fotograflar: 5,
-  },
-  {
-    id: 5, ad: 'Hasan Çelik', telefon: '0542 555 66 77', email: 'hasan@email.com',
-    il: 'İzmir', ilce: 'Çeşme', projeTipi: 'Cephe Kaplama', metrekare: '100-200 m²',
-    taslar: ['Granit'], aciklama: 'Otel cephesi yenileme projesi.',
-    kaynak: 'Google', tarih: '2026-03-14', durum: 'Reddedildi', fotograflar: 2,
-  },
-]
 
 const durumRenk: Record<Durum, string> = {
   'Yeni': 'bg-blue-400/10 text-blue-400',
@@ -77,22 +45,42 @@ const durumRenk: Record<Durum, string> = {
 const durumlar: Durum[] = ['Yeni', 'İletişime Geçildi', 'Teklif Verildi', 'Onaylandı', 'Reddedildi']
 
 export default function AdminTeklifler() {
-  const [teklifler, setTeklifler] = useState(mockTeklifler)
+  const [teklifler, setTeklifler] = useState<Teklif[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterDurum, setFilterDurum] = useState<Durum | 'Tümü'>('Tümü')
   const [selectedTeklif, setSelectedTeklif] = useState<Teklif | null>(null)
-  const [showFilter, setShowFilter] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
+
+  const fetchTeklifler = async () => {
+    setLoading(true)
+    const res = await fetch('/api/teklifler', {
+      headers: { 'x-admin-password': password },
+    })
+    const data = await res.json()
+    if (Array.isArray(data)) setTeklifler(data)
+    setLoading(false)
+  }
+
+  useEffect(() => { fetchTeklifler() }, [])
 
   const filtered = teklifler.filter((t) => {
     const matchSearch =
-      t.ad.toLowerCase().includes(search.toLowerCase()) ||
+      t.ad_soyad.toLowerCase().includes(search.toLowerCase()) ||
       t.il.toLowerCase().includes(search.toLowerCase()) ||
-      t.projeTipi.toLowerCase().includes(search.toLowerCase())
+      t.proje_tipi.toLowerCase().includes(search.toLowerCase())
     const matchDurum = filterDurum === 'Tümü' || t.durum === filterDurum
     return matchSearch && matchDurum
   })
 
-  const updateDurum = (id: number, yeniDurum: Durum) => {
+  const updateDurum = async (id: string, yeniDurum: Durum) => {
+    await fetch(`/api/teklifler/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ durum: yeniDurum }),
+    })
     setTeklifler((prev) =>
       prev.map((t) => (t.id === id ? { ...t, durum: yeniDurum } : t))
     )
@@ -101,10 +89,33 @@ export default function AdminTeklifler() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/teklifler/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': password },
+    })
+    setDeleteConfirm(null)
+    setSelectedTeklif(null)
+    fetchTeklifler()
+  }
+
   const durumCounts = durumlar.reduce((acc, d) => {
     acc[d] = teklifler.filter((t) => t.durum === d).length
     return acc
   }, {} as Record<Durum, number>)
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={20} className="animate-spin text-white/30" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -147,11 +158,11 @@ export default function AdminTeklifler() {
         />
       </div>
 
-      {/* Table / Cards */}
+      {/* Cards */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-white/30 font-mono text-sm">
-            Sonuç bulunamadı.
+            {teklifler.length === 0 ? 'Henüz teklif talebi yok.' : 'Sonuç bulunamadı.'}
           </div>
         ) : (
           filtered.map((t) => (
@@ -163,23 +174,22 @@ export default function AdminTeklifler() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <p className="text-white font-medium text-sm truncate">{t.ad}</p>
+                    <p className="text-white font-medium text-sm truncate">{t.ad_soyad}</p>
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono ${durumRenk[t.durum]}`}>
                       {t.durum}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/40 text-xs font-mono">
-                    <span className="flex items-center gap-1"><MapPin size={12} />{t.il}, {t.ilce}</span>
-                    <span>{t.projeTipi}</span>
-                    <span>{t.metrekare}</span>
-                    <span className="flex items-center gap-1"><Calendar size={12} />{t.tarih}</span>
+                    <span className="flex items-center gap-1"><MapPin size={12} />{t.il}{t.ilce ? `, ${t.ilce}` : ''}</span>
+                    <span>{t.proje_tipi}</span>
+                    {t.metrekare && <span>{t.metrekare}</span>}
+                    <span className="flex items-center gap-1"><Calendar size={12} />{formatDate(t.created_at)}</span>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2">
-                  {t.fotograflar > 0 && (
+                  {t.foto_urls.length > 0 && (
                     <span className="flex items-center gap-1 text-white/30 text-xs font-mono">
-                      <ImageIcon size={12} />{t.fotograflar}
+                      <ImageIcon size={12} />{t.foto_urls.length}
                     </span>
                   )}
                   <Eye size={16} className="text-white/20 group-hover:text-white/50 transition-colors" />
@@ -200,12 +210,20 @@ export default function AdminTeklifler() {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
               <div>
-                <h3 className="font-heading text-lg font-semibold text-white">{selectedTeklif.ad}</h3>
-                <p className="text-white/40 text-xs font-mono mt-1">#{selectedTeklif.id} · {selectedTeklif.tarih}</p>
+                <h3 className="font-heading text-lg font-semibold text-white">{selectedTeklif.ad_soyad}</h3>
+                <p className="text-white/40 text-xs font-mono mt-1">{formatDate(selectedTeklif.created_at)}</p>
               </div>
-              <button onClick={() => setSelectedTeklif(null)} className="text-white/40 hover:text-white">
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setDeleteConfirm(selectedTeklif.id)}
+                  className="p-1.5 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-400/[0.05] transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <button onClick={() => setSelectedTeklif(null)} className="text-white/40 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Content */}
@@ -217,11 +235,13 @@ export default function AdminTeklifler() {
                   <a href={`tel:${selectedTeklif.telefon}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
                     <Phone size={14} className="text-green-400" />{selectedTeklif.telefon}
                   </a>
-                  <a href={`mailto:${selectedTeklif.email}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
-                    <Mail size={14} className="text-blue-400" />{selectedTeklif.email}
-                  </a>
+                  {selectedTeklif.email && (
+                    <a href={`mailto:${selectedTeklif.email}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
+                      <Mail size={14} className="text-blue-400" />{selectedTeklif.email}
+                    </a>
+                  )}
                   <p className="flex items-center gap-3 text-white/70 text-sm">
-                    <MapPin size={14} className="text-gold-400" />{selectedTeklif.il}, {selectedTeklif.ilce}
+                    <MapPin size={14} className="text-gold-400" />{selectedTeklif.il}{selectedTeklif.ilce ? `, ${selectedTeklif.ilce}` : ''} · {selectedTeklif.ulke}
                   </p>
                 </div>
               </div>
@@ -232,51 +252,43 @@ export default function AdminTeklifler() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white/[0.03] rounded-xl p-3">
                     <p className="text-white/30 text-[10px] font-mono">Proje Tipi</p>
-                    <p className="text-white text-sm mt-1">{selectedTeklif.projeTipi}</p>
+                    <p className="text-white text-sm mt-1">{selectedTeklif.proje_tipi}</p>
                   </div>
                   <div className="bg-white/[0.03] rounded-xl p-3">
                     <p className="text-white/30 text-[10px] font-mono">Metrekare</p>
-                    <p className="text-white text-sm mt-1">{selectedTeklif.metrekare}</p>
+                    <p className="text-white text-sm mt-1">{selectedTeklif.metrekare || '—'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Taş Tercihleri */}
-              <div className="space-y-2">
-                <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">Taş Tercihleri</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedTeklif.taslar.map((tas) => (
-                    <span key={tas} className="px-3 py-1.5 rounded-full bg-gold-400/10 text-gold-400 text-xs font-mono">
-                      {tas}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Açıklama */}
-              <div className="space-y-2">
-                <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">Açıklama</p>
-                <p className="text-white/60 text-sm leading-relaxed">{selectedTeklif.aciklama}</p>
-              </div>
-
-              {/* Fotoğraflar */}
-              {selectedTeklif.fotograflar > 0 && (
+              {selectedTeklif.tas_tercihi.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">Fotoğraflar ({selectedTeklif.fotograflar})</p>
-                  <div className="flex gap-2">
-                    {Array.from({ length: selectedTeklif.fotograflar }).map((_, i) => (
-                      <div key={i} className="w-16 h-16 rounded-xl bg-white/[0.06] flex items-center justify-center">
-                        <ImageIcon size={16} className="text-white/20" />
-                      </div>
+                  <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">Taş Tercihleri</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTeklif.tas_tercihi.map((tas) => (
+                      <span key={tas} className="px-3 py-1.5 rounded-full bg-gold-400/10 text-gold-400 text-xs font-mono">
+                        {tas}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Açıklama */}
+              {selectedTeklif.aciklama && (
+                <div className="space-y-2">
+                  <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">Açıklama</p>
+                  <p className="text-white/60 text-sm leading-relaxed">{selectedTeklif.aciklama}</p>
+                </div>
+              )}
+
               {/* Kaynak */}
-              <div className="flex items-center justify-between">
-                <p className="text-white/30 text-[10px] font-mono">Kaynak: {selectedTeklif.kaynak}</p>
-              </div>
+              {selectedTeklif.kaynak && (
+                <div className="flex items-center justify-between">
+                  <p className="text-white/30 text-[10px] font-mono">Kaynak: {selectedTeklif.kaynak}</p>
+                </div>
+              )}
 
               {/* Durum Güncelle */}
               <div className="space-y-2 pt-2 border-t border-white/[0.06]">
@@ -297,6 +309,30 @@ export default function AdminTeklifler() {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-[#111] border border-white/[0.08] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-medium mb-2">Teklif Talebini Sil</h3>
+            <p className="text-white/40 text-sm mb-6">Bu teklif talebi kalıcı olarak silinecek. Emin misiniz?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 rounded-xl bg-white/[0.06] text-white/60 text-sm hover:bg-white/[0.1]"
+              >
+                İptal
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm)}
+                className="flex-1 px-4 py-2 rounded-xl bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30"
+              >
+                Sil
+              </button>
             </div>
           </div>
         </div>
