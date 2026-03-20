@@ -255,10 +255,12 @@ export default function AdminProjeler({ adminPassword }: Props) {
           setMapsUrl('')
           setMapsError('')
         } else {
-          setMapsError('Konum bulunamadı. Mekan adını yazarak deneyin.')
+          const errData = await res.json().catch(() => ({}))
+          setMapsError(errData.error || 'Konum bulunamadı. Mekan adını yazarak deneyin.')
         }
       } else {
-        setMapsError('Konum bulunamadı. Mekan adını yazarak deneyin.')
+        const errData = await res.json().catch(() => ({}))
+        setMapsError(errData.error || 'Konum bulunamadı. Mekan adını yazarak deneyin.')
       }
     } catch {
       setMapsError('Arama hatası. Tekrar deneyin.')
