@@ -96,28 +96,28 @@ export default function AdminOverview() {
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <Icon size={20} className={stat.color} />
-                <span className="text-white/40 text-xs font-mono">{stat.change}</span>
+            <div key={stat.label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <Icon size={18} className={stat.color} />
+                <span className="text-white/40 text-[10px] font-mono">{stat.change}</span>
               </div>
-              <p className="font-heading text-2xl font-bold text-white">{stat.value}</p>
-              <p className="text-white/40 text-xs font-mono mt-1">{stat.label}</p>
+              <p className="font-heading text-xl md:text-2xl font-bold text-white">{stat.value}</p>
+              <p className="text-white/40 text-[10px] md:text-xs font-mono mt-1 truncate">{stat.label}</p>
             </div>
           )
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Son Teklif Talepleri */}
-        <div className="lg:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-heading text-base font-semibold text-white">Son Teklif Talepleri</h3>
-            <span className="text-white/30 text-xs font-mono">{teklifler.length} toplam</span>
+        <div className="lg:col-span-2 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-6 min-w-0">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-heading text-sm md:text-base font-semibold text-white">Son Teklif Talepleri</h3>
+            <span className="text-white/30 text-[10px] font-mono">{teklifler.length} toplam</span>
           </div>
 
           {recentTeklifler.length === 0 ? (

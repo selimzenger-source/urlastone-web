@@ -34,7 +34,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex">
+    <div className="min-h-screen bg-[#0a0a0a] flex overflow-x-hidden">
       {/* Sidebar Overlay (mobile) */}
       {sidebarOpen && (
         <div
@@ -96,7 +96,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen">
+      <main className="flex-1 min-h-screen min-w-0 overflow-x-hidden">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.06] px-4 md:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">

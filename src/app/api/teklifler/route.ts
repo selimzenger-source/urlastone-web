@@ -58,14 +58,13 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Send emails (don't block response on email failures)
-  const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], metrekare, aciklama, kaynak }
-
-  Promise.allSettled([
-    sendCustomerConfirmation(emailData),
-    sendAdminNotification(emailData),
-  ]).catch(() => {
-    // Email failures should not affect the form submission
-  })
+  if (process.env.RESEND_API_KEY) {
+    const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], metrekare, aciklama, kaynak }
+    Promise.allSettled([
+      sendCustomerConfirmation(emailData),
+      sendAdminNotification(emailData),
+    ]).catch(() => {})
+  }
 
   return NextResponse.json(data)
 }

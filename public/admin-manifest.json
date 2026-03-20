@@ -3,7 +3,9 @@
   "short_name": "URLASTONE Admin",
   "description": "URLASTONE Yönetim Paneli",
   "start_url": "/admin",
+  "scope": "/admin",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0a0a",
   "theme_color": "#b39345",
   "icons": [

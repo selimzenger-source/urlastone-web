@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@urlastone.com'
@@ -95,7 +97,7 @@ export async function sendCustomerConfirmation(data: TeklifData) {
 </body>
 </html>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: `URLASTONE <${FROM_EMAIL}>`,
     to: data.email,
     subject: 'Teklif Talebiniz Alındı — URLASTONE',
@@ -175,7 +177,7 @@ export async function sendAdminNotification(data: TeklifData) {
 </body>
 </html>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: `URLASTONE Web <${FROM_EMAIL}>`,
     to: ADMIN_EMAIL,
     subject: `Yeni Teklif: ${data.ad_soyad} — ${data.proje_tipi}`,
