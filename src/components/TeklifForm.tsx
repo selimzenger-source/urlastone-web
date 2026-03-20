@@ -60,6 +60,7 @@ export default function TeklifForm() {
   const [dosyalar, setDosyalar] = useState<File[]>([])
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [basarili, setBasarili] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // City autocomplete
   const [cityQuery, setCityQuery] = useState('')
@@ -125,8 +126,26 @@ export default function TeklifForm() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Baş harfleri büyük yap
+  const capitalizeWords = (str: string) =>
+    str.replace(/\b\w/g, (c) => c.toLocaleUpperCase('tr-TR'))
+
+  // Email format kontrolü
+  const isValidEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    let newValue = value
+
+    // Ad Soyad: baş harfler büyük
+    if (name === 'adSoyad') {
+      newValue = capitalizeWords(value)
+    }
+
+    setForm(prev => ({ ...prev, [name]: newValue }))
+    // Hata mesajını temizle
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
   const handleCountryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(prev => ({ ...prev, ulke: e.target.value, il: '', ilce: '' }))
@@ -164,8 +183,32 @@ export default function TeklifForm() {
     setDosyalar(prev => prev.filter((_, i) => i !== index))
   }
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    // Ad Soyad: min 3 karakter
+    if (form.adSoyad.trim().length < 3) {
+      newErrors.adSoyad = 'Ad Soyad en az 3 karakter olmalıdır'
+    }
+
+    // Telefon: min 7 karakter (uluslararası numaralar için)
+    const cleanPhone = form.telefon.replace(/[\s\-\(\)]/g, '')
+    if (cleanPhone.length < 7) {
+      newErrors.telefon = 'Geçerli bir telefon numarası giriniz'
+    }
+
+    // Email: format kontrolü (opsiyonel ama girilmişse geçerli olmalı)
+    if (form.email && !isValidEmail(form.email)) {
+      newErrors.email = 'Geçerli bir e-posta adresi giriniz'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!validateForm()) return
     setGonderiliyor(true)
     const tasTermihi = bilmiyorum
       ? [t.form_stone_recommend]
@@ -221,21 +264,27 @@ export default function TeklifForm() {
               {t.form_name_label} <span className="text-gold-400">*</span>
             </label>
             <input type="text" name="adSoyad" required value={form.adSoyad} onChange={handleChange}
-              placeholder={t.form_name_placeholder} className={inputClass} />
+              minLength={3} placeholder={t.form_name_placeholder}
+              className={`${inputClass} ${errors.adSoyad ? 'border-red-500/50' : ''}`} />
+            {errors.adSoyad && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.adSoyad}</p>}
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
               {t.form_phone_label} <span className="text-gold-400">*</span>
             </label>
             <input type="tel" name="telefon" required value={form.telefon} onChange={handleChange}
-              placeholder={t.form_phone_placeholder} className={inputClass} />
+              placeholder={t.form_phone_placeholder}
+              className={`${inputClass} ${errors.telefon ? 'border-red-500/50' : ''}`} />
+            {errors.telefon && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.telefon}</p>}
           </div>
         </div>
 
         <div>
           <label className="block text-white/50 text-xs font-mono mb-2">{t.form_email_label}</label>
           <input type="email" name="email" value={form.email} onChange={handleChange}
-            placeholder={t.form_email_placeholder} className={inputClass} />
+            placeholder={t.form_email_placeholder}
+            className={`${inputClass} ${errors.email ? 'border-red-500/50' : ''}`} />
+          {errors.email && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.email}</p>}
         </div>
 
         {/* Ülke */}

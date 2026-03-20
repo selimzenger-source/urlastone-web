@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sendCustomerConfirmation, sendAdminNotification } from '@/lib/email'
 
 // GET /api/teklifler — admin only
 export async function GET(req: Request) {
@@ -55,5 +56,16 @@ export async function POST(req: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Send emails (don't block response on email failures)
+  const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], metrekare, aciklama, kaynak }
+
+  Promise.allSettled([
+    sendCustomerConfirmation(emailData),
+    sendAdminNotification(emailData),
+  ]).catch(() => {
+    // Email failures should not affect the form submission
+  })
+
   return NextResponse.json(data)
 }

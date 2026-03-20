@@ -34,15 +34,14 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        {/* Logo - müşterinin kendi logosu */}
-        <Link href="/" className="flex items-center gap-3">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://urlastone.com/gallery_gen/5957649f2c824ca9999a9f80034d42af_400x48_fit.png?ts=1753707019"
-            alt="Urlastone"
-            className="h-8 md:h-10"
-            style={{ filter: 'brightness(10)' }}
-          />
+          <img src="/ur2-dark.png" alt="Urlastone" className="h-8 md:h-9 rounded-lg" />
+          <span className="text-white text-xl md:text-2xl tracking-[0.15em] font-light" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="font-bold">URLA</span>
+            <span className="font-light">STONE</span>
+          </span>
         </Link>
 
         {/* Desktop Links */}
