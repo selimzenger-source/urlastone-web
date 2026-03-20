@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Upload, X, CheckCircle, Loader2, ChevronDown, Check } from 'lucide-react'
+import { Send, Upload, X, CheckCircle, Loader2, ChevronDown, Check, Phone, Mail, MessageCircle } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { languages } from '@/lib/i18n'
 import { turkishCities, cityDistricts } from '@/lib/turkey-cities'
 import { useSearchParams } from 'next/navigation'
 
@@ -17,6 +18,8 @@ interface FormData {
   metrekare: string
   aciklama: string
   kaynak: string
+  iletisimTuru: string
+  tercihDil: string
 }
 
 interface StoneType {
@@ -41,7 +44,7 @@ interface Product {
 }
 
 export default function TeklifForm() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const searchParams = useSearchParams()
   const preselectedCode = searchParams.get('product')
 
@@ -55,6 +58,7 @@ export default function TeklifForm() {
   const [form, setForm] = useState<FormData>({
     adSoyad: '', telefon: '', email: '', ulke: 'Türkiye',
     il: '', ilce: '', projeTipi: '', metrekare: '', aciklama: '', kaynak: '',
+    iletisimTuru: 'phone', tercihDil: locale,
   })
 
   const [dosyalar, setDosyalar] = useState<File[]>([])
@@ -78,6 +82,11 @@ export default function TeklifForm() {
   const [showPicker, setShowPicker] = useState(false)
 
   const isTurkiye = form.ulke === 'Türkiye'
+
+  // Sync language preference with site locale
+  useEffect(() => {
+    setForm(prev => ({ ...prev, tercihDil: locale }))
+  }, [locale])
 
   // Fetch data
   useEffect(() => {
@@ -222,6 +231,7 @@ export default function TeklifForm() {
           ulke: form.ulke, il: form.il, ilce: form.ilce,
           proje_tipi: form.projeTipi, tas_tercihi: tasTermihi,
           metrekare: form.metrekare, aciklama: form.aciklama, kaynak: form.kaynak,
+          iletisim_turu: form.iletisimTuru, tercih_dil: form.tercihDil,
         }),
       })
       if (!res.ok) throw new Error('Failed')
@@ -285,6 +295,48 @@ export default function TeklifForm() {
             placeholder={t.form_email_placeholder}
             className={`${inputClass} ${errors.email ? 'border-red-500/50' : ''}`} />
           {errors.email && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.email}</p>}
+        </div>
+
+        {/* İletişim Türü & Dil Tercihi */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white/50 text-xs font-mono mb-2">{t.form_contact_type_label}</label>
+            <div className="flex gap-2">
+              {[
+                { value: 'phone', label: t.form_contact_type_phone, icon: Phone },
+                { value: 'email', label: t.form_contact_type_email, icon: Mail },
+                { value: 'whatsapp', label: t.form_contact_type_whatsapp, icon: MessageCircle },
+              ].map(opt => (
+                <button key={opt.value} type="button"
+                  onClick={() => setForm(prev => ({ ...prev, iletisimTuru: opt.value }))}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono transition-all border ${
+                    form.iletisimTuru === opt.value
+                      ? 'bg-gold-400/20 border-gold-400/40 text-gold-400'
+                      : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:border-white/20'
+                  }`}>
+                  <opt.icon size={14} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-white/50 text-xs font-mono mb-2">{t.form_preferred_lang_label}</label>
+            <div className="flex gap-1.5">
+              {languages.map(lang => (
+                <button key={lang.code} type="button"
+                  onClick={() => setForm(prev => ({ ...prev, tercihDil: lang.code }))}
+                  className={`flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-mono transition-all border ${
+                    form.tercihDil === lang.code
+                      ? 'bg-gold-400/20 border-gold-400/40 text-gold-400'
+                      : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:border-white/20'
+                  }`}>
+                  <span className="text-sm">{lang.flag}</span>
+                  <span className="hidden sm:inline">{lang.code.toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Ülke */}

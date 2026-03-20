@@ -345,6 +345,11 @@ type TranslationKeys = {
   form_photos_add: string
   form_notes_label: string
   form_notes_placeholder: string
+  form_contact_type_label: string
+  form_contact_type_phone: string
+  form_contact_type_email: string
+  form_contact_type_whatsapp: string
+  form_preferred_lang_label: string
   form_source_label: string
   form_submit_btn: string
   form_submitting: string
@@ -723,6 +728,11 @@ const translations: Record<Locale, TranslationKeys> = {
     form_photos_add: 'Fotoğraf ekle (JPG, PNG — max 10MB)',
     form_notes_label: 'Ek Açıklama / Özel İstekler',
     form_notes_placeholder: 'Projeniz hakkında eklemek istediğiniz detaylar...',
+    form_contact_type_label: 'İletişim Tercihi',
+    form_contact_type_phone: 'Telefon',
+    form_contact_type_email: 'E-posta',
+    form_contact_type_whatsapp: 'WhatsApp',
+    form_preferred_lang_label: 'Tercih Edilen Dil',
     form_source_label: 'Bizi nereden buldunuz?',
     form_submit_btn: 'Teklif Talebi Gönder',
     form_submitting: 'Gönderiliyor...',
@@ -1086,6 +1096,11 @@ const translations: Record<Locale, TranslationKeys> = {
     form_photos_add: 'Add photo (JPG, PNG — max 10MB)',
     form_notes_label: 'Additional Notes / Special Requests',
     form_notes_placeholder: 'Details you\'d like to add about your project...',
+    form_contact_type_label: 'Contact Preference',
+    form_contact_type_phone: 'Phone',
+    form_contact_type_email: 'Email',
+    form_contact_type_whatsapp: 'WhatsApp',
+    form_preferred_lang_label: 'Preferred Language',
     form_source_label: 'How did you find us?',
     form_submit_btn: 'Submit Quote Request',
     form_submitting: 'Submitting...',
@@ -1449,6 +1464,11 @@ const translations: Record<Locale, TranslationKeys> = {
     form_photos_add: 'Añadir foto (JPG, PNG — máx. 10MB)',
     form_notes_label: 'Notas Adicionales / Solicitudes Especiales',
     form_notes_placeholder: 'Detalles que desee añadir sobre su proyecto...',
+    form_contact_type_label: 'Preferencia de Contacto',
+    form_contact_type_phone: 'Teléfono',
+    form_contact_type_email: 'Correo electrónico',
+    form_contact_type_whatsapp: 'WhatsApp',
+    form_preferred_lang_label: 'Idioma Preferido',
     form_source_label: '¿Cómo nos encontró?',
     form_submit_btn: 'Enviar Solicitud',
     form_submitting: 'Enviando...',
@@ -1812,6 +1832,11 @@ const translations: Record<Locale, TranslationKeys> = {
     form_photos_add: 'إضافة صورة (JPG, PNG — حد أقصى 10MB)',
     form_notes_label: 'ملاحظات إضافية / طلبات خاصة',
     form_notes_placeholder: 'تفاصيل تود إضافتها عن مشروعك...',
+    form_contact_type_label: 'طريقة التواصل المفضلة',
+    form_contact_type_phone: 'هاتف',
+    form_contact_type_email: 'بريد إلكتروني',
+    form_contact_type_whatsapp: 'واتساب',
+    form_preferred_lang_label: 'اللغة المفضلة',
     form_source_label: 'كيف وجدتنا؟',
     form_submit_btn: 'إرسال طلب العرض',
     form_submitting: 'جاري الإرسال...',
@@ -2175,6 +2200,11 @@ const translations: Record<Locale, TranslationKeys> = {
     form_photos_add: 'Foto hinzufügen (JPG, PNG — max. 10MB)',
     form_notes_label: 'Zusätzliche Anmerkungen / Sonderwünsche',
     form_notes_placeholder: 'Details, die Sie über Ihr Projekt hinzufügen möchten...',
+    form_contact_type_label: 'Kontaktpräferenz',
+    form_contact_type_phone: 'Telefon',
+    form_contact_type_email: 'E-Mail',
+    form_contact_type_whatsapp: 'WhatsApp',
+    form_preferred_lang_label: 'Bevorzugte Sprache',
     form_source_label: 'Wie haben Sie uns gefunden?',
     form_submit_btn: 'Angebotsanfrage Senden',
     form_submitting: 'Wird gesendet...',

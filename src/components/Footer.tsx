@@ -14,10 +14,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <span className="text-white text-2xl tracking-tight select-none inline-block mb-4">
-              <span className="font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>URLA</span>
-              <span className="font-light" style={{ fontFamily: 'Inter, sans-serif' }}>STONE</span>
-            </span>
+            <div className="flex items-center gap-2.5 mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ur2-dark.png" alt="Urlastone" className="h-9 w-9 object-contain rounded-lg" />
+              <span className="text-white text-2xl tracking-[0.15em] select-none">
+                <span className="font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>URLA</span>
+                <span className="font-light" style={{ fontFamily: 'Inter, sans-serif' }}>STONE</span>
+              </span>
+            </div>
             <p className="font-mono text-[10px] text-white/30 tracking-wider uppercase mb-6">
               {t.footer_slogan}
             </p>

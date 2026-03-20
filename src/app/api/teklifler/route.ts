@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const {
     ad_soyad, telefon, email, ulke, il, ilce,
     proje_tipi, tas_tercihi, metrekare,
-    aciklama, kaynak,
+    aciklama, kaynak, iletisim_turu, tercih_dil,
   } = body
 
   // Validate required fields
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
   // Send emails (don't block response on email failures)
   if (process.env.RESEND_API_KEY) {
-    const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], metrekare, aciklama, kaynak }
+    const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], metrekare, aciklama, kaynak, iletisim_turu, tercih_dil: tercih_dil || 'tr' }
     Promise.allSettled([
       sendCustomerConfirmation(emailData),
       sendAdminNotification(emailData),
