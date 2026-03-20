@@ -54,6 +54,7 @@ export default function TaslarPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [stoneTypes, setStoneTypes] = useState<StoneType[]>([])
   const [loading, setLoading] = useState(true)
+  const [catalogUrl, setCatalogUrl] = useState<string | null>(null)
 
   // Fetch data on mount
   useEffect(() => {
@@ -61,10 +62,12 @@ export default function TaslarPage() {
       fetch('/api/products').then(r => r.json()),
       fetch('/api/categories').then(r => r.json()),
       fetch('/api/stone-types').then(r => r.json()),
-    ]).then(([prods, cats, types]) => {
+      fetch('/api/katalog').then(r => r.json()).catch(() => ({ url: null })),
+    ]).then(([prods, cats, types, katalog]) => {
       setProducts(prods)
       setCategories(cats)
       setStoneTypes(types)
+      if (katalog?.url) setCatalogUrl(katalog.url)
       setLoading(false)
     })
   }, [])
@@ -407,6 +410,65 @@ export default function TaslarPage() {
           </div>
         </div>
       </section>
+
+      {/* Katalog */}
+      {catalogUrl && (
+        <section className="py-16 md:py-20 border-t border-white/[0.06]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+              {/* PDF Visual */}
+              <div className="flex-shrink-0">
+                <div className="w-24 h-32 md:w-28 md:h-36 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col items-center justify-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-red-500/20" />
+                  <svg className="relative z-10" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" className="text-red-400" />
+                    <polyline points="14 2 14 8 20 8" className="text-red-400" />
+                  </svg>
+                  <span className="relative z-10 text-red-400 text-[10px] font-mono font-bold mt-1">PDF</span>
+                  <span className="relative z-10 text-white/30 text-[8px] font-mono mt-0.5">2025-2026</span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 text-center md:text-left">
+                <p className="text-gold-400 text-xs font-mono tracking-[0.2em] uppercase mb-2">Rockshell</p>
+                <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-2">
+                  Katalogumuzu İnceleyin
+                </h3>
+                <p className="text-white/40 text-sm leading-relaxed mb-6">
+                  Tüm ürünlerimizi, teknik detayları ve uygulama örneklerini içeren katalogumuz
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                  <a
+                    href={catalogUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Katalogu Gör
+                  </a>
+                  <a
+                    href={catalogUrl}
+                    download
+                    className="inline-flex items-center justify-center gap-2 border border-white/[0.12] text-white/70 px-6 py-3 rounded-full text-sm hover:bg-white/[0.04] transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    İndir (PDF)
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="py-20 md:py-24 bg-white/[0.02]">

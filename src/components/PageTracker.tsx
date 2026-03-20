@@ -13,12 +13,35 @@ function getSessionId() {
   return sid
 }
 
-function getDevice() {
-  if (typeof window === 'undefined') return 'desktop'
+function getDeviceInfo() {
+  if (typeof window === 'undefined') return { device: 'desktop', os: 'unknown', browser: 'unknown' }
+
   const ua = navigator.userAgent
-  if (/Mobi|Android|iPhone|iPad/i.test(ua)) return 'mobile'
-  if (/Tablet|iPad/i.test(ua)) return 'tablet'
-  return 'desktop'
+
+  // OS Detection
+  let os = 'other'
+  if (/iPhone/.test(ua)) os = 'iOS'
+  else if (/iPad/.test(ua)) os = 'iPadOS'
+  else if (/Android/.test(ua)) os = 'Android'
+  else if (/Windows/.test(ua)) os = 'Windows'
+  else if (/Mac OS/.test(ua)) os = 'macOS'
+  else if (/Linux/.test(ua)) os = 'Linux'
+  else if (/CrOS/.test(ua)) os = 'ChromeOS'
+
+  // Device type
+  let device = 'desktop'
+  if (/iPhone|Android.*Mobile/i.test(ua)) device = 'mobile'
+  else if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) device = 'tablet'
+
+  // Browser Detection
+  let browser = 'other'
+  if (/Edg\//.test(ua)) browser = 'Edge'
+  else if (/OPR\/|Opera/.test(ua)) browser = 'Opera'
+  else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) browser = 'Chrome'
+  else if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) browser = 'Safari'
+  else if (/Firefox\//.test(ua)) browser = 'Firefox'
+
+  return { device, os, browser }
 }
 
 export default function PageTracker() {
@@ -29,6 +52,8 @@ export default function PageTracker() {
     if (pathname.startsWith('/admin')) return
 
     const timer = setTimeout(() => {
+      const { device, os, browser } = getDeviceInfo()
+
       fetch('/api/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,7 +61,9 @@ export default function PageTracker() {
           page: pathname,
           referrer: document.referrer || null,
           session_id: getSessionId(),
-          device: getDevice(),
+          device,
+          os,
+          browser,
           language: (navigator.language || 'unknown').split('-')[0],
         }),
       }).catch(() => {})
