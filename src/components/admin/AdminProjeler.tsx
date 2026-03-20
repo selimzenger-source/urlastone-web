@@ -86,6 +86,11 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const [showMap, setShowMap] = useState(false)
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [products, setProducts] = useState<{ id: string; name: string; code: string }[]>([])
+  const [productSearch, setProductSearch] = useState('')
+  const [showProductDropdown, setShowProductDropdown] = useState(false)
+  const [mapsUrl, setMapsUrl] = useState('')
+  const productDropdownRef = useRef<HTMLDivElement>(null)
 
   const headers = {
     'Authorization': `Bearer ${adminPassword}`,
@@ -108,6 +113,53 @@ export default function AdminProjeler({ adminPassword }: Props) {
   }
 
   useEffect(() => { fetchProjects() }, [])
+
+  // Ürünleri yükle
+  useEffect(() => {
+    fetch('/api/products').then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setProducts(data.map((p: { id: string; name: string; code: string }) => ({ id: p.id, name: p.name, code: p.code })))
+    }).catch(() => {})
+  }, [])
+
+  // Click outside to close product dropdown
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (productDropdownRef.current && !productDropdownRef.current.contains(e.target as Node)) {
+        setShowProductDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  // Google Maps URL'den koordinat çek
+  const parseGoogleMapsUrl = (url: string) => {
+    // Format: https://maps.google.com/?q=38.123,26.456 or @38.123,26.456
+    const patterns = [
+      /@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      /q=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      /place\/[^/]*\/@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      /ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+    ]
+    for (const p of patterns) {
+      const m = url.match(p)
+      if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) }
+    }
+    return null
+  }
+
+  const handleMapsUrl = () => {
+    const coords = parseGoogleMapsUrl(mapsUrl)
+    if (coords && editProject) {
+      setEditProject({ ...editProject, lat: coords.lat, lng: coords.lng })
+      setMapsUrl('')
+    }
+  }
+
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    p.code.toLowerCase().includes(productSearch.toLowerCase())
+  ).slice(0, 8)
 
   const filtered = projects.filter((p) =>
     p.project_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -533,16 +585,42 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 />
               </div>
 
-              {/* Ürün */}
-              <div>
+              {/* Ürün - Autocomplete */}
+              <div ref={productDropdownRef} className="relative">
                 <label className="block text-white/40 text-xs font-mono mb-1.5">Ürün</label>
                 <input
                   type="text"
                   value={editProject.product}
-                  onChange={(e) => setEditProject({ ...editProject, product: e.target.value })}
+                  onChange={(e) => {
+                    setEditProject({ ...editProject, product: e.target.value })
+                    setProductSearch(e.target.value)
+                    setShowProductDropdown(true)
+                  }}
+                  onFocus={() => {
+                    setProductSearch(editProject.product)
+                    setShowProductDropdown(true)
+                  }}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                  placeholder="ör. RKS-1 Classic Nature Rockshell"
+                  placeholder="Ürün adı veya kodu yazın..."
                 />
+                {showProductDropdown && filteredProducts.length > 0 && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-[#1a1a1a] border border-white/[0.1] rounded-xl shadow-xl max-h-52 overflow-y-auto">
+                    {filteredProducts.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setEditProject({ ...editProject, product: `${p.code} ${p.name}` })
+                          setShowProductDropdown(false)
+                        }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-white/[0.06] transition-colors border-b border-white/[0.04] last:border-0"
+                      >
+                        <span className="text-gold-400 text-xs font-mono">{p.code}</span>
+                        <span className="text-white text-sm ml-2">{p.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Uygulama Tipi & Kategori */}
@@ -634,16 +712,51 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 />
               </div>
 
-              {/* Konum - Haritadan Seç */}
+              {/* Konum - Google Maps URL veya Harita */}
               <div>
                 <label className="block text-white/40 text-xs font-mono mb-1.5">Konum</label>
+
+                {/* Google Maps URL ile konum al */}
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={mapsUrl}
+                    onChange={(e) => setMapsUrl(e.target.value)}
+                    className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    placeholder="Google Maps linkini yapıştır..."
+                  />
+                  <button
+                    type="button"
+                    onClick={handleMapsUrl}
+                    className="px-4 py-2.5 bg-gold-400/20 text-gold-400 rounded-xl text-xs font-mono hover:bg-gold-400/30 transition-colors whitespace-nowrap"
+                  >
+                    Konumu Al
+                  </button>
+                </div>
+
+                {/* Koordinat gösterimi */}
+                {(editProject.lat !== 0 || editProject.lng !== 0) && (
+                  <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-green-400/[0.06] border border-green-400/[0.12] rounded-xl">
+                    <MapPin size={14} className="text-green-400" />
+                    <span className="text-green-400 text-xs font-mono">{editProject.lat.toFixed(6)}, {editProject.lng.toFixed(6)}</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditProject({ ...editProject, lat: 0, lng: 0 })}
+                      className="ml-auto text-white/30 hover:text-red-400 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Enlem Boylam gizli inputlar */}
                 <div className="flex gap-3 mb-2">
                   <input
                     type="number"
                     step="any"
                     value={editProject.lat || ''}
                     onChange={(e) => setEditProject({ ...editProject, lat: parseFloat(e.target.value) || 0 })}
-                    className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-white text-xs placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors font-mono"
                     placeholder="Enlem"
                   />
                   <input
@@ -651,10 +764,11 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     step="any"
                     value={editProject.lng || ''}
                     onChange={(e) => setEditProject({ ...editProject, lng: parseFloat(e.target.value) || 0 })}
-                    className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
+                    className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-white text-xs placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors font-mono"
                     placeholder="Boylam"
                   />
                 </div>
+
                 <button
                   type="button"
                   onClick={() => setShowMap(!showMap)}
