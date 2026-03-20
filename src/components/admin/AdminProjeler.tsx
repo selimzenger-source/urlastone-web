@@ -134,25 +134,40 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
   // Google Maps URL'den koordinat çek
   const parseGoogleMapsUrl = (url: string) => {
-    // Format: https://maps.google.com/?q=38.123,26.456 or @38.123,26.456
+    const text = decodeURIComponent(url)
     const patterns = [
-      /@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      /q=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      /place\/[^/]*\/@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      /ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+      /@(-?\d+\.?\d+),(-?\d+\.?\d+)/,                    // @38.123,26.456
+      /!3d(-?\d+\.?\d+)!4d(-?\d+\.?\d+)/,                // !3d38.123!4d26.456
+      /q=(-?\d+\.?\d+),(-?\d+\.?\d+)/,                   // q=38.123,26.456
+      /center=(-?\d+\.?\d+),(-?\d+\.?\d+)/,              // center=38.123,26.456
+      /ll=(-?\d+\.?\d+),(-?\d+\.?\d+)/,                  // ll=38.123,26.456
+      /place\/[^/]*\/@(-?\d+\.?\d+),(-?\d+\.?\d+)/,      // place/Name/@38.123,26.456
+      /(-?\d{1,3}\.\d{4,}),\s*(-?\d{1,3}\.\d{4,})/,     // any lat,lng pair with 4+ decimals
     ]
     for (const p of patterns) {
-      const m = url.match(p)
-      if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) }
+      const m = text.match(p)
+      if (m) {
+        const lat = parseFloat(m[1])
+        const lng = parseFloat(m[2])
+        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          return { lat, lng }
+        }
+      }
     }
     return null
   }
 
+  const [mapsError, setMapsError] = useState('')
+
   const handleMapsUrl = () => {
+    if (!mapsUrl.trim()) return
     const coords = parseGoogleMapsUrl(mapsUrl)
     if (coords && editProject) {
       setEditProject({ ...editProject, lat: coords.lat, lng: coords.lng })
       setMapsUrl('')
+      setMapsError('')
+    } else {
+      setMapsError('Koordinat bulunamadı. Google Maps\'te yeri aç, sağ tıkla ve koordinatları kopyala.')
     }
   }
 
@@ -733,6 +748,14 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     Konumu Al
                   </button>
                 </div>
+
+                {mapsError && (
+                  <p className="text-red-400 text-[10px] font-mono mb-2">{mapsError}</p>
+                )}
+
+                <p className="text-white/20 text-[10px] font-mono mb-2">
+                  Google Maps&apos;te yeri bul → sağ tıkla → koordinatları kopyala → buraya yapıştır
+                </p>
 
                 {/* Koordinat gösterimi */}
                 {(editProject.lat !== 0 || editProject.lng !== 0) && (
