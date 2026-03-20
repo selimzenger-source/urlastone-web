@@ -359,18 +359,6 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       </MarkerClusterGroup>
     </MapContainer>
 
-    {/* İpucu yazısı */}
-    <div style={{
-        position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)',
-        zIndex: 1000, pointerEvents: 'none',
-        background: 'rgba(10,10,10,0.7)', backdropFilter: 'blur(8px)',
-        borderRadius: '20px', padding: '6px 14px',
-        border: '1px solid rgba(255,255,255,0.08)',
-      }}>
-        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Inter, sans-serif' }}>
-          📍 Haritayı yakınlaştırarak projeleri keşfedin
-        </span>
-      </div>
     </div>
   )
 }

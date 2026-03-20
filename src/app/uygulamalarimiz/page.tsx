@@ -133,6 +133,12 @@ export default function UygulamalarimPage() {
               )}
             </div>
           </div>
+          {/* Harita ipucu yazısı */}
+          <div className="text-center py-3">
+            <span className="text-[11px] text-white/30 font-body">
+              📍 {t.apps_map_hint}
+            </span>
+          </div>
         </div>
       </section>
 

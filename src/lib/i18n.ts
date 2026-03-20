@@ -394,6 +394,7 @@ type TranslationKeys = {
   apps_total_countries: string
   apps_details: string
   apps_navigate: string
+  apps_map_hint: string
   apps_all_projects: string
   apps_back_all: string
   apps_not_found: string
@@ -764,6 +765,7 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Ülke',
     apps_details: 'Detayları Gör',
     apps_navigate: 'Konuma Git',
+    apps_map_hint: 'Haritayı yakınlaştırarak projeleri keşfedin',
     apps_all_projects: 'Tüm Projeler',
     apps_back_all: 'Tüm Projelere Dön',
     apps_not_found: 'Proje bulunamadı',
@@ -1126,6 +1128,7 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Countries',
     apps_details: 'View Details',
     apps_navigate: 'Get Directions',
+    apps_map_hint: 'Zoom in on the map to explore projects',
     apps_all_projects: 'All Projects',
     apps_back_all: 'Back to All Projects',
     apps_not_found: 'Project not found',
@@ -1488,6 +1491,7 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Países',
     apps_details: 'Ver Detalles',
     apps_navigate: 'Ir a Ubicación',
+    apps_map_hint: 'Acerca el mapa para explorar los proyectos',
     apps_all_projects: 'Todos los Proyectos',
     apps_back_all: 'Volver a Todos los Proyectos',
     apps_not_found: 'Proyecto no encontrado',
@@ -1850,6 +1854,7 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'دول',
     apps_details: 'عرض التفاصيل',
     apps_navigate: 'انتقل إلى الموقع',
+    apps_map_hint: 'قم بتكبير الخريطة لاستكشاف المشاريع',
     apps_all_projects: 'جميع المشاريع',
     apps_back_all: 'العودة إلى جميع المشاريع',
     apps_not_found: 'المشروع غير موجود',
@@ -2212,6 +2217,7 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Länder',
     apps_details: 'Details ansehen',
     apps_navigate: 'Zum Standort',
+    apps_map_hint: 'Zoomen Sie in die Karte, um Projekte zu entdecken',
     apps_all_projects: 'Alle Projekte',
     apps_back_all: 'Zurück zu allen Projekten',
     apps_not_found: 'Projekt nicht gefunden',
