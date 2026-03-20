@@ -168,6 +168,15 @@
 }
 
 /* Marker & cluster - mobil touch düzeltmesi */
+.leaflet-container {
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.leaflet-marker-icon {
+  touch-action: manipulation !important;
+}
+
 .custom-marker-photo,
 .custom-marker,
 .custom-cluster-marker {

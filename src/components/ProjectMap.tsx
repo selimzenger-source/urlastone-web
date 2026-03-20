@@ -6,16 +6,18 @@ import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Mobilde tap handler'ı devre dışı bırak — DivIcon ile çakışıyor
+// Mobilde tap handler + touch delay sorunlarını kökten çöz
 function MobileTapFix() {
   const map = useMap()
   useEffect(() => {
-    // Leaflet tap handler mobilde 200ms gecikme + ghost click sorunu yaratıyor
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = map as any
-    if (m.tap) {
-      m.tap.disable()
-    }
+    // Leaflet'in tap handler'ını devre dışı bırak
+    if (m.tap) m.tap.disable()
+
+    // Harita container'ına touch-action CSS ekle
+    const container = map.getContainer()
+    container.style.touchAction = 'manipulation'
   }, [map])
   return null
 }
@@ -269,8 +271,18 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
         removeOutsideVisibleBounds={true}
       >
         {locations.map((loc, i) => (
-          <Marker key={loc.id || i} position={[loc.lat, loc.lng]} icon={markerIcons[i]}>
-            <Popup closeOnClick={false} autoPan={true} keepInView={true}>
+          <Marker
+            key={loc.id || i}
+            position={[loc.lat, loc.lng]}
+            icon={markerIcons[i]}
+            eventHandlers={{
+              click: (e) => {
+                // Mobilde ghost click'i engelle — marker tıklanınca popup'ı aç ve event'i durdur
+                L.DomEvent.stopPropagation(e.originalEvent)
+              },
+            }}
+          >
+            <Popup closeOnClick={false} autoPan={true} keepInView={true} autoClose={false}>
               <div style={{
                 background: '#1a1a1a',
                 color: 'white',
