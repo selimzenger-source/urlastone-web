@@ -12,6 +12,9 @@ interface AnalyticsData {
   devices: Record<string, number>
   topReferrers: { source: string; count: number }[]
   topCountries?: { country: string; count: number }[]
+  osSystems?: Record<string, number>
+  browsers?: Record<string, number>
+  languages?: Record<string, number>
   dailyChart: { date: string; views: number; visitors: number }[]
   bounceRate?: number
   avgDuration?: number
@@ -349,7 +352,6 @@ export default function AdminAnalytics() {
                   const pct = Math.round((count / totalDevices) * 100)
                   const Icon = device === 'mobile' ? Smartphone : device === 'tablet' ? Tablet : Monitor
                   const label = device === 'mobile' ? 'Mobil' : device === 'tablet' ? 'Tablet' : 'Masaüstü'
-                  const color = device === 'mobile' ? 'bg-blue-400' : device === 'tablet' ? 'bg-cyan-400' : 'bg-purple-400'
                   return (
                     <div key={device}>
                       <div className="flex items-center justify-between mb-1.5">
@@ -364,7 +366,7 @@ export default function AdminAnalytics() {
                       </div>
                       <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                         <div
-                          className={`h-full ${color}/60 rounded-full transition-all duration-700`}
+                          className="h-full bg-purple-400/60 rounded-full transition-all duration-700"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -374,6 +376,39 @@ export default function AdminAnalytics() {
               </div>
             )}
           </div>
+
+          {/* OS Breakdown */}
+          {data.osSystems && Object.keys(data.osSystems).length > 0 && (
+            <BreakdownPanel
+              title="İşletim Sistemi"
+              icon="💻"
+              data={data.osSystems}
+              nameMap={{ iOS: '📱 iOS (iPhone)', iPadOS: '📱 iPadOS', Android: '🤖 Android', Windows: '🪟 Windows', macOS: '🍎 macOS', Linux: '🐧 Linux', ChromeOS: '💻 ChromeOS' }}
+              barColor="bg-blue-400/50"
+            />
+          )}
+
+          {/* Browser Breakdown */}
+          {data.browsers && Object.keys(data.browsers).length > 0 && (
+            <BreakdownPanel
+              title="Tarayıcı"
+              icon="🌐"
+              data={data.browsers}
+              nameMap={{ Chrome: '🟢 Chrome', Safari: '🔵 Safari', Firefox: '🟠 Firefox', Edge: '🔷 Edge', Opera: '🔴 Opera' }}
+              barColor="bg-gold-400/50"
+            />
+          )}
+
+          {/* Language Breakdown */}
+          {data.languages && Object.keys(data.languages).length > 0 && (
+            <BreakdownPanel
+              title="Diller"
+              icon="🗣️"
+              data={data.languages}
+              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe' }}
+              barColor="bg-cyan-400/50"
+            />
+          )}
 
           {/* Referrers */}
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-5">
@@ -482,6 +517,55 @@ export default function AdminAnalytics() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Reusable breakdown panel — OS, Browser, Language etc.
+function BreakdownPanel({ title, icon, data, nameMap, barColor }: {
+  title: string
+  icon: string
+  data: Record<string, number>
+  nameMap: Record<string, string>
+  barColor: string
+}) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1])
+  const total = entries.reduce((sum, [, count]) => sum + count, 0) || 1
+
+  return (
+    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-sm">{icon}</span>
+        <h3 className="font-heading text-sm font-semibold text-white">{title}</h3>
+      </div>
+
+      {entries.length === 0 ? (
+        <p className="text-white/20 text-sm font-mono text-center py-4">Henüz veri yok</p>
+      ) : (
+        <div className="space-y-3">
+          {entries.map(([key, count]) => {
+            const pct = Math.round((count / total) * 100)
+            const label = nameMap[key] || key
+            return (
+              <div key={key}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-white/70 text-xs truncate mr-2">{label}</span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-white/30 text-[10px] font-mono">{count}</span>
+                    <span className="text-white text-xs font-mono font-semibold min-w-[2.5rem] text-right">%{pct}</span>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
