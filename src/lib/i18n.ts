@@ -204,11 +204,11 @@ type TranslationKeys = {
   stones_mix_f1: string
   stones_mix_f2: string
   stones_mix_f3: string
-  stones_geo_slogan: string
-  stones_geo_desc: string
-  stones_geo_f1: string
-  stones_geo_f2: string
-  stones_geo_f3: string
+  stones_crazy_slogan: string
+  stones_crazy_desc: string
+  stones_crazy_f1: string
+  stones_crazy_f2: string
+  stones_crazy_f3: string
   stones_line_slogan: string
   stones_line_desc: string
   stones_line_f1: string
@@ -228,18 +228,10 @@ type TranslationKeys = {
   stones_bazalt_desc: string
   stones_bazalt_category: string
   stones_bazalt_color: string
-  stones_granit_name: string
-  stones_granit_desc: string
-  stones_granit_category: string
-  stones_granit_color: string
-  stones_kayrak_name: string
-  stones_kayrak_desc: string
-  stones_kayrak_category: string
-  stones_kayrak_color: string
-  stones_kuvarsit_name: string
-  stones_kuvarsit_desc: string
-  stones_kuvarsit_category: string
-  stones_kuvarsit_color: string
+  stones_kalker_name: string
+  stones_kalker_desc: string
+  stones_kalker_category: string
+  stones_kalker_color: string
 
   // Taşlar - Usage areas
   stones_usage_title: string
@@ -583,11 +575,11 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_mix_f1: 'Karma doku',
     stones_mix_f2: 'Farklı ebatlar',
     stones_mix_f3: 'Esnek uygulama',
-    stones_geo_slogan: 'Geometrik düzen, doğal doku.',
-    stones_geo_desc: 'Doğal taşların yatay düzlemde iki taraflı 5, 10 ve 15 cm yükseklikte ebatlanıp boy serbest olarak inceltilmesi sonucu ortaya çıkar. Düzenli çizgilerin doğal taş ile buluşmasıdır.',
-    stones_geo_f1: '3 farklı yükseklik',
-    stones_geo_f2: 'Serbest boy',
-    stones_geo_f3: 'Geometrik düzen',
+    stones_crazy_slogan: 'Düzensizliğin benzersiz estetiği.',
+    stones_crazy_desc: 'Düzensiz kırılmış doğal taş parçalarının rastgele dizilimiyle oluşturulan benzersiz yüzeyler. Her panel eşsiz bir doğa eseridir.',
+    stones_crazy_f1: 'Rastgele dizilim',
+    stones_crazy_f2: 'Benzersiz desenler',
+    stones_crazy_f3: 'Organik görünüm',
     stones_line_slogan: 'İnce çizgilerin zarafeti.',
     stones_line_desc: 'Doğal taşların yatay düzlemde iki taraflı 3 cm yükseklikte ebatlanıp boy serbest olarak inceltilmesi sonucu ortaya çıkar. Minimal ve modern mekânlara mükemmel uyum sağlar.',
     stones_line_f1: '3 cm sabit yükseklik',
@@ -605,18 +597,10 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_bazalt_desc: 'Yüksek dayanıklılığıyla dış mekân projelerinde idealdir. Sert iklim koşullarına dayanıklı yapısıyla öne çıkar.',
     stones_bazalt_category: 'Volkanik',
     stones_bazalt_color: 'Koyu Gri / Antrasit / Siyah',
-    stones_granit_name: 'Granit',
-    stones_granit_desc: 'En sert doğal taşlardan biri. Aşınmaya son derece dayanıklı yapısıyla yoğun kullanım alanları için idealdir.',
-    stones_granit_category: 'Plütonik',
-    stones_granit_color: 'Gri / Pembe / Siyah',
-    stones_kayrak_name: 'Kayrak',
-    stones_kayrak_desc: 'Tabakalı yapısıyla rustik ve doğal bir atmosfer yaratır. Bahçe projelerinin en sevilen taşıdır.',
-    stones_kayrak_category: 'Metamorfik',
-    stones_kayrak_color: 'Yeşil / Gri / Kahverengi',
-    stones_kuvarsit_name: 'Kuvarsit',
-    stones_kuvarsit_desc: 'Parlak yüzeyi ve sert yapısıyla modern projelerde tercih edilir. Işıkla etkileşimi benzersiz bir görünüm sağlar.',
-    stones_kuvarsit_category: 'Metamorfik',
-    stones_kuvarsit_color: 'Beyaz / Gümüş / Altın',
+    stones_kalker_name: 'Kalker',
+    stones_kalker_desc: 'Yumuşak dokusu ve doğal renkleriyle zarif projeler için ideal. Kolay işlenebilir yapısıyla geniş kullanım alanı sunar.',
+    stones_kalker_category: 'Sedimanter',
+    stones_kalker_color: 'Beyaz / Bej / Gri',
     stones_usage_title: 'Hayalinizde ne varsa.',
     stones_usage1_name: 'Cephe Kaplama',
     stones_usage2_name: 'İç Mekan',
@@ -953,11 +937,11 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_mix_f1: 'Mixed texture',
     stones_mix_f2: 'Various dimensions',
     stones_mix_f3: 'Flexible application',
-    stones_geo_slogan: 'Geometric order, natural texture.',
-    stones_geo_desc: 'Created by cutting natural stones horizontally on both sides at 5, 10, and 15 cm heights with free length, then thinning them. The meeting of regular lines with natural stone.',
-    stones_geo_f1: '3 different heights',
-    stones_geo_f2: 'Free length',
-    stones_geo_f3: 'Geometric pattern',
+    stones_crazy_slogan: 'The unique aesthetics of irregularity.',
+    stones_crazy_desc: 'Unique surfaces created by random arrangement of irregularly broken natural stone pieces. Each panel is a one-of-a-kind work of nature.',
+    stones_crazy_f1: 'Random arrangement',
+    stones_crazy_f2: 'Unique patterns',
+    stones_crazy_f3: 'Organic appearance',
     stones_line_slogan: 'The elegance of fine lines.',
     stones_line_desc: 'Created by cutting natural stones horizontally on both sides at 3 cm height with free length, then thinning them. Perfectly complements minimal and modern spaces.',
     stones_line_f1: '3 cm fixed height',
@@ -975,18 +959,10 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_bazalt_desc: 'Ideal for outdoor projects with its high durability. Stands out with its resistance to harsh climate conditions.',
     stones_bazalt_category: 'Volcanic',
     stones_bazalt_color: 'Dark Gray / Anthracite / Black',
-    stones_granit_name: 'Granite',
-    stones_granit_desc: 'One of the hardest natural stones. Ideal for high-traffic areas with its extremely wear-resistant structure.',
-    stones_granit_category: 'Plutonic',
-    stones_granit_color: 'Gray / Pink / Black',
-    stones_kayrak_name: 'Slate',
-    stones_kayrak_desc: 'Creates a rustic and natural atmosphere with its layered structure. The most beloved stone for garden projects.',
-    stones_kayrak_category: 'Metamorphic',
-    stones_kayrak_color: 'Green / Gray / Brown',
-    stones_kuvarsit_name: 'Quartzite',
-    stones_kuvarsit_desc: 'Preferred for modern projects with its shiny surface and hard structure. Its interaction with light provides a unique appearance.',
-    stones_kuvarsit_category: 'Metamorphic',
-    stones_kuvarsit_color: 'White / Silver / Gold',
+    stones_kalker_name: 'Limestone',
+    stones_kalker_desc: 'Ideal for elegant projects with its soft texture and natural colors. Offers a wide range of applications with its easy-to-process structure.',
+    stones_kalker_category: 'Sedimentary',
+    stones_kalker_color: 'White / Beige / Gray',
     stones_usage_title: 'Whatever you dream of.',
     stones_usage1_name: 'Facade Cladding',
     stones_usage2_name: 'Interior',
@@ -1323,11 +1299,11 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_mix_f1: 'Textura mixta',
     stones_mix_f2: 'Varias dimensiones',
     stones_mix_f3: 'Aplicación flexible',
-    stones_geo_slogan: 'Orden geométrico, textura natural.',
-    stones_geo_desc: 'Se crea cortando piedras naturales horizontalmente por ambos lados a alturas de 5, 10 y 15 cm con largo libre y luego adelgazándolas. El encuentro de líneas regulares con piedra natural.',
-    stones_geo_f1: '3 alturas diferentes',
-    stones_geo_f2: 'Largo libre',
-    stones_geo_f3: 'Patrón geométrico',
+    stones_crazy_slogan: 'La estética única de la irregularidad.',
+    stones_crazy_desc: 'Superficies únicas creadas por la disposición aleatoria de piezas de piedra natural rotas irregularmente. Cada panel es una obra única de la naturaleza.',
+    stones_crazy_f1: 'Disposición aleatoria',
+    stones_crazy_f2: 'Patrones únicos',
+    stones_crazy_f3: 'Apariencia orgánica',
     stones_line_slogan: 'La elegancia de las líneas finas.',
     stones_line_desc: 'Se crea cortando piedras naturales horizontalmente por ambos lados a 3 cm de altura con largo libre y luego adelgazándolas. Complemento perfecto para espacios minimalistas y modernos.',
     stones_line_f1: '3 cm de altura fija',
@@ -1345,18 +1321,10 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_bazalt_desc: 'Ideal para proyectos exteriores con su alta durabilidad. Destaca por su resistencia a condiciones climáticas severas.',
     stones_bazalt_category: 'Volcánica',
     stones_bazalt_color: 'Gris Oscuro / Antracita / Negro',
-    stones_granit_name: 'Granito',
-    stones_granit_desc: 'Una de las piedras naturales más duras. Ideal para áreas de alto tráfico con su estructura extremadamente resistente.',
-    stones_granit_category: 'Plutónica',
-    stones_granit_color: 'Gris / Rosa / Negro',
-    stones_kayrak_name: 'Pizarra',
-    stones_kayrak_desc: 'Crea un ambiente rústico y natural con su estructura en capas. La piedra más querida para proyectos de jardín.',
-    stones_kayrak_category: 'Metamórfica',
-    stones_kayrak_color: 'Verde / Gris / Marrón',
-    stones_kuvarsit_name: 'Cuarcita',
-    stones_kuvarsit_desc: 'Preferida en proyectos modernos por su superficie brillante y estructura dura. Su interacción con la luz proporciona una apariencia única.',
-    stones_kuvarsit_category: 'Metamórfica',
-    stones_kuvarsit_color: 'Blanco / Plata / Dorado',
+    stones_kalker_name: 'Caliza',
+    stones_kalker_desc: 'Ideal para proyectos elegantes con su textura suave y colores naturales. Ofrece una amplia gama de aplicaciones con su estructura fácil de procesar.',
+    stones_kalker_category: 'Sedimentaria',
+    stones_kalker_color: 'Blanco / Beige / Gris',
     stones_usage_title: 'Lo que usted sueñe.',
     stones_usage1_name: 'Revestimiento de Fachada',
     stones_usage2_name: 'Interior',
@@ -1693,11 +1661,11 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_mix_f1: 'نسيج مختلط',
     stones_mix_f2: 'أبعاد متنوعة',
     stones_mix_f3: 'تطبيق مرن',
-    stones_geo_slogan: 'نظام هندسي، نسيج طبيعي.',
-    stones_geo_desc: 'يتم إنشاؤه عن طريق قطع الأحجار الطبيعية أفقياً من الجانبين بارتفاعات 5 و10 و15 سم مع طول حر ثم ترقيقها. التقاء الخطوط المنتظمة مع الحجر الطبيعي.',
-    stones_geo_f1: '3 ارتفاعات مختلفة',
-    stones_geo_f2: 'طول حر',
-    stones_geo_f3: 'نمط هندسي',
+    stones_crazy_slogan: 'الجمالية الفريدة للعشوائية.',
+    stones_crazy_desc: 'أسطح فريدة من نوعها تم إنشاؤها عن طريق الترتيب العشوائي لقطع الحجر الطبيعي المكسورة بشكل غير منتظم. كل لوحة هي عمل فريد من نوعه من الطبيعة.',
+    stones_crazy_f1: 'ترتيب عشوائي',
+    stones_crazy_f2: 'أنماط فريدة',
+    stones_crazy_f3: 'مظهر عضوي',
     stones_line_slogan: 'أناقة الخطوط الدقيقة.',
     stones_line_desc: 'يتم إنشاؤه عن طريق قطع الأحجار الطبيعية أفقياً من الجانبين بارتفاع 3 سم مع طول حر ثم ترقيقها. مكمل مثالي للمساحات المعاصرة والحديثة.',
     stones_line_f1: 'ارتفاع ثابت 3 سم',
@@ -1715,18 +1683,10 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_bazalt_desc: 'مثالي للمشاريع الخارجية بمتانته العالية. يتميز بمقاومته للظروف المناخية القاسية.',
     stones_bazalt_category: 'بركانية',
     stones_bazalt_color: 'رمادي داكن / أنثراسيت / أسود',
-    stones_granit_name: 'جرانيت',
-    stones_granit_desc: 'من أصلب الأحجار الطبيعية. مثالي للمناطق ذات الحركة الكثيفة بهيكله المقاوم للتآكل.',
-    stones_granit_category: 'بلوتونية',
-    stones_granit_color: 'رمادي / وردي / أسود',
-    stones_kayrak_name: 'أردواز',
-    stones_kayrak_desc: 'يخلق أجواءً ريفية وطبيعية بهيكله الطبقي. الحجر المفضل لمشاريع الحدائق.',
-    stones_kayrak_category: 'متحولة',
-    stones_kayrak_color: 'أخضر / رمادي / بني',
-    stones_kuvarsit_name: 'كوارتزيت',
-    stones_kuvarsit_desc: 'مفضل في المشاريع الحديثة بسطحه اللامع وهيكله الصلب. تفاعله مع الضوء يوفر مظهراً فريداً.',
-    stones_kuvarsit_category: 'متحولة',
-    stones_kuvarsit_color: 'أبيض / فضي / ذهبي',
+    stones_kalker_name: 'حجر جيري',
+    stones_kalker_desc: 'مثالي للمشاريع الأنيقة بملمسه الناعم وألوانه الطبيعية. يوفر نطاقاً واسعاً من التطبيقات بهيكله سهل المعالجة.',
+    stones_kalker_category: 'رسوبي',
+    stones_kalker_color: 'أبيض / بيج / رمادي',
     stones_usage_title: 'كل ما تحلم به.',
     stones_usage1_name: 'تكسية الواجهات',
     stones_usage2_name: 'ديكور داخلي',
@@ -2063,11 +2023,11 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_mix_f1: 'Gemischte Textur',
     stones_mix_f2: 'Verschiedene Maße',
     stones_mix_f3: 'Flexible Anwendung',
-    stones_geo_slogan: 'Geometrische Ordnung, natürliche Textur.',
-    stones_geo_desc: 'Entsteht durch horizontales Schneiden der Natursteine beidseitig auf 5, 10 und 15 cm Höhe bei freier Länge und anschließendem Ausdünnen. Das Treffen von regelmäßigen Linien mit Naturstein.',
-    stones_geo_f1: '3 verschiedene Höhen',
-    stones_geo_f2: 'Freie Länge',
-    stones_geo_f3: 'Geometrisches Muster',
+    stones_crazy_slogan: 'Die einzigartige Ästhetik der Unregelmäßigkeit.',
+    stones_crazy_desc: 'Einzigartige Oberflächen, die durch die zufällige Anordnung unregelmäßig gebrochener Natursteinteile entstehen. Jedes Panel ist ein einzigartiges Naturwerk.',
+    stones_crazy_f1: 'Zufällige Anordnung',
+    stones_crazy_f2: 'Einzigartige Muster',
+    stones_crazy_f3: 'Organisches Erscheinungsbild',
     stones_line_slogan: 'Die Eleganz feiner Linien.',
     stones_line_desc: 'Entsteht durch horizontales Schneiden der Natursteine beidseitig auf 3 cm Höhe bei freier Länge und anschließendem Ausdünnen. Perfekte Ergänzung für minimale und moderne Räume.',
     stones_line_f1: '3 cm feste Höhe',
@@ -2085,18 +2045,10 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_bazalt_desc: 'Ideal für Außenprojekte mit seiner hohen Haltbarkeit. Zeichnet sich durch seine Beständigkeit gegen raue Klimabedingungen aus.',
     stones_bazalt_category: 'Vulkanisch',
     stones_bazalt_color: 'Dunkelgrau / Anthrazit / Schwarz',
-    stones_granit_name: 'Granit',
-    stones_granit_desc: 'Einer der härtesten Natursteine. Ideal für stark frequentierte Bereiche mit seiner extrem verschleißfesten Struktur.',
-    stones_granit_category: 'Plutonisch',
-    stones_granit_color: 'Grau / Rosa / Schwarz',
-    stones_kayrak_name: 'Schiefer',
-    stones_kayrak_desc: 'Schafft eine rustikale und natürliche Atmosphäre mit seiner geschichteten Struktur. Der beliebteste Stein für Gartenprojekte.',
-    stones_kayrak_category: 'Metamorph',
-    stones_kayrak_color: 'Grün / Grau / Braun',
-    stones_kuvarsit_name: 'Quarzit',
-    stones_kuvarsit_desc: 'Bevorzugt für moderne Projekte mit seiner glänzenden Oberfläche und harten Struktur. Seine Lichtinteraktion bietet ein einzigartiges Erscheinungsbild.',
-    stones_kuvarsit_category: 'Metamorph',
-    stones_kuvarsit_color: 'Weiß / Silber / Gold',
+    stones_kalker_name: 'Kalkstein',
+    stones_kalker_desc: 'Ideal für elegante Projekte mit seiner weichen Textur und natürlichen Farben. Bietet ein breites Anwendungsspektrum mit seiner leicht zu bearbeitenden Struktur.',
+    stones_kalker_category: 'Sedimentär',
+    stones_kalker_color: 'Weiß / Beige / Grau',
     stones_usage_title: 'Was auch immer Sie sich vorstellen.',
     stones_usage1_name: 'Fassadenverkleidung',
     stones_usage2_name: 'Innenraum',

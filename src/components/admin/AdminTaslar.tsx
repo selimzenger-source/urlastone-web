@@ -1,232 +1,393 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Plus,
   Search,
-  Edit3,
   Trash2,
   X,
   Image as ImageIcon,
-  Eye,
-  EyeOff,
-  GripVertical,
+  Upload,
+  Save,
+  ChevronDown,
 } from 'lucide-react'
 
-interface Tas {
-  id: number
-  ad: string
-  kategori: string
-  renk: string
-  aciklama: string
-  kullanim: string[]
-  aktif: boolean
-  sira: number
+interface StoneType {
+  id: string
+  name: string
+  code: string
+  sort_order: number
 }
 
-const mockTaslar: Tas[] = [
-  {
-    id: 1, ad: 'Traverten', kategori: 'Kireçtaşı', renk: 'Bej / Krem',
-    aciklama: 'Doğal gözenekli yapısıyla sıcak ve otantik bir görünüm sunar.',
-    kullanim: ['Cephe Kaplama', 'Zemin Döşeme', 'Havuz Kenarı'], aktif: true, sira: 1,
-  },
-  {
-    id: 2, ad: 'Mermer', kategori: 'Metamorfik', renk: 'Beyaz / Gri',
-    aciklama: 'Zarif damarlarıyla lüks mekânların vazgeçilmez taşı.',
-    kullanim: ['İç Mekan', 'Tezgah', 'Banyo'], aktif: true, sira: 2,
-  },
-  {
-    id: 3, ad: 'Bazalt', kategori: 'Volkanik', renk: 'Koyu Gri / Siyah',
-    aciklama: 'Yüksek dayanıklılığıyla dış mekan projelerinde ideal.',
-    kullanim: ['Cephe Kaplama', 'Bahçe & Peyzaj', 'Yürüyüş Yolu'], aktif: true, sira: 3,
-  },
-  {
-    id: 4, ad: 'Granit', kategori: 'Plütonik', renk: 'Gri / Pembe / Siyah',
-    aciklama: 'En sert doğal taşlardan biri, aşınmaya son derece dayanıklı.',
-    kullanim: ['Zemin Döşeme', 'Tezgah', 'Merdiven'], aktif: true, sira: 4,
-  },
-  {
-    id: 5, ad: 'Kayrak', kategori: 'Metamorfik', renk: 'Yeşil / Gri',
-    aciklama: 'Tabakalı yapısıyla rustik ve doğal bir atmosfer yaratır.',
-    kullanim: ['Bahçe & Peyzaj', 'Duvar Kaplama'], aktif: false, sira: 5,
-  },
-]
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
 
-const kategoriler = ['Kireçtaşı', 'Metamorfik', 'Volkanik', 'Plütonik', 'Sedimanter']
-
-const emptyTas: Omit<Tas, 'id' | 'sira'> = {
-  ad: '', kategori: '', renk: '', aciklama: '', kullanim: [], aktif: true,
+interface Product {
+  id: string
+  name: string
+  code: string
+  image_url: string | null
+  is_active: boolean
+  sort_order: number
+  category_id: string
+  stone_type_id: string
+  category: Category
+  stone_type: StoneType
 }
 
 export default function AdminTaslar() {
-  const [taslar, setTaslar] = useState(mockTaslar)
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [stoneTypes, setStoneTypes] = useState<StoneType[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [editTas, setEditTas] = useState<Tas | null>(null)
-  const [isNew, setIsNew] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
-  const [kullanimInput, setKullanimInput] = useState('')
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterType, setFilterType] = useState('')
 
-  const filtered = taslar.filter((t) =>
-    t.ad.toLowerCase().includes(search.toLowerCase()) ||
-    t.kategori.toLowerCase().includes(search.toLowerCase())
-  )
+  // New product form
+  const [showNewProduct, setShowNewProduct] = useState(false)
+  const [newProduct, setNewProduct] = useState({ name: '', code: '', category_id: '', stone_type_id: '' })
 
-  const openNew = () => {
-    setEditTas({
-      id: Math.max(...taslar.map((t) => t.id), 0) + 1,
-      sira: taslar.length + 1,
-      ...emptyTas,
+  // New stone type form
+  const [showNewStoneType, setShowNewStoneType] = useState(false)
+  const [newStoneType, setNewStoneType] = useState({ name: '', code: '' })
+
+  // Image upload
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
+
+  const fetchData = async () => {
+    setLoading(true)
+    const [prods, cats, types] = await Promise.all([
+      fetch('/api/products').then(r => r.json()),
+      fetch('/api/categories').then(r => r.json()),
+      fetch('/api/stone-types').then(r => r.json()),
+    ])
+    setProducts(prods)
+    setCategories(cats)
+    setStoneTypes(types)
+    setLoading(false)
+  }
+
+  useEffect(() => { fetchData() }, [])
+
+  const filtered = products.filter((p) => {
+    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.code.toLowerCase().includes(search.toLowerCase())
+    const matchCategory = !filterCategory || p.category?.slug === filterCategory
+    const matchType = !filterType || p.stone_type?.code === filterType
+    return matchSearch && matchCategory && matchType
+  })
+
+  const handleCreateProduct = async () => {
+    if (!newProduct.name || !newProduct.code || !newProduct.category_id || !newProduct.stone_type_id) return
+    await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(newProduct),
     })
-    setIsNew(true)
-    setKullanimInput('')
+    setNewProduct({ name: '', code: '', category_id: '', stone_type_id: '' })
+    setShowNewProduct(false)
+    fetchData()
   }
 
-  const openEdit = (tas: Tas) => {
-    setEditTas({ ...tas })
-    setIsNew(false)
-    setKullanimInput('')
-  }
-
-  const saveTas = () => {
-    if (!editTas || !editTas.ad.trim()) return
-    if (isNew) {
-      setTaslar((prev) => [...prev, editTas])
-    } else {
-      setTaslar((prev) => prev.map((t) => (t.id === editTas.id ? editTas : t)))
-    }
-    setEditTas(null)
-  }
-
-  const deleteTas = (id: number) => {
-    setTaslar((prev) => prev.filter((t) => t.id !== id))
+  const handleDeleteProduct = async (id: string) => {
+    await fetch(`/api/products/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': password },
+    })
     setDeleteConfirm(null)
+    fetchData()
   }
 
-  const toggleAktif = (id: number) => {
-    setTaslar((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, aktif: !t.aktif } : t))
-    )
-  }
+  const handleImageUpload = async (productId: string, file: File) => {
+    setUploadingId(productId)
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('product_id', productId)
 
-  const addKullanim = () => {
-    if (!kullanimInput.trim() || !editTas) return
-    setEditTas({ ...editTas, kullanim: [...editTas.kullanim, kullanimInput.trim()] })
-    setKullanimInput('')
-  }
-
-  const removeKullanim = (index: number) => {
-    if (!editTas) return
-    setEditTas({
-      ...editTas,
-      kullanim: editTas.kullanim.filter((_, i) => i !== index),
+    await fetch('/api/products/upload', {
+      method: 'POST',
+      headers: { 'x-admin-password': password },
+      body: formData,
     })
+
+    setUploadingId(null)
+    fetchData()
+  }
+
+  const handleCreateStoneType = async () => {
+    if (!newStoneType.name || !newStoneType.code) return
+    await fetch('/api/stone-types', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ ...newStoneType, sort_order: stoneTypes.length + 1 }),
+    })
+    setNewStoneType({ name: '', code: '' })
+    setShowNewStoneType(false)
+    fetchData()
+  }
+
+  if (loading) {
+    return <div className="text-center py-20 text-white/30 font-mono text-sm">Yükleniyor...</div>
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <p className="text-white/30 text-[10px] font-mono uppercase">Toplam Ürün</p>
+          <p className="text-white text-2xl font-heading font-bold mt-1">{products.length}</p>
+        </div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <p className="text-white/30 text-[10px] font-mono uppercase">Taş Türü</p>
+          <p className="text-white text-2xl font-heading font-bold mt-1">{stoneTypes.length}</p>
+        </div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <p className="text-white/30 text-[10px] font-mono uppercase">Kategori</p>
+          <p className="text-white text-2xl font-heading font-bold mt-1">{categories.length}</p>
+        </div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <p className="text-white/30 text-[10px] font-mono uppercase">Resimli</p>
+          <p className="text-white text-2xl font-heading font-bold mt-1">
+            {products.filter(p => p.image_url).length}
+          </p>
+        </div>
+      </div>
+
+      {/* Stone Types Section */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-medium text-sm">Taş Türleri</h3>
+          <button
+            onClick={() => setShowNewStoneType(true)}
+            className="flex items-center gap-1.5 text-gold-400 text-xs font-mono hover:text-gold-300 transition-colors"
+          >
+            <Plus size={12} /> Yeni Tür
+          </button>
+        </div>
+
+        {showNewStoneType && (
+          <div className="flex gap-3 mb-4">
+            <input
+              type="text"
+              value={newStoneType.name}
+              onChange={(e) => setNewStoneType(p => ({ ...p, name: e.target.value }))}
+              placeholder="Tür Adı (ör: Oniks)"
+              className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+            />
+            <input
+              type="text"
+              value={newStoneType.code}
+              onChange={(e) => setNewStoneType(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+              placeholder="Kod (ör: ONKS)"
+              className="w-28 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+            />
+            <button onClick={handleCreateStoneType} className="px-4 py-2 bg-white text-black rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors">
+              Ekle
+            </button>
+            <button onClick={() => setShowNewStoneType(false)} className="p-2 text-white/30 hover:text-white">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          {stoneTypes.map(st => (
+            <span key={st.id} className="px-3 py-1.5 rounded-full bg-gold-400/10 text-gold-400 text-xs font-mono">
+              {st.name} ({st.code}) — {products.filter(p => p.stone_type?.code === st.code).length} ürün
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Header + Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-white/40 text-xs font-mono">{taslar.length} taş · {taslar.filter(t => t.aktif).length} aktif</p>
+        <div className="flex items-center gap-3 flex-1">
+          <div className="relative flex-1 max-w-xs">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Ürün ara..."
+              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.12]"
+            />
+          </div>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none appearance-none"
+          >
+            <option value="" className="bg-[#111]">Tüm Kategoriler</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.slug} className="bg-[#111]">{c.name}</option>
+            ))}
+          </select>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none appearance-none"
+          >
+            <option value="" className="bg-[#111]">Tüm Türler</option>
+            {stoneTypes.map(st => (
+              <option key={st.id} value={st.code} className="bg-[#111]">{st.name}</option>
+            ))}
+          </select>
         </div>
         <button
-          onClick={openNew}
+          onClick={() => setShowNewProduct(true)}
           className="inline-flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
         >
-          <Plus size={16} />
-          Yeni Taş Ekle
+          <Plus size={16} /> Yeni Ürün
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Taş adı veya kategori ara..."
-          className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.12] transition-colors"
-        />
-      </div>
-
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((tas) => (
-          <div
-            key={tas.id}
-            className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all ${
-              tas.aktif ? 'border-white/[0.06]' : 'border-white/[0.03] opacity-50'
-            }`}
+      {/* New Product Form */}
+      {showNewProduct && (
+        <div className="bg-white/[0.03] border border-gold-400/20 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-medium text-sm">Yeni Ürün Ekle</h3>
+            <button onClick={() => setShowNewProduct(false)}>
+              <X size={16} className="text-white/40" />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <input
+              type="text"
+              value={newProduct.name}
+              onChange={(e) => setNewProduct(p => ({ ...p, name: e.target.value }))}
+              placeholder="Ürün Adı"
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+            />
+            <input
+              type="text"
+              value={newProduct.code}
+              onChange={(e) => setNewProduct(p => ({ ...p, code: e.target.value }))}
+              placeholder="Kod (ör: RKS 15)"
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+            />
+            <select
+              value={newProduct.category_id}
+              onChange={(e) => setNewProduct(p => ({ ...p, category_id: e.target.value }))}
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none appearance-none"
+            >
+              <option value="" className="bg-[#111]">Kategori</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id} className="bg-[#111]">{c.name}</option>
+              ))}
+            </select>
+            <select
+              value={newProduct.stone_type_id}
+              onChange={(e) => setNewProduct(p => ({ ...p, stone_type_id: e.target.value }))}
+              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none appearance-none"
+            >
+              <option value="" className="bg-[#111]">Taş Türü</option>
+              {stoneTypes.map(st => (
+                <option key={st.id} value={st.id} className="bg-[#111]">{st.name} ({st.code})</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={handleCreateProduct}
+            className="mt-4 inline-flex items-center gap-2 bg-white text-black px-5 py-2 rounded-full text-xs font-medium hover:bg-stone-200 transition-colors"
           >
-            {/* Image Placeholder */}
-            <div className="aspect-[4/3] bg-white/[0.04] flex items-center justify-center relative">
-              <ImageIcon size={32} className="text-white/10" />
-              {!tas.aktif && (
-                <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-red-400/10 text-red-400 text-[10px] font-mono">
-                  Pasif
-                </div>
+            <Save size={12} /> Kaydet
+          </button>
+        </div>
+      )}
+
+      {/* Products Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {filtered.map((product) => (
+          <div
+            key={product.id}
+            className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-white/[0.12] transition-all group"
+          >
+            {/* Image */}
+            <div className="aspect-square bg-white/[0.04] relative flex items-center justify-center overflow-hidden">
+              {product.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+              ) : (
+                <ImageIcon size={24} className="text-white/10" />
               )}
+
+              {/* Upload overlay */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <button
+                  onClick={() => {
+                    setUploadingId(product.id)
+                    fileInputRef.current?.click()
+                  }}
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/40 transition-colors"
+                  title="Resim Yükle"
+                >
+                  {uploadingId === product.id ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Upload size={14} className="text-white" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setDeleteConfirm(product.id)}
+                  className="p-2 rounded-full bg-red-500/30 hover:bg-red-500/60 transition-colors"
+                  title="Sil"
+                >
+                  <Trash2 size={14} className="text-white" />
+                </button>
+              </div>
             </div>
 
             {/* Info */}
-            <div className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h4 className="text-white font-medium text-sm">{tas.ad}</h4>
-                  <p className="text-white/30 text-xs font-mono">{tas.kategori} · {tas.renk}</p>
-                </div>
-              </div>
-
-              <p className="text-white/40 text-xs leading-relaxed mb-3 line-clamp-2">{tas.aciklama}</p>
-
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {tas.kullanim.slice(0, 3).map((k) => (
-                  <span key={k} className="px-2 py-0.5 rounded-full bg-gold-400/10 text-gold-400 text-[10px] font-mono">
-                    {k}
-                  </span>
-                ))}
-                {tas.kullanim.length > 3 && (
-                  <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-white/30 text-[10px] font-mono">
-                    +{tas.kullanim.length - 3}
-                  </span>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 pt-3 border-t border-white/[0.06]">
-                <button
-                  onClick={() => openEdit(tas)}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/[0.04] text-white/50 text-xs hover:bg-white/[0.08] hover:text-white transition-all"
-                >
-                  <Edit3 size={12} />Düzenle
-                </button>
-                <button
-                  onClick={() => toggleAktif(tas.id)}
-                  className="p-2 rounded-lg bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white transition-all"
-                  title={tas.aktif ? 'Pasife Al' : 'Aktife Al'}
-                >
-                  {tas.aktif ? <EyeOff size={14} /> : <Eye size={14} />}
-                </button>
-                <button
-                  onClick={() => setDeleteConfirm(tas.id)}
-                  className="p-2 rounded-lg bg-white/[0.04] text-white/30 hover:bg-red-400/10 hover:text-red-400 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
+            <div className="p-3 text-center">
+              <h4 className="text-white text-sm font-heading font-semibold">{product.name}</h4>
+              <p className="text-white/30 text-[10px] font-mono mt-0.5">{product.code}</p>
+              <div className="flex justify-center gap-1 mt-2">
+                <span className="px-1.5 py-0.5 rounded bg-gold-400/10 text-gold-400 text-[9px] font-mono">
+                  {product.stone_type?.code}
+                </span>
+                <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-white/40 text-[9px] font-mono">
+                  {product.category?.name}
+                </span>
               </div>
             </div>
           </div>
         ))}
       </div>
 
+      {filtered.length === 0 && (
+        <div className="text-center py-12 text-white/20 font-mono text-sm">Ürün bulunamadı</div>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file && uploadingId) {
+            handleImageUpload(uploadingId, file)
+          }
+          e.target.value = ''
+        }}
+      />
+
       {/* Delete Confirmation */}
-      {deleteConfirm !== null && (
+      {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setDeleteConfirm(null)}>
           <div className="bg-[#111] border border-white/[0.08] rounded-2xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-heading text-base font-semibold text-white mb-2">Taşı Sil</h3>
+            <h3 className="font-heading text-base font-semibold text-white mb-2">Ürünü Sil</h3>
             <p className="text-white/40 text-sm mb-6">
-              Bu taşı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              Bu ürünü silmek istediğinize emin misiniz?
             </p>
             <div className="flex gap-3">
               <button
@@ -236,156 +397,10 @@ export default function AdminTaslar() {
                 İptal
               </button>
               <button
-                onClick={() => deleteTas(deleteConfirm)}
+                onClick={() => handleDeleteProduct(deleteConfirm)}
                 className="flex-1 py-2.5 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
               >
                 Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit / New Modal */}
-      {editTas && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setEditTas(null)}>
-          <div
-            className="bg-[#111] border border-white/[0.08] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
-              <h3 className="font-heading text-lg font-semibold text-white">
-                {isNew ? 'Yeni Taş Ekle' : 'Taşı Düzenle'}
-              </h3>
-              <button onClick={() => setEditTas(null)} className="text-white/40 hover:text-white">
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Form */}
-            <div className="p-6 space-y-4">
-              {/* Ad */}
-              <div>
-                <label className="block text-white/40 text-xs font-mono mb-1.5">Taş Adı *</label>
-                <input
-                  type="text"
-                  value={editTas.ad}
-                  onChange={(e) => setEditTas({ ...editTas, ad: e.target.value })}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                  placeholder="ör. Traverten"
-                />
-              </div>
-
-              {/* Kategori & Renk */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-white/40 text-xs font-mono mb-1.5">Kategori</label>
-                  <select
-                    value={editTas.kategori}
-                    onChange={(e) => setEditTas({ ...editTas, kategori: e.target.value })}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/[0.15] transition-colors appearance-none"
-                  >
-                    <option value="" className="bg-[#111]">Seçin</option>
-                    {kategoriler.map((k) => (
-                      <option key={k} value={k} className="bg-[#111]">{k}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-white/40 text-xs font-mono mb-1.5">Renk</label>
-                  <input
-                    type="text"
-                    value={editTas.renk}
-                    onChange={(e) => setEditTas({ ...editTas, renk: e.target.value })}
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                    placeholder="ör. Bej / Krem"
-                  />
-                </div>
-              </div>
-
-              {/* Açıklama */}
-              <div>
-                <label className="block text-white/40 text-xs font-mono mb-1.5">Açıklama</label>
-                <textarea
-                  value={editTas.aciklama}
-                  onChange={(e) => setEditTas({ ...editTas, aciklama: e.target.value })}
-                  rows={3}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors resize-none"
-                  placeholder="Taş hakkında kısa açıklama..."
-                />
-              </div>
-
-              {/* Kullanım Alanları */}
-              <div>
-                <label className="block text-white/40 text-xs font-mono mb-1.5">Kullanım Alanları</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {editTas.kullanim.map((k, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-400/10 text-gold-400 text-xs font-mono">
-                      {k}
-                      <button onClick={() => removeKullanim(i)} className="hover:text-gold-200">
-                        <X size={10} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={kullanimInput}
-                    onChange={(e) => setKullanimInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addKullanim())}
-                    className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                    placeholder="ör. Cephe Kaplama"
-                  />
-                  <button
-                    onClick={addKullanim}
-                    className="px-4 py-2 rounded-xl bg-white/[0.06] text-white/60 text-sm hover:bg-white/[0.10] transition-colors"
-                  >
-                    Ekle
-                  </button>
-                </div>
-              </div>
-
-              {/* Fotoğraf */}
-              <div>
-                <label className="block text-white/40 text-xs font-mono mb-1.5">Fotoğraf</label>
-                <div className="border-2 border-dashed border-white/[0.08] rounded-xl p-8 text-center hover:border-white/[0.15] transition-colors cursor-pointer">
-                  <ImageIcon size={24} className="mx-auto text-white/20 mb-2" />
-                  <p className="text-white/30 text-xs font-mono">Fotoğraf yüklemek için tıklayın</p>
-                  <p className="text-white/15 text-[10px] font-mono mt-1">PNG, JPG · Max 5MB</p>
-                </div>
-              </div>
-
-              {/* Aktif */}
-              <div className="flex items-center justify-between py-2">
-                <span className="text-white/50 text-sm">Sitede Göster</span>
-                <button
-                  onClick={() => setEditTas({ ...editTas, aktif: !editTas.aktif })}
-                  className={`w-11 h-6 rounded-full transition-colors relative ${
-                    editTas.aktif ? 'bg-green-500' : 'bg-white/10'
-                  }`}
-                >
-                  <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                    editTas.aktif ? 'translate-x-[22px]' : 'translate-x-0.5'
-                  }`} />
-                </button>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex gap-3 p-6 border-t border-white/[0.06]">
-              <button
-                onClick={() => setEditTas(null)}
-                className="flex-1 py-3 rounded-full border border-white/[0.08] text-white/60 text-sm hover:bg-white/[0.04] transition-colors"
-              >
-                İptal
-              </button>
-              <button
-                onClick={saveTas}
-                className="flex-1 py-3 rounded-full bg-white text-black text-sm font-medium hover:bg-stone-200 transition-colors"
-              >
-                {isNew ? 'Ekle' : 'Kaydet'}
               </button>
             </div>
           </div>
