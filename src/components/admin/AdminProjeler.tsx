@@ -965,9 +965,27 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 {(editProject.photos.length > 0 || pendingFiles.length > 0) && (
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     {editProject.photos.map((url, i) => (
-                      <div key={`existing-${i}`} className="relative aspect-square rounded-lg overflow-hidden group">
+                      <div key={`existing-${i}`} className={`relative aspect-square rounded-lg overflow-hidden group ${i === 0 ? 'ring-2 ring-gold-400' : ''}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={url} alt="" className="w-full h-full object-cover" />
+                        {i === 0 && (
+                          <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-gold-400 text-[8px] font-mono font-bold text-black">
+                            KAPAK
+                          </div>
+                        )}
+                        {i !== 0 && (
+                          <button
+                            onClick={() => {
+                              const newPhotos = [...editProject.photos]
+                              newPhotos.splice(i, 1)
+                              newPhotos.unshift(url)
+                              setEditProject({ ...editProject, photos: newPhotos })
+                            }}
+                            className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono text-gold-400 opacity-0 group-hover:opacity-100 transition-opacity border border-gold-400/30"
+                          >
+                            Kapak Yap
+                          </button>
+                        )}
                         <button
                           onClick={() => removePhoto(i)}
                           className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
