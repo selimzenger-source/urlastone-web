@@ -15,6 +15,8 @@ import {
   Upload,
   Loader2,
   Calendar,
+  Globe,
+  Languages,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -335,22 +337,33 @@ export default function AdminProjeler({ adminPassword }: Props) {
   }
 
   // Otomatik çeviri
+  const [translating, setTranslating] = useState<string | null>(null)
+
   const translateProject = async (projectId: string, project_name: string, description: string) => {
     try {
+      setTranslating(projectId)
       const res = await fetch('/api/translate', {
         method: 'POST',
         headers,
         body: JSON.stringify({ project_name, description }),
       })
-      if (!res.ok) return
+      if (!res.ok) {
+        console.error('Çeviri API hatası:', await res.text())
+        return
+      }
       const translations = await res.json()
-      await fetch(`/api/projects/${projectId}`, {
+      const updateRes = await fetch(`/api/projects/${projectId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ translations }),
       })
-    } catch {
-      // Çeviri başarısız olursa sessizce devam et
+      if (updateRes.ok) {
+        await fetchProjects()
+      }
+    } catch (err) {
+      console.error('Çeviri hatası:', err)
+    } finally {
+      setTranslating(null)
     }
   }
 
@@ -610,6 +623,27 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     <Calendar size={9} />
                     {formatDate(project.project_date)}
                   </span>
+                )}
+              </div>
+
+              {/* Çeviri durumu */}
+              <div className="flex items-center gap-2 pt-2">
+                {project.translations ? (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-400/10 text-green-400 text-[10px] font-mono">
+                    <Languages size={10} /> Çevrildi
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => translateProject(project.id, project.project_name, project.description || '')}
+                    disabled={translating === project.id}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-400/10 text-blue-400 text-[10px] font-mono hover:bg-blue-400/20 transition-colors disabled:opacity-50"
+                  >
+                    {translating === project.id ? (
+                      <><Loader2 size={10} className="animate-spin" /> Çevriliyor...</>
+                    ) : (
+                      <><Globe size={10} /> Çevir (EN/ES/AR/DE)</>
+                    )}
+                  </button>
                 )}
               </div>
 
