@@ -247,6 +247,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
       zoomControl={true}
       attributionControl={false}
+      closePopupOnClick={false}
     >
       <MobileTapFix />
       <TileLayer
@@ -269,7 +270,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       >
         {locations.map((loc, i) => (
           <Marker key={loc.id || i} position={[loc.lat, loc.lng]} icon={markerIcons[i]}>
-            <Popup>
+            <Popup closeOnClick={false} autoPan={true} keepInView={true}>
               <div style={{
                 background: '#1a1a1a',
                 color: 'white',
