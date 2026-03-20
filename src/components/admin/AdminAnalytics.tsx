@@ -77,22 +77,33 @@ function formatNumber(n: number): string {
   return n.toString()
 }
 
+type Period = 'today' | 'week' | 'month' | 'all'
+
+const PERIOD_LABELS: Record<Period, string> = {
+  today: 'Bugün',
+  week: 'Bu Hafta',
+  month: 'Bu Ay',
+  all: 'Tüm Zamanlar',
+}
+
 export default function AdminAnalytics() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [projectNames, setProjectNames] = useState<Record<string, string>>({})
+  const [activePeriod, setActivePeriod] = useState<Period>('month')
+  const [clearing, setClearing] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
-  useEffect(() => {
-    const pw = localStorage.getItem('admin_pw') || ''
+  const pw = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
-    // Fetch analytics + project names in parallel
+  const fetchAnalytics = (period: Period = activePeriod) => {
+    setLoading(true)
     Promise.all([
-      fetch('/api/analytics', { headers: { 'x-admin-password': pw } }).then(r => r.json()),
+      fetch(`/api/analytics?period=${period}`, { headers: { 'x-admin-password': pw } }).then(r => r.json()),
       fetch('/api/projects').then(r => r.json()).catch(() => []),
     ]).then(([analyticsData, projects]) => {
       if (analyticsData && analyticsData.today) setData(analyticsData)
 
-      // Build project name lookup
       if (Array.isArray(projects)) {
         const names: Record<string, string> = {}
         projects.forEach((p: ProjectName) => {
@@ -102,7 +113,22 @@ export default function AdminAnalytics() {
       }
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [])
+  }
+
+  const handlePeriodChange = (period: Period) => {
+    setActivePeriod(period)
+    fetchAnalytics(period)
+  }
+
+  const handleClearData = async () => {
+    setClearing(true)
+    await fetch('/api/analytics', { method: 'DELETE', headers: { 'x-admin-password': pw } })
+    setShowClearConfirm(false)
+    setClearing(false)
+    fetchAnalytics()
+  }
+
+  useEffect(() => { fetchAnalytics() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Resolve page path to readable name
   const getPageName = (page: string): { name: string; icon: string; isProject: boolean } => {
@@ -189,37 +215,40 @@ export default function AdminAnalytics() {
 
   return (
     <div className="space-y-5">
-      {/* Summary Cards — Dual metric: views + unique visitors */}
+      {/* Summary Cards — Clickable period selectors */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <DualStatCard
-          icon={Eye}
-          label="Bugün"
-          views={today.views}
-          visitors={today.visitors}
-          color="text-gold-400"
+          icon={Eye} label="Bugün" views={today.views} visitors={today.visitors} color="text-gold-400"
+          active={activePeriod === 'today'} onClick={() => handlePeriodChange('today')}
         />
         <DualStatCard
-          icon={BarChart3}
-          label="Bu Hafta"
-          views={week.views}
-          visitors={week.visitors}
-          color="text-blue-400"
+          icon={BarChart3} label="Bu Hafta" views={week.views} visitors={week.visitors} color="text-blue-400"
+          active={activePeriod === 'week'} onClick={() => handlePeriodChange('week')}
         />
         <DualStatCard
-          icon={Users}
-          label="Bu Ay"
-          views={month.views}
-          visitors={month.visitors}
-          color="text-purple-400"
+          icon={Users} label="Bu Ay" views={month.views} visitors={month.visitors} color="text-purple-400"
+          active={activePeriod === 'month'} onClick={() => handlePeriodChange('month')}
         />
-        <StatCard
-          icon={TrendingUp}
-          label="Toplam Görüntüleme"
-          value={formatNumber(data.total)}
-          sub={`${viewsPerVisit} sayfa/ziyaret`}
-          color="text-green-400"
-          trend={weekChange}
-        />
+        <div onClick={() => handlePeriodChange('all')} className="cursor-pointer">
+          <StatCard
+            icon={TrendingUp} label="Toplam Görüntüleme" value={formatNumber(data.total)}
+            sub={`${viewsPerVisit} sayfa/ziyaret`} color="text-green-400" trend={weekChange}
+            active={activePeriod === 'all'}
+          />
+        </div>
+      </div>
+
+      {/* Period indicator + Reset */}
+      <div className="flex items-center justify-between">
+        <p className="text-white/30 text-[10px] font-mono">
+          📊 Detaylar: <span className="text-white/60">{PERIOD_LABELS[activePeriod]}</span>
+        </p>
+        <button
+          onClick={() => setShowClearConfirm(true)}
+          className="text-red-400/40 text-[10px] font-mono hover:text-red-400 transition-colors"
+        >
+          🗑️ Verileri Sıfırla
+        </button>
       </div>
 
       {/* Daily Chart — Area style */}
@@ -295,7 +324,7 @@ export default function AdminAnalytics() {
               <FileText size={16} className="text-gold-400" />
               <h3 className="font-heading text-sm md:text-base font-semibold text-white">Popüler Sayfalar</h3>
             </div>
-            <span className="text-white/20 text-[10px] font-mono px-2 py-1 rounded-full bg-white/[0.04]">bu ay</span>
+            <span className="text-white/20 text-[10px] font-mono px-2 py-1 rounded-full bg-white/[0.04]">{PERIOD_LABELS[activePeriod]}</span>
           </div>
 
           {mergedPages.length === 0 ? (
@@ -517,6 +546,23 @@ export default function AdminAnalytics() {
           </div>
         </div>
       </div>
+
+      {/* Clear Data Confirmation */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowClearConfirm(false)}>
+          <div className="bg-[#111] border border-red-500/20 rounded-2xl p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-heading text-base font-semibold text-white mb-2">⚠️ Tüm Verileri Sıfırla</h3>
+            <p className="text-white/40 text-sm mb-2">Tüm ziyaretçi verileri kalıcı olarak silinecek.</p>
+            <p className="text-red-400/70 text-xs mb-6">Bu işlem geri alınamaz!</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-2.5 rounded-full border border-white/[0.08] text-white/60 text-sm hover:bg-white/[0.04]">İptal</button>
+              <button onClick={handleClearData} disabled={clearing} className="flex-1 py-2.5 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 disabled:opacity-50">
+                {clearing ? 'Siliniyor...' : 'Evet, Sıfırla'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -571,15 +617,19 @@ function BreakdownPanel({ title, icon, data, nameMap, barColor }: {
 }
 
 // Dual metric card — shows both views and unique visitors prominently
-function DualStatCard({ icon: Icon, label, views, visitors, color }: {
+function DualStatCard({ icon: Icon, label, views, visitors, color, active, onClick }: {
   icon: typeof Eye
   label: string
   views: number
   visitors: number
   color: string
+  active?: boolean
+  onClick?: () => void
 }) {
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 hover:bg-white/[0.05] transition-colors">
+    <div onClick={onClick} className={`rounded-2xl p-4 transition-all cursor-pointer ${
+      active ? 'bg-white/[0.06] border-2 border-gold-400/50 scale-[1.02]' : 'bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05]'
+    }`}>
       <div className="flex items-center gap-2 mb-3">
         <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
           <Icon size={14} className={color} />
@@ -600,16 +650,19 @@ function DualStatCard({ icon: Icon, label, views, visitors, color }: {
   )
 }
 
-function StatCard({ icon: Icon, label, value, sub, color, trend }: {
+function StatCard({ icon: Icon, label, value, sub, color, trend, active }: {
   icon: typeof Eye
   label: string
   value: string
   sub: string
   color: string
   trend?: number
+  active?: boolean
 }) {
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 hover:bg-white/[0.05] transition-colors">
+    <div className={`rounded-2xl p-4 transition-all cursor-pointer ${
+      active ? 'bg-white/[0.06] border-2 border-gold-400/50 scale-[1.02]' : 'bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05]'
+    }`}>
       <div className="flex items-center justify-between mb-3">
         <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
           <Icon size={14} className={color} />
