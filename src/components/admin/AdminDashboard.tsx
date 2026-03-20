@@ -13,17 +13,20 @@ import {
   Users,
   FileText,
   Eye,
+  Star,
 } from 'lucide-react'
 import AdminOverview from './AdminOverview'
 import AdminTeklifler from './AdminTeklifler'
 import AdminTaslar from './AdminTaslar'
 import AdminProjeler from './AdminProjeler'
+import AdminReferanslar from './AdminReferanslar'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
   { id: 'teklifler', label: 'Teklif Talepleri', icon: MessageSquare },
   { id: 'taslar', label: 'Taş Yönetimi', icon: Gem },
   { id: 'projeler', label: 'Proje Yönetimi', icon: MapPin },
+  { id: 'referanslar', label: 'Referanslar', icon: Star },
 ]
 
 export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: () => void; adminPassword: string }) {
@@ -119,6 +122,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
           {activeTab === 'teklifler' && <AdminTeklifler />}
           {activeTab === 'taslar' && <AdminTaslar />}
           {activeTab === 'projeler' && <AdminProjeler adminPassword={adminPassword} />}
+          {activeTab === 'referanslar' && <AdminReferanslar />}
         </div>
       </main>
     </div>

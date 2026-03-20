@@ -1,24 +1,36 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
+import Link from 'next/link'
 
-// Sembolik 10 referans - müşteriden gerçek logolar gelince güncellenecek
-const referanslar = [
-  'Kalyon İnşaat',
-  'Limak Holding',
-  'Rönesans İnşaat',
-  'Tekfen İnşaat',
-  'Mesa Mesken',
-  'Ant Yapı',
-  'Nef İnşaat',
-  'Ege Yapı',
-  'Folkart Yapı',
-  'Sur Yapı',
-]
+interface Referans {
+  id: string
+  name: string
+  project_id: string | null
+  project?: { id: string; project_name: string } | null
+}
 
 export default function ReferansMarquee() {
   const { t } = useLanguage()
-  const items = [...referanslar, ...referanslar]
+  const [referanslar, setReferanslar] = useState<Referans[]>([])
+
+  useEffect(() => {
+    fetch('/api/referanslar')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setReferanslar(data)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  if (referanslar.length === 0) return null
+
+  // Duplicate items enough times to fill the marquee smoothly
+  const repeatCount = Math.max(6, Math.ceil(20 / referanslar.length))
+  const items = Array.from({ length: repeatCount }, () => referanslar).flat()
 
   return (
     <section className="border-t border-b border-white/[0.06] py-14 md:py-20 overflow-hidden">
@@ -37,17 +49,37 @@ export default function ReferansMarquee() {
         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
 
         <div className="flex animate-marquee whitespace-nowrap items-center">
-          {items.map((name, i) => (
-            <span
-              key={i}
-              className="inline-flex items-center mx-12 cursor-default group"
-            >
-              <span className="w-2 h-2 rounded-full bg-gold-400/40 mr-4 group-hover:bg-gold-400 transition-colors duration-300" />
-              <span className="font-heading text-lg md:text-xl text-white/40 group-hover:text-white/70 transition-colors duration-300 tracking-wide">
-                {name}
+          {items.map((ref, i) => {
+            const content = (
+              <>
+                <span className="w-2 h-2 rounded-full bg-gold-400/40 mr-4 group-hover:bg-gold-400 transition-colors duration-300" />
+                <span className="font-heading text-lg md:text-xl text-white/40 group-hover:text-white/70 transition-colors duration-300 tracking-wide">
+                  {ref.name}
+                </span>
+              </>
+            )
+
+            if (ref.project_id) {
+              return (
+                <Link
+                  key={`${ref.id}-${i}`}
+                  href={`/uygulamalarimiz/${ref.project_id}`}
+                  className="inline-flex items-center mx-12 cursor-pointer group"
+                >
+                  {content}
+                </Link>
+              )
+            }
+
+            return (
+              <span
+                key={`${ref.id}-${i}`}
+                className="inline-flex items-center mx-12 cursor-default group"
+              >
+                {content}
               </span>
-            </span>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
