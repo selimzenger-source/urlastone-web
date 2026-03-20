@@ -3,6 +3,7 @@ import HeroSection from '@/components/HeroSection'
 import FeaturedStones from '@/components/FeaturedStones'
 import ProcessSection from '@/components/ProcessSection'
 import ReferansMarquee from '@/components/ReferansMarquee'
+import MiniStats from '@/components/MiniStats'
 import InstagramFeed from '@/components/InstagramFeed'
 import CTASection from '@/components/CTASection'
 import Footer from '@/components/Footer'
@@ -12,6 +13,7 @@ export default function Home() {
     <main>
       <Navbar />
       <HeroSection />
+      <MiniStats />
       <InstagramFeed />
       <FeaturedStones />
       <ProcessSection />
