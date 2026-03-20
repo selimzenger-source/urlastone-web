@@ -1,16 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Fotoğraflı marker - Apple Photos harita tarzı
+// Icon cache — aynı URL için tekrar DivIcon oluşturmayı önler (500+ projede önemli)
+const iconCache = new Map<string, L.DivIcon>()
+
 const createPhotoIcon = (photoUrl?: string) => {
+  const cacheKey = photoUrl || '__no_photo__'
+  const cached = iconCache.get(cacheKey)
+  if (cached) return cached
+
   const size = 56
+  let icon: L.DivIcon
+
   if (photoUrl) {
-    return new L.DivIcon({
+    icon = new L.DivIcon({
       className: 'custom-marker-photo',
       html: `<div style="
         width: ${size}px; height: ${size}px;
@@ -30,22 +38,25 @@ const createPhotoIcon = (photoUrl?: string) => {
       iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -(size / 2 + 4)],
     })
+  } else {
+    icon = new L.DivIcon({
+      className: 'custom-marker',
+      html: `<div style="
+        width: 24px; height: 24px;
+        background: #b39345;
+        border: 2px solid #d2b96e;
+        border-radius: 50%;
+        box-shadow: 0 0 12px rgba(179, 147, 69, 0.5);
+        pointer-events: none;
+      "></div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -14],
+    })
   }
-  // Fotoğraf yoksa gold nokta
-  return new L.DivIcon({
-    className: 'custom-marker',
-    html: `<div style="
-      width: 24px; height: 24px;
-      background: #b39345;
-      border: 2px solid #d2b96e;
-      border-radius: 50%;
-      box-shadow: 0 0 12px rgba(179, 147, 69, 0.5);
-      pointer-events: none;
-    "></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -14],
-  })
+
+  iconCache.set(cacheKey, icon)
+  return icon
 }
 
 // Cluster icon - birden fazla proje üst üsteyken sayı + fotoğraf stack
@@ -202,7 +213,14 @@ interface MapLabels {
 export default function ProjectMap({ locations, labels }: { locations: Location[]; labels?: MapLabels }) {
   const detailsText = labels?.details || 'Detayları Gör →'
   const navigateText = labels?.navigate || 'Konuma Git'
+
+  // Icon'ları memoize et — locations değişmedikçe yeniden hesaplanmaz
+  const markerIcons = useMemo(() => {
+    return locations.map(loc => createPhotoIcon(loc.photos?.[0]))
+  }, [locations])
+
   return (
+    <div style={{ position: 'relative', height: '100%', width: '100%' }}>
     <MapContainer
       center={[39.0, 35.0]}
       zoom={6}
@@ -222,13 +240,16 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
         showCoverageOnHover={false}
         zoomToBoundsOnClick={true}
         animate={true}
-        animateAddingMarkers={true}
+        animateAddingMarkers={false}
         disableClusteringAtZoom={14}
         spiderfyDistanceMultiplier={2}
         chunkedLoading={true}
+        chunkInterval={200}
+        chunkDelay={50}
+        removeOutsideVisibleBounds={true}
       >
         {locations.map((loc, i) => (
-          <Marker key={loc.id || i} position={[loc.lat, loc.lng]} icon={createPhotoIcon(loc.photos?.[0])}>
+          <Marker key={loc.id || i} position={[loc.lat, loc.lng]} icon={markerIcons[i]}>
             <Popup>
               <div style={{
                 background: '#1a1a1a',
@@ -333,5 +354,19 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
         ))}
       </MarkerClusterGroup>
     </MapContainer>
+
+    {/* İpucu yazısı */}
+    <div style={{
+        position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)',
+        zIndex: 1000, pointerEvents: 'none',
+        background: 'rgba(10,10,10,0.7)', backdropFilter: 'blur(8px)',
+        borderRadius: '20px', padding: '6px 14px',
+        border: '1px solid rgba(255,255,255,0.08)',
+      }}>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Inter, sans-serif' }}>
+          📍 Haritayı yakınlaştırarak projeleri keşfedin
+        </span>
+      </div>
+    </div>
   )
 }
