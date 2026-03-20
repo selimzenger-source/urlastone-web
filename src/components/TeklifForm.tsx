@@ -142,7 +142,9 @@ export default function TeklifForm() {
     setSelectedProducts(prev => {
       const exists = prev.find(p => p.id === product.id)
       if (exists) return prev.filter(p => p.id !== product.id)
-      if (prev.length >= 3) return prev
+      if (prev.length >= 4) return prev
+      // Auto-close picker after selecting
+      setTimeout(() => setShowPicker(false), 150)
       return [...prev, product]
     })
     setBilmiyorum(false)
@@ -317,7 +319,7 @@ export default function TeklifForm() {
         {/* ═══ 3-STEP TAŞ SEÇİMİ ═══ */}
         <div>
           <label className="block text-white/50 text-xs font-mono mb-3">
-            {t.form_stone_pref_label} <span className="text-white/30">(max 3 ürün)</span>
+            {t.form_stone_pref_label} <span className="text-white/30">(max 4 ürün)</span>
           </label>
 
           {/* Selected products chips */}
@@ -345,7 +347,7 @@ export default function TeklifForm() {
                 className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 border ${
                   showPicker ? 'bg-white/10 border-white/20 text-white' : 'bg-white/[0.03] border-white/[0.08] text-white/50 hover:border-white/20'
                 }`}>
-                {showPicker ? 'Kapat' : selectedProducts.length > 0 ? 'Daha ekle...' : 'Ürün seç...'}
+                {showPicker ? 'Kapat' : selectedProducts.length > 0 ? `+ Başka ürün ekle (${selectedProducts.length}/4)` : 'Ürün seç...'}
               </button>
             )}
           </div>
@@ -354,26 +356,9 @@ export default function TeklifForm() {
           {showPicker && !bilmiyorum && (
             <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl overflow-hidden">
 
-              {/* Step 1: Taş Türü */}
+              {/* Step 1: Ebat Kategorisi */}
               <div className="p-3 border-b border-white/[0.06]">
-                <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-2">1. Taş Türü</p>
-                <div className="flex gap-1.5 overflow-x-auto">
-                  <button type="button" onClick={() => { setFilterType(null); setFilterCategory(null) }}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition-colors ${
-                      !filterType ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'
-                    }`}>Tümü</button>
-                  {stoneTypes.map(st => (
-                    <button key={st.id} type="button" onClick={() => { setFilterType(filterType === st.code ? null : st.code); setFilterCategory(null) }}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition-colors ${
-                        filterType === st.code ? 'bg-gold-400/20 text-gold-400' : 'text-white/40 hover:text-white/60'
-                      }`}>{st.name}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 2: Ebat Kategorisi */}
-              <div className="p-3 border-b border-white/[0.06]">
-                <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-2">2. Ebat Kategorisi</p>
+                <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-2">1. Ebat Kategorisi</p>
                 <div className="flex gap-1.5 overflow-x-auto">
                   <button type="button" onClick={() => setFilterCategory(null)}
                     className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition-colors ${
@@ -384,6 +369,23 @@ export default function TeklifForm() {
                       className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition-colors ${
                         filterCategory === cat.slug ? 'bg-gold-400/20 text-gold-400' : 'text-white/40 hover:text-white/60'
                       }`}>{cat.name}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Taş Türü */}
+              <div className="p-3 border-b border-white/[0.06]">
+                <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider mb-2">2. Taş Türü</p>
+                <div className="flex gap-1.5 overflow-x-auto">
+                  <button type="button" onClick={() => setFilterType(null)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition-colors ${
+                      !filterType ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'
+                    }`}>Tümü</button>
+                  {stoneTypes.map(st => (
+                    <button key={st.id} type="button" onClick={() => setFilterType(filterType === st.code ? null : st.code)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition-colors ${
+                        filterType === st.code ? 'bg-gold-400/20 text-gold-400' : 'text-white/40 hover:text-white/60'
+                      }`}>{st.name}</button>
                   ))}
                 </div>
               </div>
@@ -401,7 +403,7 @@ export default function TeklifForm() {
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {filteredProducts.map(product => {
                         const isSelected = selectedProducts.some(p => p.id === product.id)
-                        const isDisabled = !isSelected && selectedProducts.length >= 3
+                        const isDisabled = !isSelected && selectedProducts.length >= 4
                         return (
                           <button key={product.id} type="button"
                             onClick={() => !isDisabled && toggleProduct(product)}
@@ -432,8 +434,8 @@ export default function TeklifForm() {
                     </div>
                   )}
                 </div>
-                {selectedProducts.length >= 3 && (
-                  <p className="text-gold-400/60 text-[10px] font-mono text-center mt-2">Maksimum 3 ürün seçilebilir</p>
+                {selectedProducts.length >= 4 && (
+                  <p className="text-gold-400/60 text-[10px] font-mono text-center mt-2">Maksimum 4 ürün seçilebilir</p>
                 )}
               </div>
             </div>
