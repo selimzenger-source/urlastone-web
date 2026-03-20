@@ -60,14 +60,19 @@ export default function UygulamalarimPage() {
     photos: p.photos || [],
   }))
 
-  // Yeterli proje yoksa pazarlama rakamlarını göster
-  const hasEnoughProjects = projects.length >= 5
-  const uniqueCities = new Set(projects.map((p) => p.city?.trim().toLowerCase())).size
+  // Şehir sayısını doğru hesapla - "Çeşme, İzmir" ve "İzmir" aynı şehir olmalı
+  // Şehir alanındaki son parçayı (il adını) al: "Çeşme, İzmir" → "İzmir", "İzmir" → "İzmir"
+  const normalizeCity = (city: string) => {
+    if (!city) return ''
+    const parts = city.split(',').map(s => s.trim().toLowerCase())
+    return parts[parts.length - 1] || parts[0] || ''
+  }
+  const uniqueCities = new Set(projects.map((p) => normalizeCity(p.city))).size
   const uniqueCountries = new Set(projects.map((p) => (p.country || 'Türkiye').trim().toLowerCase())).size
   const stats = [
-    { value: hasEnoughProjects ? `${projects.length}` : '150+', label: t.apps_total_projects, icon: Building2 },
-    { value: hasEnoughProjects ? `${uniqueCities}` : '35+', label: t.apps_total_cities, icon: MapPin },
-    { value: hasEnoughProjects ? `${uniqueCountries}` : '12+', label: t.apps_total_countries, icon: Globe },
+    { value: `${projects.length}`, label: t.apps_total_projects, icon: Building2 },
+    { value: `${uniqueCities}`, label: t.apps_total_cities, icon: MapPin },
+    { value: `${uniqueCountries}`, label: t.apps_total_countries, icon: Globe },
   ]
 
   // Get unique categories from projects

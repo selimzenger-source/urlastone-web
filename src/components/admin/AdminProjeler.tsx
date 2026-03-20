@@ -191,10 +191,14 @@ export default function AdminProjeler({ adminPassword }: Props) {
         )
         const revData = await revRes.json()
         const addr = revData?.address || {}
-        const city = addr.province || addr.city || addr.town || addr.county || ''
+        // İl seviyesinde şehir (province > city > county)
+        const province = addr.province || addr.state || ''
+        const town = addr.city || addr.town || addr.county || ''
+        const city = province || town || ''
         const country = addr.country || 'Türkiye'
+        // İlçe/semt bilgisi adrese yazılsın
         const district = addr.suburb || addr.district || addr.town || addr.village || ''
-        const shortAddress = [district, city].filter(Boolean).join(', ')
+        const shortAddress = [district, town !== city ? town : ''].filter(Boolean).join(', ')
 
         setEditProject({
           ...editProject,

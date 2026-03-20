@@ -97,10 +97,12 @@ export async function POST(req: NextRequest) {
           if (nomData && nomData.length > 0) {
             const r = nomData[0]
             const addr = r.address || {}
+            const province = addr.province || addr.state || ''
+            const town = addr.city || addr.town || addr.county || ''
             return NextResponse.json({
               lat: parseFloat(r.lat),
               lng: parseFloat(r.lon),
-              city: addr.province || addr.city || addr.town || addr.county || '',
+              city: province || town || '',
               country: addr.country || 'Türkiye',
               address: r.display_name?.split(',').slice(0, 3).join(',') || '',
             })
@@ -119,10 +121,13 @@ export async function POST(req: NextRequest) {
       if (nomData && nomData.length > 0) {
         const r = nomData[0]
         const addr = r.address || {}
-        const city = addr.province || addr.city || addr.town || addr.county || ''
+        // İl seviyesinde şehir
+        const province = addr.province || addr.state || ''
+        const town = addr.city || addr.town || addr.county || ''
+        const city = province || town || ''
         const country = addr.country || 'Türkiye'
         const district = addr.suburb || addr.district || addr.town || addr.village || ''
-        const shortAddress = [district, city].filter(Boolean).join(', ')
+        const shortAddress = [district, town !== city ? town : ''].filter(Boolean).join(', ')
         return NextResponse.json({
           lat: parseFloat(r.lat),
           lng: parseFloat(r.lon),
