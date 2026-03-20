@@ -214,13 +214,15 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       />
       <MarkerClusterGroup
         iconCreateFunction={createClusterCustomIcon}
-        maxClusterRadius={80}
+        maxClusterRadius={50}
         spiderfyOnMaxZoom={true}
         showCoverageOnHover={false}
         zoomToBoundsOnClick={true}
         animate={true}
         animateAddingMarkers={true}
-        disableClusteringAtZoom={15}
+        disableClusteringAtZoom={11}
+        spiderfyDistanceMultiplier={2}
+        chunkedLoading={true}
       >
         {locations.map((loc, i) => (
           <Marker key={loc.id || i} position={[loc.lat, loc.lng]} icon={createPhotoIcon(loc.photos?.[0])}>
