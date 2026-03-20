@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { LanguageProvider } from '@/context/LanguageContext'
 import PWAInstallPrompt from '@/components/PWAInstallPrompt'
+import PageTracker from '@/components/PageTracker'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://urlastone.com'),
@@ -69,6 +70,7 @@ export default function RootLayout({
       <body>
         <LanguageProvider>
           {children}
+          <PageTracker />
           <PWAInstallPrompt />
         </LanguageProvider>
       </body>

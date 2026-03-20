@@ -81,7 +81,7 @@ export async function sendCustomerConfirmation(data: TeklifData) {
           <a href="tel:+905532322144" style="color:#d2b96e;font-size:14px;text-decoration:none;">+90 553 232 2144</a>
         </p>
         <p style="margin:4px 0 0;">
-          <a href="mailto:cihan@urlastone.com" style="color:#999;font-size:12px;text-decoration:none;">cihan@urlastone.com</a>
+          <a href="mailto:info@urlastone.com" style="color:#999;font-size:12px;text-decoration:none;">info@urlastone.com</a>
         </p>
       </div>
     </div>

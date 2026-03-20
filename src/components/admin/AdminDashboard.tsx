@@ -20,9 +20,11 @@ import AdminTeklifler from './AdminTeklifler'
 import AdminTaslar from './AdminTaslar'
 import AdminProjeler from './AdminProjeler'
 import AdminReferanslar from './AdminReferanslar'
+import AdminAnalytics from './AdminAnalytics'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
+  { id: 'analytics', label: 'İstatistikler', icon: TrendingUp },
   { id: 'teklifler', label: 'Teklif Talepleri', icon: MessageSquare },
   { id: 'taslar', label: 'Taş Yönetimi', icon: Gem },
   { id: 'projeler', label: 'Proje Yönetimi', icon: MapPin },
@@ -119,6 +121,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
         {/* Content */}
         <div className="p-4 md:p-8">
           {activeTab === 'overview' && <AdminOverview />}
+          {activeTab === 'analytics' && <AdminAnalytics />}
           {activeTab === 'teklifler' && <AdminTeklifler />}
           {activeTab === 'taslar' && <AdminTaslar />}
           {activeTab === 'projeler' && <AdminProjeler adminPassword={adminPassword} />}
