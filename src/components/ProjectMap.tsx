@@ -163,7 +163,7 @@ function PhotoSlider({ photos, alt }: { photos: string[]; alt: string }) {
   if (!photos.length) return null
 
   return (
-    <div style={{ width: '100%', height: '200px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '150px', position: 'relative', overflow: 'hidden' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photos[current]}
@@ -300,8 +300,8 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               fontFamily: 'Inter, sans-serif',
               overflow: 'hidden',
               animation: 'slideUp 0.3s ease-out',
-              maxHeight: '80%',
-              overflowY: 'auto',
+              maxHeight: '70%',
+              overflowY: 'hidden',
             }}
           >
             {/* Photo Slider */}
@@ -341,28 +341,23 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               </button>
             )}
 
-            <div style={{ padding: '14px 16px 20px' }}>
+            <div style={{ padding: '10px 14px 14px' }}>
               {/* Project Name */}
-              <div style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px', color: 'white' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '2px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selected.project_name || selected.city}
               </div>
               {/* City & Category */}
-              <div style={{ fontSize: '12px', color: '#b39345', fontWeight: 600, marginBottom: '8px' }}>
+              <div style={{ fontSize: '11px', color: '#b39345', fontWeight: 600, marginBottom: '6px' }}>
                 {selected.city}{selected.category ? ` · ${selected.category}` : ''}
               </div>
-              {/* Description — tam metin */}
+              {/* Description — max 3 satır */}
               {selected.description && (
                 <div style={{
-                  fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '10px',
-                  lineHeight: '1.6',
+                  fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '8px',
+                  lineHeight: '1.5',
+                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden',
                 }}>
                   {selected.description}
-                </div>
-              )}
-              {/* Address */}
-              {selected.address && (
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>
-                  📍 {selected.address}
                 </div>
               )}
               {/* Action buttons */}
@@ -372,9 +367,9 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
                     href={`/uygulamalarimiz/${selected.id}`}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      padding: '8px 16px', borderRadius: '20px',
+                      padding: '7px 14px', borderRadius: '20px',
                       background: 'rgba(255, 255, 255, 0.08)', color: 'white',
-                      fontSize: '12px', fontWeight: 600, textDecoration: 'none',
+                      fontSize: '11px', fontWeight: 600, textDecoration: 'none',
                       border: '1px solid rgba(255, 255, 255, 0.12)',
                     }}
                   >
@@ -387,9 +382,9 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
                   rel="noopener noreferrer"
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '6px',
-                    padding: '8px 16px', borderRadius: '20px',
+                    padding: '7px 14px', borderRadius: '20px',
                     background: 'rgba(179, 147, 69, 0.15)', color: '#b39345',
-                    fontSize: '12px', fontWeight: 600, textDecoration: 'none',
+                    fontSize: '11px', fontWeight: 600, textDecoration: 'none',
                     border: '1px solid rgba(179, 147, 69, 0.25)',
                   }}
                 >
