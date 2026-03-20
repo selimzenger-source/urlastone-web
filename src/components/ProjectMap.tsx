@@ -85,11 +85,12 @@ const createClusterCustomIcon = (cluster: any) => {
           border-radius: 50%; border: 2px solid rgba(210, 185, 110, 0.4);
           overflow: hidden; transform: rotate(-8deg);
           box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        "><img src="${photos[1]}" style="width:100%;height:100%;object-fit:cover;" /></div>`
+          pointer-events: none;
+        "><img src="${photos[1]}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>`
       : ''
 
     return new L.DivIcon({
-      html: `<div style="position:relative; width:${size}px; height:${size}px;">
+      html: `<div style="position:relative; width:${size}px; height:${size}px; pointer-events:none;">
         ${stackHtml}
         <div style="
           position: absolute; top: 2px; left: 4px;
@@ -97,7 +98,8 @@ const createClusterCustomIcon = (cluster: any) => {
           border-radius: 50%; border: 3px solid #d2b96e;
           overflow: hidden; z-index: 2;
           box-shadow: 0 2px 10px rgba(0,0,0,0.5), 0 0 12px rgba(179, 147, 69, 0.3);
-        "><img src="${photos[0]}" style="width:100%;height:100%;object-fit:cover;" /></div>
+          pointer-events: none;
+        "><img src="${photos[0]}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>
         <div style="
           position: absolute; bottom: -6px; right: -6px; z-index: 3;
           min-width: 22px; height: 22px; padding: 0 6px;
@@ -108,6 +110,7 @@ const createClusterCustomIcon = (cluster: any) => {
           display: flex; align-items: center; justify-content: center;
           color: #0a0a0a; font-weight: 700; font-size: 11px;
           font-family: 'Inter', sans-serif;
+          pointer-events: none;
         ">${count}</div>
       </div>`,
       className: 'custom-cluster-marker',
@@ -124,6 +127,7 @@ const createClusterCustomIcon = (cluster: any) => {
       border: 2px solid #d2b96e;
       border-radius: 50%;
       box-shadow: 0 0 20px rgba(179, 147, 69, 0.6), 0 0 40px rgba(179, 147, 69, 0.2);
+      pointer-events: none;
       display: flex; align-items: center; justify-content: center;
       color: #0a0a0a; font-weight: 700; font-size: 14px;
       font-family: 'Inter', sans-serif;

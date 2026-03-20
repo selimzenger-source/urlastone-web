@@ -167,9 +167,17 @@
   right: 0 !important;
 }
 
-/* Marker cluster overrides - gold theme */
+/* Marker & cluster - mobil touch düzeltmesi */
+.custom-marker-photo,
+.custom-marker,
 .custom-cluster-marker {
   background: transparent !important;
+}
+
+.custom-marker-photo > *,
+.custom-marker > *,
+.custom-cluster-marker > * {
+  pointer-events: none !important;
 }
 
 .marker-cluster {
