@@ -37,6 +37,7 @@ export default function PageTracker() {
           referrer: document.referrer || null,
           session_id: getSessionId(),
           device: getDevice(),
+          language: (navigator.language || 'unknown').split('-')[0],
         }),
       }).catch(() => {})
     }, 300)

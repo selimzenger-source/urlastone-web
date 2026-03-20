@@ -19,15 +19,26 @@ export async function POST(req: NextRequest) {
     const country = req.headers.get('x-vercel-ip-country') || null
     const city = req.headers.get('x-vercel-ip-city') || null
 
-    await supabaseAdmin.from('page_views').insert({
+    // Base insert data (always works)
+    const insertData: Record<string, string | null> = {
       page,
       referrer: referrer || null,
       session_id: session_id || null,
       device: device || 'desktop',
+    }
+
+    // Try with extended columns first, fallback to basic
+    const { error } = await supabaseAdmin.from('page_views').insert({
+      ...insertData,
       country: country || null,
       city: city ? decodeURIComponent(city) : null,
       language: language || null,
     })
+
+    // If extended columns don't exist, insert without them
+    if (error && error.message.includes('column')) {
+      await supabaseAdmin.from('page_views').insert(insertData)
+    }
 
     return NextResponse.json({ ok: true })
   } catch {
@@ -147,6 +158,31 @@ export async function GET(req: NextRequest) {
       .slice(0, 6)
       .map(([source, count]) => ({ source, count }))
 
+    // Country breakdown (this month) — only if column exists
+    let topCountries: { country: string; count: number }[] = []
+    try {
+      const { data: countryData, error: countryErr } = await supabaseAdmin
+        .from('page_views')
+        .select('country')
+        .gte('created_at', monthStart)
+        .not('country', 'is', null)
+
+      if (!countryErr && countryData) {
+        const countryCounts: Record<string, number> = {}
+        countryData.forEach((r: { country: string }) => {
+          if (r.country) {
+            countryCounts[r.country] = (countryCounts[r.country] || 0) + 1
+          }
+        })
+        topCountries = Object.entries(countryCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([country, count]) => ({ country, count }))
+      }
+    } catch {
+      // Column might not exist yet — that's OK
+    }
+
     // Daily views for last 14 days (for chart)
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
     const { data: dailyData } = await supabaseAdmin
@@ -183,6 +219,7 @@ export async function GET(req: NextRequest) {
       topPages,
       devices: deviceCounts,
       topReferrers,
+      topCountries,
       dailyChart,
     })
   } catch {

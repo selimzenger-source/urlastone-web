@@ -11,6 +11,7 @@ interface AnalyticsData {
   topPages: { page: string; count: number }[]
   devices: Record<string, number>
   topReferrers: { source: string; count: number }[]
+  topCountries?: { country: string; count: number }[]
   dailyChart: { date: string; views: number; visitors: number }[]
   bounceRate?: number
   avgDuration?: number
@@ -40,6 +41,24 @@ const PAGE_ICONS: Record<string, string> = {
   '/hakkimizda': 'ℹ️',
   '/iletisim': '📞',
   '/teklif': '📋',
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  TR: '🇹🇷 Türkiye', DE: '🇩🇪 Almanya', US: '🇺🇸 ABD', GB: '🇬🇧 İngiltere',
+  FR: '🇫🇷 Fransa', ES: '🇪🇸 İspanya', IT: '🇮🇹 İtalya', NL: '🇳🇱 Hollanda',
+  SA: '🇸🇦 S. Arabistan', AE: '🇦🇪 BAE', QA: '🇶🇦 Katar', KW: '🇰🇼 Kuveyt',
+  BH: '🇧🇭 Bahreyn', OM: '🇴🇲 Umman', EG: '🇪🇬 Mısır', JO: '🇯🇴 Ürdün',
+  IQ: '🇮🇶 Irak', LB: '🇱🇧 Lübnan', RU: '🇷🇺 Rusya', UA: '🇺🇦 Ukrayna',
+  AZ: '🇦🇿 Azerbaycan', GE: '🇬🇪 Gürcistan', GR: '🇬🇷 Yunanistan',
+  BG: '🇧🇬 Bulgaristan', RO: '🇷🇴 Romanya', AT: '🇦🇹 Avusturya',
+  CH: '🇨🇭 İsviçre', SE: '🇸🇪 İsveç', NO: '🇳🇴 Norveç', DK: '🇩🇰 Danimarka',
+  BE: '🇧🇪 Belçika', PL: '🇵🇱 Polonya', CZ: '🇨🇿 Çekya', CA: '🇨🇦 Kanada',
+  AU: '🇦🇺 Avustralya', JP: '🇯🇵 Japonya', CN: '🇨🇳 Çin', IN: '🇮🇳 Hindistan',
+  BR: '🇧🇷 Brezilya', MX: '🇲🇽 Meksika', AR: '🇦🇷 Arjantin', CL: '🇨🇱 Şili',
+  KR: '🇰🇷 G. Kore', TH: '🇹🇭 Tayland', SG: '🇸🇬 Singapur', MY: '🇲🇾 Malezya',
+  IL: '🇮🇱 İsrail', PT: '🇵🇹 Portekiz', IE: '🇮🇪 İrlanda', FI: '🇫🇮 Finlandiya',
+  HU: '🇭🇺 Macaristan', HR: '🇭🇷 Hırvatistan', RS: '🇷🇸 Sırbistan',
+  CY: '🇨🇾 Kıbrıs', MT: '🇲🇹 Malta', LU: '🇱🇺 Lüksemburg',
 }
 
 function formatDuration(seconds: number): string {
@@ -167,41 +186,34 @@ export default function AdminAnalytics() {
 
   return (
     <div className="space-y-5">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <StatCard
+      {/* Summary Cards — Dual metric: views + unique visitors */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <DualStatCard
           icon={Eye}
           label="Bugün"
-          value={formatNumber(today.views)}
-          sub={`${today.visitors} ziyaretçi`}
+          views={today.views}
+          visitors={today.visitors}
           color="text-gold-400"
         />
-        <StatCard
-          icon={Users}
+        <DualStatCard
+          icon={BarChart3}
           label="Bu Hafta"
-          value={formatNumber(week.views)}
-          sub={`${week.visitors} ziyaretçi`}
+          views={week.views}
+          visitors={week.visitors}
           color="text-blue-400"
         />
-        <StatCard
-          icon={BarChart3}
+        <DualStatCard
+          icon={Users}
           label="Bu Ay"
-          value={formatNumber(month.views)}
-          sub={`${month.visitors} ziyaretçi`}
+          views={month.views}
+          visitors={month.visitors}
           color="text-purple-400"
         />
         <StatCard
-          icon={MousePointerClick}
-          label="Sayfa/Ziyaret"
-          value={viewsPerVisit}
-          sub="ortalama"
-          color="text-cyan-400"
-        />
-        <StatCard
           icon={TrendingUp}
-          label="Toplam"
+          label="Toplam Görüntüleme"
           value={formatNumber(data.total)}
-          sub={weekChange >= 0 ? `+%${weekChange} haftalık` : `%${weekChange} haftalık`}
+          sub={`${viewsPerVisit} sayfa/ziyaret`}
           color="text-green-400"
           trend={weekChange}
         />
@@ -401,6 +413,39 @@ export default function AdminAnalytics() {
             )}
           </div>
 
+          {/* Countries */}
+          {data.topCountries && data.topCountries.length > 0 && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Globe size={14} className="text-cyan-400" />
+                  <h3 className="font-heading text-sm font-semibold text-white">Ülkeler</h3>
+                </div>
+                <span className="text-white/20 text-[10px] font-mono">top {data.topCountries.length}</span>
+              </div>
+              <div className="space-y-2">
+                {data.topCountries.map((c, i) => {
+                  const maxC = data.topCountries![0]?.count || 1
+                  const cPct = (c.count / maxC) * 100
+                  return (
+                    <div key={c.country} className="group relative">
+                      <div
+                        className="absolute inset-0 rounded-lg bg-cyan-400/[0.04]"
+                        style={{ width: `${cPct}%` }}
+                      />
+                      <div className="relative flex items-center justify-between px-2.5 py-1.5">
+                        <span className="text-white/70 text-xs">
+                          {COUNTRY_NAMES[c.country] || `🌍 ${c.country}`}
+                        </span>
+                        <span className="text-cyan-400 font-mono text-xs font-semibold">{c.count}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Quick Stats */}
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-5">
             <div className="flex items-center gap-2 mb-3">
@@ -441,6 +486,36 @@ export default function AdminAnalytics() {
   )
 }
 
+// Dual metric card — shows both views and unique visitors prominently
+function DualStatCard({ icon: Icon, label, views, visitors, color }: {
+  icon: typeof Eye
+  label: string
+  views: number
+  visitors: number
+  color: string
+}) {
+  return (
+    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 hover:bg-white/[0.05] transition-colors">
+      <div className="flex items-center gap-2 mb-3">
+        <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
+          <Icon size={14} className={color} />
+        </div>
+        <span className="text-white/50 text-xs font-mono">{label}</span>
+      </div>
+      <div className="flex items-end gap-3">
+        <div>
+          <p className="font-heading text-2xl md:text-3xl font-bold text-white leading-none">{formatNumber(views)}</p>
+          <p className="text-white/30 text-[10px] font-mono mt-1">görüntüleme</p>
+        </div>
+        <div className="border-l border-white/[0.08] pl-3">
+          <p className="font-heading text-lg md:text-xl font-bold text-gold-400 leading-none">{formatNumber(visitors)}</p>
+          <p className="text-gold-400/40 text-[10px] font-mono mt-1">tekil</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StatCard({ icon: Icon, label, value, sub, color, trend }: {
   icon: typeof Eye
   label: string
@@ -452,8 +527,8 @@ function StatCard({ icon: Icon, label, value, sub, color, trend }: {
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 hover:bg-white/[0.05] transition-colors">
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-8 h-8 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
-          <Icon size={16} className={color} />
+        <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
+          <Icon size={14} className={color} />
         </div>
         {trend !== undefined ? (
           <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
