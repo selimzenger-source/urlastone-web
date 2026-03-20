@@ -8,7 +8,7 @@ import 'leaflet/dist/leaflet.css'
 
 // Fotoğraflı marker - Apple Photos harita tarzı
 const createPhotoIcon = (photoUrl?: string) => {
-  const size = 44
+  const size = 56
   if (photoUrl) {
     return new L.DivIcon({
       className: 'custom-marker-photo',
@@ -16,7 +16,7 @@ const createPhotoIcon = (photoUrl?: string) => {
         width: ${size}px; height: ${size}px;
         border-radius: 50%;
         border: 3px solid #d2b96e;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 12px rgba(179, 147, 69, 0.4);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 16px rgba(179, 147, 69, 0.5);
         overflow: hidden;
         background: #1a1a1a;
       "><img src="${photoUrl}" style="
@@ -58,9 +58,9 @@ const createClusterCustomIcon = (cluster: any) => {
     if (src && src[1] && photos.length < 3) photos.push(src[1])
   }
 
-  let size = 52
-  if (count >= 10) size = 58
-  if (count >= 50) size = 66
+  let size = 64
+  if (count >= 10) size = 72
+  if (count >= 50) size = 80
 
   // Fotoğraf varsa stack göster
   if (photos.length > 0) {
