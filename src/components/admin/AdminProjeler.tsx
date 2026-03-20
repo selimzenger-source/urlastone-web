@@ -158,17 +158,39 @@ export default function AdminProjeler({ adminPassword }: Props) {
   }
 
   const [mapsError, setMapsError] = useState('')
+  const [searchingLocation, setSearchingLocation] = useState(false)
 
   const handleMapsUrl = () => {
     if (!mapsUrl.trim()) return
+
+    // Önce URL'den koordinat çekmeyi dene
     const coords = parseGoogleMapsUrl(mapsUrl)
     if (coords && editProject) {
       setEditProject({ ...editProject, lat: coords.lat, lng: coords.lng })
       setMapsUrl('')
       setMapsError('')
-    } else {
-      setMapsError('Koordinat bulunamadı. Google Maps\'te yeri aç, sağ tıkla ve koordinatları kopyala.')
+      return
     }
+
+    // URL'de koordinat yoksa, metin olarak adresi ara (Nominatim)
+    setSearchingLocation(true)
+    setMapsError('')
+    const query = mapsUrl.replace(/https?:\/\/[^\s]+/g, '').trim() || mapsUrl
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`, {
+      headers: { 'Accept-Language': 'tr' }
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0 && editProject) {
+          setEditProject({ ...editProject, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) })
+          setMapsUrl('')
+          setMapsError('')
+        } else {
+          setMapsError('Konum bulunamadı. Daha detaylı adres veya koordinat girin.')
+        }
+      })
+      .catch(() => setMapsError('Arama hatası. Tekrar deneyin.'))
+      .finally(() => setSearchingLocation(false))
   }
 
   const filteredProducts = products.filter(p =>
@@ -731,31 +753,29 @@ export default function AdminProjeler({ adminPassword }: Props) {
               <div>
                 <label className="block text-white/40 text-xs font-mono mb-1.5">Konum</label>
 
-                {/* Google Maps URL ile konum al */}
+                {/* Konum Ara */}
                 <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     value={mapsUrl}
                     onChange={(e) => setMapsUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleMapsUrl())}
                     className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] transition-colors"
-                    placeholder="Google Maps linkini yapıştır..."
+                    placeholder="Mekan adı veya adres yaz... (ör: Samadhi Alaçatı)"
                   />
                   <button
                     type="button"
                     onClick={handleMapsUrl}
-                    className="px-4 py-2.5 bg-gold-400/20 text-gold-400 rounded-xl text-xs font-mono hover:bg-gold-400/30 transition-colors whitespace-nowrap"
+                    disabled={searchingLocation}
+                    className="px-4 py-2.5 bg-gold-400/20 text-gold-400 rounded-xl text-xs font-mono hover:bg-gold-400/30 transition-colors whitespace-nowrap disabled:opacity-50"
                   >
-                    Konumu Al
+                    {searchingLocation ? '...' : 'Bul'}
                   </button>
                 </div>
 
                 {mapsError && (
                   <p className="text-red-400 text-[10px] font-mono mb-2">{mapsError}</p>
                 )}
-
-                <p className="text-white/20 text-[10px] font-mono mb-2">
-                  Google Maps&apos;te yeri bul → sağ tıkla → koordinatları kopyala → buraya yapıştır
-                </p>
 
                 {/* Koordinat gösterimi */}
                 {(editProject.lat !== 0 || editProject.lng !== 0) && (
