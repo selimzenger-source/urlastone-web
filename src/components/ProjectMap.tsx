@@ -19,10 +19,12 @@ const createPhotoIcon = (photoUrl?: string) => {
         box-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 16px rgba(179, 147, 69, 0.5);
         overflow: hidden;
         background: #1a1a1a;
+        pointer-events: none;
       "><img src="${photoUrl}" style="
         width: 100%; height: 100%;
         object-fit: cover;
         display: block;
+        pointer-events: none;
       " /></div>`,
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
@@ -38,6 +40,7 @@ const createPhotoIcon = (photoUrl?: string) => {
       border: 2px solid #d2b96e;
       border-radius: 50%;
       box-shadow: 0 0 12px rgba(179, 147, 69, 0.5);
+      pointer-events: none;
     "></div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
@@ -208,6 +211,8 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
       zoomControl={true}
       attributionControl={false}
+      tap={true}
+      tapTolerance={15}
     >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
