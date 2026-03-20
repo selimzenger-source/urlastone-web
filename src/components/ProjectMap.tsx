@@ -217,13 +217,13 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       />
       <MarkerClusterGroup
         iconCreateFunction={createClusterCustomIcon}
-        maxClusterRadius={50}
+        maxClusterRadius={80}
         spiderfyOnMaxZoom={true}
         showCoverageOnHover={false}
         zoomToBoundsOnClick={true}
         animate={true}
         animateAddingMarkers={true}
-        disableClusteringAtZoom={11}
+        disableClusteringAtZoom={14}
         spiderfyDistanceMultiplier={2}
         chunkedLoading={true}
       >
