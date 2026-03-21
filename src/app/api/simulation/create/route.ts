@@ -185,7 +185,7 @@ export async function POST(req: NextRequest) {
       falBody = {
         image_url: imageUrl,
         prompt,
-        strength: 0.72,          // 0.72 = stronger texture change while keeping building shape & sky
+        strength: 0.80,          // 0.80 = full wall texture coverage while keeping building shape & sky
         num_inference_steps: 30,
         guidance_scale: 4.5,
         num_images: 1,
