@@ -12,13 +12,15 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const MIN_DIMENSION = 400
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-const TEXTS: Record<string, { title: string; desc: string; drag: string; formats: string; btn: string; or: string; errors: Record<string, string> }> = {
+const TEXTS: Record<string, { title: string; desc: string; drag: string; formats: string; btn: string; cameraBtn: string; galleryBtn: string; or: string; errors: Record<string, string> }> = {
   tr: {
     title: 'Mekanınızın Fotoğrafını Yükleyin',
     desc: 'Duvar, zemin veya cephe fotoğrafı yükleyerek AI simülasyonunu başlatın',
     drag: 'Fotoğrafı buraya sürükleyin',
     formats: 'JPG, PNG, WebP — Max 10MB',
     btn: 'Fotoğraf Seç',
+    cameraBtn: 'Fotoğraf Çek',
+    galleryBtn: 'Galeriden Seç',
     or: 'veya',
     errors: {
       type: 'Sadece JPG, PNG ve WebP formatları desteklenir',
@@ -33,6 +35,8 @@ const TEXTS: Record<string, { title: string; desc: string; drag: string; formats
     drag: 'Drag and drop your photo here',
     formats: 'JPG, PNG, WebP — Max 10MB',
     btn: 'Choose Photo',
+    cameraBtn: 'Take Photo',
+    galleryBtn: 'From Gallery',
     or: 'or',
     errors: {
       type: 'Only JPG, PNG, and WebP formats are supported',
@@ -47,6 +51,8 @@ const TEXTS: Record<string, { title: string; desc: string; drag: string; formats
     drag: 'Arrastre y suelte su foto aquí',
     formats: 'JPG, PNG, WebP — Máx 10MB',
     btn: 'Elegir foto',
+    cameraBtn: 'Tomar foto',
+    galleryBtn: 'Desde galería',
     or: 'o',
     errors: {
       type: 'Solo se admiten formatos JPG, PNG y WebP',
@@ -61,6 +67,8 @@ const TEXTS: Record<string, { title: string; desc: string; drag: string; formats
     drag: 'اسحب وأفلت صورتك هنا',
     formats: 'JPG, PNG, WebP — حد أقصى 10MB',
     btn: 'اختر صورة',
+    cameraBtn: 'التقط صورة',
+    galleryBtn: 'من المعرض',
     or: 'أو',
     errors: {
       type: 'يتم دعم صيغ JPG وPNG وWebP فقط',
@@ -75,6 +83,8 @@ const TEXTS: Record<string, { title: string; desc: string; drag: string; formats
     drag: 'Ziehen Sie Ihr Foto hierher',
     formats: 'JPG, PNG, WebP — Max. 10MB',
     btn: 'Foto auswählen',
+    cameraBtn: 'Foto aufnehmen',
+    galleryBtn: 'Aus Galerie',
     or: 'oder',
     errors: {
       type: 'Nur JPG, PNG und WebP werden unterstützt',
@@ -91,6 +101,7 @@ export default function StepUpload({ onUpload }: Props) {
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
 
   const processFile = useCallback((file: File) => {
     setError(null)
@@ -149,17 +160,26 @@ export default function StepUpload({ onUpload }: Props) {
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        onClick={() => fileRef.current?.click()}
-        className={`relative cursor-pointer border-2 border-dashed rounded-2xl p-12 md:p-20 text-center transition-all duration-300 ${
+        className={`relative border-2 border-dashed rounded-2xl p-12 md:p-20 text-center transition-all duration-300 ${
           dragging
             ? 'border-gold-400 bg-gold-400/[0.05] scale-[1.01]'
             : 'border-white/[0.1] hover:border-gold-400/40 hover:bg-white/[0.02]'
         }`}
       >
+        {/* File input — gallery/file picker */}
         <input
           ref={fileRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        {/* Camera input — opens camera directly on mobile */}
+        <input
+          ref={cameraRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          capture="environment"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -177,10 +197,26 @@ export default function StepUpload({ onUpload }: Props) {
         <p className="text-white/50 text-sm mb-2">{t.drag}</p>
         <p className="text-white/20 text-xs font-mono mb-6">{t.or}</p>
 
-        <button className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors">
-          <Upload size={16} />
-          {t.btn}
-        </button>
+        {/* Buttons: Camera + Gallery on mobile, single button on desktop */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          {/* Camera button — primarily for mobile */}
+          <button
+            onClick={(e) => { e.stopPropagation(); cameraRef.current?.click() }}
+            className="inline-flex items-center gap-2 bg-gold-400/20 text-gold-400 px-6 py-3 rounded-full text-sm font-medium hover:bg-gold-400/30 transition-colors border border-gold-400/30"
+          >
+            <Camera size={16} />
+            {t.cameraBtn}
+          </button>
+
+          {/* Gallery / file picker button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); fileRef.current?.click() }}
+            className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
+          >
+            <Upload size={16} />
+            {t.galleryBtn}
+          </button>
+        </div>
 
         <p className="text-white/15 text-[10px] font-mono mt-6 tracking-wider">{t.formats}</p>
       </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Upload, Gem, Paintbrush, Sparkles, Eye, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { SimStep, StoneOption } from '@/lib/simulation'
-import { negativePrompt, buildPrompt, resizeImage } from '@/lib/simulation'
+import { resizeImage } from '@/lib/simulation'
 import StepUpload from './StepUpload'
 import StepSelectStone from './StepSelectStone'
 import StepMaskDraw from './StepMaskDraw'
@@ -73,6 +73,7 @@ export default function SimulationWizard() {
           mask,
           stoneCode: selectedStone.code,
           categorySlug: selectedStone.categorySlug,
+          locale,
         }),
       })
 
