@@ -78,7 +78,7 @@ export function buildPrompt(stoneCode: string, categorySlug?: string): string {
   const stoneBase = STONE_BASE[stoneCode] || STONE_BASE.TRV
   const pattern = categorySlug ? CATEGORY_PATTERN[categorySlug] : CATEGORY_PATTERN.nature
 
-  return `${stoneBase}, ${pattern || ''}, exterior wall facade cladding, seamless professional installation, grouted joints, ${QUALITY}`
+  return `${stoneBase}, ${pattern || ''}, exterior wall facade cladding, seamless professional installation, grouted joints, no text, no watermark, no logo, no brand, no writing, no letters, clean image, ${QUALITY}`
 }
 
 // Build prompt for FULL APPLY mode (FLUX Canny) — context-aware
