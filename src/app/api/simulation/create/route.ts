@@ -28,16 +28,14 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         // stability-ai/stable-diffusion-inpainting latest version
-        version: 'e490d072a34a94a11e9711ed5a6ba621c3fab884eda1665d9d3a282d65a21571',
+        version: '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
         input: {
           prompt,
           negative_prompt: negativePrompt,
           image,
           mask,
-          num_outputs: 1,
           num_inference_steps: 25,
           guidance_scale: 7.5,
-          prompt_strength: 0.85,
           scheduler: 'K_EULER_ANCESTRAL',
         },
       }),
