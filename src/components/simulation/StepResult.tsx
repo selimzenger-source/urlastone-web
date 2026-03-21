@@ -81,64 +81,76 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
 function drawWatermarks(ctx: CanvasRenderingContext2D, width: number, height: number, logoImg: HTMLImageElement | null) {
   ctx.save()
 
-  // --- Corner watermark: logo + text (top-right, right-aligned) ---
-  const cornerSize = Math.min(width, height) * 0.10
-  const padding = cornerSize * 0.5
-  const logoSize = cornerSize * 0.55
+  // --- Corner watermark: text-only badge (top-right) ---
+  const fontSize = Math.round(Math.min(width, height) * 0.018)
+  const subFontSize = Math.round(fontSize * 0.6)
+  const pad = fontSize * 0.8
+  const margin = fontSize * 1.2
 
-  // Semi-transparent background pill
-  const bgWidth = cornerSize * 2.2
-  const bgHeight = cornerSize * 0.7
-  const bgX = width - padding - bgWidth
-  const bgY = padding
-  ctx.globalAlpha = 0.3
+  // Measure text to size the badge
+  ctx.font = `bold ${fontSize}px Inter, Arial, sans-serif`
+  const mainWidth = ctx.measureText('URLASTONE').width
+  ctx.font = `${subFontSize}px Inter, Arial, sans-serif`
+  const subWidth = ctx.measureText('urlastone.com').width
+  const textWidth = Math.max(mainWidth, subWidth)
+
+  const logoW = logoImg ? fontSize * 1.3 : 0
+  const logoGap = logoImg ? pad * 0.6 : 0
+  const badgeW = pad + logoW + logoGap + textWidth + pad
+  const badgeH = pad + fontSize + subFontSize * 0.8 + pad
+  const badgeX = width - margin - badgeW
+  const badgeY = margin
+
+  // Draw rounded background
+  ctx.globalAlpha = 0.45
   ctx.fillStyle = '#000000'
+  const r = badgeH * 0.25
   ctx.beginPath()
-  const r = bgHeight * 0.3
-  ctx.moveTo(bgX + r, bgY)
-  ctx.lineTo(bgX + bgWidth - r, bgY)
-  ctx.quadraticCurveTo(bgX + bgWidth, bgY, bgX + bgWidth, bgY + r)
-  ctx.lineTo(bgX + bgWidth, bgY + bgHeight - r)
-  ctx.quadraticCurveTo(bgX + bgWidth, bgY + bgHeight, bgX + bgWidth - r, bgY + bgHeight)
-  ctx.lineTo(bgX + r, bgY + bgHeight)
-  ctx.quadraticCurveTo(bgX, bgY + bgHeight, bgX, bgY + bgHeight - r)
-  ctx.lineTo(bgX, bgY + r)
-  ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY)
+  ctx.moveTo(badgeX + r, badgeY)
+  ctx.lineTo(badgeX + badgeW - r, badgeY)
+  ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + r)
+  ctx.lineTo(badgeX + badgeW, badgeY + badgeH - r)
+  ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - r, badgeY + badgeH)
+  ctx.lineTo(badgeX + r, badgeY + badgeH)
+  ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - r)
+  ctx.lineTo(badgeX, badgeY + r)
+  ctx.quadraticCurveTo(badgeX, badgeY, badgeX + r, badgeY)
   ctx.fill()
 
-  // Draw logo icon
-  ctx.globalAlpha = 0.7
+  // Draw logo inside badge
+  let contentX = badgeX + pad
   if (logoImg) {
-    ctx.drawImage(logoImg, bgX + 8, bgY + (bgHeight - logoSize) / 2, logoSize, logoSize)
+    const logoH = logoW
+    ctx.globalAlpha = 0.9
+    ctx.drawImage(logoImg, contentX, badgeY + (badgeH - logoH) / 2, logoW, logoH)
+    contentX += logoW + logoGap
   }
 
-  // Draw "URLASTONE" text
+  // Draw "URLASTONE"
   ctx.fillStyle = '#ffffff'
-  ctx.globalAlpha = 0.8
-  ctx.font = `bold ${Math.round(cornerSize * 0.22)}px Inter, sans-serif`
+  ctx.globalAlpha = 0.95
+  ctx.font = `bold ${fontSize}px Inter, Arial, sans-serif`
   ctx.textAlign = 'left'
-  ctx.textBaseline = 'middle'
-  const textX = bgX + (logoImg ? logoSize + 14 : 10)
-  const textY = bgY + bgHeight * 0.4
-  ctx.fillText('URLASTONE', textX, textY)
+  ctx.textBaseline = 'top'
+  ctx.fillText('URLASTONE', contentX, badgeY + pad)
 
-  // Subtitle
-  ctx.font = `${Math.round(cornerSize * 0.12)}px Inter, sans-serif`
-  ctx.globalAlpha = 0.5
-  ctx.fillText('urlastone.com', textX, textY + cornerSize * 0.18)
+  // Draw "urlastone.com"
+  ctx.globalAlpha = 0.6
+  ctx.font = `${subFontSize}px Inter, Arial, sans-serif`
+  ctx.fillText('urlastone.com', contentX, badgeY + pad + fontSize * 1.05)
 
   // --- Diagonal repeating hologram watermarks ---
   ctx.globalAlpha = 0.06
   ctx.fillStyle = '#ffffff'
-  const fontSize = Math.round(Math.min(width, height) * 0.04)
-  ctx.font = `bold ${fontSize}px Inter, sans-serif`
+  const holoSize = Math.round(Math.min(width, height) * 0.04)
+  ctx.font = `bold ${holoSize}px Inter, sans-serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
   // Rotate -30 degrees for diagonal pattern
   const angle = -30 * (Math.PI / 180)
-  const spacingX = fontSize * 10
-  const spacingY = fontSize * 6
+  const spacingX = holoSize * 10
+  const spacingY = holoSize * 6
 
   for (let row = -2; row < Math.ceil(height / spacingY) + 2; row++) {
     for (let col = -2; col < Math.ceil(width / spacingX) + 2; col++) {
