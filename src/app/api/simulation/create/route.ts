@@ -50,55 +50,67 @@ const GEMINI_PROMPTS: Record<string, string> = {
   facade: `The first image is a building photo. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
 
 CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, shape, and pattern from the second image. Do NOT invent a different stone type.
-2. SCALE — THIS IS THE MOST IMPORTANT RULE: The reference image is a macro close-up photo. The stones must be VERY SMALL on the building. Think of it this way: between two windows that are side by side, there should be at least 4-6 stones horizontally. Between two windows that are stacked vertically, there should be at least 5-8 stones. A single window should be completely surrounded by at least 25-40 individual stone pieces. Each individual stone piece should be roughly 1/5 to 1/8 the width of a window. If you can count fewer than 30 stones on any wall section between windows, the stones are TOO BIG. Make them SMALLER.
-3. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces — corners, edges, columns, every section. No variation between areas.
+1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
+2. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces — corners, edges, columns, every section. No variation between areas.
 
 Apply this stone cladding to EVERY visible wall surface. No bare plaster or concrete remaining. Preserve windows, doors, roof, sky, ground, vegetation. Real installed cladding with 3D depth and natural shadows. Keep the same camera angle. Photorealistic.`,
 
   fireplace: `The first image is a room with a fireplace. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
 
 CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, shape, and pattern from the second image. Do NOT invent a different stone type.
-2. SCALE: The reference image is a close-up. When applying to the fireplace, each stone piece must be SMALL. The fireplace opening height should contain at least 8-10 stone pieces vertically. Do NOT make large boulder-sized stones.
-3. UNIFORMITY: Use the IDENTICAL stone pattern on the entire fireplace surface.
+1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
+2. UNIFORMITY: Use the IDENTICAL stone pattern on the entire fireplace surface.
 
 Apply this stone to the fireplace surround and chimney area. Real installed cladding with 3D depth and natural shadows. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
 
   interior: `The first image is an interior room. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
 
 CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, shape, and pattern from the second image. Do NOT invent a different stone type.
-2. SCALE: The reference image is a close-up. When applying to the wall, each stone piece must be SMALL. A door height (2m) should have at least 12-15 stones vertically. Do NOT make large boulder-sized stones.
-3. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces.
+1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
+2. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces.
 
 Apply this stone to bare wall surfaces only. Do not apply to fireplace, countertops, furniture, floor, ceiling, or fixtures. Real installed cladding with 3D depth and natural shadows. Keep everything else exactly the same. Photorealistic result.`,
 
   bathroom: `The first image is a bathroom. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
 
 CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, shape, and pattern from the second image. Do NOT invent a different stone type.
-2. SCALE: The reference image is a close-up. Each stone piece must be SMALL. A door height should have at least 12-15 stones vertically.
-3. UNIFORMITY: ALL wall surfaces must use the IDENTICAL stone pattern.
+1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
+2. UNIFORMITY: ALL wall surfaces must use the IDENTICAL stone pattern.
 
 Apply this stone to all bathroom wall surfaces. Real installed cladding with 3D depth and natural shadows. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
 
   floor: `The first image is a room. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
 
 CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, shape, and pattern from the second image. Do NOT invent a different stone type.
-2. SCALE: The reference image is a close-up. Each stone piece must be SMALL (15-25cm). The floor should have many stone pieces, not just a few large ones.
-3. UNIFORMITY: The ENTIRE floor must use the IDENTICAL stone pattern.
+1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
+2. UNIFORMITY: The ENTIRE floor must use the IDENTICAL stone pattern.
 
 Apply this stone to the floor surface. Real installed tiles with 3D depth and natural shadows. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
 }
 
-// Category-based stone size descriptions for accurate scaling
-const CATEGORY_SIZES: Record<string, string> = {
-  nature: 'Each stone piece is a large irregular polygon, approximately 15-30cm wide, with natural broken rough edges.',
-  mix: 'A combination of thin horizontal strips (3cm height x 20-40cm width) alternating with medium rounded natural pieces (10-20cm).',
-  crazy: 'A random mosaic of many small irregular stone pieces, mixed sizes from 3cm to 15cm, chaotic artistic pattern.',
-  line: 'Thin uniform horizontal stone strips, each approximately 2-3cm height x 30-60cm width, clean parallel lines running horizontally.',
+// Category-based scale instructions — adapted per surface type for correct size references
+function getCategoryScale(categorySlug: string, surfaceContext: string): string {
+  const cat = categorySlug || 'nature'
+
+  // Exterior (facade) — use windows as size reference
+  if (surfaceContext === 'facade') {
+    const scales: Record<string, string> = {
+      nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-30cm wide. Each stone is roughly 1/5 to 1/8 the width of a window. Between two side-by-side windows there should be at least 4-6 stones horizontally, between two stacked windows at least 5-8 stones vertically. If you can count fewer than 30 stones on a wall section between windows, the stones are TOO BIG.`,
+      mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). Between two windows there should be at least 8-12 stone rows vertically.`,
+      crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. Between two windows there should be at least 40-60 individual stone pieces.`,
+      line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. Between two stacked windows there should be at least 30-40 horizontal strips. Modern minimalist linear pattern like thin horizontal bricks — NOT irregular polygon stones.`,
+    }
+    return scales[cat] || scales.nature
+  }
+
+  // Interior / fireplace / bathroom — use door height (2m), fireplace opening (~60cm), electrical outlets as reference
+  const interiorScales: Record<string, string> = {
+    nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-25cm wide. A standard door height (2m) should have at least 12-15 stones vertically. Each stone should be roughly the size of a hand or smaller — about the same size as an electrical outlet cover. A fireplace opening height (~60cm) should contain at least 4-5 stones vertically. Do NOT make boulder-sized stones. The stones must be SMALL relative to the wall.`,
+    mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). A door height (2m) should have at least 15-20 stone rows vertically.`,
+    crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. A 1m×1m wall section should contain at least 30-50 individual stone pieces.`,
+    line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. A door height (2m) should have at least 40-50 horizontal strips. Modern minimalist linear pattern — NOT irregular polygon stones.`,
+  }
+  return interiorScales[cat] || interiorScales.nature
 }
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -264,8 +276,8 @@ async function generateWithGemini(
     ? 'Stones must be tightly fitted together with NO visible grout, mortar, or gap lines between them. Zero spacing between stone pieces.'
     : 'There must be visible grout/mortar lines between each stone piece. Clear gaps filled with grey mortar between stones.'
 
-  // Get category-specific size description
-  const sizeDesc = CATEGORY_SIZES[categorySlug] || CATEGORY_SIZES.nature
+  // Get category-specific size description adapted to surface type
+  const sizeDesc = getCategoryScale(categorySlug, surfaceContext)
 
   // Determine image numbering based on whether pattern image is included
   const hasPattern = patternBase64 && patternMimeType
