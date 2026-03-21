@@ -87,6 +87,14 @@ function incrementLocalUsage(): void {
   } catch { /* ignore */ }
 }
 
+function decrementLocalUsage(): void {
+  try {
+    const key = getLocalUsageKey()
+    const current = getLocalUsageCount()
+    if (current > 0) localStorage.setItem(key, String(current - 1))
+  } catch { /* ignore */ }
+}
+
 function isLocalLimitReached(): boolean {
   return getLocalUsageCount() >= DAILY_LOCAL_LIMIT
 }
@@ -111,8 +119,13 @@ export default function SimulationWizard() {
   const labels = STEP_LABELS[locale] || STEP_LABELS.tr
   const info = INFO_TEXTS[locale] || INFO_TEXTS.tr
 
-  // Load local usage count on mount
+  // Load local usage count on mount (support ?reset to clear limits)
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('reset')) {
+      try { localStorage.removeItem(getLocalUsageKey()) } catch { /* */ }
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname)
+    }
     setLocalUsage(getLocalUsageCount())
   }, [])
 
@@ -284,9 +297,13 @@ export default function SimulationWizard() {
             if (!cancelled) setStep('result')
           }, 500)
         } else if (data.status === 'failed' || data.status === 'canceled') {
+          decrementLocalUsage() // Refund failed attempt
+          setLocalUsage(getLocalUsageCount())
           setError(data.error || 'İşlem başarısız oldu')
           setStep(applyMode === 'brush' ? 'mask' : 'mode')
         } else if (pollCount >= MAX_POLLS) {
+          decrementLocalUsage() // Refund timed out attempt
+          setLocalUsage(getLocalUsageCount())
           setError('İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.')
           setStep(applyMode === 'brush' ? 'mask' : 'mode')
         } else {
@@ -438,12 +455,19 @@ export default function SimulationWizard() {
         )}
 
         {step === 'mode' && imageDataUrl && selectedStone && (
-          <StepApplyMode
-            imagePreview={imageDataUrl}
-            stoneName={selectedStone.name}
-            onSelect={handleModeSelect}
-            onBack={() => setStep('select')}
-          />
+          <>
+            <StepApplyMode
+              imagePreview={imageDataUrl}
+              stoneName={selectedStone.name}
+              onSelect={handleModeSelect}
+              onBack={() => setStep('select')}
+            />
+            {error && (
+              <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+                <p className="text-red-400 text-sm font-body">{error}</p>
+              </div>
+            )}
+          </>
         )}
 
         {step === 'mask' && imageDataUrl && selectedStone && (
