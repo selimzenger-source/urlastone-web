@@ -7,14 +7,31 @@ import { supabaseAdmin } from '@/lib/supabase'
 const REPLICATE_PREDICTIONS = 'https://api.replicate.com/v1/predictions'
 const FLUX_CANNY_API = 'https://api.replicate.com/v1/models/black-forest-labs/flux-canny-dev/predictions'
 
-const DAILY_LIMIT = 3
+const DAILY_LIMIT_PER_IP = 3   // Max per IP per day
+const DAILY_LIMIT_GLOBAL = 20  // Max total across all users per day
 
-const LIMIT_MSGS: Record<string, string> = {
-  tr: 'Günlük simülasyon limitine ulaştınız. Yarın tekrar deneyin',
-  en: 'Daily simulation limit reached. Please try again tomorrow',
-  es: 'Límite diario de simulación alcanzado. Inténtelo mañana',
-  ar: 'تم الوصول إلى الحد اليومي للمحاكاة. حاول مرة أخرى غداً',
-  de: 'Tägliches Simulationslimit erreicht. Versuchen Sie es morgen erneut',
+// Rate limit error messages per locale
+const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
+  tr: {
+    ip: 'Günlük simülasyon hakkınız doldu. Yarın tekrar deneyin',
+    global: 'Bugünkü simülasyon kapasitesi doldu. Yarın tekrar deneyin',
+  },
+  en: {
+    ip: 'Your daily simulation limit reached. Please try again tomorrow',
+    global: 'Today\'s simulation capacity is full. Please try again tomorrow',
+  },
+  es: {
+    ip: 'Su límite diario de simulación se alcanzó. Inténtelo mañana',
+    global: 'La capacidad de simulación de hoy está llena. Inténtelo mañana',
+  },
+  ar: {
+    ip: 'تم الوصول إلى الحد اليومي للمحاكاة. حاول مرة أخرى غداً',
+    global: 'سعة المحاكاة اليوم ممتلئة. حاول مرة أخرى غداً',
+  },
+  de: {
+    ip: 'Ihr tägliches Simulationslimit erreicht. Versuchen Sie es morgen erneut',
+    global: 'Die heutige Simulationskapazität ist voll. Versuchen Sie es morgen erneut',
+  },
 }
 
 function getClientIp(req: NextRequest): string {
@@ -52,25 +69,41 @@ export async function POST(req: NextRequest) {
 
     // --- Rate Limiting ---
     const ip = getClientIp(req)
+    const msgs = LIMIT_MSGS[locale || 'tr'] || LIMIT_MSGS.tr
 
     try {
       const todayStart = new Date()
       todayStart.setHours(0, 0, 0, 0)
+      const todayISO = todayStart.toISOString()
 
-      const { count, error: countError } = await supabaseAdmin
+      // 1) Check GLOBAL daily limit (all users combined)
+      const { count: globalCount, error: globalError } = await supabaseAdmin
         .from('simulation_requests')
         .select('*', { count: 'exact', head: true })
-        .eq('ip_address', ip)
-        .gte('created_at', todayStart.toISOString())
+        .gte('created_at', todayISO)
 
-      if (!countError && count !== null && count >= DAILY_LIMIT) {
-        const msg = LIMIT_MSGS[locale || 'tr'] || LIMIT_MSGS.tr
+      if (!globalError && globalCount !== null && globalCount >= DAILY_LIMIT_GLOBAL) {
         return NextResponse.json(
-          { error: msg, rateLimited: true, remaining: 0 },
+          { error: msgs.global, rateLimited: true, limitType: 'global', remaining: 0 },
           { status: 429 }
         )
       }
 
+      // 2) Check PER-IP daily limit
+      const { count: ipCount, error: ipError } = await supabaseAdmin
+        .from('simulation_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('ip_address', ip)
+        .gte('created_at', todayISO)
+
+      if (!ipError && ipCount !== null && ipCount >= DAILY_LIMIT_PER_IP) {
+        return NextResponse.json(
+          { error: msgs.ip, rateLimited: true, limitType: 'ip', remaining: 0 },
+          { status: 429 }
+        )
+      }
+
+      // Log this request
       await supabaseAdmin
         .from('simulation_requests')
         .insert({ ip_address: ip })
@@ -83,9 +116,6 @@ export async function POST(req: NextRequest) {
     let response: Response
 
     if (applyMode === 'full') {
-      // ===== FULL APPLY MODE — FLUX Canny =====
-      // Uses canny edge detection to preserve building structure
-      // while regenerating with stone texture
       const prompt = buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
 
       console.log('[Simulation] FULL mode — FLUX Canny Dev')
@@ -112,7 +142,6 @@ export async function POST(req: NextRequest) {
         }),
       })
     } else {
-      // ===== BRUSH MODE — SD Inpainting (current) =====
       const prompt = buildPrompt(stoneCode, categorySlug)
 
       console.log('[Simulation] BRUSH mode — SD Inpainting')
@@ -151,7 +180,7 @@ export async function POST(req: NextRequest) {
     const prediction = await response.json()
 
     // Calculate remaining requests for this IP today
-    let remaining = DAILY_LIMIT - 1
+    let remaining = DAILY_LIMIT_PER_IP - 1
     try {
       const todayStart = new Date()
       todayStart.setHours(0, 0, 0, 0)
@@ -160,7 +189,7 @@ export async function POST(req: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .eq('ip_address', ip)
         .gte('created_at', todayStart.toISOString())
-      if (count !== null) remaining = Math.max(0, DAILY_LIMIT - count)
+      if (count !== null) remaining = Math.max(0, DAILY_LIMIT_PER_IP - count)
     } catch { /* ignore */ }
 
     return NextResponse.json({

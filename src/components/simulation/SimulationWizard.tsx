@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Upload, Gem, Wand2, Paintbrush, Sparkles, Eye } from 'lucide-react'
+import { Upload, Gem, Wand2, Sparkles, Eye, Info } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { SimStep, StoneOption, ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { resizeImage } from '@/lib/simulation'
@@ -10,6 +10,8 @@ import StepSelectStone from './StepSelectStone'
 import StepApplyMode from './StepApplyMode'
 import StepMaskDraw from './StepMaskDraw'
 import StepResult from './StepResult'
+
+const DAILY_LOCAL_LIMIT = 3
 
 const STEPS: { key: SimStep; icon: typeof Upload }[] = [
   { key: 'upload', icon: Upload },
@@ -26,6 +28,61 @@ const STEP_LABELS: Record<string, Record<SimStep, string>> = {
   de: { upload: 'Foto', select: 'Stein wählen', mode: 'Anwenden', mask: 'Bereich markieren', processing: 'Verarbeitung', result: 'Ergebnis' },
 }
 
+const INFO_TEXTS: Record<string, { limit: string; daily: string; free: string }> = {
+  tr: {
+    limit: 'Günlük 3 simülasyon hakkınız bulunmaktadır',
+    daily: 'Limitler her gün gece yarısı sıfırlanır',
+    free: 'Ücretsiz',
+  },
+  en: {
+    limit: 'You have 3 simulations per day',
+    daily: 'Limits reset every day at midnight',
+    free: 'Free',
+  },
+  es: {
+    limit: 'Tiene 3 simulaciones por día',
+    daily: 'Los límites se restablecen cada día a medianoche',
+    free: 'Gratis',
+  },
+  ar: {
+    limit: 'لديك 3 محاكاات يومياً',
+    daily: 'تتم إعادة تعيين الحدود كل يوم عند منتصف الليل',
+    free: 'مجاني',
+  },
+  de: {
+    limit: 'Sie haben 3 Simulationen pro Tag',
+    daily: 'Limits werden jeden Tag um Mitternacht zurückgesetzt',
+    free: 'Kostenlos',
+  },
+}
+
+// localStorage helpers for client-side rate limiting
+function getLocalUsageKey(): string {
+  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  return `urlastone_sim_${today}`
+}
+
+function getLocalUsageCount(): number {
+  try {
+    const val = localStorage.getItem(getLocalUsageKey())
+    return val ? parseInt(val, 10) : 0
+  } catch {
+    return 0
+  }
+}
+
+function incrementLocalUsage(): void {
+  try {
+    const key = getLocalUsageKey()
+    const current = getLocalUsageCount()
+    localStorage.setItem(key, String(current + 1))
+  } catch { /* ignore */ }
+}
+
+function isLocalLimitReached(): boolean {
+  return getLocalUsageCount() >= DAILY_LOCAL_LIMIT
+}
+
 export default function SimulationWizard() {
   const { locale } = useLanguage()
   const [step, setStep] = useState<SimStep>('upload')
@@ -40,8 +97,31 @@ export default function SimulationWizard() {
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
+  const [localUsage, setLocalUsage] = useState(0)
 
   const labels = STEP_LABELS[locale] || STEP_LABELS.tr
+  const info = INFO_TEXTS[locale] || INFO_TEXTS.tr
+
+  // Load local usage count on mount
+  useEffect(() => {
+    setLocalUsage(getLocalUsageCount())
+  }, [])
+
+  // Check local limit before API call
+  const checkLocalLimit = useCallback((): boolean => {
+    if (isLocalLimitReached()) {
+      const msgs: Record<string, string> = {
+        tr: 'Günlük simülasyon hakkınız doldu. Yarın tekrar deneyin',
+        en: 'Your daily simulation limit reached. Please try again tomorrow',
+        es: 'Su límite diario de simulación se alcanzó. Inténtelo mañana',
+        ar: 'تم الوصول إلى الحد اليومي للمحاكاة. حاول مرة أخرى غداً',
+        de: 'Ihr tägliches Simulationslimit erreicht. Versuchen Sie es morgen erneut',
+      }
+      setError(msgs[locale] || msgs.tr)
+      return false
+    }
+    return true
+  }, [locale])
 
   // Handle image upload
   const handleImageUpload = useCallback(async (dataUrl: string) => {
@@ -64,10 +144,11 @@ export default function SimulationWizard() {
     setSurfaceContext(context || null)
 
     if (mode === 'brush') {
-      // Go to mask drawing step
       setStep('mask')
     } else {
-      // Full apply mode — directly call AI with FLUX Canny
+      // Check local limit first
+      if (!checkLocalLimit()) return
+
       setStep('processing')
       setError(null)
       setProgress(0)
@@ -95,15 +176,20 @@ export default function SimulationWizard() {
 
         const { id } = await res.json()
         setPredictionId(id)
+        incrementLocalUsage()
+        setLocalUsage(getLocalUsageCount())
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Bir hata oluştu')
         setStep('mode')
       }
     }
-  }, [imageDataUrl, selectedStone, locale])
+  }, [imageDataUrl, selectedStone, locale, checkLocalLimit])
 
   // Handle mask submit — start AI generation (brush mode)
   const handleMaskSubmit = useCallback(async (mask: string) => {
+    // Check local limit first
+    if (!checkLocalLimit()) return
+
     setMaskDataUrl(mask)
     setStep('processing')
     setError(null)
@@ -132,11 +218,13 @@ export default function SimulationWizard() {
 
       const { id } = await res.json()
       setPredictionId(id)
+      incrementLocalUsage()
+      setLocalUsage(getLocalUsageCount())
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
       setStep('mask')
     }
-  }, [imageDataUrl, selectedStone, locale])
+  }, [imageDataUrl, selectedStone, locale, checkLocalLimit])
 
   // Poll for result
   useEffect(() => {
@@ -221,8 +309,36 @@ export default function SimulationWizard() {
   }
   const stepIndex = getStepIndex()
 
+  const remaining = DAILY_LOCAL_LIMIT - localUsage
+
   return (
     <div className="max-w-5xl mx-auto">
+      {/* Usage info banner */}
+      <div className="flex items-center justify-center gap-6 mb-6 p-3 bg-white/[0.02] rounded-xl border border-white/[0.06]">
+        <div className="flex items-center gap-2">
+          <Info size={13} className="text-gold-400" />
+          <span className="text-white/40 text-[11px] font-mono">{info.limit}</span>
+        </div>
+        <div className="w-px h-4 bg-white/10" />
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            {Array.from({ length: DAILY_LOCAL_LIMIT }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  i < remaining ? 'bg-gold-400' : 'bg-white/10'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-white/30 text-[10px] font-mono">
+            {remaining}/{DAILY_LOCAL_LIMIT}
+          </span>
+        </div>
+        <div className="w-px h-4 bg-white/10 hidden sm:block" />
+        <span className="text-white/20 text-[10px] font-mono hidden sm:block">{info.daily}</span>
+      </div>
+
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2 md:gap-4 mb-10">
         {STEPS.map((s, i) => {
@@ -333,7 +449,6 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
 
   return (
     <div className="glass-card p-12 md:p-20 text-center">
-      {/* Animated stone pattern */}
       <div className="relative w-24 h-24 mx-auto mb-8">
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 animate-pulse" />
         <div className="absolute inset-2 rounded-xl border-2 border-gold-400/30 border-t-gold-400 animate-spin" style={{ animationDuration: '3s' }} />
@@ -342,7 +457,6 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="max-w-md mx-auto mb-6">
         <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
           <div
@@ -358,7 +472,6 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
         </div>
       </div>
 
-      {/* Status message */}
       <p className="text-white/50 text-sm font-body animate-pulse">
         {messages[msgIndex]}
       </p>
