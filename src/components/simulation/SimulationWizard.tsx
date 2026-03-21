@@ -29,11 +29,11 @@ const STEP_LABELS: Record<string, Record<SimStep, string>> = {
 }
 
 const VALIDATION_ERRORS: Record<string, string> = {
-  tr: 'Bu fotoğrafta bir yapı veya duvar yüzeyi tespit edilemedi. Lütfen bina, duvar, şömine veya iç mekan fotoğrafı yükleyin',
-  en: 'No building or wall surface detected in this photo. Please upload a photo of a building, wall, fireplace, or interior',
-  es: 'No se detectó un edificio o superficie de pared en esta foto. Suba una foto de un edificio, pared o interior',
-  ar: 'لم يتم اكتشاف مبنى أو سطح جدار في هذه الصورة. يرجى تحميل صورة لمبنى أو جدار أو مدفأة أو غرفة',
-  de: 'Kein Gebäude oder Wandfläche in diesem Foto erkannt. Bitte laden Sie ein Foto eines Gebäudes, einer Wand oder eines Innenraums hoch',
+  tr: 'Bu fotoğrafta bir bina veya duvar yüzeyi tespit edilemedi. Lütfen dış cephe veya iç mekan duvar fotoğrafı yükleyin',
+  en: 'No building or wall surface detected in this photo. Please upload a photo of a building facade or interior wall',
+  es: 'No se detectó un edificio o pared en esta foto. Suba una foto de una fachada o pared interior',
+  ar: 'لم يتم اكتشاف مبنى أو جدار في هذه الصورة. يرجى تحميل صورة لواجهة مبنى أو جدار داخلي',
+  de: 'Kein Gebäude oder Wand in diesem Foto erkannt. Bitte laden Sie ein Foto einer Fassade oder Innenwand hoch',
 }
 
 const INFO_TEXTS: Record<string, { limit: string; daily: string; free: string }> = {

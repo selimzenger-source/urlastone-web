@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
               },
               {
                 type: 'text',
-                text: 'Does this image show any of the following: a building exterior, a wall surface, a facade, a fireplace, a bathroom, an interior room with visible walls, or a floor surface? Answer ONLY with "YES" or "NO". Nothing else.',
+                text: 'Does this image show a building exterior, a wall surface, a facade, or an interior room with visible walls? Answer ONLY with "YES" or "NO". Nothing else.',
               },
             ],
           },

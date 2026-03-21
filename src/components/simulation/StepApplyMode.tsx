@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Wand2, Paintbrush, Building2, Flame, Bath, Home, Grid3X3 } from 'lucide-react'
+import { ArrowLeft, Wand2, Paintbrush, Building2, Home } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 
@@ -148,10 +148,7 @@ const MODE_TEXTS: Record<string, {
 
 const SURFACE_OPTIONS: { key: SurfaceContext; icon: typeof Building2 }[] = [
   { key: 'facade', icon: Building2 },
-  { key: 'fireplace', icon: Flame },
-  { key: 'bathroom', icon: Bath },
   { key: 'interior', icon: Home },
-  { key: 'floor', icon: Grid3X3 },
 ]
 
 export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBack }: Props) {
@@ -243,7 +240,7 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
             <p className="text-white/40 text-sm font-body">{t.contextDesc}</p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-8">
+          <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
             {SURFACE_OPTIONS.map(({ key, icon: Icon }) => {
               const isActive = selectedContext === key
               const label = contextLabels[key]
