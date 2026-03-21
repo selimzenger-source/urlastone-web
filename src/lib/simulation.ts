@@ -41,11 +41,12 @@ const STONE_BASE: Record<string, string> = {
 }
 
 // Rockshell category patterns (how stones are arranged)
+// IMPORTANT: Each pattern must be very distinct and specific so AI doesn't confuse them
 const CATEGORY_PATTERN: Record<string, string> = {
-  nature: 'irregular organic random shaped pieces, natural broken edges, rustic stacked arrangement, varying sizes mixed together, no two pieces alike, authentic quarry-cut appearance',
-  mix: 'combination of horizontal thin cut strips mixed with natural rounded pieces, balanced modern-traditional blend, geometric meets organic pattern',
-  crazy: 'random mosaic pattern, mixed shapes and sizes, chaotic artistic arrangement, varying thickness, bold irregular placement, dynamic visual texture',
-  line: 'uniform 3cm height horizontal strips, clean parallel lines, free-length pieces, minimal modern linear pattern, precise contemporary arrangement',
+  nature: 'LARGE irregular polygonal shaped flat stone pieces fitted together like a jigsaw puzzle, each stone piece is 15-30cm wide with natural broken rough edges, thick dark grout lines between stones, random organic arrangement NOT horizontal lines NOT bricks, stones are BIG chunky flat pieces with rounded organic shapes, rustic rubble stone wall pattern, fieldstone masonry appearance',
+  mix: 'combination of thin horizontal cut strips alternating with medium rounded natural pieces, mixed pattern with both linear strips and organic shapes together, balanced modern-rustic blend',
+  crazy: 'random mosaic of many small irregular stone pieces in chaotic artistic pattern, mixed sizes from 3cm to 15cm, bold random placement like broken tile mosaic, dynamic texture with varying thickness',
+  line: 'thin uniform horizontal stone strips each exactly 3cm height, clean precise parallel lines running left to right, modern minimalist linear pattern, contemporary sleek horizontal arrangement like stacked thin slabs',
 }
 
 // Surface context prompts — what to apply stone TO and what to PRESERVE
