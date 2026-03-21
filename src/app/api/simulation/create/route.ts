@@ -125,13 +125,15 @@ async function uploadToStorage(dataUrl: string, prefix: string): Promise<string>
 
 // ─── AI Providers ──────────────────────────────────────────
 
-/** Generate with Google Gemini 2.0 Flash (primary for full mode) */
+/** Generate with Google Gemini (primary for both full and brush modes) */
 async function generateWithGemini(
   buildingBase64: string,
   buildingMimeType: string,
   stoneBase64: string,
   stoneMimeType: string,
   surfaceContext: string,
+  maskBase64?: string,
+  maskMimeType?: string,
 ): Promise<string | null> {
   const apiKey = process.env.GOOGLE_AI_API_KEY
   if (!apiKey) {
@@ -139,26 +141,40 @@ async function generateWithGemini(
     return null
   }
 
-  const prompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
+  // Build prompt based on mode (full vs brush with mask)
+  let prompt: string
+  if (maskBase64) {
+    // Brush mode: 3 images (building + stone + mask)
+    prompt = `The first image is a photo of a space. The second image shows a natural stone texture sample. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
+
+Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. Photorealistic result.`
+  } else {
+    prompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
+  }
 
   console.log('[Gemini] Calling gemini-3-pro-image-preview...')
-  console.log('[Gemini] Surface context:', surfaceContext)
+  console.log('[Gemini] Surface context:', surfaceContext, maskBase64 ? '(brush mode with mask)' : '(full mode)')
   const startTime = Date.now()
 
+  // Build parts array: building + stone + optional mask
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const imageParts: any[] = [
+    { inlineData: { mimeType: buildingMimeType, data: buildingBase64 } },
+    { inlineData: { mimeType: stoneMimeType, data: stoneBase64 } },
+  ]
+  if (maskBase64 && maskMimeType) {
+    imageParts.push({ inlineData: { mimeType: maskMimeType, data: maskBase64 } })
+  }
+  imageParts.push({ text: prompt })
+
   try {
-    const response = await fetch(
+    const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { inlineData: { mimeType: buildingMimeType, data: buildingBase64 } },
-              { inlineData: { mimeType: stoneMimeType, data: stoneBase64 } },
-              { text: prompt },
-            ],
-          }],
+          contents: [{ parts: imageParts }],
           generationConfig: {
             responseModalities: ['IMAGE'],
           },
@@ -168,18 +184,18 @@ async function generateWithGemini(
 
     const elapsed = Math.round((Date.now() - startTime) / 1000)
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: response.statusText }))
-      console.error(`[Gemini] API error (${response.status}, ${elapsed}s):`, JSON.stringify(err).substring(0, 300))
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }))
+      console.error(`[Gemini] API error (${res.status}, ${elapsed}s):`, JSON.stringify(err).substring(0, 300))
       return null
     }
 
-    const result = await response.json()
+    const result = await res.json()
     console.log(`[Gemini] Response received in ${elapsed}s`)
 
     // Find image in response parts
-    const parts = result.candidates?.[0]?.content?.parts || []
-    for (const part of parts) {
+    const resParts = result.candidates?.[0]?.content?.parts || []
+    for (const part of resParts) {
       if (part.inlineData?.mimeType?.startsWith('image/')) {
         const mimeType = part.inlineData.mimeType as string
         console.log('[Gemini] Image found in response, mimeType:', mimeType)
@@ -194,7 +210,7 @@ async function generateWithGemini(
     }
 
     // Log text parts for debugging
-    const textParts = parts.filter((p: Record<string, unknown>) => p.text).map((p: Record<string, unknown>) => p.text)
+    const textParts = resParts.filter((p: Record<string, unknown>) => p.text).map((p: Record<string, unknown>) => p.text)
     if (textParts.length) {
       console.log('[Gemini] Text response:', (textParts.join(' ') as string).substring(0, 200))
     }
@@ -450,30 +466,75 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // ═══════════════════════════════════════════════════════
-      // BRUSH MODE: fal.ai inpainting (primary)
+      // BRUSH MODE: Gemini (primary) → fal.ai inpainting (fallback)
       // ═══════════════════════════════════════════════════════
-      console.log('[Simulation] BRUSH mode — fal.ai inpainting')
+      console.log('[Simulation] BRUSH mode — Gemini primary, fal.ai fallback')
 
-      // Upload images to Supabase Storage (fal.ai needs HTTP URLs)
-      let imageUrl: string
-      let maskUrl: string | undefined
+      // 1. Extract building + mask base64
+      const building = extractBase64(image)
+      const maskData = extractBase64(mask)
+
+      // 2. Fetch stone reference image as base64
+      console.log('[Simulation] Fetching stone reference image:', stoneImageUrl.substring(0, 80))
+      let stone: { base64: string; mimeType: string }
       try {
-        imageUrl = await uploadToStorage(image, 'img')
-        if (mask) {
-          maskUrl = await uploadToStorage(mask, 'mask')
+        let resolvedUrl = stoneImageUrl
+        if (stoneImageUrl.startsWith('/')) {
+          const origin = req.headers.get('origin') || req.headers.get('x-forwarded-host') || 'www.urlastone.com'
+          const protocol = origin.startsWith('http') ? '' : 'https://'
+          resolvedUrl = `${protocol}${origin}${stoneImageUrl}`
         }
+        stone = await fetchImageAsBase64(resolvedUrl)
       } catch (err) {
-        console.error('[Simulation] Image upload failed:', err)
+        console.error('[Simulation] Failed to fetch stone image:', err)
         return NextResponse.json(
-          { error: 'Failed to upload image. Please try again.' },
+          { error: 'Failed to load stone reference image' },
           { status: 500 }
         )
       }
 
-      const prompt = buildPrompt(stoneCode, categorySlug)
-      outputUrl = await generateWithFalAi(
-        imageUrl, maskUrl, stoneCode, categorySlug, 'brush', prompt,
+      // 3. Try Gemini first (3 images: building + stone + mask)
+      const geminiResult = await generateWithGemini(
+        building.base64, building.mimeType,
+        stone.base64, stone.mimeType,
+        surfaceContext,
+        maskData.base64, maskData.mimeType,
       )
+
+      if (geminiResult) {
+        console.log('[Simulation] Uploading Gemini brush result to storage...')
+        try {
+          outputUrl = await uploadToStorage(geminiResult, 'result')
+          console.log('[Simulation] Gemini brush result saved:', outputUrl?.substring(0, 80))
+        } catch (err) {
+          console.error('[Simulation] Failed to upload Gemini result:', err)
+        }
+      }
+
+      // 4. Fallback to fal.ai if Gemini failed
+      if (!outputUrl) {
+        console.log('[Simulation] Falling back to fal.ai inpainting...')
+
+        let imageUrl: string
+        let maskUrl: string | undefined
+        try {
+          imageUrl = await uploadToStorage(image, 'img')
+          if (mask) {
+            maskUrl = await uploadToStorage(mask, 'mask')
+          }
+        } catch (err) {
+          console.error('[Simulation] Image upload failed:', err)
+          return NextResponse.json(
+            { error: 'Failed to upload image. Please try again.' },
+            { status: 500 }
+          )
+        }
+
+        const prompt = buildPrompt(stoneCode, categorySlug)
+        outputUrl = await generateWithFalAi(
+          imageUrl, maskUrl, stoneCode, categorySlug, 'brush', prompt,
+        )
+      }
     }
 
     // Check result
