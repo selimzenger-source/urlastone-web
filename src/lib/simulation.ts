@@ -8,6 +8,9 @@ export type ApplyMode = 'full' | 'brush'
 // Surface context for intelligent prompt building
 export type SurfaceContext = 'facade' | 'fireplace' | 'bathroom' | 'interior' | 'floor'
 
+// Grout style: with visible grout lines or without (tight-fit)
+export type GroutStyle = 'grouted' | 'groutless'
+
 export interface SimState {
   step: SimStep
   imageDataUrl: string | null

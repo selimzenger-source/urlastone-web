@@ -212,6 +212,7 @@ async function generateWithGemini(
   stoneMimeType: string,
   surfaceContext: string,
   scaleInstruction: string,
+  groutStyle: string,
   maskBase64?: string,
   maskMimeType?: string,
 ): Promise<string | null> {
@@ -221,19 +222,24 @@ async function generateWithGemini(
     return null
   }
 
+  // Build grout instruction based on style
+  const groutInstruction = groutStyle === 'groutless'
+    ? 'Stones must be tightly fitted together with NO visible grout, mortar, or gap lines between them. Zero spacing between stone pieces.'
+    : 'There must be visible grout/mortar lines between each stone piece. Clear gaps filled with grey mortar between stones.'
+
   // Build prompt based on mode (full vs brush with mask)
   let prompt: string
   if (maskBase64) {
     // Brush mode: 3 images (building + stone + mask)
     prompt = `The first image is a photo of a space. The second image shows a natural stone texture sample. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
 
-Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. SCALE: ${scaleInstruction} Photorealistic result.`
+Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. SCALE: ${scaleInstruction} GROUT: ${groutInstruction} Photorealistic result.`
   } else {
     const basePrompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
     // Replace the generic scale instruction with the Sonnet-analyzed one
     prompt = basePrompt.replace(
       /IMPORTANT:[\s\S]*?Photorealistic\./,
-      `IMPORTANT SCALE: ${scaleInstruction} Do NOT make large boulder-sized stones. Photorealistic.`
+      `IMPORTANT SCALE: ${scaleInstruction} Do NOT make large boulder-sized stones. GROUT: ${groutInstruction} Photorealistic.`
     )
   }
 
@@ -460,6 +466,7 @@ export async function POST(req: NextRequest) {
       locale,
       applyMode = 'brush' as ApplyMode,
       surfaceContext = 'facade' as SurfaceContext,
+      groutStyle = 'grouted',
     } = await req.json()
 
     // Validate required fields
@@ -519,6 +526,7 @@ export async function POST(req: NextRequest) {
         stone.base64, stone.mimeType,
         surfaceContext,
         scaleInstruction,
+        groutStyle,
       )
 
       if (geminiResult) {
@@ -592,6 +600,7 @@ export async function POST(req: NextRequest) {
         stone.base64, stone.mimeType,
         surfaceContext,
         scaleInstruction,
+        groutStyle,
         maskData.base64, maskData.mimeType,
       )
 

@@ -3,37 +3,16 @@
 import { useState } from 'react'
 import { ArrowLeft, Wand2, Paintbrush, Building2, Home } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
-import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
+import type { ApplyMode, SurfaceContext, GroutStyle } from '@/lib/simulation'
 
 interface Props {
   imagePreview: string
   stoneName: string
-  onSelect: (mode: ApplyMode, context?: SurfaceContext) => void
+  onSelect: (mode: ApplyMode, context?: SurfaceContext, grout?: GroutStyle) => void
   onBack: () => void
 }
 
-const MODE_TEXTS: Record<string, {
-  title: string
-  desc: string
-  back: string
-  fullTitle: string
-  fullDesc: string
-  brushTitle: string
-  brushDesc: string
-  contextTitle: string
-  contextDesc: string
-  apply: string
-  facade: string
-  fireplace: string
-  bathroom: string
-  interior: string
-  floor: string
-  facadeDesc: string
-  fireplaceDesc: string
-  bathroomDesc: string
-  interiorDesc: string
-  floorDesc: string
-}> = {
+const MODE_TEXTS: Record<string, Record<string, string>> = {
   tr: {
     title: 'Uygulama Yöntemi',
     desc: 'Taşı nasıl uygulamak istediğinizi seçin',
@@ -55,6 +34,11 @@ const MODE_TEXTS: Record<string, {
     bathroomDesc: 'Banyo duvarı, duş alanı',
     interiorDesc: 'İç mekan duvar yüzeyi',
     floorDesc: 'Zemin, döşeme alanı',
+    groutTitle: 'Derz Stili',
+    grouted: 'Derzli',
+    groutless: 'Derzsiz',
+    groutedDesc: 'Taşlar arasında görünür derz çizgileri',
+    groutlessDesc: 'Taşlar sıkı birbirine yapışık, derz yok',
   },
   en: {
     title: 'Application Method',
@@ -77,6 +61,11 @@ const MODE_TEXTS: Record<string, {
     bathroomDesc: 'Bathroom wall, shower area',
     interiorDesc: 'Interior wall surface',
     floorDesc: 'Floor, ground surface',
+    groutTitle: 'Grout Style',
+    grouted: 'With Grout',
+    groutless: 'No Grout',
+    groutedDesc: 'Visible grout lines between stones',
+    groutlessDesc: 'Stones tightly fitted, no visible grout',
   },
   es: {
     title: 'Método de aplicación',
@@ -99,6 +88,11 @@ const MODE_TEXTS: Record<string, {
     bathroomDesc: 'Pared de baño, área de ducha',
     interiorDesc: 'Pared interior',
     floorDesc: 'Suelo, superficie del piso',
+    groutTitle: 'Estilo de juntas',
+    grouted: 'Con juntas',
+    groutless: 'Sin juntas',
+    groutedDesc: 'Líneas de junta visibles entre piedras',
+    groutlessDesc: 'Piedras ajustadas, sin juntas visibles',
   },
   ar: {
     title: 'طريقة التطبيق',
@@ -121,6 +115,11 @@ const MODE_TEXTS: Record<string, {
     bathroomDesc: 'جدار الحمام، منطقة الدش',
     interiorDesc: 'سطح الجدار الداخلي',
     floorDesc: 'الأرضية، سطح الأرض',
+    groutTitle: 'نمط المفاصل',
+    grouted: 'مع مفاصل',
+    groutless: 'بدون مفاصل',
+    groutedDesc: 'خطوط مفاصل مرئية بين الأحجار',
+    groutlessDesc: 'أحجار متلاصقة بإحكام، بدون مفاصل',
   },
   de: {
     title: 'Anwendungsmethode',
@@ -143,6 +142,11 @@ const MODE_TEXTS: Record<string, {
     bathroomDesc: 'Badezimmerwand, Duschbereich',
     interiorDesc: 'Innenwandfläche',
     floorDesc: 'Boden, Grundfläche',
+    groutTitle: 'Fugenstil',
+    grouted: 'Mit Fugen',
+    groutless: 'Ohne Fugen',
+    groutedDesc: 'Sichtbare Fugenlinien zwischen Steinen',
+    groutlessDesc: 'Steine eng anliegend, keine sichtbaren Fugen',
   },
 }
 
@@ -156,6 +160,7 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
   const t = MODE_TEXTS[locale] || MODE_TEXTS.tr
   const [showContextPicker, setShowContextPicker] = useState(false)
   const [selectedContext, setSelectedContext] = useState<SurfaceContext>('facade')
+  const [groutStyle, setGroutStyle] = useState<GroutStyle>('grouted')
 
   const contextLabels: Record<SurfaceContext, { name: string; desc: string }> = {
     facade: { name: t.facade, desc: t.facadeDesc },
@@ -269,6 +274,36 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
             })}
           </div>
 
+          {/* Grout style toggle */}
+          <div className="mb-8">
+            <h3 className="font-heading text-sm font-bold text-white/60 mb-3 text-center">
+              {t.groutTitle}
+            </h3>
+            <div className="flex gap-3 max-w-md mx-auto">
+              {(['grouted', 'groutless'] as GroutStyle[]).map((style) => {
+                const isActive = groutStyle === style
+                return (
+                  <button
+                    key={style}
+                    onClick={() => setGroutStyle(style)}
+                    className={`flex-1 p-3 rounded-xl border-2 transition-all duration-300 text-center ${
+                      isActive
+                        ? 'border-gold-400 bg-gold-400/[0.06]'
+                        : 'border-white/[0.08] bg-white/[0.02] hover:border-white/[0.15]'
+                    }`}
+                  >
+                    <span className={`block text-xs font-medium ${isActive ? 'text-gold-400' : 'text-white/60'}`}>
+                      {t[style]}
+                    </span>
+                    <span className="block text-[9px] text-white/25 font-mono mt-1">
+                      {t[`${style}Desc`]}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center justify-center gap-4">
             <button
               onClick={() => setShowContextPicker(false)}
@@ -278,7 +313,7 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
               {t.back}
             </button>
             <button
-              onClick={() => onSelect('full', selectedContext)}
+              onClick={() => onSelect('full', selectedContext, groutStyle)}
               className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
             >
               <Wand2 size={16} />

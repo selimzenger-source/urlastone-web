@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Upload, Gem, Wand2, Sparkles, Eye, Info } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
-import type { SimStep, StoneOption, ApplyMode, SurfaceContext } from '@/lib/simulation'
+import type { SimStep, StoneOption, ApplyMode, SurfaceContext, GroutStyle } from '@/lib/simulation'
 import { resizeImage } from '@/lib/simulation'
 import StepUpload from './StepUpload'
 import StepSelectStone from './StepSelectStone'
@@ -117,6 +117,7 @@ export default function SimulationWizard() {
   const [selectedStone, setSelectedStone] = useState<StoneOption | null>(null)
   const [applyMode, setApplyMode] = useState<ApplyMode | null>(null)
   const [surfaceContext, setSurfaceContext] = useState<SurfaceContext | null>(null)
+  const [groutStyle, setGroutStyle] = useState<GroutStyle>('grouted')
   const [maskDataUrl, setMaskDataUrl] = useState<string | null>(null)
   const [predictionId, setPredictionId] = useState<string | null>(null)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
@@ -194,9 +195,10 @@ export default function SimulationWizard() {
   }, [])
 
   // Handle apply mode selection
-  const handleModeSelect = useCallback(async (mode: ApplyMode, context?: SurfaceContext) => {
+  const handleModeSelect = useCallback(async (mode: ApplyMode, context?: SurfaceContext, grout?: GroutStyle) => {
     setApplyMode(mode)
     setSurfaceContext(context || null)
+    if (grout) setGroutStyle(grout)
 
     if (mode === 'brush') {
       setStep('mask')
@@ -223,6 +225,7 @@ export default function SimulationWizard() {
             locale,
             applyMode: 'full',
             surfaceContext: context || 'facade',
+            groutStyle: grout || 'grouted',
           }),
         })
 
@@ -276,6 +279,7 @@ export default function SimulationWizard() {
           stoneImageUrl: selectedStone.image_url,
           locale,
           applyMode: 'brush',
+          groutStyle,
         }),
       })
 
