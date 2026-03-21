@@ -521,11 +521,12 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
 
   return (
     <div className="glass-card p-12 md:p-20 text-center">
-      <div className="relative w-24 h-24 mx-auto mb-8">
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-400/5 animate-pulse" />
-        <div className="absolute inset-2 rounded-xl border-2 border-gold-400/30 border-t-gold-400 animate-spin" style={{ animationDuration: '3s' }} />
+      <div className="relative w-28 h-28 mx-auto mb-8">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gold-400/20 to-gold-400/5 animate-pulse" />
+        <div className="absolute inset-1 rounded-full border-2 border-gold-400/30 border-t-gold-400 animate-spin" style={{ animationDuration: '3s' }} />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Sparkles size={24} className="text-gold-400 animate-pulse" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-stone.png" alt="URLASTONE" className="w-14 h-14 opacity-80 animate-pulse brightness-[10]" draggable={false} />
         </div>
       </div>
 
