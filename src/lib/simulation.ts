@@ -86,7 +86,7 @@ export function resizeImage(
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0, width, height)
       resolve({
-        dataUrl: canvas.toDataURL('image/png'),
+        dataUrl: canvas.toDataURL('image/jpeg', 0.85),
         width,
         height,
       })

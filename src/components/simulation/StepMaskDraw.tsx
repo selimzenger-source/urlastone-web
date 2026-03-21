@@ -183,40 +183,42 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
 
   const handleSubmit = useCallback(() => {
     const canvas = canvasRef.current!
+    const ctx = canvas.getContext('2d')!
 
-    // Create mask: white where painted, black everywhere else
+    // Read the drawing canvas pixels (gold overlay with alpha)
+    const srcData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+    // Create mask at original image dimensions
     const maskCanvas = document.createElement('canvas')
     maskCanvas.width = imageWidth
     maskCanvas.height = imageHeight
     const maskCtx = maskCanvas.getContext('2d')!
 
-    // Fill black background
+    // Fill entire mask with black (= keep original)
     maskCtx.fillStyle = '#000000'
     maskCtx.fillRect(0, 0, imageWidth, imageHeight)
 
-    // Draw the overlay canvas scaled up to original image size → white areas = mask
-    // This preserves the exact painted shape
-    maskCtx.drawImage(canvas, 0, 0, imageWidth, imageHeight)
+    // Scale factors from drawing canvas → original image
+    const scaleX = imageWidth / canvas.width
+    const scaleY = imageHeight / canvas.height
 
-    // Convert: any non-black pixel → white (the gold overlay becomes white mask)
-    const imgData = maskCtx.getImageData(0, 0, imageWidth, imageHeight)
-    const data = imgData.data
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] > 10) {
-        // Has alpha / color → make pure white
-        data[i] = 255
-        data[i + 1] = 255
-        data[i + 2] = 255
-        data[i + 3] = 255
-      } else {
-        // Transparent → make pure black
-        data[i] = 0
-        data[i + 1] = 0
-        data[i + 2] = 0
-        data[i + 3] = 255
+    // For each pixel in the drawing canvas, if it has alpha > 10,
+    // fill a scaled rectangle with white in the mask
+    maskCtx.fillStyle = '#ffffff'
+    const step = 2 // Process every 2nd pixel for performance
+    for (let y = 0; y < canvas.height; y += step) {
+      for (let x = 0; x < canvas.width; x += step) {
+        const idx = (y * canvas.width + x) * 4
+        if (srcData.data[idx + 3] > 10) {
+          maskCtx.fillRect(
+            Math.floor(x * scaleX),
+            Math.floor(y * scaleY),
+            Math.ceil(step * scaleX),
+            Math.ceil(step * scaleY)
+          )
+        }
       }
     }
-    maskCtx.putImageData(imgData, 0, 0)
 
     const maskDataUrl = maskCanvas.toDataURL('image/png')
     onSubmit(maskDataUrl)
