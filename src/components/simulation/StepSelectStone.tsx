@@ -8,6 +8,7 @@ import type { StoneOption } from '@/lib/simulation'
 interface Product {
   id: string
   name: string
+  code: string
   image_url: string | null
   stone_type?: { id: string; name: string; code: string } | null
   category?: { id: string; name: string; slug: string; thickness?: string } | null
@@ -61,6 +62,7 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
       name: selected.name,
       image_url: selected.image_url,
       categorySlug: selected.category?.slug,
+      productCode: selected.code,
     })
   }
 

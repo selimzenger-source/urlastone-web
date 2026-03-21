@@ -27,6 +27,7 @@ export interface StoneOption {
   name: string
   image_url: string | null
   categorySlug?: string
+  productCode?: string
 }
 
 // Base quality suffix for all prompts
