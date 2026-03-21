@@ -454,7 +454,7 @@ export default function AdminAnalytics() {
               title="İşletim Sistemi"
               icon="💻"
               data={activeOS}
-              nameMap={{ iOS: '📱 iOS (iPhone)', iPadOS: '📱 iPadOS', Android: '🤖 Android', Windows: '🪟 Windows', macOS: '🍎 macOS', Linux: '🐧 Linux', ChromeOS: '💻 ChromeOS', Other: '❓ Diğer' }}
+              nameMap={{ iOS: '📱 iOS (iPhone)', iPadOS: '📱 iPadOS', Android: '🤖 Android', Windows: '🪟 Windows', macOS: '🍎 macOS', Linux: '🐧 Linux', ChromeOS: '💻 ChromeOS', Other: '❓ Diğer', other: '❓ Diğer', 'Diğer': '❓ Diğer' }}
               barColor="bg-blue-400/50"
             />
           )}
@@ -465,7 +465,7 @@ export default function AdminAnalytics() {
               title="Tarayıcı"
               icon="🌐"
               data={activeBrowsers}
-              nameMap={{ Chrome: '🟢 Chrome', Safari: '🔵 Safari', Firefox: '🟠 Firefox', Edge: '🔷 Edge', Opera: '🔴 Opera', Other: '❓ Diğer' }}
+              nameMap={{ Chrome: '🟢 Chrome', Safari: '🔵 Safari', Firefox: '🟠 Firefox', Edge: '🔷 Edge', Opera: '🔴 Opera', Other: '❓ Diğer', other: '❓ Diğer', 'Diğer': '❓ Diğer' }}
               barColor="bg-gold-400/50"
             />
           )}
@@ -476,7 +476,7 @@ export default function AdminAnalytics() {
               title="Diller"
               icon="🗣️"
               data={activeLanguages}
-              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe', Other: '❓ Diğer' }}
+              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe', Other: '❓ Diğer', other: '❓ Diğer', 'Diğer': '❓ Diğer' }}
               barColor="bg-cyan-400/50"
             />
           )}
