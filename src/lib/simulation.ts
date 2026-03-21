@@ -18,29 +18,45 @@ export interface StoneOption {
   code: string
   name: string
   image_url: string | null
+  categorySlug?: string
 }
 
-// Stone-specific prompts for inpainting - architectural photography quality
+// Base quality suffix for all prompts
+const QUALITY = 'ultra realistic, architectural photography, 8k, photorealistic lighting, natural daylight, professional construction, real building exterior, depth of field, shot on Canon EOS R5'
+
+// Stone type base textures
+const STONE_BASE: Record<string, string> = {
+  TRV: 'travertine natural stone, warm cream ivory beige tones, natural porous honeycomb texture with filled holes, subtle earth-tone veining, matte honed finish, Denizli travertine from Turkey',
+  MRMR: 'marble natural stone, elegant white cream with grey brown veining, crystalline structure, semi-polished smooth finish, Turkish Afyon marble',
+  BZLT: 'basalt natural stone, dark charcoal grey to deep black, dense volcanic texture, uniform fine grain, split face rough finish, Anatolian basalt',
+  KLKR: 'limestone natural stone, warm sandy beige to cream white, fine grain soft sedimentary texture, matte natural finish, Turkish limestone',
+}
+
+// Rockshell category patterns (how stones are arranged)
+const CATEGORY_PATTERN: Record<string, string> = {
+  nature: 'irregular organic random shaped pieces, natural broken edges, rustic stacked arrangement, varying sizes mixed together, no two pieces alike, authentic quarry-cut appearance',
+  mix: 'combination of horizontal thin cut strips mixed with natural rounded pieces, balanced modern-traditional blend, geometric meets organic pattern',
+  crazy: 'random mosaic pattern, mixed shapes and sizes, chaotic artistic arrangement, varying thickness, bold irregular placement, dynamic visual texture',
+  line: 'uniform 3cm height horizontal strips, clean parallel lines, free-length pieces, minimal modern linear pattern, precise contemporary arrangement',
+}
+
+// Build the optimal prompt based on stone type + category
+export function buildPrompt(stoneCode: string, categorySlug?: string): string {
+  const stoneBase = STONE_BASE[stoneCode] || STONE_BASE.TRV
+  const pattern = categorySlug ? CATEGORY_PATTERN[categorySlug] : CATEGORY_PATTERN.nature
+
+  return `${stoneBase}, ${pattern || ''}, exterior wall facade cladding, seamless professional installation, grouted joints, ${QUALITY}`
+}
+
+// Fallback simple prompts for unknown codes
 export const stonePrompts: Record<string, { prompt: string; label: string }> = {
-  TRV: {
-    prompt: 'travertine natural stone wall cladding, warm cream beige color, natural porous texture with subtle veining, high quality architectural photography, realistic stone surface, professional masonry, seamless natural stone installation',
-    label: 'Traverten',
-  },
-  MRMR: {
-    prompt: 'marble natural stone surface, elegant white and grey veining pattern, polished smooth finish, luxury architectural cladding, high quality photography, realistic marble texture, professional stone installation',
-    label: 'Mermer',
-  },
-  BZLT: {
-    prompt: 'basalt natural stone cladding, dark grey to black volcanic stone, uniform dense texture, modern architectural facade, high quality photography, realistic basalt surface, professional masonry installation',
-    label: 'Bazalt',
-  },
-  KLKR: {
-    prompt: 'limestone natural stone wall, warm beige to cream color, fine grain soft texture, elegant architectural cladding, high quality photography, realistic limestone surface, professional stone installation',
-    label: 'Kalker',
-  },
+  TRV: { prompt: buildPrompt('TRV', 'nature'), label: 'Traverten' },
+  MRMR: { prompt: buildPrompt('MRMR', 'nature'), label: 'Mermer' },
+  BZLT: { prompt: buildPrompt('BZLT', 'nature'), label: 'Bazalt' },
+  KLKR: { prompt: buildPrompt('KLKR', 'nature'), label: 'Kalker' },
 }
 
-export const negativePrompt = 'cartoon, drawing, painting, illustration, anime, sketch, low quality, blurry, distorted, text, watermark, logo, artifact, deformed, ugly, duplicate, morbid'
+export const negativePrompt = 'cartoon, drawing, painting, illustration, anime, sketch, low quality, blurry, distorted, text, watermark, logo, artifact, deformed, ugly, duplicate, morbid, bad anatomy, extra limbs, mutated, disfigured, flat texture, repeating tile pattern, wallpaper, digital render, 3d render, CGI'
 
 // Resize image to max dimension while keeping aspect ratio
 export function resizeImage(

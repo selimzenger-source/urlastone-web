@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Upload, Gem, Paintbrush, Sparkles, Eye, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { SimStep, StoneOption } from '@/lib/simulation'
-import { stonePrompts, negativePrompt, resizeImage } from '@/lib/simulation'
+import { negativePrompt, buildPrompt, resizeImage } from '@/lib/simulation'
 import StepUpload from './StepUpload'
 import StepSelectStone from './StepSelectStone'
 import StepMaskDraw from './StepMaskDraw'
@@ -64,9 +64,6 @@ export default function SimulationWizard() {
 
     if (!imageDataUrl || !selectedStone) return
 
-    const stoneCode = selectedStone.code
-    const promptData = stonePrompts[stoneCode] || stonePrompts.TRV
-
     try {
       const res = await fetch('/api/simulation/create', {
         method: 'POST',
@@ -74,8 +71,8 @@ export default function SimulationWizard() {
         body: JSON.stringify({
           image: imageDataUrl,
           mask,
-          prompt: promptData.prompt,
-          negativePrompt,
+          stoneCode: selectedStone.code,
+          categorySlug: selectedStone.categorySlug,
         }),
       })
 

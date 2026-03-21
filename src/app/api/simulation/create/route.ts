@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildPrompt, negativePrompt } from '@/lib/simulation'
 
 const REPLICATE_API = 'https://api.replicate.com/v1/predictions'
 
@@ -9,11 +10,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { image, mask, prompt, negativePrompt } = await req.json()
+    const { image, mask, stoneCode, categorySlug } = await req.json()
 
-    if (!image || !mask || !prompt) {
-      return NextResponse.json({ error: 'image, mask, and prompt are required' }, { status: 400 })
+    if (!image || !mask || !stoneCode) {
+      return NextResponse.json({ error: 'image, mask, and stoneCode are required' }, { status: 400 })
     }
+
+    // Build optimized prompt server-side based on stone type + category
+    const prompt = buildPrompt(stoneCode, categorySlug)
 
     // Create prediction using stable-diffusion-inpainting
     const response = await fetch(REPLICATE_API, {
@@ -27,7 +31,7 @@ export async function POST(req: NextRequest) {
         version: 'e490d072a34a94a11e9711ed5a6ba621c3fab884eda1665d9d3a282d65a21571',
         input: {
           prompt,
-          negative_prompt: negativePrompt || '',
+          negative_prompt: negativePrompt,
           image,
           mask,
           num_outputs: 1,
