@@ -9,6 +9,7 @@ interface Props {
   originalUrl: string
   resultUrl: string
   stoneName: string
+  stoneCode?: string
   onTryAnother: () => void
   onReset: () => void
 }
@@ -80,33 +81,33 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
 function drawWatermarks(ctx: CanvasRenderingContext2D, width: number, height: number, logoImg: HTMLImageElement | null) {
   ctx.save()
 
-  // --- Corner watermark: logo + text (bottom-right) ---
+  // --- Corner watermark: logo + text (top-right) ---
   const cornerSize = Math.min(width, height) * 0.12
   const padding = cornerSize * 0.4
   const logoSize = cornerSize * 0.5
 
-  ctx.globalAlpha = 0.25
+  ctx.globalAlpha = 0.35
 
   // Draw logo icon if loaded
   if (logoImg) {
     ctx.drawImage(
       logoImg,
       width - padding - cornerSize,
-      height - padding - logoSize - 8,
+      padding,
       logoSize,
       logoSize
     )
   }
 
   // Draw "URLASTONE" text next to logo
-  ctx.globalAlpha = 0.3
+  ctx.globalAlpha = 0.4
   ctx.fillStyle = '#ffffff'
   ctx.font = `bold ${Math.round(cornerSize * 0.28)}px Inter, sans-serif`
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
 
   const textX = logoImg ? width - padding - cornerSize + logoSize + 6 : width - padding - cornerSize
-  const textY = height - padding - logoSize / 2 - 8
+  const textY = padding + logoSize / 2
 
   // Text shadow for visibility on light/dark backgrounds
   ctx.shadowColor = 'rgba(0,0,0,0.5)'
@@ -118,7 +119,7 @@ function drawWatermarks(ctx: CanvasRenderingContext2D, width: number, height: nu
   // Subtitle
   ctx.font = `${Math.round(cornerSize * 0.14)}px Inter, sans-serif`
   ctx.globalAlpha = 0.2
-  ctx.fillText('urlastone.com', textX, textY + cornerSize * 0.22)
+  ctx.fillText('urlastone.com', textX, textY + cornerSize * 0.24)
 
   ctx.shadowBlur = 0
   ctx.shadowOffsetX = 0
@@ -152,7 +153,7 @@ function drawWatermarks(ctx: CanvasRenderingContext2D, width: number, height: nu
   ctx.restore()
 }
 
-export default function StepResult({ originalUrl, resultUrl, stoneName, onTryAnother, onReset }: Props) {
+export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCode, onTryAnother, onReset }: Props) {
   const { locale } = useLanguage()
   const t = RESULT_TEXTS[locale] || RESULT_TEXTS.tr
   const [sliderPos, setSliderPos] = useState(50)
@@ -326,8 +327,8 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, onTryAno
 
         {/* Watermark overlay (CSS — visible on screen) */}
         <div className="absolute inset-0 pointer-events-none z-[5]" style={{ mixBlendMode: 'overlay' }}>
-          {/* Corner watermark */}
-          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-30">
+          {/* Corner watermark — top-right */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="" className="w-6 h-6 md:w-8 md:h-8 brightness-[10] drop-shadow-lg" draggable={false} />
             <div className="drop-shadow-lg">
@@ -400,7 +401,17 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, onTryAno
         </button>
 
         <Link
-          href="/teklif"
+          href={`/teklif${stoneCode ? `?product=${stoneCode}` : ''}`}
+          onClick={() => {
+            try {
+              sessionStorage.setItem('simulationData', JSON.stringify({
+                resultUrl,
+                originalUrl,
+                stoneName,
+                stoneCode,
+              }))
+            } catch { /* ignore */ }
+          }}
           className="inline-flex items-center gap-2 bg-gold-400/20 text-gold-400 px-6 py-3 rounded-full text-sm font-medium hover:bg-gold-400/30 transition-colors border border-gold-400/30"
         >
           {t.quote}

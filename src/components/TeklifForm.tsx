@@ -65,6 +65,7 @@ export default function TeklifForm() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [basarili, setBasarili] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [simulationResult, setSimulationResult] = useState<{ resultUrl?: string; stoneName?: string } | null>(null)
 
   // City autocomplete
   const [cityQuery, setCityQuery] = useState('')
@@ -87,6 +88,24 @@ export default function TeklifForm() {
   useEffect(() => {
     setForm(prev => ({ ...prev, tercihDil: locale }))
   }, [locale])
+
+  // Load simulation data from sessionStorage (when coming from /simulasyon)
+  useEffect(() => {
+    try {
+      const data = sessionStorage.getItem('simulationData')
+      if (data) {
+        const parsed = JSON.parse(data)
+        setSimulationResult(parsed)
+        if (parsed.stoneName) {
+          setForm(prev => ({
+            ...prev,
+            aciklama: prev.aciklama || `AI Simülasyon sonucu: ${parsed.stoneName} taşı ile ilgileniyorum.`,
+          }))
+        }
+        sessionStorage.removeItem('simulationData')
+      }
+    } catch { /* ignore */ }
+  }, [])
 
   // Fetch data
   useEffect(() => {
@@ -265,6 +284,20 @@ export default function TeklifForm() {
           {t.form_title} <span className="text-gradient-gold">{t.form_title_gold}</span>
         </h3>
       </div>
+
+      {simulationResult?.resultUrl && (
+        <div className="mb-6 p-4 rounded-xl border border-gold-400/20 bg-gold-400/5">
+          <p className="font-mono text-[10px] text-gold-400/70 tracking-wider uppercase mb-3">AI Simülasyon Sonucu</p>
+          <div className="flex items-start gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={simulationResult.resultUrl} alt="Simülasyon" className="w-32 h-24 object-cover rounded-lg border border-white/10" />
+            <div>
+              <p className="text-white text-sm font-medium">{simulationResult.stoneName}</p>
+              <p className="text-white/40 text-xs mt-1">Bu simülasyon sonucuna göre teklif alıyorsunuz</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Kişisel Bilgiler */}

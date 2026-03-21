@@ -492,6 +492,7 @@ export default function SimulationWizard() {
             originalUrl={imageDataUrl}
             resultUrl={resultUrl}
             stoneName={selectedStone?.name || ''}
+            stoneCode={selectedStone?.code || ''}
             onTryAnother={handleTryAnother}
             onReset={handleReset}
           />

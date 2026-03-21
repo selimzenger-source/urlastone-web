@@ -47,7 +47,7 @@ const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
 
 // Gemini prompt templates — simpler prompts work better with Gemini's multimodal understanding
 const GEMINI_PROMPTS: Record<string, string> = {
-  facade: `Edit this building photo: apply the stone cladding from the second image to EVERY visible wall surface — including foundation walls, basement walls, retaining walls, and all upper floor walls. No concrete or plaster should remain visible on ANY wall. Each stone piece should be 15-30cm. Show the finished building with windows. Keep the same camera angle. Photorealistic.`,
+  facade: `Edit this building photo: apply the stone cladding from the second image to EVERY visible wall surface — including foundation walls, basement walls, retaining walls, and all upper floor walls. No concrete or plaster should remain visible on ANY wall. IMPORTANT: Each individual stone piece must be SMALL — approximately 15-25cm in real life, much smaller than a window. A single window should be surrounded by at least 20-30 stone pieces. Do NOT make large boulder-sized stones. Show the finished building with windows. Keep the same camera angle. Photorealistic.`,
 
   fireplace: `The first image is a room with a fireplace. The second image shows a natural stone texture sample.
 
