@@ -537,7 +537,7 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
         <div className="absolute inset-1 rounded-full border-2 border-gold-400/30 border-t-gold-400 animate-spin" style={{ animationDuration: '3s' }} />
         <div className="absolute inset-0 flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-stone.png" alt="URLASTONE" className="w-14 h-14 opacity-80 animate-pulse brightness-[10]" draggable={false} />
+          <img src="/logo-stone.png" alt="URLASTONE" className="w-14 h-14 opacity-90 animate-pulse rounded-lg" draggable={false} />
         </div>
       </div>
 
