@@ -153,10 +153,13 @@ export async function GET(req: NextRequest) {
 
   const period = req.nextUrl.searchParams.get('period') || 'month' // today, week, month, all
 
+  // Use Turkey timezone (UTC+3)
   const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+  const turkeyOffset = 3 * 60 * 60 * 1000 // UTC+3
+  const turkeyNow = new Date(now.getTime() + turkeyOffset)
+  const todayStart = new Date(Date.UTC(turkeyNow.getUTCFullYear(), turkeyNow.getUTCMonth(), turkeyNow.getUTCDate()) - turkeyOffset).toISOString()
   const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const monthStart = new Date(Date.UTC(turkeyNow.getUTCFullYear(), turkeyNow.getUTCMonth(), 1) - turkeyOffset).toISOString()
 
   // Determine breakdown filter based on period
   const breakdownSince = period === 'today' ? todayStart : period === 'week' ? weekStart : period === 'all' ? null : monthStart
@@ -188,7 +191,7 @@ export async function GET(req: NextRequest) {
     // Breakdowns for selected period
     const breakdowns = await getBreakdowns(breakdownSince)
 
-    // Daily chart (always last 14 days)
+    // Daily chart (always last 14 days, Turkey timezone)
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
     const { data: dailyData } = await supabaseAdmin
       .from('page_views')
@@ -197,12 +200,15 @@ export async function GET(req: NextRequest) {
 
     const dailyStats: Record<string, { views: number; visitors: Set<string> }> = {}
     for (let i = 13; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
-      const key = d.toISOString().split('T')[0]
+      const d = new Date(turkeyNow.getTime() - i * 24 * 60 * 60 * 1000)
+      const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
       dailyStats[key] = { views: 0, visitors: new Set() }
     }
     dailyData?.forEach(r => {
-      const key = r.created_at.split('T')[0]
+      // Convert created_at to Turkey timezone for day grouping
+      const utcDate = new Date(r.created_at)
+      const trDate = new Date(utcDate.getTime() + turkeyOffset)
+      const key = `${trDate.getUTCFullYear()}-${String(trDate.getUTCMonth() + 1).padStart(2, '0')}-${String(trDate.getUTCDate()).padStart(2, '0')}`
       if (dailyStats[key]) {
         dailyStats[key].views++
         if (r.session_id) dailyStats[key].visitors.add(r.session_id)

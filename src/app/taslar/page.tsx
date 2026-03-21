@@ -418,14 +418,9 @@ export default function TaslarPage() {
             <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
               {/* PDF Visual */}
               <div className="flex-shrink-0">
-                <div className="w-24 h-32 md:w-28 md:h-36 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col items-center justify-center relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 to-red-500/20" />
-                  <svg className="relative z-10" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" className="text-red-400" />
-                    <polyline points="14 2 14 8 20 8" className="text-red-400" />
-                  </svg>
-                  <span className="relative z-10 text-red-400 text-[10px] font-mono font-bold mt-1">PDF</span>
-                  <span className="relative z-10 text-white/30 text-[8px] font-mono mt-0.5">2025-2026</span>
+                <div className="w-24 h-32 md:w-28 md:h-36 rounded-xl bg-white/[0.03] border border-white/[0.08] flex flex-col items-center justify-center p-3">
+                  <img src="/pdf-icon.png" alt="PDF" className="w-16 h-20 md:w-20 md:h-24 object-contain" />
+                  <span className="text-white/30 text-[8px] font-mono mt-1">2025-2026</span>
                 </div>
               </div>
 
