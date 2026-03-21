@@ -91,6 +91,14 @@ CRITICAL RULES:
 Apply this exact stone to the floor surface. Real installed tiles with 3D depth and natural shadows. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
 }
 
+// Category-based stone size descriptions for accurate scaling
+const CATEGORY_SIZES: Record<string, string> = {
+  nature: 'Each stone piece is a large irregular polygon, approximately 15-30cm wide, with natural broken rough edges.',
+  mix: 'A combination of thin horizontal strips (3cm height x 20-40cm width) alternating with medium rounded natural pieces (10-20cm).',
+  crazy: 'A random mosaic of many small irregular stone pieces, mixed sizes from 3cm to 15cm, chaotic artistic pattern.',
+  line: 'Thin uniform horizontal stone strips, each approximately 2-3cm height x 30-60cm width, clean parallel lines running horizontally.',
+}
+
 // ─── Helpers ───────────────────────────────────────────────
 
 function getClientIp(req: NextRequest): string {
@@ -236,8 +244,10 @@ async function generateWithGemini(
   stoneBase64: string,
   stoneMimeType: string,
   surfaceContext: string,
-  scaleInstruction: string,
   groutStyle: string,
+  categorySlug: string,
+  patternBase64?: string | null,
+  patternMimeType?: string | null,
   maskBase64?: string,
   maskMimeType?: string,
 ): Promise<string | null> {
@@ -252,31 +262,51 @@ async function generateWithGemini(
     ? 'Stones must be tightly fitted together with NO visible grout, mortar, or gap lines between them. Zero spacing between stone pieces.'
     : 'There must be visible grout/mortar lines between each stone piece. Clear gaps filled with grey mortar between stones.'
 
+  // Get category-specific size description
+  const sizeDesc = CATEGORY_SIZES[categorySlug] || CATEGORY_SIZES.nature
+
+  // Determine image numbering based on whether pattern image is included
+  const hasPattern = patternBase64 && patternMimeType
+  const patternImageNum = hasPattern ? 3 : null
+  const maskImageNum = maskBase64 ? (hasPattern ? 4 : 3) : null
+
   // Build prompt based on mode (full vs brush with mask)
   let prompt: string
   if (maskBase64) {
-    // Brush mode: 3 images (building + stone + mask)
-    prompt = `The first image is a photo of a space. The second image is a stone texture sample showing the EXACT stone type to use. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
+    // Brush mode with mask
+    const patternRef = hasPattern
+      ? ` Image ${patternImageNum} is a diagram showing the stone laying PATTERN — how stones are arranged and their relative sizes.`
+      : ''
+    prompt = `Image 1 is a photo of a space. Image 2 is a stone texture sample showing the EXACT stone type to use.${patternRef} Image ${maskImageNum} is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
 
-CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+CRITICAL RULES:
+1. You MUST replicate the EXACT stone from Image 2 — same stone shape, same color, same texture. Do NOT invent a different stone.
+2. STONE SIZE: ${sizeDesc}${hasPattern ? ` Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
+3. EVERY area must use the IDENTICAL stone pattern — no variation between sections.
 
-Apply this exact stone ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas. Keep everything outside the masked area exactly as it is. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. ${groutInstruction} Photorealistic result.`
+Apply this exact stone ONLY to the white areas of the mask. Do NOT change anything in the black areas. Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. ${groutInstruction} Photorealistic result.`
   } else {
     const basePrompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
-    // Append grout instruction to the base prompt
-    prompt = `${basePrompt}\n\n${groutInstruction}`
+    const patternRef = hasPattern
+      ? `\n\nImage 3 is a diagram showing the stone laying PATTERN — how stones should be arranged. Follow this pattern for the stone layout.`
+      : ''
+    // Append grout, size and pattern instructions to the base prompt
+    prompt = `${basePrompt}${patternRef}\n\nSTONE SIZE: ${sizeDesc}\n\n${groutInstruction}`
   }
 
   console.log('[Gemini] Calling gemini-3-pro-image-preview...')
-  console.log('[Gemini] Surface context:', surfaceContext, maskBase64 ? '(brush mode with mask)' : '(full mode)')
+  console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern image)' : '', maskBase64 ? '(brush mode with mask)' : '(full mode)')
   const startTime = Date.now()
 
-  // Build parts array: building + stone + optional mask
+  // Build parts array: building + stone + optional pattern + optional mask
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const imageParts: any[] = [
     { inlineData: { mimeType: buildingMimeType, data: buildingBase64 } },
     { inlineData: { mimeType: stoneMimeType, data: stoneBase64 } },
   ]
+  if (hasPattern) {
+    imageParts.push({ inlineData: { mimeType: patternMimeType, data: patternBase64 } })
+  }
   if (maskBase64 && maskMimeType) {
     imageParts.push({ inlineData: { mimeType: maskMimeType, data: maskBase64 } })
   }
@@ -486,6 +516,7 @@ export async function POST(req: NextRequest) {
       mask,
       stoneCode,
       categorySlug,
+      categoryImageUrl,
       stoneImageUrl,
       locale,
       applyMode = 'brush' as ApplyMode,
@@ -540,17 +571,31 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 3. Analyze image with Sonnet for optimal scale instructions
-      const scaleInstruction = await analyzeImageWithSonnet(building.base64, building.mimeType)
-      console.log('[Simulation] Scale instruction:', scaleInstruction)
+      // 3. Fetch category pattern illustration (if available)
+      let pattern: { base64: string; mimeType: string } | null = null
+      if (categoryImageUrl) {
+        try {
+          let resolvedPatternUrl = categoryImageUrl
+          if (categoryImageUrl.startsWith('/')) {
+            const origin = req.headers.get('origin') || req.headers.get('x-forwarded-host') || 'www.urlastone.com'
+            const protocol = origin.startsWith('http') ? '' : 'https://'
+            resolvedPatternUrl = `${protocol}${origin}${categoryImageUrl}`
+          }
+          pattern = await fetchImageAsBase64(resolvedPatternUrl)
+          console.log('[Simulation] Pattern image fetched for category:', categorySlug)
+        } catch (err) {
+          console.warn('[Simulation] Could not fetch pattern image, continuing without:', err)
+        }
+      }
 
-      // 4. Try Gemini first (sends both images + prompt)
+      // 4. Try Gemini first (sends building + stone + optional pattern)
       const geminiResult = await generateWithGemini(
         building.base64, building.mimeType,
         stone.base64, stone.mimeType,
         surfaceContext,
-        scaleInstruction,
         groutStyle,
+        categorySlug || 'nature',
+        pattern?.base64, pattern?.mimeType,
       )
 
       if (geminiResult) {
@@ -615,16 +660,31 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 3. Analyze image with Sonnet for scale
-      const scaleInstruction = await analyzeImageWithSonnet(building.base64, building.mimeType)
+      // 3. Fetch category pattern illustration (if available)
+      let pattern: { base64: string; mimeType: string } | null = null
+      if (categoryImageUrl) {
+        try {
+          let resolvedPatternUrl = categoryImageUrl
+          if (categoryImageUrl.startsWith('/')) {
+            const origin = req.headers.get('origin') || req.headers.get('x-forwarded-host') || 'www.urlastone.com'
+            const protocol = origin.startsWith('http') ? '' : 'https://'
+            resolvedPatternUrl = `${protocol}${origin}${categoryImageUrl}`
+          }
+          pattern = await fetchImageAsBase64(resolvedPatternUrl)
+          console.log('[Simulation] Pattern image fetched for brush mode, category:', categorySlug)
+        } catch (err) {
+          console.warn('[Simulation] Could not fetch pattern image, continuing without:', err)
+        }
+      }
 
-      // 4. Try Gemini first (3 images: building + stone + mask)
+      // 4. Try Gemini first (building + stone + optional pattern + mask)
       const geminiResult = await generateWithGemini(
         building.base64, building.mimeType,
         stone.base64, stone.mimeType,
         surfaceContext,
-        scaleInstruction,
         groutStyle,
+        categorySlug || 'nature',
+        pattern?.base64, pattern?.mimeType,
         maskData.base64, maskData.mimeType,
       )
 

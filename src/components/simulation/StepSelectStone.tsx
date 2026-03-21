@@ -11,7 +11,7 @@ interface Product {
   code: string
   image_url: string | null
   stone_type?: { id: string; name: string; code: string } | null
-  category?: { id: string; name: string; slug: string; thickness?: string } | null
+  category?: { id: string; name: string; slug: string; thickness?: string; image_url?: string | null } | null
 }
 
 interface Props {
@@ -62,6 +62,7 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
       name: selected.name,
       image_url: selected.image_url,
       categorySlug: selected.category?.slug,
+      categoryImageUrl: selected.category?.image_url,
       productCode: selected.code,
     })
   }

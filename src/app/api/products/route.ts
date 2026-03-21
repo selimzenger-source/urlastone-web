@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     .from('products')
     .select(`
       *,
-      category:categories(id, name, slug, thickness),
+      category:categories(id, name, slug, thickness, image_url),
       stone_type:stone_types(id, name, code)
     `)
     .eq('is_active', true)

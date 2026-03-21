@@ -30,6 +30,7 @@ export interface StoneOption {
   name: string
   image_url: string | null
   categorySlug?: string
+  categoryImageUrl?: string | null
   productCode?: string
 }
 
