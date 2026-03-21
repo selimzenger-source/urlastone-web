@@ -65,7 +65,7 @@ export default function TeklifForm() {
   const [gonderiliyor, setGonderiliyor] = useState(false)
   const [basarili, setBasarili] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [simulationResult, setSimulationResult] = useState<{ resultUrl?: string; stoneName?: string } | null>(null)
+  const [simulationResult, setSimulationResult] = useState<{ resultUrl?: string; originalUrl?: string; stoneName?: string } | null>(null)
 
   // City autocomplete
   const [cityQuery, setCityQuery] = useState('')
@@ -288,10 +288,20 @@ export default function TeklifForm() {
       {simulationResult?.resultUrl && (
         <div className="mb-6 p-4 rounded-xl border border-gold-400/20 bg-gold-400/5">
           <p className="font-mono text-[10px] text-gold-400/70 tracking-wider uppercase mb-3">AI Simülasyon Sonucu</p>
-          <div className="flex items-start gap-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={simulationResult.resultUrl} alt="Simülasyon" className="w-32 h-24 object-cover rounded-lg border border-white/10" />
-            <div>
+          <div className="flex items-start gap-3">
+            {simulationResult.originalUrl && (
+              <div className="flex flex-col items-center gap-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={simulationResult.originalUrl} alt="Orijinal" className="w-24 h-20 object-cover rounded-lg border border-white/10" />
+                <span className="text-white/30 text-[8px] font-mono">Önce</span>
+              </div>
+            )}
+            <div className="flex flex-col items-center gap-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={simulationResult.resultUrl} alt="Simülasyon" className="w-24 h-20 object-cover rounded-lg border border-gold-400/20" />
+              <span className="text-gold-400/50 text-[8px] font-mono">Sonra</span>
+            </div>
+            <div className="flex-1 min-w-0 pt-1">
               <p className="text-white text-sm font-medium">{simulationResult.stoneName}</p>
               <p className="text-white/40 text-xs mt-1">Bu simülasyon sonucuna göre teklif alıyorsunuz</p>
             </div>

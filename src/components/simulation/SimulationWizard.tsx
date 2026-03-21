@@ -11,7 +11,7 @@ import StepApplyMode from './StepApplyMode'
 import StepMaskDraw from './StepMaskDraw'
 import StepResult from './StepResult'
 
-const DAILY_LOCAL_LIMIT = 3
+const DAILY_LOCAL_LIMIT = 10
 
 const STEPS: { key: SimStep; icon: typeof Upload }[] = [
   { key: 'upload', icon: Upload },

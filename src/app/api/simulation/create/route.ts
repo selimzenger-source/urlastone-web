@@ -3,11 +3,11 @@ import { buildPrompt } from '@/lib/simulation'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// Allow up to 60 seconds for Vercel serverless function
-export const maxDuration = 60
+// Allow up to 120 seconds for Vercel serverless function (Sonnet analysis + Gemini generation)
+export const maxDuration = 120
 
-const DAILY_LIMIT_PER_IP = 3
-const DAILY_LIMIT_GLOBAL = 20
+const DAILY_LIMIT_PER_IP = 10
+const DAILY_LIMIT_GLOBAL = 50
 
 // fal.ai endpoints (brush mode + full mode fallback)
 const FAL_URL_KONTEXT = 'https://fal.run/fal-ai/flux-kontext/dev'
@@ -123,6 +123,85 @@ async function uploadToStorage(dataUrl: string, prefix: string): Promise<string>
   return urlData.publicUrl
 }
 
+// ─── Claude Sonnet Image Analysis ─────────────────────────
+
+/** Analyze building photo with Claude Sonnet to generate optimal scale instructions */
+async function analyzeImageWithSonnet(
+  imageBase64: string,
+  imageMimeType: string,
+): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    console.log('[Sonnet] No API key, using default scale instructions')
+    return 'Each stone piece should be approximately 15-25cm in real life.'
+  }
+
+  const startTime = Date.now()
+  console.log('[Sonnet] Analyzing image for scale context...')
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: imageMimeType, data: imageBase64 },
+            },
+            {
+              type: 'text',
+              text: `Analyze this building/space photo for stone cladding simulation. Reply ONLY with a JSON object, no markdown:
+{
+  "type": "exterior" or "interior",
+  "floors": number of visible floors (0 if interior),
+  "distance": "close" or "medium" or "far",
+  "has_windows": true/false,
+  "window_count": approximate number of visible windows,
+  "is_raw_construction": true/false,
+  "scale_instruction": "A specific instruction for an AI image generator about how big each stone piece should appear relative to visible elements like windows or doors. Be very specific about proportions. Example: Each stone piece should be about 1/8 the height of a window."
+}`,
+            },
+          ],
+        }],
+      }),
+    })
+
+    const elapsed = Math.round((Date.now() - startTime) / 1000)
+
+    if (!response.ok) {
+      console.error(`[Sonnet] API error (${response.status}, ${elapsed}s)`)
+      return 'Each stone piece should be approximately 15-25cm in real life.'
+    }
+
+    const result = await response.json()
+    const text = result.content?.[0]?.text || ''
+    console.log(`[Sonnet] Analysis received in ${elapsed}s:`, text.substring(0, 200))
+
+    // Parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      const analysis = JSON.parse(jsonMatch[0])
+      console.log('[Sonnet] Parsed analysis:', JSON.stringify(analysis))
+      return analysis.scale_instruction || 'Each stone piece should be approximately 15-25cm in real life.'
+    }
+
+    return 'Each stone piece should be approximately 15-25cm in real life.'
+  } catch (err) {
+    const elapsed = Math.round((Date.now() - startTime) / 1000)
+    console.error(`[Sonnet] Exception after ${elapsed}s:`, err)
+    return 'Each stone piece should be approximately 15-25cm in real life.'
+  }
+}
+
 // ─── AI Providers ──────────────────────────────────────────
 
 /** Generate with Google Gemini (primary for both full and brush modes) */
@@ -132,6 +211,7 @@ async function generateWithGemini(
   stoneBase64: string,
   stoneMimeType: string,
   surfaceContext: string,
+  scaleInstruction: string,
   maskBase64?: string,
   maskMimeType?: string,
 ): Promise<string | null> {
@@ -147,9 +227,14 @@ async function generateWithGemini(
     // Brush mode: 3 images (building + stone + mask)
     prompt = `The first image is a photo of a space. The second image shows a natural stone texture sample. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
 
-Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. Photorealistic result.`
+Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. SCALE: ${scaleInstruction} Photorealistic result.`
   } else {
-    prompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
+    const basePrompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
+    // Replace the generic scale instruction with the Sonnet-analyzed one
+    prompt = basePrompt.replace(
+      /IMPORTANT:[\s\S]*?Photorealistic\./,
+      `IMPORTANT SCALE: ${scaleInstruction} Do NOT make large boulder-sized stones. Photorealistic.`
+    )
   }
 
   console.log('[Gemini] Calling gemini-3-pro-image-preview...')
@@ -424,11 +509,16 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 3. Try Gemini first (sends both images + prompt)
+      // 3. Analyze image with Sonnet for optimal scale instructions
+      const scaleInstruction = await analyzeImageWithSonnet(building.base64, building.mimeType)
+      console.log('[Simulation] Scale instruction:', scaleInstruction)
+
+      // 4. Try Gemini first (sends both images + prompt)
       const geminiResult = await generateWithGemini(
         building.base64, building.mimeType,
         stone.base64, stone.mimeType,
         surfaceContext,
+        scaleInstruction,
       )
 
       if (geminiResult) {
@@ -493,11 +583,15 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 3. Try Gemini first (3 images: building + stone + mask)
+      // 3. Analyze image with Sonnet for scale
+      const scaleInstruction = await analyzeImageWithSonnet(building.base64, building.mimeType)
+
+      // 4. Try Gemini first (3 images: building + stone + mask)
       const geminiResult = await generateWithGemini(
         building.base64, building.mimeType,
         stone.base64, stone.mimeType,
         surfaceContext,
+        scaleInstruction,
         maskData.base64, maskData.mimeType,
       )
 

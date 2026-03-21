@@ -327,13 +327,13 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
 
         {/* Watermark overlay (CSS — visible on screen) */}
         <div className="absolute inset-0 pointer-events-none z-[5]" style={{ mixBlendMode: 'overlay' }}>
-          {/* Corner watermark — top-right */}
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-40">
+          {/* Corner watermark — top-right, inside overflow-hidden container */}
+          <div className="absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1 opacity-50 bg-black/20 rounded-lg px-2 py-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="w-6 h-6 md:w-8 md:h-8 brightness-[10] drop-shadow-lg" draggable={false} />
-            <div className="drop-shadow-lg">
-              <span className="text-white text-[10px] md:text-xs font-bold tracking-wider block leading-tight">URLASTONE</span>
-              <span className="text-white/70 text-[7px] md:text-[8px] font-mono block leading-tight">urlastone.com</span>
+            <img src="/logo.png" alt="" className="w-5 h-5 md:w-6 md:h-6 brightness-[10]" draggable={false} />
+            <div>
+              <span className="text-white text-[8px] md:text-[10px] font-bold tracking-wider block leading-tight">URLASTONE</span>
+              <span className="text-white/60 text-[6px] md:text-[7px] font-mono block leading-tight">urlastone.com</span>
             </div>
           </div>
 
