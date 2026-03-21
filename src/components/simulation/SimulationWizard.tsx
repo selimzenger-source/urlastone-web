@@ -238,6 +238,7 @@ export default function SimulationWizard() {
           mask,
           stoneCode: selectedStone.code,
           categorySlug: selectedStone.categorySlug,
+          stoneImageUrl: selectedStone.image_url,
           locale,
           applyMode: 'brush',
         }),

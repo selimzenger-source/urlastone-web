@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildPrompt, buildFullApplyPrompt, negativePrompt } from '@/lib/simulation'
+import { buildPrompt, buildFullApplyPrompt } from '@/lib/simulation'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// API endpoints
-const REPLICATE_PREDICTIONS = 'https://api.replicate.com/v1/predictions'
+// fal.ai endpoint
 const FAL_QUEUE_URL = 'https://queue.fal.run/fal-ai/flux-general'
 
 const DAILY_LIMIT_PER_IP = 3   // Max per IP per day
@@ -43,9 +42,9 @@ function getClientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  const token = process.env.REPLICATE_API_TOKEN
-  if (!token) {
-    return NextResponse.json({ error: 'Replicate API token not configured' }, { status: 500 })
+  const falKey = process.env.FAL_API_KEY
+  if (!falKey) {
+    return NextResponse.json({ error: 'fal.ai API key not configured' }, { status: 500 })
   }
 
   try {
@@ -67,8 +66,8 @@ export async function POST(req: NextRequest) {
     if (applyMode === 'brush' && !mask) {
       return NextResponse.json({ error: 'mask is required for brush mode' }, { status: 400 })
     }
-    if (applyMode === 'full' && !stoneImageUrl) {
-      return NextResponse.json({ error: 'stoneImageUrl is required for full mode' }, { status: 400 })
+    if (!stoneImageUrl) {
+      return NextResponse.json({ error: 'stoneImageUrl is required' }, { status: 400 })
     }
 
     // --- Rate Limiting ---
@@ -116,128 +115,73 @@ export async function POST(req: NextRequest) {
       console.warn('Rate limit check failed, continuing without limit')
     }
 
-    // --- Build Prompt & Call AI Provider ---
+    // --- Build Prompt & Call fal.ai ---
+    const prompt = applyMode === 'full'
+      ? buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
+      : buildPrompt(stoneCode, categorySlug)
 
-    if (applyMode === 'full') {
-      // === FAL.AI — FLUX General with ControlNet (Canny) + IP-Adapter (stone texture) ===
-      const falKey = process.env.FAL_API_KEY
-      if (!falKey) {
-        return NextResponse.json({ error: 'fal.ai API key not configured' }, { status: 500 })
-      }
-
-      const prompt = buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
-
-      console.log('[Simulation] FULL mode — fal.ai FLUX General + IP-Adapter')
-      console.log('[Simulation] Surface context:', surfaceContext)
-      console.log('[Simulation] Stone texture ref:', stoneImageUrl?.substring(0, 60) + '...')
-      console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
-
-      const falResponse = await fetch(FAL_QUEUE_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Key ${falKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt,
-          num_inference_steps: 28,
-          guidance_scale: 3.5,
-          num_images: 1,
-          output_format: 'jpeg',
-          enable_safety_checker: false,
-          controlnets: [
-            {
-              path: 'InstantX/FLUX.1-dev-Controlnet-Canny',
-              control_image_url: image,
-              conditioning_scale: 0.85,
-            },
-          ],
-          ip_adapters: [
-            {
-              path: 'https://huggingface.co/XLabs-AI/flux-ip-adapter/resolve/main/flux-ip-adapter.safetensors',
-              image_url: stoneImageUrl,
-              scale: 0.75,
-              image_encoder_path: 'openai/clip-vit-large-patch14',
-            },
-          ],
-        }),
-      })
-
-      if (!falResponse.ok) {
-        const err = await falResponse.json()
-        console.error('fal.ai error:', err)
-        return NextResponse.json(
-          { error: err.detail || err.message || 'Failed to create prediction' },
-          { status: falResponse.status }
-        )
-      }
-
-      const falResult = await falResponse.json()
-      console.log('[Simulation] fal.ai queue response:', { request_id: falResult.request_id, status: falResult.status })
-
-      // Calculate remaining
-      let remaining = DAILY_LIMIT_PER_IP - 1
-      try {
-        const todayStart = new Date()
-        todayStart.setHours(0, 0, 0, 0)
-        const { count } = await supabaseAdmin
-          .from('simulation_requests')
-          .select('*', { count: 'exact', head: true })
-          .eq('ip_address', ip)
-          .gte('created_at', todayStart.toISOString())
-        if (count !== null) remaining = Math.max(0, DAILY_LIMIT_PER_IP - count)
-      } catch { /* ignore */ }
-
-      console.log('[Simulation] fal.ai response_url:', falResult.response_url)
-      console.log('[Simulation] fal.ai status_url:', falResult.status_url)
-
-      return NextResponse.json({
-        id: `fal--${falResult.request_id}`,
-        status: falResult.status || 'IN_QUEUE',
-        remaining,
-      })
-    }
-
-    // === REPLICATE — SD Inpainting (brush mode) ===
-    let response: Response
-
-    const prompt = buildPrompt(stoneCode, categorySlug)
-
-    console.log('[Simulation] BRUSH mode — SD Inpainting')
+    console.log(`[Simulation] ${applyMode.toUpperCase()} mode — fal.ai FLUX General`)
+    console.log('[Simulation] Stone texture ref:', stoneImageUrl?.substring(0, 60) + '...')
     console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
 
-    response = await fetch(REPLICATE_PREDICTIONS, {
+    // Build controlnets based on mode
+    const controlnets = applyMode === 'full'
+      ? [
+          {
+            path: 'InstantX/FLUX.1-dev-Controlnet-Canny',
+            control_image_url: image,
+            conditioning_scale: 0.85,
+          },
+        ]
+      : [
+          {
+            path: 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
+            control_image_url: image,
+            control_mode: 'inpainting',
+            mask_image_url: mask,
+            conditioning_scale: 0.9,
+          },
+        ]
+
+    const falResponse = await fetch(FAL_QUEUE_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Token ${token}`,
+        'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
-        input: {
-          prompt,
-          negative_prompt: negativePrompt,
-          image,
-          mask,
-          num_inference_steps: 25,
-          guidance_scale: 7.5,
-          scheduler: 'K_EULER_ANCESTRAL',
-        },
+        prompt,
+        num_inference_steps: 28,
+        guidance_scale: 3.5,
+        num_images: 1,
+        output_format: 'jpeg',
+        enable_safety_checker: false,
+        controlnets,
+        ip_adapters: [
+          {
+            path: 'https://huggingface.co/XLabs-AI/flux-ip-adapter/resolve/main/flux-ip-adapter.safetensors',
+            image_url: stoneImageUrl,
+            scale: 0.75,
+            image_encoder_path: 'openai/clip-vit-large-patch14',
+          },
+        ],
       }),
     })
 
-    if (!response.ok) {
-      const err = await response.json()
-      console.error('Replicate error:', err)
+    if (!falResponse.ok) {
+      const err = await falResponse.json()
+      console.error('fal.ai error:', err)
       return NextResponse.json(
-        { error: err.detail || 'Failed to create prediction' },
-        { status: response.status }
+        { error: err.detail || err.message || 'Failed to create prediction' },
+        { status: falResponse.status }
       )
     }
 
-    const prediction = await response.json()
+    const falResult = await falResponse.json()
+    console.log('[Simulation] fal.ai queue response:', { request_id: falResult.request_id, status: falResult.status })
+    console.log('[Simulation] fal.ai response_url:', falResult.response_url)
 
-    // Calculate remaining requests for this IP today
+    // Calculate remaining
     let remaining = DAILY_LIMIT_PER_IP - 1
     try {
       const todayStart = new Date()
@@ -251,8 +195,8 @@ export async function POST(req: NextRequest) {
     } catch { /* ignore */ }
 
     return NextResponse.json({
-      id: prediction.id,
-      status: prediction.status,
+      id: `fal--${falResult.request_id}`,
+      status: falResult.status || 'IN_QUEUE',
       remaining,
     })
   } catch (error) {
