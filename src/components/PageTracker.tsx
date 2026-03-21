@@ -19,7 +19,7 @@ function getDeviceInfo() {
   const ua = navigator.userAgent
 
   // OS Detection
-  let os = 'other'
+  let os = 'Diğer'
   if (/iPhone/.test(ua)) os = 'iOS'
   else if (/iPad/.test(ua)) os = 'iPadOS'
   else if (/Android/.test(ua)) os = 'Android'
@@ -34,7 +34,7 @@ function getDeviceInfo() {
   else if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) device = 'tablet'
 
   // Browser Detection
-  let browser = 'other'
+  let browser = 'Diğer'
   if (/Edg\//.test(ua)) browser = 'Edge'
   else if (/OPR\/|Opera/.test(ua)) browser = 'Opera'
   else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) browser = 'Chrome'

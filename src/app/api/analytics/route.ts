@@ -65,83 +65,78 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-// Helper: count and aggregate for a given time filter
+// Helper: count views AND unique visitors for a given time filter
 async function getBreakdowns(sinceISO: string | null) {
-  // Build query helper
-  const q = (col: string) => {
-    let query = supabaseAdmin.from('page_views').select(col)
-    if (sinceISO) query = query.gte('created_at', sinceISO)
-    return query
+  // Fetch all relevant data in one query to compute both views and unique visitors
+  let mainQuery = supabaseAdmin.from('page_views').select('page, device, referrer, country, os, browser, language, session_id')
+  if (sinceISO) mainQuery = mainQuery.gte('created_at', sinceISO)
+  const { data: allData } = await mainQuery
+
+  if (!allData || allData.length === 0) {
+    return {
+      topPages: [], devices: {}, topReferrers: [], topCountries: [],
+      osSystems: {}, browsers: {}, languages: {},
+      deviceVisitors: {}, pageVisitors: [], referrerVisitors: [],
+      countryVisitors: [], osVisitors: {}, browserVisitors: {}, langVisitors: {},
+    }
+  }
+
+  // Helper to count both views and unique session_ids
+  const countBoth = (items: { key: string; sid: string | null }[]) => {
+    const views: Record<string, number> = {}
+    const visitors: Record<string, Set<string>> = {}
+    items.forEach(({ key, sid }) => {
+      if (!key) return
+      views[key] = (views[key] || 0) + 1
+      if (sid) {
+        if (!visitors[key]) visitors[key] = new Set()
+        visitors[key].add(sid)
+      }
+    })
+    const uniqueCounts: Record<string, number> = {}
+    Object.entries(visitors).forEach(([k, s]) => { uniqueCounts[k] = s.size })
+    return { views, uniqueCounts }
   }
 
   // Pages
-  const { data: pageData } = await q('page')
-  const pageCounts: Record<string, number> = {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pageData?.forEach((r: any) => { pageCounts[r.page] = (pageCounts[r.page] || 0) + 1 })
-  const topPages = Object.entries(pageCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([page, count]) => ({ page, count }))
+  const pageResult = countBoth(allData.map(r => ({ key: r.page, sid: r.session_id })))
+  const topPages = Object.entries(pageResult.views).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([page, count]) => ({ page, count }))
+  const pageVisitors = Object.entries(pageResult.uniqueCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([page, count]) => ({ page, count }))
 
   // Devices
-  const { data: deviceData } = await q('device')
-  const deviceCounts: Record<string, number> = {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  deviceData?.forEach((r: any) => { deviceCounts[r.device || 'desktop'] = (deviceCounts[r.device || 'desktop'] || 0) + 1 })
+  const deviceResult = countBoth(allData.map(r => ({ key: r.device || 'desktop', sid: r.session_id })))
 
   // Referrers
-  let refQuery = supabaseAdmin.from('page_views').select('referrer').not('referrer', 'is', null)
-  if (sinceISO) refQuery = refQuery.gte('created_at', sinceISO)
-  const { data: refData } = await refQuery
-  const refCounts: Record<string, number> = {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  refData?.forEach((r: any) => {
-    if (r.referrer) {
-      try { const host = new URL(r.referrer).hostname.replace('www.', ''); refCounts[host] = (refCounts[host] || 0) + 1 }
-      catch { refCounts[r.referrer] = (refCounts[r.referrer] || 0) + 1 }
-    }
+  const refItems = allData.filter(r => r.referrer).map(r => {
+    let host = r.referrer
+    try { host = new URL(r.referrer).hostname.replace('www.', '') } catch { /* */ }
+    return { key: host, sid: r.session_id }
   })
-  const topReferrers = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([source, count]) => ({ source, count }))
+  const refResult = countBoth(refItems)
+  const topReferrers = Object.entries(refResult.views).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([source, count]) => ({ source, count }))
+  const referrerVisitors = Object.entries(refResult.uniqueCounts).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([source, count]) => ({ source, count }))
 
   // Countries
-  let topCountries: { country: string; count: number }[] = []
-  try {
-    let cq = supabaseAdmin.from('page_views').select('country').not('country', 'is', null)
-    if (sinceISO) cq = cq.gte('created_at', sinceISO)
-    const { data: countryData, error: countryErr } = await cq
-    if (!countryErr && countryData) {
-      const cc: Record<string, number> = {}
-      countryData.forEach((r: { country: string }) => { if (r.country) cc[r.country] = (cc[r.country] || 0) + 1 })
-      topCountries = Object.entries(cc).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([country, count]) => ({ country, count }))
-    }
-  } catch { /* */ }
+  const countryResult = countBoth(allData.filter(r => r.country).map(r => ({ key: r.country, sid: r.session_id })))
+  const topCountries = Object.entries(countryResult.views).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([country, count]) => ({ country, count }))
+  const countryVisitors = Object.entries(countryResult.uniqueCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([country, count]) => ({ country, count }))
 
   // OS
-  let osCounts: Record<string, number> = {}
-  try {
-    let oq = supabaseAdmin.from('page_views').select('os').not('os', 'is', null)
-    if (sinceISO) oq = oq.gte('created_at', sinceISO)
-    const { data: osData, error: osErr } = await oq
-    if (!osErr && osData) osData.forEach((r: { os: string }) => { if (r.os) osCounts[r.os] = (osCounts[r.os] || 0) + 1 })
-  } catch { /* */ }
+  const osResult = countBoth(allData.filter(r => r.os).map(r => ({ key: r.os, sid: r.session_id })))
 
   // Browsers
-  let browserCounts: Record<string, number> = {}
-  try {
-    let bq = supabaseAdmin.from('page_views').select('browser').not('browser', 'is', null)
-    if (sinceISO) bq = bq.gte('created_at', sinceISO)
-    const { data: browserData, error: browserErr } = await bq
-    if (!browserErr && browserData) browserData.forEach((r: { browser: string }) => { if (r.browser) browserCounts[r.browser] = (browserCounts[r.browser] || 0) + 1 })
-  } catch { /* */ }
+  const browserResult = countBoth(allData.filter(r => r.browser).map(r => ({ key: r.browser, sid: r.session_id })))
 
   // Languages
-  let langCounts: Record<string, number> = {}
-  try {
-    let lq = supabaseAdmin.from('page_views').select('language').not('language', 'is', null)
-    if (sinceISO) lq = lq.gte('created_at', sinceISO)
-    const { data: langData, error: langErr } = await lq
-    if (!langErr && langData) langData.forEach((r: { language: string }) => { if (r.language) langCounts[r.language] = (langCounts[r.language] || 0) + 1 })
-  } catch { /* */ }
+  const langResult = countBoth(allData.filter(r => r.language).map(r => ({ key: r.language, sid: r.session_id })))
 
-  return { topPages, devices: deviceCounts, topReferrers, topCountries, osSystems: osCounts, browsers: browserCounts, languages: langCounts }
+  return {
+    topPages, devices: deviceResult.views, topReferrers, topCountries,
+    osSystems: osResult.views, browsers: browserResult.views, languages: langResult.views,
+    // Unique visitor versions
+    deviceVisitors: deviceResult.uniqueCounts, pageVisitors, referrerVisitors, countryVisitors,
+    osVisitors: osResult.uniqueCounts, browserVisitors: browserResult.uniqueCounts, langVisitors: langResult.uniqueCounts,
+  }
 }
 
 // GET - Get analytics data (admin only)

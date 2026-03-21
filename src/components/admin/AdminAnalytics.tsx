@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { BarChart3, Users, Eye, Smartphone, Monitor, Globe, TrendingUp, Loader2, ArrowUp, ArrowDown, MousePointerClick, Clock, FileText, Tablet } from 'lucide-react'
 
+type Metric = 'views' | 'visitors'
+
 interface AnalyticsData {
   today: { views: number; visitors: number }
   week: { views: number; visitors: number }
@@ -16,6 +18,14 @@ interface AnalyticsData {
   browsers?: Record<string, number>
   languages?: Record<string, number>
   dailyChart: { date: string; views: number; visitors: number }[]
+  // Unique visitor versions
+  pageVisitors?: { page: string; count: number }[]
+  deviceVisitors?: Record<string, number>
+  referrerVisitors?: { source: string; count: number }[]
+  countryVisitors?: { country: string; count: number }[]
+  osVisitors?: Record<string, number>
+  browserVisitors?: Record<string, number>
+  langVisitors?: Record<string, number>
   bounceRate?: number
   avgDuration?: number
   viewsPerVisit?: number
@@ -91,6 +101,7 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true)
   const [projectNames, setProjectNames] = useState<Record<string, string>>({})
   const [activePeriod, setActivePeriod] = useState<Period>('month')
+  const [activeMetric, setActiveMetric] = useState<Metric>('views')
   const [clearing, setClearing] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
 
@@ -186,8 +197,10 @@ export default function AdminAnalytics() {
   const week = data.week || { views: 0, visitors: 0 }
   const month = data.month || { views: 0, visitors: 0 }
 
+  const isViews = activeMetric === 'views'
+  const chartValues = dailyChart.map(d => isViews ? d.views : d.visitors)
+  const maxChartValue = chartValues.length > 0 ? Math.max(...chartValues, 1) : 1
   const maxChartViews = dailyChart.length > 0 ? Math.max(...dailyChart.map(d => d.views), 1) : 1
-  const totalDevices = Object.values(devices).reduce((a: number, b: number) => a + b, 0) || 1
 
   // Calculate week-over-week change
   const thisWeekViews = dailyChart.slice(-7).reduce((sum, d) => sum + d.views, 0)
@@ -196,14 +209,13 @@ export default function AdminAnalytics() {
     ? Math.round(((thisWeekViews - lastWeekViews) / lastWeekViews) * 100)
     : thisWeekViews > 0 ? 100 : 0
 
-  // Calculate bounce rate (single-page sessions) and views per visit
+  // Calculate views per visit
   const totalViews = month.views || 1
   const totalVisitors = month.visitors || 1
   const viewsPerVisit = (totalViews / totalVisitors).toFixed(1)
 
   // Merge project pages under one entry for cleaner display
   const mergedPages = topPages.reduce<{ page: string; count: number }[]>((acc, p) => {
-    // Group all individual project pages
     const existing = acc.find(a => a.page === p.page)
     if (existing) {
       existing.count += p.count
@@ -212,6 +224,21 @@ export default function AdminAnalytics() {
     }
     return acc
   }, [])
+
+  // Pick breakdown data based on metric
+  const activePages = isViews ? mergedPages : (data.pageVisitors || []).reduce<{ page: string; count: number }[]>((acc, p) => {
+    const existing = acc.find(a => a.page === p.page)
+    if (existing) existing.count += p.count
+    else acc.push({ ...p })
+    return acc
+  }, [])
+  const activeDevices = isViews ? devices : (data.deviceVisitors || {})
+  const activeReferrers = isViews ? topReferrers : (data.referrerVisitors || [])
+  const activeCountries = isViews ? (data.topCountries || []) : (data.countryVisitors || [])
+  const activeOS = isViews ? (data.osSystems || {}) : (data.osVisitors || {})
+  const activeBrowsers = isViews ? (data.browsers || {}) : (data.browserVisitors || {})
+  const activeLanguages = isViews ? (data.languages || {}) : (data.langVisitors || {})
+  const totalDevices = Object.values(activeDevices).reduce((a: number, b: number) => a + b, 0) || 1
 
   return (
     <div className="space-y-5">
@@ -238,47 +265,67 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* Period indicator + Reset */}
-      <div className="flex items-center justify-between">
+      {/* Period indicator + Metric Toggle + Reset */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-white/30 text-[10px] font-mono">
           📊 Detaylar: <span className="text-white/60">{PERIOD_LABELS[activePeriod]}</span>
         </p>
-        <button
-          onClick={() => setShowClearConfirm(true)}
-          className="text-red-400/40 text-[10px] font-mono hover:text-red-400 transition-colors"
-        >
-          🗑️ Verileri Sıfırla
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Metric Toggle */}
+          <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-full p-0.5">
+            <button
+              onClick={() => setActiveMetric('views')}
+              className={`px-3 py-1 rounded-full text-[10px] font-mono transition-all ${
+                activeMetric === 'views' ? 'bg-gold-400/20 text-gold-400' : 'text-white/30 hover:text-white/50'
+              }`}
+            >
+              <Eye size={10} className="inline mr-1" />Görüntülenme
+            </button>
+            <button
+              onClick={() => setActiveMetric('visitors')}
+              className={`px-3 py-1 rounded-full text-[10px] font-mono transition-all ${
+                activeMetric === 'visitors' ? 'bg-blue-400/20 text-blue-400' : 'text-white/30 hover:text-white/50'
+              }`}
+            >
+              <Users size={10} className="inline mr-1" />Tekil Ziyaretçi
+            </button>
+          </div>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            className="text-red-400/40 text-[10px] font-mono hover:text-red-400 transition-colors"
+          >
+            🗑️ Sıfırla
+          </button>
+        </div>
       </div>
 
-      {/* Daily Chart — Area style */}
+      {/* Daily Chart */}
       <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-heading text-sm md:text-base font-semibold text-white">Ziyaretçi Trendi</h3>
+            <h3 className="font-heading text-sm md:text-base font-semibold text-white">
+              {isViews ? 'Görüntülenme Trendi' : 'Ziyaretçi Trendi'}
+            </h3>
             <p className="text-white/30 text-[10px] font-mono mt-0.5">Son 14 gün</p>
           </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-gold-400" /> Görüntüleme
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-400" /> Ziyaretçi
-            </span>
-          </div>
+          <span className={`flex items-center gap-1.5 text-[10px] font-mono ${isViews ? 'text-gold-400' : 'text-blue-400'}`}>
+            <span className={`w-2 h-2 rounded-full ${isViews ? 'bg-gold-400' : 'bg-blue-400'}`} />
+            {isViews ? 'Görüntüleme' : 'Tekil Ziyaretçi'}
+          </span>
         </div>
 
         {/* Bar Chart */}
         <div className="flex items-end gap-1 md:gap-1.5 h-44 md:h-56">
           {dailyChart.map((day, i) => {
-            const viewH = (day.views / maxChartViews) * 100
-            const visitorH = (day.visitors / maxChartViews) * 100
+            const value = isViews ? day.views : day.visitors
+            const barH = (value / maxChartValue) * 100
             const dateObj = new Date(day.date + 'T12:00:00')
             const dayNum = dateObj.getDate()
             const monthName = dateObj.toLocaleDateString('tr-TR', { month: 'short' })
             const weekDay = dateObj.toLocaleDateString('tr-TR', { weekday: 'short' })
-            const isToday = i === dailyChart.length - 1
+            const isTodayBar = i === dailyChart.length - 1
             const fullDate = `${dayNum} ${monthName}`
+            const barColor = isViews ? 'bg-gold-400' : 'bg-blue-400'
 
             return (
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1 group relative">
@@ -289,20 +336,16 @@ export default function AdminAnalytics() {
                   <p className="text-blue-400 text-[11px] font-mono">{day.visitors} ziyaretçi</p>
                 </div>
 
-                {/* Bars */}
-                <div className="w-full flex gap-px items-end h-full">
+                {/* Bar */}
+                <div className="w-full flex items-end h-full">
                   <div
-                    className={`flex-1 rounded-t-sm transition-all duration-500 ${isToday ? 'bg-gold-400' : 'bg-gold-400/30 group-hover:bg-gold-400/60'}`}
-                    style={{ height: `${Math.max(viewH, 3)}%` }}
-                  />
-                  <div
-                    className={`flex-1 rounded-t-sm transition-all duration-500 ${isToday ? 'bg-blue-400' : 'bg-blue-400/30 group-hover:bg-blue-400/60'}`}
-                    style={{ height: `${Math.max(visitorH, 3)}%` }}
+                    className={`w-full rounded-t-sm transition-all duration-500 ${isTodayBar ? barColor : `${barColor}/30 group-hover:${barColor}/60`}`}
+                    style={{ height: `${Math.max(barH, 3)}%` }}
                   />
                 </div>
 
                 {/* Labels */}
-                <div className={`text-center ${isToday ? 'text-gold-400' : 'text-white/25'}`}>
+                <div className={`text-center ${isTodayBar ? (isViews ? 'text-gold-400' : 'text-blue-400') : 'text-white/25'}`}>
                   <span className="text-[8px] md:text-[9px] font-mono block leading-tight">
                     {dayNum}
                   </span>
@@ -327,15 +370,16 @@ export default function AdminAnalytics() {
             <span className="text-white/20 text-[10px] font-mono px-2 py-1 rounded-full bg-white/[0.04]">{PERIOD_LABELS[activePeriod]}</span>
           </div>
 
-          {mergedPages.length === 0 ? (
+          {activePages.length === 0 ? (
             <p className="text-white/20 text-sm font-mono text-center py-8">Henüz veri yok</p>
           ) : (
             <div className="space-y-2">
-              {mergedPages.map((p, i) => {
-                const maxCount = mergedPages[0]?.count || 1
+              {activePages.map((p, i) => {
+                const maxCount = activePages[0]?.count || 1
                 const pct = (p.count / maxCount) * 100
                 const pageInfo = getPageName(p.page)
-                const percentage = month.views > 0 ? Math.round((p.count / month.views) * 100) : 0
+                const totalForPct = isViews ? month.views : month.visitors
+                const percentage = totalForPct > 0 ? Math.round((p.count / totalForPct) * 100) : 0
 
                 return (
                   <div key={p.page} className="group relative">
@@ -373,11 +417,11 @@ export default function AdminAnalytics() {
               <h3 className="font-heading text-sm font-semibold text-white">Cihazlar</h3>
             </div>
 
-            {totalDevices <= 1 && Object.keys(devices).length === 0 ? (
+            {totalDevices <= 1 && Object.keys(activeDevices).length === 0 ? (
               <p className="text-white/20 text-sm font-mono text-center py-4">Henüz veri yok</p>
             ) : (
               <div className="space-y-3">
-                {Object.entries(devices).sort((a, b) => b[1] - a[1]).map(([device, count]) => {
+                {Object.entries(activeDevices).sort((a, b) => b[1] - a[1]).map(([device, count]) => {
                   const pct = Math.round((count / totalDevices) * 100)
                   const Icon = device === 'mobile' ? Smartphone : device === 'tablet' ? Tablet : Monitor
                   const label = device === 'mobile' ? 'Mobil' : device === 'tablet' ? 'Tablet' : 'Masaüstü'
@@ -407,34 +451,34 @@ export default function AdminAnalytics() {
           </div>
 
           {/* OS Breakdown */}
-          {data.osSystems && Object.keys(data.osSystems).length > 0 && (
+          {Object.keys(activeOS).length > 0 && (
             <BreakdownPanel
               title="İşletim Sistemi"
               icon="💻"
-              data={data.osSystems}
-              nameMap={{ iOS: '📱 iOS (iPhone)', iPadOS: '📱 iPadOS', Android: '🤖 Android', Windows: '🪟 Windows', macOS: '🍎 macOS', Linux: '🐧 Linux', ChromeOS: '💻 ChromeOS' }}
+              data={activeOS}
+              nameMap={{ iOS: '📱 iOS (iPhone)', iPadOS: '📱 iPadOS', Android: '🤖 Android', Windows: '🪟 Windows', macOS: '🍎 macOS', Linux: '🐧 Linux', ChromeOS: '💻 ChromeOS', Other: '❓ Diğer' }}
               barColor="bg-blue-400/50"
             />
           )}
 
           {/* Browser Breakdown */}
-          {data.browsers && Object.keys(data.browsers).length > 0 && (
+          {Object.keys(activeBrowsers).length > 0 && (
             <BreakdownPanel
               title="Tarayıcı"
               icon="🌐"
-              data={data.browsers}
-              nameMap={{ Chrome: '🟢 Chrome', Safari: '🔵 Safari', Firefox: '🟠 Firefox', Edge: '🔷 Edge', Opera: '🔴 Opera' }}
+              data={activeBrowsers}
+              nameMap={{ Chrome: '🟢 Chrome', Safari: '🔵 Safari', Firefox: '🟠 Firefox', Edge: '🔷 Edge', Opera: '🔴 Opera', Other: '❓ Diğer' }}
               barColor="bg-gold-400/50"
             />
           )}
 
           {/* Language Breakdown */}
-          {data.languages && Object.keys(data.languages).length > 0 && (
+          {Object.keys(activeLanguages).length > 0 && (
             <BreakdownPanel
               title="Diller"
               icon="🗣️"
-              data={data.languages}
-              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe' }}
+              data={activeLanguages}
+              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe', Other: '❓ Diğer' }}
               barColor="bg-cyan-400/50"
             />
           )}
@@ -448,14 +492,14 @@ export default function AdminAnalytics() {
               </div>
             </div>
 
-            {topReferrers.length === 0 ? (
+            {activeReferrers.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-white/20 text-xs font-mono">Henüz referans trafiği yok</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {topReferrers.map((r, i) => {
-                  const maxRef = topReferrers[0]?.count || 1
+                {activeReferrers.map((r, i) => {
+                  const maxRef = activeReferrers[0]?.count || 1
                   const refPct = (r.count / maxRef) * 100
                   return (
                     <div key={r.source} className="group relative">
@@ -478,18 +522,18 @@ export default function AdminAnalytics() {
           </div>
 
           {/* Countries */}
-          {data.topCountries && data.topCountries.length > 0 && (
+          {activeCountries.length > 0 && (
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 md:p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Globe size={14} className="text-cyan-400" />
                   <h3 className="font-heading text-sm font-semibold text-white">Ülkeler</h3>
                 </div>
-                <span className="text-white/20 text-[10px] font-mono">top {data.topCountries.length}</span>
+                <span className="text-white/20 text-[10px] font-mono">top {activeCountries.length}</span>
               </div>
               <div className="space-y-2">
-                {data.topCountries.map((c, i) => {
-                  const maxC = data.topCountries![0]?.count || 1
+                {activeCountries.map((c, i) => {
+                  const maxC = activeCountries[0]?.count || 1
                   const cPct = (c.count / maxC) * 100
                   return (
                     <div key={c.country} className="group relative">

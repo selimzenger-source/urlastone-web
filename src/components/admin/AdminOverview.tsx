@@ -14,6 +14,17 @@ interface Teklif {
   created_at: string
 }
 
+const PAGE_NAMES: Record<string, string> = {
+  '/': 'Ana Sayfa', '/taslar': 'Taşlarımız', '/simulasyon': 'Simülasyon',
+  '/uygulamalarimiz': 'Uygulamalar', '/hakkimizda': 'Hakkımızda', '/iletisim': 'İletişim', '/teklif': 'Teklif',
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  TR: '🇹🇷 Türkiye', DE: '🇩🇪 Almanya', US: '🇺🇸 ABD', GB: '🇬🇧 İngiltere',
+  FR: '🇫🇷 Fransa', ES: '🇪🇸 İspanya', SA: '🇸🇦 S. Arabistan', AE: '🇦🇪 BAE',
+  RU: '🇷🇺 Rusya', NL: '🇳🇱 Hollanda', IT: '🇮🇹 İtalya',
+}
+
 const durumRenk: Record<string, string> = {
   'Yeni': 'bg-blue-400/10 text-blue-400',
   'İletişime Geçildi': 'bg-yellow-400/10 text-yellow-400',
@@ -27,6 +38,10 @@ export default function AdminOverview() {
   const [loading, setLoading] = useState(true)
   const [referansCount, setReferansCount] = useState(0)
   const [projectCount, setProjectCount] = useState(0)
+  const [todayStats, setTodayStats] = useState<{
+    views: number; visitors: number; topPage: string; topPageViews: number;
+    topCountry: string; topDevice: string; topBrowser: string
+  } | null>(null)
 
   useEffect(() => {
     const pw = localStorage.getItem('admin_pw') || ''
@@ -34,10 +49,26 @@ export default function AdminOverview() {
       fetch('/api/teklifler', { headers: { 'x-admin-password': pw } }).then(r => r.json()),
       fetch('/api/referanslar').then(r => r.json()),
       fetch('/api/projects').then(r => r.json()),
-    ]).then(([tData, rData, pData]) => {
+      fetch('/api/analytics?period=today', { headers: { 'x-admin-password': pw } }).then(r => r.json()).catch(() => null),
+    ]).then(([tData, rData, pData, aData]) => {
       if (Array.isArray(tData)) setTeklifler(tData)
       if (Array.isArray(rData)) setReferansCount(rData.length)
       if (Array.isArray(pData)) setProjectCount(pData.length)
+      if (aData && aData.today) {
+        const topPage = aData.topPages?.[0]
+        const topCountry = aData.topCountries?.[0]
+        const deviceEntries = Object.entries(aData.devices || {}).sort((a, b) => (b[1] as number) - (a[1] as number))
+        const browserEntries = Object.entries(aData.browsers || {}).sort((a, b) => (b[1] as number) - (a[1] as number))
+        setTodayStats({
+          views: aData.today.views,
+          visitors: aData.today.visitors,
+          topPage: topPage?.page || '-',
+          topPageViews: topPage?.count || 0,
+          topCountry: topCountry?.country || '-',
+          topDevice: deviceEntries[0]?.[0] || '-',
+          topBrowser: browserEntries[0]?.[0] || '-',
+        })
+      }
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -144,32 +175,42 @@ export default function AdminOverview() {
 
         {/* Sidebar Stats */}
         <div className="space-y-6">
-          {/* Popüler Taşlar */}
+          {/* Bugünün Özeti */}
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-heading text-base font-semibold text-white">Popüler Taşlar</h3>
-              <Gem size={16} className="text-gold-400" />
+              <h3 className="font-heading text-base font-semibold text-white">Bugünün Özeti</h3>
+              <Eye size={16} className="text-gold-400" />
             </div>
 
-            {popularTaslar.length === 0 ? (
+            {!todayStats ? (
               <p className="text-white/20 text-sm font-mono text-center py-4">Veri yok</p>
             ) : (
-              <div className="space-y-4">
-                {popularTaslar.map(([name, count], i) => (
-                  <div key={name} className="flex items-center gap-3">
-                    <span className="font-heading text-lg font-bold text-white/20 w-6">{i + 1}</span>
-                    <div className="flex-1">
-                      <p className="text-white text-sm">{name}</p>
-                      <span className="text-gold-400/60 text-[10px] font-mono">{count} teklif</span>
-                    </div>
-                    <div className="w-16 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gold-400/60 rounded-full"
-                        style={{ width: `${(count / maxTasCount) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-white/40 text-xs">Görüntülenme</span>
+                  <span className="text-white font-mono text-sm font-semibold">{todayStats.views}</span>
+                </div>
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-white/40 text-xs">Tekil Ziyaretçi</span>
+                  <span className="text-gold-400 font-mono text-sm font-semibold">{todayStats.visitors}</span>
+                </div>
+                <div className="border-t border-white/[0.04] my-1" />
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-white/40 text-xs">En Çok Ziyaret</span>
+                  <span className="text-white/70 font-mono text-xs">{PAGE_NAMES[todayStats.topPage] || todayStats.topPage} ({todayStats.topPageViews})</span>
+                </div>
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-white/40 text-xs">Ülke</span>
+                  <span className="text-white/70 font-mono text-xs">{COUNTRY_NAMES[todayStats.topCountry] || todayStats.topCountry}</span>
+                </div>
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-white/40 text-xs">Cihaz</span>
+                  <span className="text-white/70 font-mono text-xs">{todayStats.topDevice === 'mobile' ? 'Mobil' : todayStats.topDevice === 'desktop' ? 'Masaüstü' : todayStats.topDevice}</span>
+                </div>
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-white/40 text-xs">Tarayıcı</span>
+                  <span className="text-white/70 font-mono text-xs">{todayStats.topBrowser}</span>
+                </div>
               </div>
             )}
           </div>
