@@ -64,8 +64,8 @@ const SURFACE_CONTEXT: Record<SurfaceContext, { apply: string; preserve: string 
     preserve: 'preserve toilet, sink, mirror, fixtures, bathtub, shower glass, floor',
   },
   interior: {
-    apply: 'all interior wall surfaces fully covered with natural stone cladding, every visible wall completely clad with stone from floor to ceiling, no bare plaster or paint remaining, full coverage stone installation',
-    preserve: 'preserve furniture, windows, doors, ceiling, floor, decorations',
+    apply: 'ONLY wall surfaces fully covered with natural stone cladding, every visible wall completely clad with stone from floor to ceiling, no bare plaster or paint remaining, full coverage stone installation on WALLS ONLY',
+    preserve: 'absolutely preserve and do not modify: furniture, windows, doors, ceiling, floor, toilet, sink, mirror, bathtub, shower, faucets, fixtures, appliances, cabinets, shelves, decorations, lighting — apply stone ONLY to flat wall surfaces, never to objects or fixtures',
   },
   floor: {
     apply: 'entire floor surface fully paved with natural stone tiles, complete stone coverage on all floor areas, no bare concrete remaining',
