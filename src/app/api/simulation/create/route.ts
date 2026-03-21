@@ -176,12 +176,13 @@ export async function POST(req: NextRequest) {
     console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
 
     // Build controlnets based on mode
+    // NOTE: IP-Adapter removed — it overpowers text prompt and produces CGI mosaic artifacts
     const controlnets = applyMode === 'full'
       ? [
           {
             path: 'InstantX/FLUX.1-dev-Controlnet-Canny',
             control_image_url: imageUrl,
-            conditioning_scale: 0.85,
+            conditioning_scale: 0.92,
           },
         ]
       : [
@@ -190,7 +191,7 @@ export async function POST(req: NextRequest) {
             control_image_url: imageUrl,
             control_mode: 'inpainting',
             mask_image_url: maskUrl,
-            conditioning_scale: 0.9,
+            conditioning_scale: 0.85,
           },
         ]
 
@@ -203,20 +204,12 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         prompt,
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
+        num_inference_steps: 30,
+        guidance_scale: 4.0,
         num_images: 1,
         output_format: 'jpeg',
         enable_safety_checker: false,
         controlnets,
-        ip_adapters: [
-          {
-            path: 'https://huggingface.co/XLabs-AI/flux-ip-adapter/resolve/main/flux-ip-adapter.safetensors',
-            image_url: stoneImageUrl,
-            scale: 0.75,
-            image_encoder_path: 'openai/clip-vit-large-patch14',
-          },
-        ],
       }),
     })
 

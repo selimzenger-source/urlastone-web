@@ -17,8 +17,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: true })
     }
 
-    const mediaType = match[1] as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+    let mediaType = match[1] as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
     const base64Data = match[2]
+
+    // Detect actual image format from magic bytes to avoid media_type mismatch
+    const prefix = base64Data.substring(0, 12)
+    if (prefix.startsWith('/9j/')) {
+      mediaType = 'image/jpeg'
+    } else if (prefix.startsWith('iVBORw0KGgo')) {
+      mediaType = 'image/png'
+    } else if (prefix.startsWith('UklGR') || prefix.startsWith('AAABAA')) {
+      mediaType = 'image/webp'
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
