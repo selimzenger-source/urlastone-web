@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Download, RefreshCw, RotateCcw, ArrowRight, Move } from 'lucide-react'
+import { Download, RefreshCw, RotateCcw, ArrowRight, Move, ZoomIn, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import Link from 'next/link'
 
@@ -13,12 +13,14 @@ interface Props {
   onReset: () => void
 }
 
-const RESULT_TEXTS: Record<string, { title: string; before: string; after: string; download: string; tryAnother: string; newPhoto: string; quote: string; slider: string }> = {
+const RESULT_TEXTS: Record<string, { title: string; before: string; after: string; download: string; downloadHd: string; upscaling: string; tryAnother: string; newPhoto: string; quote: string; slider: string }> = {
   tr: {
     title: 'İşte Sonuç',
     before: 'Önce',
     after: 'Sonra',
-    download: 'Sonucu İndir',
+    download: 'İndir',
+    downloadHd: 'HD İndir',
+    upscaling: 'HD hazırlanıyor...',
     tryAnother: 'Başka Taş Dene',
     newPhoto: 'Yeni Fotoğraf',
     quote: 'Teklif Al',
@@ -28,7 +30,9 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     title: 'Here\'s the Result',
     before: 'Before',
     after: 'After',
-    download: 'Download Result',
+    download: 'Download',
+    downloadHd: 'HD Download',
+    upscaling: 'Preparing HD...',
     tryAnother: 'Try Another Stone',
     newPhoto: 'New Photo',
     quote: 'Get Quote',
@@ -38,7 +42,9 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     title: 'Aquí está el resultado',
     before: 'Antes',
     after: 'Después',
-    download: 'Descargar resultado',
+    download: 'Descargar',
+    downloadHd: 'Descargar HD',
+    upscaling: 'Preparando HD...',
     tryAnother: 'Probar otra piedra',
     newPhoto: 'Nueva foto',
     quote: 'Solicitar presupuesto',
@@ -48,7 +54,9 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     title: 'هذه هي النتيجة',
     before: 'قبل',
     after: 'بعد',
-    download: 'تحميل النتيجة',
+    download: 'تحميل',
+    downloadHd: 'تحميل HD',
+    upscaling: 'جاري تحضير HD...',
     tryAnother: 'جرب حجراً آخر',
     newPhoto: 'صورة جديدة',
     quote: 'طلب عرض سعر',
@@ -58,7 +66,9 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     title: 'Hier ist das Ergebnis',
     before: 'Vorher',
     after: 'Nachher',
-    download: 'Ergebnis herunterladen',
+    download: 'Herunterladen',
+    downloadHd: 'HD Herunterladen',
+    upscaling: 'HD wird vorbereitet...',
     tryAnother: 'Anderen Stein testen',
     newPhoto: 'Neues Foto',
     quote: 'Angebot anfordern',
@@ -147,6 +157,7 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, onTryAno
   const t = RESULT_TEXTS[locale] || RESULT_TEXTS.tr
   const [sliderPos, setSliderPos] = useState(50)
   const [isDragging, setIsDragging] = useState(false)
+  const [upscaling, setUpscaling] = useState(false)
 
   const handleSliderMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging && e.type !== 'click') return
@@ -207,6 +218,65 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, onTryAno
       window.open(resultUrl, '_blank')
     }
   }, [resultUrl])
+
+  // HD Download — upscale with Real-ESRGAN then download with watermark
+  const handleHdDownload = useCallback(async () => {
+    setUpscaling(true)
+    try {
+      // 1. Upscale via Replicate
+      const res = await fetch('/api/simulation/upscale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: resultUrl, scale: 4 }),
+      })
+
+      if (!res.ok) throw new Error('Upscale failed')
+      const { url: hdUrl } = await res.json()
+
+      // 2. Load HD image + logo
+      const img = new window.Image()
+      img.crossOrigin = 'anonymous'
+      const logoImg = new window.Image()
+      logoImg.crossOrigin = 'anonymous'
+
+      await Promise.all([
+        new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve()
+          img.onerror = reject
+          img.src = hdUrl
+        }),
+        new Promise<void>((resolve) => {
+          logoImg.onload = () => resolve()
+          logoImg.onerror = () => resolve()
+          logoImg.src = '/logo.png'
+        }),
+      ])
+
+      // 3. Create canvas with watermark
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+      drawWatermarks(ctx, canvas.width, canvas.height, logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
+
+      // 4. Download
+      canvas.toBlob((blob) => {
+        if (!blob) return
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `urlastone-simulation-HD-${Date.now()}.jpg`
+        a.click()
+        URL.revokeObjectURL(url)
+      }, 'image/jpeg', 0.95)
+    } catch {
+      // Fallback to normal download
+      handleDownload()
+    } finally {
+      setUpscaling(false)
+    }
+  }, [resultUrl, handleDownload])
 
   return (
     <div className="glass-card p-6 md:p-10">
@@ -305,10 +375,28 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, onTryAno
       <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
         <button
           onClick={handleDownload}
-          className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
+          className="inline-flex items-center gap-2 bg-white/10 text-white px-5 py-3 rounded-full text-sm font-medium hover:bg-white/20 transition-colors border border-white/10"
         >
           <Download size={16} />
           {t.download}
+        </button>
+
+        <button
+          onClick={handleHdDownload}
+          disabled={upscaling}
+          className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors disabled:opacity-50"
+        >
+          {upscaling ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              {t.upscaling}
+            </>
+          ) : (
+            <>
+              <ZoomIn size={16} />
+              {t.downloadHd}
+            </>
+          )}
         </button>
 
         <Link
