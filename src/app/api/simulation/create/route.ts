@@ -45,25 +45,37 @@ const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
   },
 }
 
-// Gemini prompt templates — simpler prompts work better with Gemini's multimodal understanding
+// Gemini prompt templates — the second image is ALWAYS the stone reference, Gemini must replicate it exactly
 const GEMINI_PROMPTS: Record<string, string> = {
-  facade: `Edit this building photo: apply the stone cladding from the second image to EVERY visible wall surface — including foundation walls, basement walls, retaining walls, and all upper floor walls. No concrete or plaster should remain visible on ANY wall. IMPORTANT: Each individual stone piece must be SMALL — approximately 15-25cm in real life, much smaller than a window. A single window should be surrounded by at least 20-30 stone pieces. Do NOT make large boulder-sized stones. The stones must look like real installed stone cladding — each piece should have 3D depth, natural shadow between pieces, slight surface relief and texture variation. NOT flat, NOT like wallpaper or a printed texture. CRITICAL: Use the SAME stone pattern and texture UNIFORMLY across ALL wall surfaces — corners, edges, columns, and every section must have the identical stone style. No variation in pattern between different wall areas. Show the finished building with windows. Keep the same camera angle. Photorealistic.`,
+  facade: `The first image is a building photo. The second image is a stone texture sample showing the EXACT stone type to use.
 
-  fireplace: `The first image is a room with a fireplace. The second image shows a natural stone texture sample.
+CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern, same grout style. Do NOT invent a different stone. The second image is the ground truth.
 
-Apply this exact stone texture from the second image to the fireplace surround and chimney area in the first image. IMPORTANT: Each stone piece must be SMALL — approximately 10-20cm each, so you should see many individual stone pieces across the fireplace surface. The fireplace opening height should contain at least 8-10 stone pieces vertically. Do NOT make large boulder-sized stones. The stone must look like real professionally installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper or a printed texture. Use the SAME stone pattern UNIFORMLY across the entire fireplace surface — no variation between sections. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
+Apply this exact stone cladding to EVERY visible wall surface of the building — all walls, columns, foundation. No bare plaster or concrete should remain on any wall. Preserve all windows, doors, roof, sky, ground, vegetation exactly as they are. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. Use the same stone pattern uniformly on all walls. Keep the same camera angle. Photorealistic.`,
 
-  interior: `The first image is an interior room. The second image shows a natural stone texture sample.
+  fireplace: `The first image is a room with a fireplace. The second image is a stone texture sample showing the EXACT stone type to use.
 
-Apply this exact stone texture from the second image to the bare wall surfaces only. IMPORTANT: Each stone piece must be SMALL — approximately 10-20cm each, roughly the size of an electrical outlet or smaller. A standard door height (2m) should have at least 12-15 stone pieces vertically. Do NOT make large boulder-sized stones. The stone must look like real professionally installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper or a printed texture. Use the SAME stone pattern UNIFORMLY across ALL wall surfaces — no variation between sections. Do not apply stone to fireplace, countertops, furniture, floor, ceiling, or any fixtures. Keep everything else exactly the same. Photorealistic result.`,
+CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
 
-  bathroom: `The first image is a bathroom. The second image shows a natural stone texture sample.
+Apply this exact stone to the fireplace surround and chimney area. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
 
-Apply this exact stone texture from the second image to all bathroom wall surfaces. IMPORTANT: Each stone piece must be SMALL — approximately 10-20cm each. A standard door height should have at least 12-15 stone pieces vertically. Do NOT make large stones. The stone must look like real installed stone cladding with 3D depth, natural shadows, and surface relief — NOT flat like wallpaper. Use the SAME stone pattern UNIFORMLY across ALL wall surfaces. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
+  interior: `The first image is an interior room. The second image is a stone texture sample showing the EXACT stone type to use.
 
-  floor: `The first image is a room. The second image shows a natural stone texture sample.
+CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
 
-Apply this exact stone texture from the second image to the floor surface. IMPORTANT: Each stone piece must be SMALL — approximately 15-25cm each. The stone must look like real installed stone tiles with 3D depth, natural shadows, and surface texture — NOT flat like a printed floor. Use the SAME stone pattern UNIFORMLY across the entire floor. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
+Apply this exact stone to the bare wall surfaces only. Do not apply stone to fireplace, countertops, furniture, floor, ceiling, or fixtures. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. Keep everything else exactly the same. Photorealistic result.`,
+
+  bathroom: `The first image is a bathroom. The second image is a stone texture sample showing the EXACT stone type to use.
+
+CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+
+Apply this exact stone to all bathroom wall surfaces. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
+
+  floor: `The first image is a room. The second image is a stone texture sample showing the EXACT stone type to use.
+
+CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+
+Apply this exact stone to the floor surface. The stone must look like real installed tiles with 3D depth and natural shadows — NOT flat. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
 }
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -231,16 +243,15 @@ async function generateWithGemini(
   let prompt: string
   if (maskBase64) {
     // Brush mode: 3 images (building + stone + mask)
-    prompt = `The first image is a photo of a space. The second image shows a natural stone texture sample. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
+    prompt = `The first image is a photo of a space. The second image is a stone texture sample showing the EXACT stone type to use. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
 
-Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. SCALE: ${scaleInstruction} Each stone piece must be SMALL (10-25cm in real life). Do NOT make large boulder-sized stones. The stone must look like real professionally installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper or a printed texture. Use the SAME stone pattern UNIFORMLY across the entire masked area — no variation between sections. GROUT: ${groutInstruction} Photorealistic result.`
+CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+
+Apply this exact stone ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas. Keep everything outside the masked area exactly as it is. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. ${groutInstruction} Photorealistic result.`
   } else {
     const basePrompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
-    // Replace the generic scale instruction with the Sonnet-analyzed one
-    prompt = basePrompt.replace(
-      /IMPORTANT:[\s\S]*?Photorealistic\./,
-      `IMPORTANT SCALE: ${scaleInstruction} Do NOT make large boulder-sized stones. The stone must look like real installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper. GROUT: ${groutInstruction} Photorealistic.`
-    )
+    // Append grout instruction to the base prompt
+    prompt = `${basePrompt}\n\n${groutInstruction}`
   }
 
   console.log('[Gemini] Calling gemini-3-pro-image-preview...')
