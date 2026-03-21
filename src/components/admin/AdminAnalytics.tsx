@@ -93,7 +93,7 @@ const PERIOD_LABELS: Record<Period, string> = {
   today: 'Bugün',
   week: 'Bu Hafta',
   month: 'Bu Ay',
-  all: 'Tüm Zamanlar',
+  all: 'Son 1 Yıl',
 }
 
 export default function AdminAnalytics() {
@@ -244,25 +244,23 @@ export default function AdminAnalytics() {
     <div className="space-y-5">
       {/* Summary Cards — Clickable period selectors */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <DualStatCard
+        <MetricCard
           icon={Eye} label="Bugün" views={today.views} visitors={today.visitors} color="text-gold-400"
-          active={activePeriod === 'today'} onClick={() => handlePeriodChange('today')}
+          active={activePeriod === 'today'} onClick={() => handlePeriodChange('today')} metric={activeMetric}
         />
-        <DualStatCard
+        <MetricCard
           icon={BarChart3} label="Bu Hafta" views={week.views} visitors={week.visitors} color="text-blue-400"
-          active={activePeriod === 'week'} onClick={() => handlePeriodChange('week')}
+          active={activePeriod === 'week'} onClick={() => handlePeriodChange('week')} metric={activeMetric}
         />
-        <DualStatCard
+        <MetricCard
           icon={Users} label="Bu Ay" views={month.views} visitors={month.visitors} color="text-purple-400"
-          active={activePeriod === 'month'} onClick={() => handlePeriodChange('month')}
+          active={activePeriod === 'month'} onClick={() => handlePeriodChange('month')} metric={activeMetric}
         />
-        <div onClick={() => handlePeriodChange('all')} className="cursor-pointer">
-          <StatCard
-            icon={TrendingUp} label="Toplam Görüntüleme" value={formatNumber(data.total)}
-            sub={`${viewsPerVisit} sayfa/ziyaret`} color="text-green-400" trend={weekChange}
-            active={activePeriod === 'all'}
-          />
-        </div>
+        <MetricCard
+          icon={TrendingUp} label="Son 1 Yıl" views={data.total} visitors={0} color="text-green-400"
+          active={activePeriod === 'all'} onClick={() => handlePeriodChange('all')} metric={activeMetric}
+          sub={`${viewsPerVisit} sayfa/ziyaret`} trend={weekChange}
+        />
       </div>
 
       {/* Period indicator + Metric Toggle + Reset */}
@@ -660,8 +658,8 @@ function BreakdownPanel({ title, icon, data, nameMap, barColor }: {
   )
 }
 
-// Dual metric card — shows both views and unique visitors prominently
-function DualStatCard({ icon: Icon, label, views, visitors, color, active, onClick }: {
+// Single metric card — shows views OR visitors based on active metric
+function MetricCard({ icon: Icon, label, views, visitors, color, active, onClick, metric, sub, trend }: {
   icon: typeof Eye
   label: string
   views: number
@@ -669,47 +667,24 @@ function DualStatCard({ icon: Icon, label, views, visitors, color, active, onCli
   color: string
   active?: boolean
   onClick?: () => void
+  metric: Metric
+  sub?: string
+  trend?: number
 }) {
+  const value = metric === 'views' ? views : visitors
+  const metricLabel = metric === 'views' ? 'görüntülenme' : 'tekil ziyaretçi'
+  const metricColor = metric === 'views' ? 'text-white' : 'text-blue-400'
+
   return (
     <div onClick={onClick} className={`rounded-2xl p-4 transition-all cursor-pointer ${
       active ? 'bg-white/[0.06] border-2 border-gold-400/50 scale-[1.02]' : 'bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05]'
     }`}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
-          <Icon size={14} className={color} />
-        </div>
-        <span className="text-white/50 text-xs font-mono">{label}</span>
-      </div>
-      <div className="flex items-end gap-3">
-        <div>
-          <p className="font-heading text-2xl md:text-3xl font-bold text-white leading-none">{formatNumber(views)}</p>
-          <p className="text-white/30 text-[10px] font-mono mt-1">görüntüleme</p>
-        </div>
-        <div className="border-l border-white/[0.08] pl-3">
-          <p className="font-heading text-lg md:text-xl font-bold text-gold-400 leading-none">{formatNumber(visitors)}</p>
-          <p className="text-gold-400/40 text-[10px] font-mono mt-1">tekil</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function StatCard({ icon: Icon, label, value, sub, color, trend, active }: {
-  icon: typeof Eye
-  label: string
-  value: string
-  sub: string
-  color: string
-  trend?: number
-  active?: boolean
-}) {
-  return (
-    <div className={`rounded-2xl p-4 transition-all cursor-pointer ${
-      active ? 'bg-white/[0.06] border-2 border-gold-400/50 scale-[1.02]' : 'bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.05]'
-    }`}>
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
-          <Icon size={14} className={color} />
+        <div className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-lg ${color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
+            <Icon size={14} className={color} />
+          </div>
+          <span className="text-white/50 text-xs font-mono">{label}</span>
         </div>
         {trend !== undefined ? (
           <span className={`flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
@@ -720,10 +695,10 @@ function StatCard({ icon: Icon, label, value, sub, color, trend, active }: {
           </span>
         ) : null}
       </div>
-      <p className="font-heading text-2xl md:text-3xl font-bold text-white leading-none">{value}</p>
+      <p className={`font-heading text-2xl md:text-3xl font-bold leading-none ${metricColor}`}>{formatNumber(value)}</p>
       <div className="flex items-center justify-between mt-1.5">
-        <p className="text-white/40 text-[10px] md:text-xs font-mono">{label}</p>
-        <p className="text-white/25 text-[10px] font-mono">{sub}</p>
+        <p className="text-white/30 text-[10px] font-mono">{metricLabel}</p>
+        {sub && <p className="text-white/25 text-[10px] font-mono">{sub}</p>}
       </div>
     </div>
   )

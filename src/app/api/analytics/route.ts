@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
+    // FIFO: Auto-cleanup data older than 365 days (runs ~1% of requests to avoid overhead)
+    if (Math.random() < 0.01) {
+      const cutoff = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+      await supabaseAdmin.from('page_views').delete().lt('created_at', cutoff)
+    }
+
     // Vercel provides country code via header
     const country = req.headers.get('x-vercel-ip-country') || null
     const city = req.headers.get('x-vercel-ip-city') || null
@@ -156,8 +162,11 @@ export async function GET(req: NextRequest) {
   const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const monthStart = new Date(Date.UTC(turkeyNow.getUTCFullYear(), turkeyNow.getUTCMonth(), 1) - turkeyOffset).toISOString()
 
-  // Determine breakdown filter based on period
-  const breakdownSince = period === 'today' ? todayStart : period === 'week' ? weekStart : period === 'all' ? null : monthStart
+  // Max 1 year of data (FIFO - older data is auto-deleted)
+  const yearStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString()
+
+  // Determine breakdown filter based on period (all = last 1 year max)
+  const breakdownSince = period === 'today' ? todayStart : period === 'week' ? weekStart : period === 'all' ? yearStart : monthStart
 
   try {
     // Summary stats (always returned)
@@ -176,7 +185,7 @@ export async function GET(req: NextRequest) {
       supabaseAdmin.from('page_views').select('session_id').gte('created_at', weekStart).not('session_id', 'is', null),
       supabaseAdmin.from('page_views').select('*', { count: 'exact', head: true }).gte('created_at', monthStart),
       supabaseAdmin.from('page_views').select('session_id').gte('created_at', monthStart).not('session_id', 'is', null),
-      supabaseAdmin.from('page_views').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('page_views').select('*', { count: 'exact', head: true }).gte('created_at', yearStart),
     ])
 
     const todayUniqueCount = new Set(todayUnique?.map(r => r.session_id)).size
