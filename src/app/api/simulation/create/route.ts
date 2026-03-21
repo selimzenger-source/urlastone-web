@@ -3,8 +3,9 @@ import { buildPrompt, buildFullApplyPrompt } from '@/lib/simulation'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// fal.ai SYNCHRONOUS endpoint (not queue) — returns result directly
-const FAL_URL = 'https://fal.run/fal-ai/flux-general'
+// fal.ai SYNCHRONOUS endpoints
+const FAL_URL_IMG2IMG = 'https://fal.run/fal-ai/flux/dev/image-to-image'
+const FAL_URL_INPAINT = 'https://fal.run/fal-ai/flux-general'
 
 // Allow up to 60 seconds for Vercel serverless function
 export const maxDuration = 60
@@ -170,22 +171,37 @@ export async function POST(req: NextRequest) {
       ? buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
       : buildPrompt(stoneCode, categorySlug)
 
-    console.log(`[Simulation] ${applyMode.toUpperCase()} mode — fal.ai FLUX General (SYNC)`)
+    console.log(`[Simulation] ${applyMode.toUpperCase()} mode — fal.ai FLUX img2img (SYNC)`)
     console.log('[Simulation] Image URL:', imageUrl.substring(0, 80) + '...')
-    console.log('[Simulation] Stone ref:', stoneImageUrl?.substring(0, 60) + '...')
     console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
 
-    // Build controlnets based on mode
-    // NOTE: IP-Adapter removed — it overpowers text prompt and produces CGI mosaic artifacts
-    const controlnets = applyMode === 'full'
-      ? [
-          {
-            path: 'InstantX/FLUX.1-dev-Controlnet-Canny',
-            control_image_url: imageUrl,
-            conditioning_scale: 0.92,
-          },
-        ]
-      : [
+    // FULL mode: img2img — starts from real photo, changes wall texture, preserves structure/sky
+    // BRUSH mode: flux-general inpainting ControlNet — fills masked area only
+    let falBody: Record<string, unknown>
+    let falEndpoint: string
+
+    if (applyMode === 'full') {
+      falEndpoint = FAL_URL_IMG2IMG
+      falBody = {
+        image_url: imageUrl,
+        prompt,
+        strength: 0.72,          // 0.72 = stronger texture change while keeping building shape & sky
+        num_inference_steps: 30,
+        guidance_scale: 4.5,
+        num_images: 1,
+        output_format: 'jpeg',
+        enable_safety_checker: false,
+      }
+    } else {
+      falEndpoint = FAL_URL_INPAINT
+      falBody = {
+        prompt,
+        num_inference_steps: 30,
+        guidance_scale: 4.0,
+        num_images: 1,
+        output_format: 'jpeg',
+        enable_safety_checker: false,
+        controlnets: [
           {
             path: 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
             control_image_url: imageUrl,
@@ -193,24 +209,18 @@ export async function POST(req: NextRequest) {
             mask_image_url: maskUrl,
             conditioning_scale: 0.85,
           },
-        ]
+        ],
+      }
+    }
 
-    // SYNCHRONOUS call — blocks until result is ready (typically 5-20 seconds)
-    const falResponse = await fetch(FAL_URL, {
+    // SYNCHRONOUS call — blocks until result is ready (typically 15-35 seconds)
+    const falResponse = await fetch(falEndpoint, {
       method: 'POST',
       headers: {
         'Authorization': `Key ${falKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt,
-        num_inference_steps: 30,
-        guidance_scale: 4.0,
-        num_images: 1,
-        output_format: 'jpeg',
-        enable_safety_checker: false,
-        controlnets,
-      }),
+      body: JSON.stringify(falBody),
     })
 
     if (!falResponse.ok) {
