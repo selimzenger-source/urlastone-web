@@ -46,7 +46,7 @@ interface Product {
 }
 
 export default function TaslarPage() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const [activeCategory, setActiveCategory] = useState('nature')
   const [activeStoneType, setActiveStoneType] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -411,8 +411,8 @@ export default function TaslarPage() {
         </div>
       </section>
 
-      {/* Katalog */}
-      {catalogUrl && (
+      {/* Katalog - sadece Türkçe'de göster */}
+      {catalogUrl && locale === 'tr' && (
         <section className="py-16 md:py-20 border-t border-white/[0.06]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
             <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">

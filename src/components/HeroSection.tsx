@@ -206,11 +206,11 @@ export default function HeroSection() {
         {/* Arrows + Counter */}
         <div className="flex items-center gap-4">
           <button
-            onClick={isRtl ? next : prev}
+            onClick={prev}
             className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center active:bg-white active:text-black transition-all duration-300"
             aria-label="Onceki slayt"
           >
-            <ChevronLeft size={14} />
+            {isRtl ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
 
           <div className="flex items-baseline gap-1">
@@ -223,11 +223,11 @@ export default function HeroSection() {
           </div>
 
           <button
-            onClick={isRtl ? prev : next}
+            onClick={next}
             className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center active:bg-white active:text-black transition-all duration-300"
             aria-label="Sonraki slayt"
           >
-            <ChevronRight size={14} />
+            {isRtl ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </button>
         </div>
 
@@ -261,18 +261,18 @@ export default function HeroSection() {
         {/* Arrows */}
         <div className="flex gap-2">
           <button
-            onClick={isRtl ? next : prev}
+            onClick={prev}
             className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300"
             aria-label="Onceki slayt"
           >
-            <ChevronLeft size={16} />
+            {isRtl ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
           <button
-            onClick={isRtl ? prev : next}
+            onClick={next}
             className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300"
             aria-label="Sonraki slayt"
           >
-            <ChevronRight size={16} />
+            {isRtl ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
           </button>
         </div>
 
