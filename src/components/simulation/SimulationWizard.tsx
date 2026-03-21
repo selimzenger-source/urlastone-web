@@ -28,6 +28,14 @@ const STEP_LABELS: Record<string, Record<SimStep, string>> = {
   de: { upload: 'Foto', select: 'Stein wählen', mode: 'Anwenden', mask: 'Bereich markieren', processing: 'Verarbeitung', result: 'Ergebnis' },
 }
 
+const VALIDATION_ERRORS: Record<string, string> = {
+  tr: 'Bu fotoğrafta bir yapı veya duvar yüzeyi tespit edilemedi. Lütfen bina, duvar, şömine veya iç mekan fotoğrafı yükleyin',
+  en: 'No building or wall surface detected in this photo. Please upload a photo of a building, wall, fireplace, or interior',
+  es: 'No se detectó un edificio o superficie de pared en esta foto. Suba una foto de un edificio, pared o interior',
+  ar: 'لم يتم اكتشاف مبنى أو سطح جدار في هذه الصورة. يرجى تحميل صورة لمبنى أو جدار أو مدفأة أو غرفة',
+  de: 'Kein Gebäude oder Wandfläche in diesem Foto erkannt. Bitte laden Sie ein Foto eines Gebäudes, einer Wand oder eines Innenraums hoch',
+}
+
 const INFO_TEXTS: Record<string, { limit: string; daily: string; free: string }> = {
   tr: {
     limit: 'Günlük 3 simülasyon hakkınız bulunmaktadır',
@@ -98,6 +106,7 @@ export default function SimulationWizard() {
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
   const [localUsage, setLocalUsage] = useState(0)
+  const [validating, setValidating] = useState(false)
 
   const labels = STEP_LABELS[locale] || STEP_LABELS.tr
   const info = INFO_TEXTS[locale] || INFO_TEXTS.tr
@@ -123,14 +132,36 @@ export default function SimulationWizard() {
     return true
   }, [locale])
 
-  // Handle image upload
+  // Handle image upload with AI validation
   const handleImageUpload = useCallback(async (dataUrl: string) => {
     const resized = await resizeImage(dataUrl, 1024)
     setImageDataUrl(resized.dataUrl)
     setImageWidth(resized.width)
     setImageHeight(resized.height)
+    setError(null)
+    setValidating(true)
+
+    try {
+      const res = await fetch('/api/simulation/validate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: resized.dataUrl }),
+      })
+      const data = await res.json()
+
+      if (!data.valid) {
+        setError(VALIDATION_ERRORS[locale] || VALIDATION_ERRORS.tr)
+        setImageDataUrl(null)
+        setValidating(false)
+        return
+      }
+    } catch {
+      // On validation error, allow through
+    }
+
+    setValidating(false)
     setStep('select')
-  }, [])
+  }, [locale])
 
   // Handle stone selection
   const handleStoneSelect = useCallback((stone: StoneOption) => {
@@ -379,7 +410,22 @@ export default function SimulationWizard() {
       {/* Step content */}
       <div className="relative">
         {step === 'upload' && (
-          <StepUpload onUpload={handleImageUpload} />
+          <>
+            <StepUpload onUpload={handleImageUpload} />
+            {validating && (
+              <div className="mt-4 text-center">
+                <div className="inline-flex items-center gap-2 bg-gold-400/10 text-gold-400 px-4 py-2 rounded-full text-xs font-mono">
+                  <div className="w-3 h-3 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin" />
+                  {locale === 'en' ? 'Analyzing photo...' : locale === 'es' ? 'Analizando foto...' : locale === 'ar' ? 'جاري تحليل الصورة...' : locale === 'de' ? 'Foto wird analysiert...' : 'Fotoğraf analiz ediliyor...'}
+                </div>
+              </div>
+            )}
+            {error && step === 'upload' && (
+              <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+                <p className="text-red-400 text-sm font-body">{error}</p>
+              </div>
+            )}
+          </>
         )}
 
         {step === 'select' && imageDataUrl && (
