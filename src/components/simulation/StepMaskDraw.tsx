@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle, Maximize, Square } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Props {
@@ -14,56 +14,66 @@ interface Props {
   error: string | null
 }
 
-const MASK_TEXTS: Record<string, { title: string; desc: string; brush: string; undo: string; clear: string; submit: string; back: string; hint: string }> = {
+const MASK_TEXTS: Record<string, { title: string; desc: string; brush: string; undo: string; clear: string; submit: string; back: string; hint: string; fillAll: string; fillAllDesc: string }> = {
   tr: {
     title: 'Alanı İşaretleyin',
-    desc: 'Taşın uygulanacağı alanı fırça ile boyayın',
+    desc: 'Taş uygulamak istediğiniz yüzeyleri boyayın — tüm cephe için "Tümünü Boya" butonunu kullanın',
     brush: 'Fırça',
     undo: 'Geri Al',
     clear: 'Temizle',
     submit: 'AI ile Uygula',
     back: 'Geri',
-    hint: 'Parmağınız veya farenizle alanı boyayın',
+    hint: 'Fırça ile boyayın veya "Tümünü Boya" butonuna tıklayın',
+    fillAll: 'Tümünü Boya',
+    fillAllDesc: 'Tüm yüzeyi seç',
   },
   en: {
     title: 'Mark the Area',
-    desc: 'Paint over the area where the stone should be applied',
+    desc: 'Paint the surfaces where you want stone applied — use "Fill All" for the entire facade',
     brush: 'Brush',
     undo: 'Undo',
     clear: 'Clear',
     submit: 'Apply with AI',
     back: 'Back',
-    hint: 'Paint the area with your finger or mouse',
+    hint: 'Paint with brush or click "Fill All"',
+    fillAll: 'Fill All',
+    fillAllDesc: 'Select entire surface',
   },
   es: {
     title: 'Marque el área',
-    desc: 'Pinte sobre el área donde se aplicará la piedra',
+    desc: 'Pinte las superficies donde desea aplicar piedra — use "Pintar Todo" para toda la fachada',
     brush: 'Pincel',
     undo: 'Deshacer',
     clear: 'Limpiar',
     submit: 'Aplicar con IA',
     back: 'Atrás',
-    hint: 'Pinte el área con su dedo o ratón',
+    hint: 'Pinte con el pincel o haga clic en "Pintar Todo"',
+    fillAll: 'Pintar Todo',
+    fillAllDesc: 'Seleccionar toda la superficie',
   },
   ar: {
     title: 'حدد المنطقة',
-    desc: 'ارسم فوق المنطقة التي سيتم تطبيق الحجر عليها',
+    desc: 'ارسم على الأسطح التي تريد تطبيق الحجر عليها — استخدم "طلاء الكل" للواجهة بأكملها',
     brush: 'فرشاة',
     undo: 'تراجع',
     clear: 'مسح',
     submit: 'تطبيق بالذكاء الاصطناعي',
     back: 'رجوع',
-    hint: 'ارسم المنطقة بإصبعك أو بالماوس',
+    hint: 'ارسم بالفرشاة أو انقر "طلاء الكل"',
+    fillAll: 'طلاء الكل',
+    fillAllDesc: 'تحديد كامل السطح',
   },
   de: {
     title: 'Bereich markieren',
-    desc: 'Malen Sie über den Bereich, auf den der Stein aufgetragen werden soll',
+    desc: 'Malen Sie die Flächen, auf die Stein aufgetragen werden soll — verwenden Sie "Alles füllen" für die gesamte Fassade',
     brush: 'Pinsel',
     undo: 'Rückgängig',
     clear: 'Löschen',
     submit: 'Mit KI anwenden',
     back: 'Zurück',
-    hint: 'Malen Sie den Bereich mit dem Finger oder der Maus',
+    hint: 'Mit Pinsel malen oder "Alles füllen" klicken',
+    fillAll: 'Alles füllen',
+    fillAllDesc: 'Gesamte Fläche auswählen',
   },
 }
 
@@ -73,9 +83,21 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
-  const [brushSize, setBrushSize] = useState(40)
+  const [brushSize, setBrushSize] = useState(60)
   const [history, setHistory] = useState<ImageData[]>([])
   const [hasMask, setHasMask] = useState(false)
+
+  // Fill entire canvas with mask
+  const handleFillAll = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
+    // Save state for undo
+    setHistory(prev => [...prev, ctx.getImageData(0, 0, canvas.width, canvas.height)])
+    ctx.fillStyle = 'rgba(179, 147, 69, 0.45)'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    setHasMask(true)
+  }, [])
 
   // Initialize canvas
   useEffect(() => {
@@ -161,7 +183,6 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
 
   const handleSubmit = useCallback(() => {
     const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
 
     // Create mask: white where painted, black everywhere else
     const maskCanvas = document.createElement('canvas')
@@ -169,38 +190,37 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
     maskCanvas.height = imageHeight
     const maskCtx = maskCanvas.getContext('2d')!
 
-    // Fill black
+    // Fill black background
     maskCtx.fillStyle = '#000000'
     maskCtx.fillRect(0, 0, imageWidth, imageHeight)
 
-    // Scale the drawing canvas to original image dimensions
-    const scaleX = imageWidth / canvas.width
-    const scaleY = imageHeight / canvas.height
+    // Draw the overlay canvas scaled up to original image size → white areas = mask
+    // This preserves the exact painted shape
+    maskCtx.drawImage(canvas, 0, 0, imageWidth, imageHeight)
 
-    // Get the drawn data
-    const drawData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-    // Create scaled mask
-    for (let y = 0; y < canvas.height; y++) {
-      for (let x = 0; x < canvas.width; x++) {
-        const idx = (y * canvas.width + x) * 4
-        const alpha = drawData.data[idx + 3]
-        if (alpha > 10) {
-          // Draw white circle at scaled position
-          const mx = Math.round(x * scaleX)
-          const my = Math.round(y * scaleY)
-          const r = Math.round(brushSize * scaleX / 2)
-          maskCtx.fillStyle = '#ffffff'
-          maskCtx.beginPath()
-          maskCtx.arc(mx, my, Math.max(r, 2), 0, Math.PI * 2)
-          maskCtx.fill()
-        }
+    // Convert: any non-black pixel → white (the gold overlay becomes white mask)
+    const imgData = maskCtx.getImageData(0, 0, imageWidth, imageHeight)
+    const data = imgData.data
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 10) {
+        // Has alpha / color → make pure white
+        data[i] = 255
+        data[i + 1] = 255
+        data[i + 2] = 255
+        data[i + 3] = 255
+      } else {
+        // Transparent → make pure black
+        data[i] = 0
+        data[i + 1] = 0
+        data[i + 2] = 0
+        data[i + 3] = 255
       }
     }
+    maskCtx.putImageData(imgData, 0, 0)
 
     const maskDataUrl = maskCanvas.toDataURL('image/png')
     onSubmit(maskDataUrl)
-  }, [imageWidth, imageHeight, brushSize, onSubmit])
+  }, [imageWidth, imageHeight, onSubmit])
 
   return (
     <div className="glass-card p-6 md:p-10">
@@ -228,12 +248,24 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
         <input
           type="range"
           min={10}
-          max={80}
+          max={200}
           value={brushSize}
           onChange={(e) => setBrushSize(Number(e.target.value))}
           className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400"
         />
         <span className="text-white/30 text-[10px] font-mono w-6 text-right">{brushSize}</span>
+
+        <div className="w-px h-5 bg-white/10 mx-1" />
+
+        {/* Fill All button */}
+        <button
+          onClick={handleFillAll}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-400/10 text-gold-400 text-[11px] font-medium hover:bg-gold-400/20 transition-colors border border-gold-400/20"
+          title={t.fillAllDesc}
+        >
+          <Maximize size={12} />
+          {t.fillAll}
+        </button>
 
         <div className="w-px h-5 bg-white/10 mx-1" />
 
