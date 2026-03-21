@@ -47,23 +47,23 @@ const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
 
 // Gemini prompt templates — simpler prompts work better with Gemini's multimodal understanding
 const GEMINI_PROMPTS: Record<string, string> = {
-  facade: `Edit this building photo: apply the stone cladding from the second image to EVERY visible wall surface — including foundation walls, basement walls, retaining walls, and all upper floor walls. No concrete or plaster should remain visible on ANY wall. IMPORTANT: Each individual stone piece must be SMALL — approximately 15-25cm in real life, much smaller than a window. A single window should be surrounded by at least 20-30 stone pieces. Do NOT make large boulder-sized stones. Show the finished building with windows. Keep the same camera angle. Photorealistic.`,
+  facade: `Edit this building photo: apply the stone cladding from the second image to EVERY visible wall surface — including foundation walls, basement walls, retaining walls, and all upper floor walls. No concrete or plaster should remain visible on ANY wall. IMPORTANT: Each individual stone piece must be SMALL — approximately 15-25cm in real life, much smaller than a window. A single window should be surrounded by at least 20-30 stone pieces. Do NOT make large boulder-sized stones. The stones must look like real installed stone cladding — each piece should have 3D depth, natural shadow between pieces, slight surface relief and texture variation. NOT flat, NOT like wallpaper or a printed texture. Show the finished building with windows. Keep the same camera angle. Photorealistic.`,
 
   fireplace: `The first image is a room with a fireplace. The second image shows a natural stone texture sample.
 
-Apply this exact stone texture from the second image to the fireplace surround and chimney area in the first image. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
+Apply this exact stone texture from the second image to the fireplace surround and chimney area in the first image. IMPORTANT: Each stone piece must be SMALL — approximately 10-20cm each, so you should see many individual stone pieces across the fireplace surface. The fireplace opening height should contain at least 8-10 stone pieces vertically. Do NOT make large boulder-sized stones. The stone must look like real professionally installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper or a printed texture. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
 
   interior: `The first image is an interior room. The second image shows a natural stone texture sample.
 
-Apply this exact stone texture from the second image to the bare wall surfaces only. Do not apply stone to fireplace, countertops, furniture, floor, ceiling, or any fixtures. Keep everything else exactly the same. Photorealistic result.`,
+Apply this exact stone texture from the second image to the bare wall surfaces only. IMPORTANT: Each stone piece must be SMALL — approximately 10-20cm each, roughly the size of an electrical outlet or smaller. A standard door height (2m) should have at least 12-15 stone pieces vertically. Do NOT make large boulder-sized stones. The stone must look like real professionally installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper or a printed texture. Do not apply stone to fireplace, countertops, furniture, floor, ceiling, or any fixtures. Keep everything else exactly the same. Photorealistic result.`,
 
   bathroom: `The first image is a bathroom. The second image shows a natural stone texture sample.
 
-Apply this exact stone texture from the second image to all bathroom wall surfaces. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
+Apply this exact stone texture from the second image to all bathroom wall surfaces. IMPORTANT: Each stone piece must be SMALL — approximately 10-20cm each. A standard door height should have at least 12-15 stone pieces vertically. Do NOT make large stones. The stone must look like real installed stone cladding with 3D depth, natural shadows, and surface relief — NOT flat like wallpaper. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
 
   floor: `The first image is a room. The second image shows a natural stone texture sample.
 
-Apply this exact stone texture from the second image to the floor surface. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
+Apply this exact stone texture from the second image to the floor surface. IMPORTANT: Each stone piece must be SMALL — approximately 15-25cm each. The stone must look like real installed stone tiles with 3D depth, natural shadows, and surface texture — NOT flat like a printed floor. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
 }
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -159,15 +159,15 @@ async function analyzeImageWithSonnet(
             },
             {
               type: 'text',
-              text: `Analyze this building/space photo for stone cladding simulation. Reply ONLY with a JSON object, no markdown:
+              text: `Analyze this photo for stone cladding simulation. The photo could be an exterior building, interior room, fireplace, bathroom, or any space. Reply ONLY with a JSON object, no markdown:
 {
   "type": "exterior" or "interior",
   "floors": number of visible floors (0 if interior),
   "distance": "close" or "medium" or "far",
   "has_windows": true/false,
-  "window_count": approximate number of visible windows,
-  "is_raw_construction": true/false,
-  "scale_instruction": "A specific instruction for an AI image generator about how big each stone piece should appear relative to visible elements like windows or doors. Be very specific about proportions. Example: Each stone piece should be about 1/8 the height of a window."
+  "reference_elements": "list visible objects that can be used for size reference: doors, windows, electrical outlets, vents, fireplace opening, furniture, light switches, etc.",
+  "estimated_wall_height_m": estimated wall/surface height in meters (e.g. 2.5 for standard room, 6 for 2-story building),
+  "scale_instruction": "A VERY specific instruction telling an AI image generator the exact size of each stone piece relative to visible elements. For interiors use outlets, vents, doors, fireplace dimensions. For exteriors use windows, doors, floor heights. CRITICAL: stones must be SMALL, typically 10-25cm each in real life. Example for interior: Each stone piece should be roughly the same size as an electrical outlet (about 10-15cm), so a standard door should have at least 15-20 stones along its height. Example for exterior: Each stone should be about 1/8 the height of a window."
 }`,
             },
           ],
@@ -233,13 +233,13 @@ async function generateWithGemini(
     // Brush mode: 3 images (building + stone + mask)
     prompt = `The first image is a photo of a space. The second image shows a natural stone texture sample. The third image is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
 
-Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. SCALE: ${scaleInstruction} GROUT: ${groutInstruction} Photorealistic result.`
+Apply the stone texture from the second image ONLY to the white areas of the mask on the first image. Do NOT change anything in the black areas of the mask. Keep everything outside the masked area exactly as it is. SCALE: ${scaleInstruction} Each stone piece must be SMALL (10-25cm in real life). Do NOT make large boulder-sized stones. The stone must look like real professionally installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper or a printed texture. GROUT: ${groutInstruction} Photorealistic result.`
   } else {
     const basePrompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
     // Replace the generic scale instruction with the Sonnet-analyzed one
     prompt = basePrompt.replace(
       /IMPORTANT:[\s\S]*?Photorealistic\./,
-      `IMPORTANT SCALE: ${scaleInstruction} Do NOT make large boulder-sized stones. GROUT: ${groutInstruction} Photorealistic.`
+      `IMPORTANT SCALE: ${scaleInstruction} Do NOT make large boulder-sized stones. The stone must look like real installed stone cladding with 3D depth, natural shadows between pieces, and surface relief — NOT flat like wallpaper. GROUT: ${groutInstruction} Photorealistic.`
     )
   }
 
