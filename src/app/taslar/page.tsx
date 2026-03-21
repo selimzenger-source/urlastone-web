@@ -168,12 +168,12 @@ export default function TaslarPage() {
           </div>
 
           {/* Category Cards */}
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mb-12 px-2">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.slug)}
-                className={`group w-[130px] sm:w-[150px] rounded-2xl p-3 transition-all duration-300 text-center ${
+                className={`group rounded-2xl p-4 md:p-5 transition-all duration-300 text-center ${
                   activeCategory === cat.slug
                     ? 'bg-white/[0.06] border-2 border-gold-400 scale-[1.02]'
                     : 'bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.15] hover:bg-white/[0.05]'
