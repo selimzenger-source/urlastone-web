@@ -2,7 +2,7 @@
 
 export type SimStep = 'upload' | 'select' | 'mode' | 'mask' | 'processing' | 'result'
 
-// Apply mode: full surface (FLUX Canny) vs brush selection (SD Inpainting)
+// Apply mode: full surface (FLUX Canny) vs brush selection (inpainting)
 export type ApplyMode = 'full' | 'brush'
 
 // Surface context for intelligent prompt building
@@ -32,16 +32,28 @@ export interface StoneOption {
 // Base quality suffix for all prompts
 const QUALITY = 'ultra realistic, architectural photography, 8k, photorealistic lighting, natural daylight, professional construction, real building exterior, depth of field, shot on Canon EOS R5'
 
-// Stone type base textures
+// Stone type base textures — VERY detailed descriptions for each stone
 const STONE_BASE: Record<string, string> = {
-  TRV: 'travertine natural stone, warm cream ivory beige tones, natural porous honeycomb texture with filled holes, subtle earth-tone veining, matte honed finish, Denizli travertine from Turkey',
-  MRMR: 'marble natural stone, elegant white cream with grey brown veining, crystalline structure, semi-polished smooth finish, Turkish Afyon marble',
-  BZLT: 'basalt natural stone, dark charcoal grey to deep black, dense volcanic texture, uniform fine grain, split face rough finish, Anatolian basalt',
-  KLKR: 'limestone natural stone, warm sandy beige to cream white, fine grain soft sedimentary texture, matte natural finish, Turkish limestone',
+  TRV: 'natural travertine stone cladding, warm cream ivory beige honey tones with natural color variation between stones, each stone piece has unique natural porous honeycomb texture with tiny filled holes and subtle earth-tone veining, matte honed surface finish, authentic Denizli travertine from Turkey, real quarried natural stone NOT painted NOT artificial',
+  MRMR: 'natural marble stone cladding, elegant white and cream base with flowing grey and brown veining patterns unique to each stone piece, crystalline semi-polished smooth surface with subtle light reflection, authentic Turkish Afyon marble, real quarried natural stone NOT painted NOT artificial',
+  BZLT: 'natural basalt stone cladding, deep dark charcoal grey to near-black color, dense volcanic rock texture with uniform fine grain, rough split face surface finish showing natural stone fracture, authentic Anatolian volcanic basalt, real quarried natural stone NOT painted NOT artificial',
+  KLKR: 'natural limestone cladding, warm sandy beige to soft cream white color with subtle fossil marks, fine grain sedimentary texture with natural weathering character, matte natural surface finish, authentic Turkish limestone, real quarried natural stone NOT painted NOT artificial',
+}
+
+// Product-specific texture descriptions (for specific products like Classic, Scabas, etc.)
+const PRODUCT_TEXTURE: Record<string, string> = {
+  // Travertine products
+  'Classic': 'classic warm beige travertine with honey-cream tones, natural filled pores, traditional Turkish travertine appearance',
+  'Classic Line': 'classic beige travertine cut into thin horizontal strips, clean linear pattern, warm cream tones',
+  'Trio Mix': 'three different sizes of travertine pieces mixed together, varied beige cream honey tones, dynamic mixed-size pattern',
+  'Scabas': 'dark walnut brown travertine with deep caramel and chocolate tones, rough textured surface with visible natural holes and heavy veining, dramatic dark earth tones',
+  'Silver': 'cool silver-grey travertine with blue-grey undertones, sophisticated modern light grey stone, subtle veining',
+  'Noche': 'dark brown walnut travertine, deep chocolate and coffee tones, rich warm dark stone with natural porous texture',
+  'Antico': 'antiqued aged travertine with tumbled weathered edges, warm old-world rustic appearance, cream and gold tones with patina',
+  'Toros': 'Toros black dark stone with deep charcoal tones, dense dramatic appearance',
 }
 
 // Rockshell category patterns (how stones are arranged)
-// IMPORTANT: Each pattern must be very distinct and specific so AI doesn't confuse them
 const CATEGORY_PATTERN: Record<string, string> = {
   nature: 'LARGE irregular polygonal shaped flat stone pieces fitted together like a jigsaw puzzle, each stone piece is 15-30cm wide with natural broken rough edges, thick dark grout lines between stones, random organic arrangement NOT horizontal lines NOT bricks, stones are BIG chunky flat pieces with rounded organic shapes, rustic rubble stone wall pattern, fieldstone masonry appearance',
   mix: 'combination of thin horizontal cut strips alternating with medium rounded natural pieces, mixed pattern with both linear strips and organic shapes together, balanced modern-rustic blend',
@@ -73,21 +85,23 @@ const SURFACE_CONTEXT: Record<SurfaceContext, { apply: string; preserve: string 
   },
 }
 
-// Build the optimal prompt based on stone type + category (for BRUSH mode inpainting)
-export function buildPrompt(stoneCode: string, categorySlug?: string): string {
+// Build the optimal prompt based on stone type + category + product name
+export function buildPrompt(stoneCode: string, categorySlug?: string, productName?: string): string {
   const stoneBase = STONE_BASE[stoneCode] || STONE_BASE.TRV
   const pattern = categorySlug ? CATEGORY_PATTERN[categorySlug] : CATEGORY_PATTERN.nature
+  const productDetail = productName && PRODUCT_TEXTURE[productName] ? `, ${PRODUCT_TEXTURE[productName]}` : ''
 
-  return `${stoneBase}, ${pattern || ''}, exterior wall facade cladding, seamless professional installation, grouted joints, no text, no watermark, no logo, no brand, no writing, no letters, clean image, ${QUALITY}`
+  return `${stoneBase}${productDetail}, ${pattern || ''}, exterior wall facade cladding, seamless professional installation, grouted joints, no text, no watermark, no logo, no brand, no writing, no letters, clean image, ${QUALITY}`
 }
 
 // Build prompt for FULL APPLY mode (FLUX Canny) — context-aware
-export function buildFullApplyPrompt(stoneCode: string, categorySlug?: string, surfaceContext?: SurfaceContext): string {
+export function buildFullApplyPrompt(stoneCode: string, categorySlug?: string, surfaceContext?: SurfaceContext, productName?: string): string {
   const stoneBase = STONE_BASE[stoneCode] || STONE_BASE.TRV
   const pattern = categorySlug ? CATEGORY_PATTERN[categorySlug] : CATEGORY_PATTERN.nature
   const context = surfaceContext ? SURFACE_CONTEXT[surfaceContext] : SURFACE_CONTEXT.facade
+  const productDetail = productName && PRODUCT_TEXTURE[productName] ? `, ${PRODUCT_TEXTURE[productName]}` : ''
 
-  return `${context.apply}, ${stoneBase}, ${pattern || ''}, seamless professional installation, grouted joints, ${context.preserve}, no text, no watermark, no logo, no brand, no writing, no letters, no words, clean image, ${QUALITY}`
+  return `${context.apply}, ${stoneBase}${productDetail}, ${pattern || ''}, seamless professional installation, grouted joints, ${context.preserve}, no text, no watermark, no logo, no brand, no writing, no letters, no words, clean image, ${QUALITY}`
 }
 
 // Fallback simple prompts for unknown codes
