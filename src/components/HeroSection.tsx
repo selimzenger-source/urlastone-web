@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 
 export default function HeroSection() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
+  const isRtl = locale === 'ar'
 
   const slides = [
     {
@@ -205,7 +206,7 @@ export default function HeroSection() {
         {/* Arrows + Counter */}
         <div className="flex items-center gap-4">
           <button
-            onClick={prev}
+            onClick={isRtl ? next : prev}
             className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center active:bg-white active:text-black transition-all duration-300"
             aria-label="Onceki slayt"
           >
@@ -222,7 +223,7 @@ export default function HeroSection() {
           </div>
 
           <button
-            onClick={next}
+            onClick={isRtl ? prev : next}
             className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center active:bg-white active:text-black transition-all duration-300"
             aria-label="Sonraki slayt"
           >
@@ -245,8 +246,8 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Desktop Navigation - Right side */}
-      <div className={`hidden md:flex absolute right-12 top-1/2 -translate-y-1/2 z-20 flex-col items-center gap-4 transition-all duration-1000 delay-[1500ms] ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Desktop Navigation - Right side (Left for RTL) */}
+      <div className={`hidden md:flex absolute ${isRtl ? 'left-12' : 'right-12'} top-1/2 -translate-y-1/2 z-20 flex-col items-center gap-4 transition-all duration-1000 delay-[1500ms] ${loaded ? 'opacity-100' : 'opacity-0'}`}>
         {/* Current number */}
         <div className="flex items-baseline gap-1">
           <span className="font-heading text-4xl font-bold text-white">
@@ -260,14 +261,14 @@ export default function HeroSection() {
         {/* Arrows */}
         <div className="flex gap-2">
           <button
-            onClick={prev}
+            onClick={isRtl ? next : prev}
             className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300"
             aria-label="Onceki slayt"
           >
             <ChevronLeft size={16} />
           </button>
           <button
-            onClick={next}
+            onClick={isRtl ? prev : next}
             className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300"
             aria-label="Sonraki slayt"
           >
