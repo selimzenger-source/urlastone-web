@@ -41,6 +41,37 @@ function getClientIp(req: NextRequest): string {
   )
 }
 
+// Upload base64 data URL to Supabase Storage and return public URL
+async function uploadToStorage(dataUrl: string, prefix: string): Promise<string> {
+  const match = dataUrl.match(/^data:image\/(\w+);base64,(.+)$/)
+  if (!match) throw new Error('Invalid data URL')
+
+  const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
+  const base64Data = match[2]
+  const buffer = Buffer.from(base64Data, 'base64')
+  const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
+  const filePath = `simulation/${fileName}`
+
+  const { error } = await supabaseAdmin.storage
+    .from('uploads')
+    .upload(filePath, buffer, {
+      contentType: `image/${match[1]}`,
+      upsert: false,
+    })
+
+  if (error) {
+    console.error('[Upload] Supabase storage error:', error)
+    throw new Error('Failed to upload image: ' + error.message)
+  }
+
+  const { data: urlData } = supabaseAdmin.storage
+    .from('uploads')
+    .getPublicUrl(filePath)
+
+  console.log('[Upload] Uploaded to:', urlData.publicUrl.substring(0, 80) + '...')
+  return urlData.publicUrl
+}
+
 export async function POST(req: NextRequest) {
   const falKey = process.env.FAL_API_KEY
   if (!falKey) {
@@ -79,7 +110,6 @@ export async function POST(req: NextRequest) {
       todayStart.setHours(0, 0, 0, 0)
       const todayISO = todayStart.toISOString()
 
-      // 1) Check GLOBAL daily limit (all users combined)
       const { count: globalCount, error: globalError } = await supabaseAdmin
         .from('simulation_requests')
         .select('*', { count: 'exact', head: true })
@@ -92,7 +122,6 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 2) Check PER-IP daily limit
       const { count: ipCount, error: ipError } = await supabaseAdmin
         .from('simulation_requests')
         .select('*', { count: 'exact', head: true })
@@ -106,7 +135,6 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Log this request
       await supabaseAdmin
         .from('simulation_requests')
         .insert({ ip_address: ip })
@@ -115,13 +143,33 @@ export async function POST(req: NextRequest) {
       console.warn('Rate limit check failed, continuing without limit')
     }
 
+    // --- Upload images to Supabase Storage (fal.ai needs HTTP URLs, not base64) ---
+    console.log('[Simulation] Uploading images to Supabase Storage...')
+
+    let imageUrl: string
+    let maskUrl: string | undefined
+
+    try {
+      imageUrl = await uploadToStorage(image, 'img')
+      if (applyMode === 'brush' && mask) {
+        maskUrl = await uploadToStorage(mask, 'mask')
+      }
+    } catch (err) {
+      console.error('[Simulation] Image upload failed:', err)
+      return NextResponse.json(
+        { error: 'Failed to upload image. Please try again.' },
+        { status: 500 }
+      )
+    }
+
     // --- Build Prompt & Call fal.ai ---
     const prompt = applyMode === 'full'
       ? buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
       : buildPrompt(stoneCode, categorySlug)
 
     console.log(`[Simulation] ${applyMode.toUpperCase()} mode — fal.ai FLUX General`)
-    console.log('[Simulation] Stone texture ref:', stoneImageUrl?.substring(0, 60) + '...')
+    console.log('[Simulation] Image URL:', imageUrl.substring(0, 80) + '...')
+    console.log('[Simulation] Stone ref:', stoneImageUrl?.substring(0, 60) + '...')
     console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
 
     // Build controlnets based on mode
@@ -129,16 +177,16 @@ export async function POST(req: NextRequest) {
       ? [
           {
             path: 'InstantX/FLUX.1-dev-Controlnet-Canny',
-            control_image_url: image,
+            control_image_url: imageUrl,
             conditioning_scale: 0.85,
           },
         ]
       : [
           {
             path: 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
-            control_image_url: image,
+            control_image_url: imageUrl,
             control_mode: 'inpainting',
-            mask_image_url: mask,
+            mask_image_url: maskUrl,
             conditioning_scale: 0.9,
           },
         ]
@@ -170,7 +218,7 @@ export async function POST(req: NextRequest) {
 
     if (!falResponse.ok) {
       const err = await falResponse.json()
-      console.error('fal.ai error:', err)
+      console.error('[Simulation] fal.ai error:', JSON.stringify(err).substring(0, 300))
       return NextResponse.json(
         { error: err.detail || err.message || 'Failed to create prediction' },
         { status: falResponse.status }
@@ -178,8 +226,7 @@ export async function POST(req: NextRequest) {
     }
 
     const falResult = await falResponse.json()
-    console.log('[Simulation] fal.ai queue response:', { request_id: falResult.request_id, status: falResult.status })
-    console.log('[Simulation] fal.ai response_url:', falResult.response_url)
+    console.log('[Simulation] fal.ai queued:', { request_id: falResult.request_id, status: falResult.status })
 
     // Calculate remaining
     let remaining = DAILY_LIMIT_PER_IP - 1
