@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 // API endpoints
 const REPLICATE_PREDICTIONS = 'https://api.replicate.com/v1/predictions'
-const FLUX_CANNY_API = 'https://api.replicate.com/v1/models/black-forest-labs/flux-canny-dev/predictions'
+const FAL_QUEUE_URL = 'https://queue.fal.run/fal-ai/flux-general'
 
 const DAILY_LIMIT_PER_IP = 3   // Max per IP per day
 const DAILY_LIMIT_GLOBAL = 20  // Max total across all users per day
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       mask,
       stoneCode,
       categorySlug,
+      stoneImageUrl,
       locale,
       applyMode = 'brush' as ApplyMode,
       surfaceContext = 'facade' as SurfaceContext,
@@ -65,6 +66,9 @@ export async function POST(req: NextRequest) {
     }
     if (applyMode === 'brush' && !mask) {
       return NextResponse.json({ error: 'mask is required for brush mode' }, { status: 400 })
+    }
+    if (applyMode === 'full' && !stoneImageUrl) {
+      return NextResponse.json({ error: 'stoneImageUrl is required for full mode' }, { status: 400 })
     }
 
     // --- Rate Limiting ---
@@ -112,61 +116,112 @@ export async function POST(req: NextRequest) {
       console.warn('Rate limit check failed, continuing without limit')
     }
 
-    // --- Build Prompt & Call Replicate ---
-    let response: Response
+    // --- Build Prompt & Call AI Provider ---
 
     if (applyMode === 'full') {
+      // === FAL.AI — FLUX General with ControlNet (Canny) + IP-Adapter (stone texture) ===
+      const falKey = process.env.FAL_API_KEY
+      if (!falKey) {
+        return NextResponse.json({ error: 'fal.ai API key not configured' }, { status: 500 })
+      }
+
       const prompt = buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
 
-      console.log('[Simulation] FULL mode — FLUX Canny Dev')
+      console.log('[Simulation] FULL mode — fal.ai FLUX General + IP-Adapter')
       console.log('[Simulation] Surface context:', surfaceContext)
+      console.log('[Simulation] Stone texture ref:', stoneImageUrl?.substring(0, 60) + '...')
       console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
 
-      response = await fetch(FLUX_CANNY_API, {
+      const falResponse = await fetch(FAL_QUEUE_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Key ${falKey}`,
           'Content-Type': 'application/json',
-          'Prefer': 'wait',
         },
         body: JSON.stringify({
-          input: {
-            prompt,
-            control_image: image,
-            num_outputs: 1,
-            num_inference_steps: 28,
-            guidance: 28,
-            output_format: 'jpg',
-            output_quality: 90,
-          },
+          prompt,
+          num_inference_steps: 28,
+          guidance_scale: 3.5,
+          num_images: 1,
+          output_format: 'jpeg',
+          enable_safety_checker: false,
+          controlnets: [
+            {
+              path: 'InstantX/FLUX.1-dev-Controlnet-Canny',
+              control_image_url: image,
+              conditioning_scale: 0.85,
+            },
+          ],
+          ip_adapters: [
+            {
+              path: 'https://huggingface.co/XLabs-AI/flux-ip-adapter/resolve/main/flux-ip-adapter.safetensors',
+              image_url: stoneImageUrl,
+              scale: 0.75,
+              image_encoder_path: 'openai/clip-vit-large-patch14',
+            },
+          ],
         }),
       })
-    } else {
-      const prompt = buildPrompt(stoneCode, categorySlug)
 
-      console.log('[Simulation] BRUSH mode — SD Inpainting')
-      console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
+      if (!falResponse.ok) {
+        const err = await falResponse.json()
+        console.error('fal.ai error:', err)
+        return NextResponse.json(
+          { error: err.detail || err.message || 'Failed to create prediction' },
+          { status: falResponse.status }
+        )
+      }
 
-      response = await fetch(REPLICATE_PREDICTIONS, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          version: '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
-          input: {
-            prompt,
-            negative_prompt: negativePrompt,
-            image,
-            mask,
-            num_inference_steps: 25,
-            guidance_scale: 7.5,
-            scheduler: 'K_EULER_ANCESTRAL',
-          },
-        }),
+      const falResult = await falResponse.json()
+      console.log('[Simulation] fal.ai queue response:', { request_id: falResult.request_id, status: falResult.status })
+
+      // Calculate remaining
+      let remaining = DAILY_LIMIT_PER_IP - 1
+      try {
+        const todayStart = new Date()
+        todayStart.setHours(0, 0, 0, 0)
+        const { count } = await supabaseAdmin
+          .from('simulation_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('ip_address', ip)
+          .gte('created_at', todayStart.toISOString())
+        if (count !== null) remaining = Math.max(0, DAILY_LIMIT_PER_IP - count)
+      } catch { /* ignore */ }
+
+      return NextResponse.json({
+        id: `fal:${falResult.request_id}`,
+        status: falResult.status || 'IN_QUEUE',
+        remaining,
       })
     }
+
+    // === REPLICATE — SD Inpainting (brush mode) ===
+    let response: Response
+
+    const prompt = buildPrompt(stoneCode, categorySlug)
+
+    console.log('[Simulation] BRUSH mode — SD Inpainting')
+    console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
+
+    response = await fetch(REPLICATE_PREDICTIONS, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        version: '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
+        input: {
+          prompt,
+          negative_prompt: negativePrompt,
+          image,
+          mask,
+          num_inference_steps: 25,
+          guidance_scale: 7.5,
+          scheduler: 'K_EULER_ANCESTRAL',
+        },
+      }),
+    })
 
     if (!response.ok) {
       const err = await response.json()

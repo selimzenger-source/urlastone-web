@@ -163,6 +163,7 @@ export default function SimulationWizard() {
             image: imageDataUrl,
             stoneCode: selectedStone.code,
             categorySlug: selectedStone.categorySlug,
+            stoneImageUrl: selectedStone.image_url,
             locale,
             applyMode: 'full',
             surfaceContext: context || 'facade',
