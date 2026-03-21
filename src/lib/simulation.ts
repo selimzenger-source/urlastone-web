@@ -1,6 +1,12 @@
 // AI Simulation types and utilities
 
-export type SimStep = 'upload' | 'select' | 'mask' | 'processing' | 'result'
+export type SimStep = 'upload' | 'select' | 'mode' | 'mask' | 'processing' | 'result'
+
+// Apply mode: full surface (FLUX Canny) vs brush selection (SD Inpainting)
+export type ApplyMode = 'full' | 'brush'
+
+// Surface context for intelligent prompt building
+export type SurfaceContext = 'facade' | 'fireplace' | 'bathroom' | 'interior' | 'floor'
 
 export interface SimState {
   step: SimStep
@@ -8,6 +14,8 @@ export interface SimState {
   imageWidth: number
   imageHeight: number
   selectedStone: StoneOption | null
+  applyMode: ApplyMode | null
+  surfaceContext: SurfaceContext | null
   maskDataUrl: string | null
   predictionId: string | null
   resultUrl: string | null
@@ -40,12 +48,45 @@ const CATEGORY_PATTERN: Record<string, string> = {
   line: 'uniform 3cm height horizontal strips, clean parallel lines, free-length pieces, minimal modern linear pattern, precise contemporary arrangement',
 }
 
-// Build the optimal prompt based on stone type + category
+// Surface context prompts — what to apply stone TO and what to PRESERVE
+const SURFACE_CONTEXT: Record<SurfaceContext, { apply: string; preserve: string }> = {
+  facade: {
+    apply: 'all exterior wall surfaces and columns fully covered with natural stone cladding, complete stone coverage on walls pillars and facade surfaces, no bare plaster or concrete remaining on wall areas',
+    preserve: 'absolutely preserve windows glass, doors, roof, sky, ground, vegetation, stairs, railings, garage doors exactly as original, do not apply stone to non-wall elements',
+  },
+  fireplace: {
+    apply: 'entire fireplace area fully covered with natural stone, fireplace surround mantel chimney breast and hearth all completely clad with stone, no bare plaster remaining, full stone coverage on all fireplace surfaces',
+    preserve: 'preserve furniture, floor, ceiling, room interior elements',
+  },
+  bathroom: {
+    apply: 'all bathroom wall surfaces fully covered with natural stone tiles from floor to ceiling, every wall completely clad with stone, no bare surfaces remaining, full stone tile coverage on all vertical surfaces',
+    preserve: 'preserve toilet, sink, mirror, fixtures, bathtub, shower glass, floor',
+  },
+  interior: {
+    apply: 'all interior wall surfaces fully covered with natural stone cladding, every visible wall completely clad with stone from floor to ceiling, no bare plaster or paint remaining, full coverage stone installation',
+    preserve: 'preserve furniture, windows, doors, ceiling, floor, decorations',
+  },
+  floor: {
+    apply: 'entire floor surface fully paved with natural stone tiles, complete stone coverage on all floor areas, no bare concrete remaining',
+    preserve: 'preserve walls, furniture, fixtures, doors',
+  },
+}
+
+// Build the optimal prompt based on stone type + category (for BRUSH mode inpainting)
 export function buildPrompt(stoneCode: string, categorySlug?: string): string {
   const stoneBase = STONE_BASE[stoneCode] || STONE_BASE.TRV
   const pattern = categorySlug ? CATEGORY_PATTERN[categorySlug] : CATEGORY_PATTERN.nature
 
   return `${stoneBase}, ${pattern || ''}, exterior wall facade cladding, seamless professional installation, grouted joints, ${QUALITY}`
+}
+
+// Build prompt for FULL APPLY mode (FLUX Canny) — context-aware
+export function buildFullApplyPrompt(stoneCode: string, categorySlug?: string, surfaceContext?: SurfaceContext): string {
+  const stoneBase = STONE_BASE[stoneCode] || STONE_BASE.TRV
+  const pattern = categorySlug ? CATEGORY_PATTERN[categorySlug] : CATEGORY_PATTERN.nature
+  const context = surfaceContext ? SURFACE_CONTEXT[surfaceContext] : SURFACE_CONTEXT.facade
+
+  return `${context.apply}, ${stoneBase}, ${pattern || ''}, seamless professional installation, grouted joints, ${context.preserve}, no text, no watermark, no logo, no brand, no writing, no letters, no words, clean image, ${QUALITY}`
 }
 
 // Fallback simple prompts for unknown codes

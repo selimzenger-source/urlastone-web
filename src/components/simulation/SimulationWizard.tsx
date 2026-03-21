@@ -1,28 +1,29 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Upload, Gem, Paintbrush, Sparkles, Eye, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Upload, Gem, Wand2, Paintbrush, Sparkles, Eye } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
-import type { SimStep, StoneOption } from '@/lib/simulation'
+import type { SimStep, StoneOption, ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { resizeImage } from '@/lib/simulation'
 import StepUpload from './StepUpload'
 import StepSelectStone from './StepSelectStone'
+import StepApplyMode from './StepApplyMode'
 import StepMaskDraw from './StepMaskDraw'
 import StepResult from './StepResult'
 
 const STEPS: { key: SimStep; icon: typeof Upload }[] = [
   { key: 'upload', icon: Upload },
   { key: 'select', icon: Gem },
-  { key: 'mask', icon: Paintbrush },
+  { key: 'mode', icon: Wand2 },
   { key: 'result', icon: Eye },
 ]
 
 const STEP_LABELS: Record<string, Record<SimStep, string>> = {
-  tr: { upload: 'Fotoğraf', select: 'Taş Seç', mask: 'Alan İşaretle', processing: 'İşleniyor', result: 'Sonuç' },
-  en: { upload: 'Photo', select: 'Select Stone', mask: 'Mark Area', processing: 'Processing', result: 'Result' },
-  es: { upload: 'Foto', select: 'Seleccionar', mask: 'Marcar Área', processing: 'Procesando', result: 'Resultado' },
-  ar: { upload: 'صورة', select: 'اختر حجر', mask: 'حدد المنطقة', processing: 'جاري المعالجة', result: 'النتيجة' },
-  de: { upload: 'Foto', select: 'Stein wählen', mask: 'Bereich markieren', processing: 'Verarbeitung', result: 'Ergebnis' },
+  tr: { upload: 'Fotoğraf', select: 'Taş Seç', mode: 'Uygulama', mask: 'Alan İşaretle', processing: 'İşleniyor', result: 'Sonuç' },
+  en: { upload: 'Photo', select: 'Select Stone', mode: 'Apply', mask: 'Mark Area', processing: 'Processing', result: 'Result' },
+  es: { upload: 'Foto', select: 'Seleccionar', mode: 'Aplicar', mask: 'Marcar Área', processing: 'Procesando', result: 'Resultado' },
+  ar: { upload: 'صورة', select: 'اختر حجر', mode: 'تطبيق', mask: 'حدد المنطقة', processing: 'جاري المعالجة', result: 'النتيجة' },
+  de: { upload: 'Foto', select: 'Stein wählen', mode: 'Anwenden', mask: 'Bereich markieren', processing: 'Verarbeitung', result: 'Ergebnis' },
 }
 
 export default function SimulationWizard() {
@@ -32,6 +33,8 @@ export default function SimulationWizard() {
   const [imageWidth, setImageWidth] = useState(0)
   const [imageHeight, setImageHeight] = useState(0)
   const [selectedStone, setSelectedStone] = useState<StoneOption | null>(null)
+  const [applyMode, setApplyMode] = useState<ApplyMode | null>(null)
+  const [surfaceContext, setSurfaceContext] = useState<SurfaceContext | null>(null)
   const [maskDataUrl, setMaskDataUrl] = useState<string | null>(null)
   const [predictionId, setPredictionId] = useState<string | null>(null)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
@@ -52,10 +55,54 @@ export default function SimulationWizard() {
   // Handle stone selection
   const handleStoneSelect = useCallback((stone: StoneOption) => {
     setSelectedStone(stone)
-    setStep('mask')
+    setStep('mode')
   }, [])
 
-  // Handle mask submit — start AI generation
+  // Handle apply mode selection
+  const handleModeSelect = useCallback(async (mode: ApplyMode, context?: SurfaceContext) => {
+    setApplyMode(mode)
+    setSurfaceContext(context || null)
+
+    if (mode === 'brush') {
+      // Go to mask drawing step
+      setStep('mask')
+    } else {
+      // Full apply mode — directly call AI with FLUX Canny
+      setStep('processing')
+      setError(null)
+      setProgress(0)
+
+      if (!imageDataUrl || !selectedStone) return
+
+      try {
+        const res = await fetch('/api/simulation/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: imageDataUrl,
+            stoneCode: selectedStone.code,
+            categorySlug: selectedStone.categorySlug,
+            locale,
+            applyMode: 'full',
+            surfaceContext: context || 'facade',
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || 'API error')
+        }
+
+        const { id } = await res.json()
+        setPredictionId(id)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+        setStep('mode')
+      }
+    }
+  }, [imageDataUrl, selectedStone, locale])
+
+  // Handle mask submit — start AI generation (brush mode)
   const handleMaskSubmit = useCallback(async (mask: string) => {
     setMaskDataUrl(mask)
     setStep('processing')
@@ -74,6 +121,7 @@ export default function SimulationWizard() {
           stoneCode: selectedStone.code,
           categorySlug: selectedStone.categorySlug,
           locale,
+          applyMode: 'brush',
         }),
       })
 
@@ -88,7 +136,7 @@ export default function SimulationWizard() {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
       setStep('mask')
     }
-  }, [imageDataUrl, selectedStone])
+  }, [imageDataUrl, selectedStone, locale])
 
   // Poll for result
   useEffect(() => {
@@ -96,7 +144,7 @@ export default function SimulationWizard() {
 
     let cancelled = false
     let pollCount = 0
-    const MAX_POLLS = 40 // ~2 minutes max (40 * 3s)
+    const MAX_POLLS = 40
 
     const poll = async () => {
       try {
@@ -106,7 +154,6 @@ export default function SimulationWizard() {
         if (cancelled) return
 
         pollCount++
-        // Simulate progress (gets slower as it approaches 90%)
         setProgress(Math.min(90, pollCount * 5))
 
         if (data.status === 'succeeded' && data.output) {
@@ -117,33 +164,33 @@ export default function SimulationWizard() {
           }, 500)
         } else if (data.status === 'failed' || data.status === 'canceled') {
           setError(data.error || 'İşlem başarısız oldu')
-          setStep('mask')
+          setStep(applyMode === 'brush' ? 'mask' : 'mode')
         } else if (pollCount >= MAX_POLLS) {
           setError('İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.')
-          setStep('mask')
+          setStep(applyMode === 'brush' ? 'mask' : 'mode')
         } else {
-          // Still processing, poll again
           setTimeout(poll, 3000)
         }
       } catch {
         if (!cancelled) {
           setError('Bağlantı hatası')
-          setStep('mask')
+          setStep(applyMode === 'brush' ? 'mask' : 'mode')
         }
       }
     }
 
-    // Start polling after 2s (cold start)
     setTimeout(poll, 2000)
 
     return () => { cancelled = true }
-  }, [step, predictionId])
+  }, [step, predictionId, applyMode])
 
   // Reset
   const handleReset = useCallback(() => {
     setStep('upload')
     setImageDataUrl(null)
     setSelectedStone(null)
+    setApplyMode(null)
+    setSurfaceContext(null)
     setMaskDataUrl(null)
     setPredictionId(null)
     setResultUrl(null)
@@ -154,6 +201,8 @@ export default function SimulationWizard() {
   // Try another stone
   const handleTryAnother = useCallback(() => {
     setSelectedStone(null)
+    setApplyMode(null)
+    setSurfaceContext(null)
     setMaskDataUrl(null)
     setPredictionId(null)
     setResultUrl(null)
@@ -162,7 +211,15 @@ export default function SimulationWizard() {
     setStep('select')
   }, [])
 
-  const stepIndex = STEPS.findIndex(s => s.key === step || (step === 'processing' && s.key === 'result'))
+  // Calculate step index for progress indicator
+  const getStepIndex = () => {
+    if (step === 'upload') return 0
+    if (step === 'select') return 1
+    if (step === 'mode' || step === 'mask') return 2
+    if (step === 'processing' || step === 'result') return 3
+    return 0
+  }
+  const stepIndex = getStepIndex()
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -170,7 +227,7 @@ export default function SimulationWizard() {
       <div className="flex items-center justify-center gap-2 md:gap-4 mb-10">
         {STEPS.map((s, i) => {
           const Icon = s.icon
-          const isActive = s.key === step || (step === 'processing' && s.key === 'result')
+          const isActive = i === stepIndex
           const isDone = i < stepIndex
           const label = labels[s.key]
 
@@ -216,6 +273,15 @@ export default function SimulationWizard() {
           />
         )}
 
+        {step === 'mode' && imageDataUrl && selectedStone && (
+          <StepApplyMode
+            imagePreview={imageDataUrl}
+            stoneName={selectedStone.name}
+            onSelect={handleModeSelect}
+            onBack={() => setStep('select')}
+          />
+        )}
+
         {step === 'mask' && imageDataUrl && selectedStone && (
           <StepMaskDraw
             imageDataUrl={imageDataUrl}
@@ -223,13 +289,13 @@ export default function SimulationWizard() {
             imageHeight={imageHeight}
             stoneName={selectedStone.name}
             onSubmit={handleMaskSubmit}
-            onBack={() => setStep('select')}
+            onBack={() => setStep('mode')}
             error={error}
           />
         )}
 
         {step === 'processing' && (
-          <ProcessingView progress={progress} />
+          <ProcessingView progress={progress} mode={applyMode} />
         )}
 
         {step === 'result' && resultUrl && imageDataUrl && (
@@ -247,14 +313,22 @@ export default function SimulationWizard() {
 }
 
 // Processing animation
-function ProcessingView({ progress }: { progress: number }) {
-  const messages = [
+function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode | null }) {
+  const messagesFull = [
+    'Yapı analiz ediliyor...',
+    'Kenarlar ve yapı tespit ediliyor...',
+    'Taş dokusu oluşturuluyor...',
+    'Yüzey eşleştiriliyor...',
+    'Son rötuşlar yapılıyor...',
+  ]
+  const messagesBrush = [
     'Fotoğraf analiz ediliyor...',
     'Taş dokusu oluşturuluyor...',
     'Yüzey eşleştiriliyor...',
     'Işık ve gölge hesaplanıyor...',
     'Son rötuşlar yapılıyor...',
   ]
+  const messages = mode === 'full' ? messagesFull : messagesBrush
   const msgIndex = Math.min(Math.floor(progress / 20), messages.length - 1)
 
   return (
@@ -277,7 +351,9 @@ function ProcessingView({ progress }: { progress: number }) {
           />
         </div>
         <div className="flex justify-between mt-2">
-          <span className="font-mono text-[10px] text-white/30">AI İşleniyor</span>
+          <span className="font-mono text-[10px] text-white/30">
+            {mode === 'full' ? 'FLUX AI' : 'AI'} İşleniyor
+          </span>
           <span className="font-mono text-[10px] text-gold-400">{progress}%</span>
         </div>
       </div>
@@ -287,7 +363,7 @@ function ProcessingView({ progress }: { progress: number }) {
         {messages[msgIndex]}
       </p>
       <p className="text-white/20 text-xs font-mono mt-3">
-        Ortalama süre: 15-30 saniye
+        Ortalama süre: {mode === 'full' ? '10-20' : '15-30'} saniye
       </p>
     </div>
   )

@@ -16,7 +16,7 @@ export async function GET(
   try {
     const response = await fetch(`${REPLICATE_API}/${id}`, {
       headers: {
-        'Authorization': `Token ${token}`,
+        'Authorization': `Bearer ${token}`,
       },
     })
 
@@ -26,9 +26,21 @@ export async function GET(
 
     const prediction = await response.json()
 
+    // Handle both output formats:
+    // - SD Inpainting returns: output: ["url1", "url2"]
+    // - FLUX Canny returns: output: "url" or output: ["url"]
+    let outputUrl: string | null = null
+    if (prediction.output) {
+      if (Array.isArray(prediction.output)) {
+        outputUrl = prediction.output[0] || null
+      } else if (typeof prediction.output === 'string') {
+        outputUrl = prediction.output
+      }
+    }
+
     return NextResponse.json({
       status: prediction.status,
-      output: prediction.output?.[0] || null,
+      output: outputUrl,
       error: prediction.error || null,
     })
   } catch {

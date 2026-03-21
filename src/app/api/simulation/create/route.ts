@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildPrompt, negativePrompt } from '@/lib/simulation'
+import { buildPrompt, buildFullApplyPrompt, negativePrompt } from '@/lib/simulation'
+import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 
-const REPLICATE_API = 'https://api.replicate.com/v1/predictions'
-const DAILY_LIMIT = 3 // Max requests per IP per day
+// API endpoints
+const REPLICATE_PREDICTIONS = 'https://api.replicate.com/v1/predictions'
+const FLUX_CANNY_API = 'https://api.replicate.com/v1/models/black-forest-labs/flux-canny-dev/predictions'
 
-// Rate limit error messages per locale
+const DAILY_LIMIT = 3
+
 const LIMIT_MSGS: Record<string, string> = {
   tr: 'Günlük simülasyon limitine ulaştınız. Yarın tekrar deneyin',
   en: 'Daily simulation limit reached. Please try again tomorrow',
@@ -29,17 +32,28 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { image, mask, stoneCode, categorySlug, locale } = await req.json()
+    const {
+      image,
+      mask,
+      stoneCode,
+      categorySlug,
+      locale,
+      applyMode = 'brush' as ApplyMode,
+      surfaceContext = 'facade' as SurfaceContext,
+    } = await req.json()
 
-    if (!image || !mask || !stoneCode) {
-      return NextResponse.json({ error: 'image, mask, and stoneCode are required' }, { status: 400 })
+    // Validate required fields based on mode
+    if (!image || !stoneCode) {
+      return NextResponse.json({ error: 'image and stoneCode are required' }, { status: 400 })
+    }
+    if (applyMode === 'brush' && !mask) {
+      return NextResponse.json({ error: 'mask is required for brush mode' }, { status: 400 })
     }
 
     // --- Rate Limiting ---
     const ip = getClientIp(req)
 
     try {
-      // Count today's requests from this IP
       const todayStart = new Date()
       todayStart.setHours(0, 0, 0, 0)
 
@@ -57,38 +71,73 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // Log this request
       await supabaseAdmin
         .from('simulation_requests')
         .insert({ ip_address: ip })
 
     } catch {
-      // If rate limit table doesn't exist, continue without limiting
       console.warn('Rate limit check failed, continuing without limit')
     }
 
     // --- Build Prompt & Call Replicate ---
-    const prompt = buildPrompt(stoneCode, categorySlug)
+    let response: Response
 
-    const response = await fetch(REPLICATE_API, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        version: '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
-        input: {
-          prompt,
-          negative_prompt: negativePrompt,
-          image,
-          mask,
-          num_inference_steps: 25,
-          guidance_scale: 7.5,
-          scheduler: 'K_EULER_ANCESTRAL',
+    if (applyMode === 'full') {
+      // ===== FULL APPLY MODE — FLUX Canny =====
+      // Uses canny edge detection to preserve building structure
+      // while regenerating with stone texture
+      const prompt = buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
+
+      console.log('[Simulation] FULL mode — FLUX Canny Dev')
+      console.log('[Simulation] Surface context:', surfaceContext)
+      console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
+
+      response = await fetch(FLUX_CANNY_API, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'wait',
         },
-      }),
-    })
+        body: JSON.stringify({
+          input: {
+            prompt,
+            control_image: image,
+            num_outputs: 1,
+            num_inference_steps: 28,
+            guidance: 28,
+            output_format: 'jpg',
+            output_quality: 90,
+          },
+        }),
+      })
+    } else {
+      // ===== BRUSH MODE — SD Inpainting (current) =====
+      const prompt = buildPrompt(stoneCode, categorySlug)
+
+      console.log('[Simulation] BRUSH mode — SD Inpainting')
+      console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
+
+      response = await fetch(REPLICATE_PREDICTIONS, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
+          input: {
+            prompt,
+            negative_prompt: negativePrompt,
+            image,
+            mask,
+            num_inference_steps: 25,
+            guidance_scale: 7.5,
+            scheduler: 'K_EULER_ANCESTRAL',
+          },
+        }),
+      })
+    }
 
     if (!response.ok) {
       const err = await response.json()
