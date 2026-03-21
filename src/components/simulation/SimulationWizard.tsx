@@ -555,7 +555,7 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
         {messages[msgIndex]}
       </p>
       <p className="text-white/20 text-xs font-mono mt-3">
-        Ortalama süre: {mode === 'full' ? '30-60' : '15-30'} saniye
+        Ortalama süre: {mode === 'full' ? '15-30' : '10-20'} saniye
       </p>
     </div>
   )

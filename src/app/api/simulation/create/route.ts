@@ -49,33 +49,46 @@ const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
 const GEMINI_PROMPTS: Record<string, string> = {
   facade: `The first image is a building photo. The second image is a stone texture sample showing the EXACT stone type to use.
 
-CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern, same grout style. Do NOT invent a different stone. The second image is the ground truth.
+CRITICAL RULES:
+1. You MUST replicate the EXACT stone from the second image — same stone shape, same stone size ratio, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+2. EVERY part of EVERY wall must use the IDENTICAL stone pattern. The stones on corners, edges, columns, upper floors, lower floors, left side, right side must ALL look exactly the same — same size, same shape, same spacing. There must be ZERO variation between different wall sections. If one area has large irregular polygons, ALL areas must have large irregular polygons.
+3. Do NOT mix different stone styles on the same building. Do NOT use small rectangular bricks in one area and large polygons in another.
 
-Apply this exact stone cladding to EVERY visible wall surface of the building — all walls, columns, foundation. No bare plaster or concrete should remain on any wall. Preserve all windows, doors, roof, sky, ground, vegetation exactly as they are. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. Use the same stone pattern uniformly on all walls. Keep the same camera angle. Photorealistic.`,
+Apply this exact stone cladding to EVERY visible wall surface — all walls, columns, foundation. No bare plaster or concrete should remain. Preserve windows, doors, roof, sky, ground, vegetation exactly. The stone must look like real installed cladding with 3D depth and natural shadows. Keep the same camera angle. Photorealistic.`,
 
   fireplace: `The first image is a room with a fireplace. The second image is a stone texture sample showing the EXACT stone type to use.
 
-CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+CRITICAL RULES:
+1. You MUST replicate the EXACT stone from the second image — same stone shape, same stone size ratio, same color, same texture, same pattern. Do NOT invent a different stone.
+2. EVERY part of the fireplace surface must use the IDENTICAL stone pattern — no variation between sections.
+3. Do NOT mix different stone styles. If the reference shows large irregular polygons, use large irregular polygons everywhere.
 
-Apply this exact stone to the fireplace surround and chimney area. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
+Apply this exact stone to the fireplace surround and chimney area. Real installed cladding with 3D depth and natural shadows. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
 
   interior: `The first image is an interior room. The second image is a stone texture sample showing the EXACT stone type to use.
 
-CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+CRITICAL RULES:
+1. You MUST replicate the EXACT stone from the second image — same stone shape, same stone size ratio, same color, same texture, same pattern. Do NOT invent a different stone.
+2. EVERY wall section must use the IDENTICAL stone pattern — no variation between areas.
+3. Do NOT mix different stone styles on different walls.
 
-Apply this exact stone to the bare wall surfaces only. Do not apply stone to fireplace, countertops, furniture, floor, ceiling, or fixtures. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. Keep everything else exactly the same. Photorealistic result.`,
+Apply this exact stone to the bare wall surfaces only. Do not apply to fireplace, countertops, furniture, floor, ceiling, or fixtures. Real installed cladding with 3D depth and natural shadows. Keep everything else exactly the same. Photorealistic result.`,
 
   bathroom: `The first image is a bathroom. The second image is a stone texture sample showing the EXACT stone type to use.
 
-CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+CRITICAL RULES:
+1. You MUST replicate the EXACT stone from the second image — same stone shape, same stone size ratio, same color, same texture, same pattern. Do NOT invent a different stone.
+2. ALL wall surfaces must use the IDENTICAL stone pattern — no variation.
 
-Apply this exact stone to all bathroom wall surfaces. The stone must look like real installed cladding with 3D depth and natural shadows — NOT flat. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
+Apply this exact stone to all bathroom wall surfaces. Real installed cladding with 3D depth and natural shadows. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
 
   floor: `The first image is a room. The second image is a stone texture sample showing the EXACT stone type to use.
 
-CRITICAL: You MUST replicate the EXACT stone from the second image — same stone shape, same stone size, same color, same texture, same pattern. Do NOT invent a different stone. The second image is the ground truth.
+CRITICAL RULES:
+1. You MUST replicate the EXACT stone from the second image — same stone shape, same stone size ratio, same color, same texture, same pattern. Do NOT invent a different stone.
+2. The ENTIRE floor must use the IDENTICAL stone pattern — no variation.
 
-Apply this exact stone to the floor surface. The stone must look like real installed tiles with 3D depth and natural shadows — NOT flat. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
+Apply this exact stone to the floor surface. Real installed tiles with 3D depth and natural shadows. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
 }
 
 // ─── Helpers ───────────────────────────────────────────────
