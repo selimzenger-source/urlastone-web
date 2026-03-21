@@ -92,23 +92,24 @@ Apply this stone to the floor surface. Real installed tiles with 3D depth and na
 function getCategoryScale(categorySlug: string, surfaceContext: string): string {
   const cat = categorySlug || 'nature'
 
-  // Exterior (facade) — use windows as size reference
+  // Exterior (facade) — use windows, doors, bricks, floor height as size references
   if (surfaceContext === 'facade') {
     const scales: Record<string, string> = {
-      nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-30cm wide. Each stone is roughly 1/5 to 1/8 the width of a window. Between two side-by-side windows there should be at least 4-6 stones horizontally, between two stacked windows at least 5-8 stones vertically. If you can count fewer than 30 stones on a wall section between windows, the stones are TOO BIG.`,
-      mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). Between two windows there should be at least 8-12 stone rows vertically.`,
-      crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. Between two windows there should be at least 40-60 individual stone pieces.`,
-      line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. Between two stacked windows there should be at least 30-40 horizontal strips. Modern minimalist linear pattern like thin horizontal bricks — NOT irregular polygon stones.`,
+      nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-30cm wide. Use ANY visible objects for scale: each stone is roughly 1/5 to 1/8 the width of a window; a standard brick is ~6×22cm so each stone is about 2-3 bricks wide; a floor height (~3m) should have at least 15-20 stones vertically. Between two side-by-side windows there should be at least 4-6 stones horizontally. If you can count fewer than 30 stones on a wall section between windows, the stones are TOO BIG.`,
+      mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). Between two windows there should be at least 8-12 stone rows vertically. Each thin strip is about the height of a standard brick or smaller.`,
+      crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. Between two windows there should be at least 40-60 individual stone pieces. Each piece is smaller than a fist.`,
+      line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. Between two stacked windows there should be at least 30-40 horizontal strips. Each strip is thinner than a standard brick. Modern minimalist linear pattern — NOT irregular polygon stones.`,
     }
     return scales[cat] || scales.nature
   }
 
-  // Interior / fireplace / bathroom — use door height (2m), fireplace opening (~60cm), electrical outlets as reference
+  // Interior / fireplace / bathroom / floor — use ALL visible real-world objects as size reference
+  // Gemini will pick whichever references are visible: doors, bricks, outlets, tiles, furniture, etc.
   const interiorScales: Record<string, string> = {
-    nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-25cm wide. A standard door height (2m) should have at least 12-15 stones vertically. Each stone should be roughly the size of a hand or smaller — about the same size as an electrical outlet cover. A fireplace opening height (~60cm) should contain at least 4-5 stones vertically. Do NOT make boulder-sized stones. The stones must be SMALL relative to the wall.`,
-    mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). A door height (2m) should have at least 15-20 stone rows vertically.`,
-    crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. A 1m×1m wall section should contain at least 30-50 individual stone pieces.`,
-    line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. A door height (2m) should have at least 40-50 horizontal strips. Modern minimalist linear pattern — NOT irregular polygon stones.`,
+    nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-25cm wide. Use ANY visible objects for scale: a standard door height (2m) should have at least 12-15 stones vertically; a standard brick is ~6×22cm so each stone is about 2-3 bricks wide; an electrical outlet cover is ~10cm so each stone is about 1-2 outlet covers wide; a light switch is ~7cm; a door handle is ~12cm from the door edge. A fireplace opening height (~60cm) should contain at least 4-5 stones vertically. Do NOT make boulder-sized stones. The stones must be SMALL relative to the wall.`,
+    mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). A door height (2m) should have at least 15-20 stone rows. Each thin strip is about the height of a standard brick (6cm) or smaller. Use visible objects (doors, bricks, outlets, furniture) to calibrate size.`,
+    crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. A 1m×1m wall section should contain at least 30-50 individual stone pieces. Each piece is smaller than a fist. Use visible objects (doors, bricks, outlets, tiles) to calibrate.`,
+    line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. A door height (2m) should have at least 40-50 horizontal strips. Each strip is thinner than a standard brick. Modern minimalist linear pattern — NOT irregular polygon stones.`,
   }
   return interiorScales[cat] || interiorScales.nature
 }
