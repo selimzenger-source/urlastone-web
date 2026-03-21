@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Upload, FileText, Trash2, Check, ExternalLink, Download } from 'lucide-react'
+import { Upload, FileText, Trash2, Check, ExternalLink, Download, AlertTriangle } from 'lucide-react'
 
 interface CatalogInfo {
   url: string | null
@@ -10,10 +10,13 @@ interface CatalogInfo {
   updatedAt?: string
 }
 
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB limit
+
 export default function AdminKatalog() {
   const [catalog, setCatalog] = useState<CatalogInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -40,23 +43,60 @@ export default function AdminKatalog() {
       return
     }
 
-    setUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const res = await fetch('/api/katalog/upload', {
-      method: 'POST',
-      headers: { 'x-admin-password': password },
-      body: formData,
-    })
-
-    if (res.ok) {
-      showSuccess('Katalog yüklendi')
-    } else {
-      const data = await res.json()
-      alert(data.error || 'Yükleme başarısız')
+    if (file.size > MAX_FILE_SIZE) {
+      alert(`Dosya çok büyük! Max 20MB yüklenebilir.\nDosya boyutu: ${(file.size / 1024 / 1024).toFixed(1)} MB`)
+      return
     }
+
+    setUploading(true)
+    setUploadProgress('İmzalı URL alınıyor...')
+
+    try {
+      // Step 1: Get signed upload URL from our API
+      const res = await fetch('/api/katalog/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({ fileName: file.name }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        alert(data.error || 'Signed URL alınamadı')
+        setUploading(false)
+        setUploadProgress('')
+        return
+      }
+
+      const { signedUrl, token } = await res.json()
+
+      // Step 2: Upload directly to Supabase Storage (bypasses Vercel's 4.5MB limit)
+      setUploadProgress('PDF yükleniyor...')
+
+      const uploadRes = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/pdf',
+          'x-upsert': 'true',
+        },
+        body: file,
+      })
+
+      if (uploadRes.ok) {
+        showSuccess('Katalog başarıyla yüklendi!')
+      } else {
+        const errText = await uploadRes.text()
+        alert(`Yükleme başarısız: ${errText}`)
+      }
+    } catch (err) {
+      alert('Yükleme sırasında hata oluştu')
+      console.error(err)
+    }
+
     setUploading(false)
+    setUploadProgress('')
     fetchCatalog()
   }
 
@@ -151,7 +191,7 @@ export default function AdminKatalog() {
               {uploading ? (
                 <div className="flex items-center justify-center gap-2 text-white/40 text-sm">
                   <div className="w-4 h-4 border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
-                  Yükleniyor...
+                  {uploadProgress || 'Yükleniyor...'}
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2 text-white/30 group-hover:text-gold-400 text-sm transition-colors">
@@ -163,13 +203,13 @@ export default function AdminKatalog() {
         ) : (
           /* No Catalog - Upload */
           <div
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !uploading && fileInputRef.current?.click()}
             className="border-2 border-dashed border-white/[0.08] rounded-xl p-12 text-center cursor-pointer hover:border-gold-400/30 transition-colors group"
           >
             {uploading ? (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
-                <p className="text-white/40 text-sm">Yükleniyor...</p>
+                <p className="text-white/40 text-sm">{uploadProgress || 'Yükleniyor...'}</p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
@@ -178,12 +218,18 @@ export default function AdminKatalog() {
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">PDF Katalog Yükleyin</p>
-                  <p className="text-white/30 text-xs font-mono mt-1">Sadece PDF · Max 50MB</p>
+                  <p className="text-white/30 text-xs font-mono mt-1">Sadece PDF · Max 20MB</p>
                 </div>
               </div>
             )}
           </div>
         )}
+
+        {/* Storage Info */}
+        <div className="mt-4 flex items-start gap-2 text-white/20 text-[10px] font-mono">
+          <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
+          <span>Ücretsiz plan: Toplam 1GB depolama. Katalog max 20MB. Eski katalog yeni yüklemede otomatik silinir.</span>
+        </div>
       </div>
 
       {/* Hidden file input */}
