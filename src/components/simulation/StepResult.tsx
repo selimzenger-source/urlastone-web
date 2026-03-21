@@ -81,49 +81,51 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
 function drawWatermarks(ctx: CanvasRenderingContext2D, width: number, height: number, logoImg: HTMLImageElement | null) {
   ctx.save()
 
-  // --- Corner watermark: logo + text (top-right) ---
-  const cornerSize = Math.min(width, height) * 0.12
-  const padding = cornerSize * 0.4
-  const logoSize = cornerSize * 0.5
+  // --- Corner watermark: logo + text (top-right, right-aligned) ---
+  const cornerSize = Math.min(width, height) * 0.10
+  const padding = cornerSize * 0.5
+  const logoSize = cornerSize * 0.55
 
-  ctx.globalAlpha = 0.35
+  // Semi-transparent background pill
+  const bgWidth = cornerSize * 2.2
+  const bgHeight = cornerSize * 0.7
+  const bgX = width - padding - bgWidth
+  const bgY = padding
+  ctx.globalAlpha = 0.3
+  ctx.fillStyle = '#000000'
+  ctx.beginPath()
+  const r = bgHeight * 0.3
+  ctx.moveTo(bgX + r, bgY)
+  ctx.lineTo(bgX + bgWidth - r, bgY)
+  ctx.quadraticCurveTo(bgX + bgWidth, bgY, bgX + bgWidth, bgY + r)
+  ctx.lineTo(bgX + bgWidth, bgY + bgHeight - r)
+  ctx.quadraticCurveTo(bgX + bgWidth, bgY + bgHeight, bgX + bgWidth - r, bgY + bgHeight)
+  ctx.lineTo(bgX + r, bgY + bgHeight)
+  ctx.quadraticCurveTo(bgX, bgY + bgHeight, bgX, bgY + bgHeight - r)
+  ctx.lineTo(bgX, bgY + r)
+  ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY)
+  ctx.fill()
 
-  // Draw logo icon if loaded
+  // Draw logo icon
+  ctx.globalAlpha = 0.7
   if (logoImg) {
-    ctx.drawImage(
-      logoImg,
-      width - padding - cornerSize,
-      padding,
-      logoSize,
-      logoSize
-    )
+    ctx.drawImage(logoImg, bgX + 8, bgY + (bgHeight - logoSize) / 2, logoSize, logoSize)
   }
 
-  // Draw "URLASTONE" text next to logo
-  ctx.globalAlpha = 0.4
+  // Draw "URLASTONE" text
   ctx.fillStyle = '#ffffff'
-  ctx.font = `bold ${Math.round(cornerSize * 0.28)}px Inter, sans-serif`
+  ctx.globalAlpha = 0.8
+  ctx.font = `bold ${Math.round(cornerSize * 0.22)}px Inter, sans-serif`
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
-
-  const textX = logoImg ? width - padding - cornerSize + logoSize + 6 : width - padding - cornerSize
-  const textY = padding + logoSize / 2
-
-  // Text shadow for visibility on light/dark backgrounds
-  ctx.shadowColor = 'rgba(0,0,0,0.5)'
-  ctx.shadowBlur = 4
-  ctx.shadowOffsetX = 1
-  ctx.shadowOffsetY = 1
+  const textX = bgX + (logoImg ? logoSize + 14 : 10)
+  const textY = bgY + bgHeight * 0.4
   ctx.fillText('URLASTONE', textX, textY)
 
   // Subtitle
-  ctx.font = `${Math.round(cornerSize * 0.14)}px Inter, sans-serif`
-  ctx.globalAlpha = 0.2
-  ctx.fillText('urlastone.com', textX, textY + cornerSize * 0.24)
-
-  ctx.shadowBlur = 0
-  ctx.shadowOffsetX = 0
-  ctx.shadowOffsetY = 0
+  ctx.font = `${Math.round(cornerSize * 0.12)}px Inter, sans-serif`
+  ctx.globalAlpha = 0.5
+  ctx.fillText('urlastone.com', textX, textY + cornerSize * 0.18)
 
   // --- Diagonal repeating hologram watermarks ---
   ctx.globalAlpha = 0.06
@@ -327,13 +329,13 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
 
         {/* Watermark overlay (CSS — visible on screen) */}
         <div className="absolute inset-0 pointer-events-none z-[5]" style={{ mixBlendMode: 'overlay' }}>
-          {/* Corner watermark — top-right, inside overflow-hidden container */}
-          <div className="absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1 opacity-50 bg-black/20 rounded-lg px-2 py-1">
+          {/* Corner watermark — top-right */}
+          <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/30 rounded-md px-1.5 py-0.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="w-5 h-5 md:w-6 md:h-6 brightness-[10]" draggable={false} />
+            <img src="/logo.png" alt="" className="w-4 h-4 md:w-5 md:h-5 brightness-[10] opacity-70" draggable={false} />
             <div>
-              <span className="text-white text-[8px] md:text-[10px] font-bold tracking-wider block leading-tight">URLASTONE</span>
-              <span className="text-white/60 text-[6px] md:text-[7px] font-mono block leading-tight">urlastone.com</span>
+              <span className="text-white/80 text-[7px] md:text-[9px] font-bold tracking-wider block leading-tight">URLASTONE</span>
+              <span className="text-white/40 text-[5px] md:text-[6px] font-mono block leading-tight">urlastone.com</span>
             </div>
           </div>
 
