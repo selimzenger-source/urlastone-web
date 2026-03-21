@@ -68,9 +68,28 @@ export default function SimulasyonPage() {
         </div>
       </section>
 
-      {/* Wizard */}
+      {/* Coming Soon — wizard geliştirme aşamasında, yakında aktif */}
       <section className="px-4 md:px-12 pb-24 md:pb-32">
-        <SimulationWizard />
+        <div className="max-w-2xl mx-auto text-center py-24">
+          <div className="glass-card rounded-2xl p-12 border border-white/[0.08]">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold-400/10 flex items-center justify-center">
+              <Sparkles size={28} className="text-gold-400" />
+            </div>
+            <h2 className="font-heading text-3xl font-bold mb-4 text-white">
+              {locale === 'tr' ? 'Yakında' :
+               locale === 'de' ? 'Demnächst' :
+               locale === 'ar' ? 'قريباً' :
+               locale === 'es' ? 'Próximamente' : 'Coming Soon'}
+            </h2>
+            <p className="text-white/50 text-base leading-relaxed">
+              {locale === 'tr' ? 'AI simülasyon aracımız hazırlanıyor. Çok yakında hizmetinizde olacak.' :
+               locale === 'de' ? 'Unser KI-Simulationswerkzeug wird vorbereitet. Bald verfügbar.' :
+               locale === 'ar' ? 'أداة المحاكاة بالذكاء الاصطناعي قيد الإعداد. ستكون متاحة قريباً.' :
+               locale === 'es' ? 'Nuestra herramienta de simulación IA se está preparando. Disponible muy pronto.' :
+               'Our AI simulation tool is being prepared. Coming very soon.'}
+            </p>
+          </div>
+        </div>
       </section>
 
       <Footer />
