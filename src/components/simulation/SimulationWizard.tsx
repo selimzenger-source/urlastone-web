@@ -28,12 +28,21 @@ const STEP_LABELS: Record<string, Record<SimStep, string>> = {
   de: { upload: 'Foto', select: 'Stein wählen', mode: 'Anwenden', mask: 'Bereich markieren', processing: 'Verarbeitung', result: 'Ergebnis' },
 }
 
-const VALIDATION_ERRORS: Record<string, string> = {
-  tr: 'Bu fotoğrafta bir bina veya duvar yüzeyi tespit edilemedi. Lütfen dış cephe veya iç mekan duvar fotoğrafı yükleyin',
-  en: 'No building or wall surface detected in this photo. Please upload a photo of a building facade or interior wall',
-  es: 'No se detectó un edificio o pared en esta foto. Suba una foto de una fachada o pared interior',
-  ar: 'لم يتم اكتشاف مبنى أو جدار في هذه الصورة. يرجى تحميل صورة لواجهة مبنى أو جدار داخلي',
-  de: 'Kein Gebäude oder Wand in diesem Foto erkannt. Bitte laden Sie ein Foto einer Fassade oder Innenwand hoch',
+const VALIDATION_ERRORS: Record<string, Record<string, string>> = {
+  no_surface: {
+    tr: 'Bu fotoğrafta bir bina veya duvar yüzeyi tespit edilemedi. Lütfen dış cephe veya iç mekan duvar fotoğrafı yükleyin',
+    en: 'No building or wall surface detected in this photo. Please upload a photo of a building facade or interior wall',
+    es: 'No se detectó un edificio o pared en esta foto. Suba una foto de una fachada o pared interior',
+    ar: 'لم يتم اكتشاف مبنى أو جدار في هذه الصورة. يرجى تحميل صورة لواجهة مبنى أو جدار داخلي',
+    de: 'Kein Gebäude oder Wand in diesem Foto erkannt. Bitte laden Sie ein Foto einer Fassade oder Innenwand hoch',
+  },
+  has_text: {
+    tr: 'Bu fotoğrafta yazı, logo veya filigran tespit edildi. Lütfen üzerinde yazı olmayan sade bir bina/duvar fotoğrafı yükleyin',
+    en: 'Text, logo, or watermark detected in this photo. Please upload a clean photo without text or branding',
+    es: 'Se detectó texto, logotipo o marca de agua. Suba una foto limpia sin texto ni marcas',
+    ar: 'تم اكتشاف نص أو شعار أو علامة مائية. يرجى تحميل صورة نظيفة بدون نصوص',
+    de: 'Text, Logo oder Wasserzeichen erkannt. Bitte laden Sie ein sauberes Foto ohne Text hoch',
+  },
 }
 
 const INFO_TEXTS: Record<string, { limit: string; daily: string; free: string }> = {
@@ -163,7 +172,9 @@ export default function SimulationWizard() {
       const data = await res.json()
 
       if (!data.valid) {
-        setError(VALIDATION_ERRORS[locale] || VALIDATION_ERRORS.tr)
+        const reason = data.reason || 'no_surface'
+        const msgs = VALIDATION_ERRORS[reason] || VALIDATION_ERRORS.no_surface
+        setError(msgs[locale] || msgs.tr)
         setImageDataUrl(null)
         setValidating(false)
         return
