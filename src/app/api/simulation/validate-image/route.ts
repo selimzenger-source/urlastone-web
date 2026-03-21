@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
               },
               {
                 type: 'text',
-                text: 'Analyze this image and answer with EXACTLY one of these three responses:\n1. "VALID" — if the image shows a real building exterior, wall surface, facade, or interior room with visible walls, AND contains no significant text, logos, watermarks, or branding overlays\n2. "HAS_TEXT" — if the image shows a valid surface BUT contains visible text, logos, watermarks, brand names, or catalog-style overlays\n3. "INVALID" — if the image does NOT show any building, wall, or room surface\nAnswer with ONLY one word: VALID, HAS_TEXT, or INVALID.',
+                text: 'Does this image show a real architectural surface where stone cladding could be applied? This means: a building exterior/facade, an interior wall, a fireplace, a bathroom, or a floor.\n\nAnswer EXACTLY one word:\n- "VALID" — real building, wall, room, facade, fireplace, bathroom, or floor is clearly visible, AND no significant text/logos/watermarks\n- "HAS_TEXT" — valid surface BUT has visible text, logos, watermarks, or branding\n- "INVALID" — NOT an architectural surface. Examples of INVALID: selfies, animals, food, cars, landscapes without buildings, abstract art, neon lights, screenshots, documents, memes\n\nBe STRICT. If unsure, say INVALID. Answer with ONLY one word.',
               },
             ],
           },
@@ -69,12 +69,14 @@ export async function POST(req: NextRequest) {
 
     const result = await response.json()
     const answer = result.content?.[0]?.text?.trim().toUpperCase() || ''
+    console.log('[Validate] Haiku response:', answer)
 
     if (answer.includes('VALID') && !answer.includes('INVALID') && !answer.includes('HAS_TEXT')) {
       return NextResponse.json({ valid: true, reason: null })
     } else if (answer.includes('HAS_TEXT')) {
       return NextResponse.json({ valid: false, reason: 'has_text' })
     } else {
+      console.log('[Validate] Image rejected:', answer)
       return NextResponse.json({ valid: false, reason: 'no_surface' })
     }
   } catch (error) {
