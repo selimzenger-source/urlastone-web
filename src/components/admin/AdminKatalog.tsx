@@ -225,10 +225,20 @@ export default function AdminKatalog() {
           </div>
         )}
 
-        {/* Storage Info */}
-        <div className="mt-4 flex items-start gap-2 text-white/20 text-[10px] font-mono">
-          <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
-          <span>Ücretsiz plan: Toplam 1GB depolama. Katalog max 20MB. Eski katalog yeni yüklemede otomatik silinir.</span>
+        {/* Upload Info */}
+        <div className="mt-4 space-y-2 text-white/20 text-[10px] font-mono">
+          <div className="flex items-start gap-2">
+            <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
+            <span>Maksimum dosya boyutu: 20MB. Eski katalog yeni yüklemede otomatik silinir.</span>
+          </div>
+          <div className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-3 space-y-1">
+            <p className="text-white/30 font-medium">PDF 20MB&apos;dan büyükse sıkıştırma adımları:</p>
+            <p>1. <a href="https://www.ilovepdf.com/compress_pdf" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:underline">ilovepdf.com/compress_pdf</a> adresine gidin</p>
+            <p>2. PDF dosyanızı sürükleyip bırakın</p>
+            <p>3. &quot;Extreme Compression&quot; seçeneğini seçin</p>
+            <p>4. &quot;Compress PDF&quot; butonuna tıklayın</p>
+            <p>5. Sıkıştırılmış dosyayı indirip buraya yükleyin</p>
+          </div>
         </div>
       </div>
 
