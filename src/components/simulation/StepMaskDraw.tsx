@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle, Maximize, Square } from 'lucide-react'
+import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Props {
@@ -14,66 +14,56 @@ interface Props {
   error: string | null
 }
 
-const MASK_TEXTS: Record<string, { title: string; desc: string; brush: string; undo: string; clear: string; submit: string; back: string; hint: string; fillAll: string; fillAllDesc: string }> = {
+const MASK_TEXTS: Record<string, { title: string; desc: string; brush: string; undo: string; clear: string; submit: string; back: string; hint: string }> = {
   tr: {
     title: 'Alanı İşaretleyin',
-    desc: 'Taş uygulamak istediğiniz yüzeyleri boyayın — tüm cephe için "Tümünü Boya" butonunu kullanın',
+    desc: 'Sadece taş kaplamak istediğiniz duvar yüzeylerini boyayın — gökyüzü, pencere ve zemini boyamayın',
     brush: 'Fırça',
     undo: 'Geri Al',
     clear: 'Temizle',
     submit: 'AI ile Uygula',
     back: 'Geri',
-    hint: 'Fırça ile boyayın veya "Tümünü Boya" butonuna tıklayın',
-    fillAll: 'Tümünü Boya',
-    fillAllDesc: 'Tüm yüzeyi seç',
+    hint: 'Fırçayı büyütüp duvar alanlarını boyayın',
   },
   en: {
     title: 'Mark the Area',
-    desc: 'Paint the surfaces where you want stone applied — use "Fill All" for the entire facade',
+    desc: 'Paint only the wall surfaces you want stone on — avoid sky, windows, and ground',
     brush: 'Brush',
     undo: 'Undo',
     clear: 'Clear',
     submit: 'Apply with AI',
     back: 'Back',
-    hint: 'Paint with brush or click "Fill All"',
-    fillAll: 'Fill All',
-    fillAllDesc: 'Select entire surface',
+    hint: 'Increase brush size and paint wall areas',
   },
   es: {
     title: 'Marque el área',
-    desc: 'Pinte las superficies donde desea aplicar piedra — use "Pintar Todo" para toda la fachada',
+    desc: 'Pinte solo las superficies de pared donde desea piedra — evite cielo, ventanas y suelo',
     brush: 'Pincel',
     undo: 'Deshacer',
     clear: 'Limpiar',
     submit: 'Aplicar con IA',
     back: 'Atrás',
-    hint: 'Pinte con el pincel o haga clic en "Pintar Todo"',
-    fillAll: 'Pintar Todo',
-    fillAllDesc: 'Seleccionar toda la superficie',
+    hint: 'Aumente el tamaño del pincel y pinte las paredes',
   },
   ar: {
     title: 'حدد المنطقة',
-    desc: 'ارسم على الأسطح التي تريد تطبيق الحجر عليها — استخدم "طلاء الكل" للواجهة بأكملها',
+    desc: 'ارسم فقط على أسطح الجدران التي تريد تطبيق الحجر عليها — تجنب السماء والنوافذ والأرض',
     brush: 'فرشاة',
     undo: 'تراجع',
     clear: 'مسح',
     submit: 'تطبيق بالذكاء الاصطناعي',
     back: 'رجوع',
-    hint: 'ارسم بالفرشاة أو انقر "طلاء الكل"',
-    fillAll: 'طلاء الكل',
-    fillAllDesc: 'تحديد كامل السطح',
+    hint: 'كبّر الفرشاة وارسم على مناطق الجدران',
   },
   de: {
     title: 'Bereich markieren',
-    desc: 'Malen Sie die Flächen, auf die Stein aufgetragen werden soll — verwenden Sie "Alles füllen" für die gesamte Fassade',
+    desc: 'Malen Sie nur die Wandflächen, die Sie mit Stein verkleiden möchten — Himmel, Fenster und Boden auslassen',
     brush: 'Pinsel',
     undo: 'Rückgängig',
     clear: 'Löschen',
     submit: 'Mit KI anwenden',
     back: 'Zurück',
-    hint: 'Mit Pinsel malen oder "Alles füllen" klicken',
-    fillAll: 'Alles füllen',
-    fillAllDesc: 'Gesamte Fläche auswählen',
+    hint: 'Pinselgröße erhöhen und Wandflächen bemalen',
   },
 }
 
@@ -86,18 +76,6 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
   const [brushSize, setBrushSize] = useState(60)
   const [history, setHistory] = useState<ImageData[]>([])
   const [hasMask, setHasMask] = useState(false)
-
-  // Fill entire canvas with mask
-  const handleFillAll = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-    // Save state for undo
-    setHistory(prev => [...prev, ctx.getImageData(0, 0, canvas.width, canvas.height)])
-    ctx.fillStyle = 'rgba(179, 147, 69, 0.45)'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    setHasMask(true)
-  }, [])
 
   // Initialize canvas
   useEffect(() => {
@@ -256,18 +234,6 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
           className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400"
         />
         <span className="text-white/30 text-[10px] font-mono w-6 text-right">{brushSize}</span>
-
-        <div className="w-px h-5 bg-white/10 mx-1" />
-
-        {/* Fill All button */}
-        <button
-          onClick={handleFillAll}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold-400/10 text-gold-400 text-[11px] font-medium hover:bg-gold-400/20 transition-colors border border-gold-400/20"
-          title={t.fillAllDesc}
-        >
-          <Maximize size={12} />
-          {t.fillAll}
-        </button>
 
         <div className="w-px h-5 bg-white/10 mx-1" />
 

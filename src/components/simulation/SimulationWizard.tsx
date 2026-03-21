@@ -96,6 +96,7 @@ export default function SimulationWizard() {
 
     let cancelled = false
     let pollCount = 0
+    const MAX_POLLS = 40 // ~2 minutes max (40 * 3s)
 
     const poll = async () => {
       try {
@@ -106,7 +107,7 @@ export default function SimulationWizard() {
 
         pollCount++
         // Simulate progress (gets slower as it approaches 90%)
-        setProgress(Math.min(90, pollCount * 8))
+        setProgress(Math.min(90, pollCount * 5))
 
         if (data.status === 'succeeded' && data.output) {
           setResultUrl(data.output)
@@ -114,8 +115,11 @@ export default function SimulationWizard() {
           setTimeout(() => {
             if (!cancelled) setStep('result')
           }, 500)
-        } else if (data.status === 'failed') {
+        } else if (data.status === 'failed' || data.status === 'canceled') {
           setError(data.error || 'İşlem başarısız oldu')
+          setStep('mask')
+        } else if (pollCount >= MAX_POLLS) {
+          setError('İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.')
           setStep('mask')
         } else {
           // Still processing, poll again
