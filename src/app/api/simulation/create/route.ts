@@ -3,8 +3,11 @@ import { buildPrompt, buildFullApplyPrompt } from '@/lib/simulation'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// fal.ai endpoint
-const FAL_QUEUE_URL = 'https://queue.fal.run/fal-ai/flux-general'
+// fal.ai SYNCHRONOUS endpoint (not queue) — returns result directly
+const FAL_URL = 'https://fal.run/fal-ai/flux-general'
+
+// Allow up to 60 seconds for Vercel serverless function
+export const maxDuration = 60
 
 const DAILY_LIMIT_PER_IP = 3   // Max per IP per day
 const DAILY_LIMIT_GLOBAL = 20  // Max total across all users per day
@@ -162,12 +165,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // --- Build Prompt & Call fal.ai ---
+    // --- Build Prompt & Call fal.ai SYNCHRONOUS ---
     const prompt = applyMode === 'full'
       ? buildFullApplyPrompt(stoneCode, categorySlug, surfaceContext)
       : buildPrompt(stoneCode, categorySlug)
 
-    console.log(`[Simulation] ${applyMode.toUpperCase()} mode — fal.ai FLUX General`)
+    console.log(`[Simulation] ${applyMode.toUpperCase()} mode — fal.ai FLUX General (SYNC)`)
     console.log('[Simulation] Image URL:', imageUrl.substring(0, 80) + '...')
     console.log('[Simulation] Stone ref:', stoneImageUrl?.substring(0, 60) + '...')
     console.log('[Simulation] Prompt:', prompt.substring(0, 100) + '...')
@@ -191,7 +194,8 @@ export async function POST(req: NextRequest) {
           },
         ]
 
-    const falResponse = await fetch(FAL_QUEUE_URL, {
+    // SYNCHRONOUS call — blocks until result is ready (typically 5-20 seconds)
+    const falResponse = await fetch(FAL_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Key ${falKey}`,
@@ -226,7 +230,20 @@ export async function POST(req: NextRequest) {
     }
 
     const falResult = await falResponse.json()
-    console.log('[Simulation] fal.ai queued:', { request_id: falResult.request_id, status: falResult.status })
+    console.log('[Simulation] fal.ai SYNC result received!')
+    console.log('[Simulation] Inference time:', falResult.timings?.inference, 'seconds')
+
+    // Extract output image URL
+    const outputUrl = falResult.images?.[0]?.url || null
+    console.log('[Simulation] Output URL:', outputUrl?.substring(0, 80))
+
+    if (!outputUrl) {
+      console.error('[Simulation] No output image:', JSON.stringify(falResult).substring(0, 300))
+      return NextResponse.json(
+        { error: 'AI görsel üretemedi. Lütfen tekrar deneyin.' },
+        { status: 500 }
+      )
+    }
 
     // Calculate remaining
     let remaining = DAILY_LIMIT_PER_IP - 1
@@ -241,9 +258,10 @@ export async function POST(req: NextRequest) {
       if (count !== null) remaining = Math.max(0, DAILY_LIMIT_PER_IP - count)
     } catch { /* ignore */ }
 
+    // Return result directly — no polling needed!
     return NextResponse.json({
-      id: `fal--${falResult.request_id}`,
-      status: falResult.status || 'IN_QUEUE',
+      output: outputUrl,
+      status: 'succeeded',
       remaining,
     })
   } catch (error) {

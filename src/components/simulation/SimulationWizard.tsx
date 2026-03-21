@@ -206,11 +206,12 @@ export default function SimulationWizard() {
 
       setStep('processing')
       setError(null)
-      setProgress(0)
+      setProgress(10)
 
       if (!imageDataUrl || !selectedStone) return
 
       try {
+        // Synchronous API — blocks until result is ready (~10-30 seconds)
         const res = await fetch('/api/simulation/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -225,16 +226,25 @@ export default function SimulationWizard() {
           }),
         })
 
+        const data = await res.json()
+
         if (!res.ok) {
-          const data = await res.json()
           throw new Error(data.error || 'API error')
         }
 
-        const { id } = await res.json()
-        setPredictionId(id)
-        incrementLocalUsage()
-        setLocalUsage(getLocalUsageCount())
+        if (data.output) {
+          // Direct result — no polling needed!
+          incrementLocalUsage()
+          setLocalUsage(getLocalUsageCount())
+          setResultUrl(data.output)
+          setProgress(100)
+          setTimeout(() => setStep('result'), 500)
+        } else {
+          throw new Error('Sonuç alınamadı')
+        }
       } catch (err) {
+        decrementLocalUsage()
+        setLocalUsage(getLocalUsageCount())
         setError(err instanceof Error ? err.message : 'Bir hata oluştu')
         setStep('mode')
       }
@@ -249,11 +259,12 @@ export default function SimulationWizard() {
     setMaskDataUrl(mask)
     setStep('processing')
     setError(null)
-    setProgress(0)
+    setProgress(10)
 
     if (!imageDataUrl || !selectedStone) return
 
     try {
+      // Synchronous API — blocks until result is ready (~10-30 seconds)
       const res = await fetch('/api/simulation/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -268,70 +279,49 @@ export default function SimulationWizard() {
         }),
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        const data = await res.json()
         throw new Error(data.error || 'API error')
       }
 
-      const { id } = await res.json()
-      setPredictionId(id)
-      incrementLocalUsage()
-      setLocalUsage(getLocalUsageCount())
+      if (data.output) {
+        // Direct result — no polling needed!
+        incrementLocalUsage()
+        setLocalUsage(getLocalUsageCount())
+        setResultUrl(data.output)
+        setProgress(100)
+        setTimeout(() => setStep('result'), 500)
+      } else {
+        throw new Error('Sonuç alınamadı')
+      }
     } catch (err) {
+      decrementLocalUsage()
+      setLocalUsage(getLocalUsageCount())
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
       setStep('mask')
     }
   }, [imageDataUrl, selectedStone, locale, checkLocalLimit])
 
-  // Poll for result
+  // Animate progress while waiting for synchronous API response
   useEffect(() => {
-    if (step !== 'processing' || !predictionId) return
+    if (step !== 'processing') return
 
     let cancelled = false
-    let pollCount = 0
-    const MAX_POLLS = 60  // ~3 minutes max (fal.ai cold start can take longer)
+    let currentProgress = 10
 
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/simulation/status/${predictionId}`)
-        const data = await res.json()
+    const interval = setInterval(() => {
+      if (cancelled) return
+      // Gradually increase to 85% over ~40 seconds
+      currentProgress += (85 - currentProgress) * 0.04
+      setProgress(Math.min(85, Math.round(currentProgress)))
+    }, 500)
 
-        if (cancelled) return
-
-        pollCount++
-        setProgress(Math.min(90, Math.round(pollCount * 1.5)))
-
-        if (data.status === 'succeeded' && data.output) {
-          setResultUrl(data.output)
-          setProgress(100)
-          setTimeout(() => {
-            if (!cancelled) setStep('result')
-          }, 500)
-        } else if (data.status === 'failed' || data.status === 'canceled') {
-          decrementLocalUsage() // Refund failed attempt
-          setLocalUsage(getLocalUsageCount())
-          setError(data.error || 'İşlem başarısız oldu')
-          setStep(applyMode === 'brush' ? 'mask' : 'mode')
-        } else if (pollCount >= MAX_POLLS) {
-          decrementLocalUsage() // Refund timed out attempt
-          setLocalUsage(getLocalUsageCount())
-          setError('İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.')
-          setStep(applyMode === 'brush' ? 'mask' : 'mode')
-        } else {
-          setTimeout(poll, 3000)
-        }
-      } catch {
-        if (!cancelled) {
-          setError('Bağlantı hatası')
-          setStep(applyMode === 'brush' ? 'mask' : 'mode')
-        }
-      }
+    return () => {
+      cancelled = true
+      clearInterval(interval)
     }
-
-    setTimeout(poll, 2000)
-
-    return () => { cancelled = true }
-  }, [step, predictionId, applyMode])
+  }, [step])
 
   // Reset
   const handleReset = useCallback(() => {
