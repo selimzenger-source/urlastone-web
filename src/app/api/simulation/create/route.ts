@@ -188,8 +188,11 @@ export async function POST(req: NextRequest) {
         if (count !== null) remaining = Math.max(0, DAILY_LIMIT_PER_IP - count)
       } catch { /* ignore */ }
 
+      console.log('[Simulation] fal.ai response_url:', falResult.response_url)
+      console.log('[Simulation] fal.ai status_url:', falResult.status_url)
+
       return NextResponse.json({
-        id: `fal:${falResult.request_id}`,
+        id: `fal--${falResult.request_id}`,
         status: falResult.status || 'IN_QUEUE',
         remaining,
       })

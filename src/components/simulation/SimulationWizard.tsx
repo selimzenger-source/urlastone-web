@@ -264,7 +264,7 @@ export default function SimulationWizard() {
 
     let cancelled = false
     let pollCount = 0
-    const MAX_POLLS = 40
+    const MAX_POLLS = 60  // ~3 minutes max (fal.ai cold start can take longer)
 
     const poll = async () => {
       try {
@@ -274,7 +274,7 @@ export default function SimulationWizard() {
         if (cancelled) return
 
         pollCount++
-        setProgress(Math.min(90, pollCount * 5))
+        setProgress(Math.min(90, Math.round(pollCount * 1.5)))
 
         if (data.status === 'succeeded' && data.output) {
           setResultUrl(data.output)
@@ -523,7 +523,7 @@ function ProcessingView({ progress, mode }: { progress: number; mode: ApplyMode 
         {messages[msgIndex]}
       </p>
       <p className="text-white/20 text-xs font-mono mt-3">
-        Ortalama süre: {mode === 'full' ? '10-20' : '15-30'} saniye
+        Ortalama süre: {mode === 'full' ? '30-60' : '15-30'} saniye
       </p>
     </div>
   )
