@@ -294,6 +294,27 @@ export default function HakkimizdaPage() {
         </div>
       </section>
 
+      {/* Referanslarımız CTA */}
+      <section className="py-16 md:py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 md:p-12 hover:border-gold-400/10 transition-all duration-300">
+            <Globe size={28} className="mx-auto text-gold-400/60 mb-4" />
+            <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-3">
+              {t.refs_title} <span className="text-gradient-gold">{t.refs_gold}</span>
+            </h3>
+            <p className="text-white/40 text-sm max-w-lg mx-auto mb-6">
+              {t.refs_desc}
+            </p>
+            <Link
+              href="/referanslarimiz"
+              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
+            >
+              {t.nav_referanslar} <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Lokasyon */}
       <section className="py-20 md:py-28 bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">

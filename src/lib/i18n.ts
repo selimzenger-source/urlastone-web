@@ -431,6 +431,15 @@ type TranslationKeys = {
   common_teklif_al: string
   common_whatsapp: string
   common_iletisim: string
+
+  // Referanslarımız
+  nav_referanslar: string
+  refs_tag: string
+  refs_title: string
+  refs_gold: string
+  refs_desc: string
+  refs_project: string
+  refs_no_refs: string
 }
 
 const translations: Record<Locale, TranslationKeys> = {
@@ -762,6 +771,13 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Teklif Al',
     common_whatsapp: 'WhatsApp ile Ulaşın',
     common_iletisim: 'İletişime Geç',
+    nav_referanslar: 'Referanslarımız',
+    refs_tag: 'REFERANSLARIMIZ',
+    refs_title: 'Güvenilir',
+    refs_gold: 'İş Ortaklarımız',
+    refs_desc: 'Yılların deneyimiyle birlikte çalıştığımız değerli iş ortaklarımız ve tamamladığımız projeler',
+    refs_project: 'Projeyi Gör',
+    refs_no_refs: 'Henüz referans eklenmemiş',
     apps_tag: 'UYGULAMALARIMIZ',
     apps_title: 'Projelerimiz',
     apps_gold: 'Türkiye Genelinde',
@@ -1130,6 +1146,13 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Get Quote',
     common_whatsapp: 'Reach via WhatsApp',
     common_iletisim: 'Contact Us',
+    nav_referanslar: 'References',
+    refs_tag: 'OUR REFERENCES',
+    refs_title: 'Trusted',
+    refs_gold: 'Partners',
+    refs_desc: 'Our valued business partners and completed projects built on years of experience',
+    refs_project: 'View Project',
+    refs_no_refs: 'No references added yet',
     apps_tag: 'OUR PROJECTS',
     apps_title: 'Our Projects',
     apps_gold: 'Across Turkey',
@@ -1498,6 +1521,13 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Cotización',
     common_whatsapp: 'Contactar por WhatsApp',
     common_iletisim: 'Contacto',
+    nav_referanslar: 'Referencias',
+    refs_tag: 'NUESTRAS REFERENCIAS',
+    refs_title: 'Socios',
+    refs_gold: 'de Confianza',
+    refs_desc: 'Nuestros valiosos socios comerciales y proyectos completados basados en años de experiencia',
+    refs_project: 'Ver Proyecto',
+    refs_no_refs: 'Aún no se han añadido referencias',
     apps_tag: 'NUESTROS PROYECTOS',
     apps_title: 'Nuestros Proyectos',
     apps_gold: 'En toda Turquía',
@@ -1866,6 +1896,13 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'طلب عرض سعر',
     common_whatsapp: 'تواصل عبر واتساب',
     common_iletisim: 'اتصل بنا',
+    nav_referanslar: 'مراجعنا',
+    refs_tag: 'مراجعنا',
+    refs_title: 'شركاء',
+    refs_gold: 'موثوقون',
+    refs_desc: 'شركاؤنا التجاريون الكرام والمشاريع المنجزة المبنية على سنوات من الخبرة',
+    refs_project: 'عرض المشروع',
+    refs_no_refs: 'لم تتم إضافة مراجع بعد',
     apps_tag: 'مشاريعنا',
     apps_title: 'مشاريعنا',
     apps_gold: 'في جميع أنحاء تركيا',
@@ -2234,6 +2271,13 @@ const translations: Record<Locale, TranslationKeys> = {
     common_teklif_al: 'Angebot',
     common_whatsapp: 'Über WhatsApp Kontaktieren',
     common_iletisim: 'Kontakt',
+    nav_referanslar: 'Referenzen',
+    refs_tag: 'UNSERE REFERENZEN',
+    refs_title: 'Vertrauenswürdige',
+    refs_gold: 'Partner',
+    refs_desc: 'Unsere geschätzten Geschäftspartner und abgeschlossene Projekte auf Basis jahrelanger Erfahrung',
+    refs_project: 'Projekt ansehen',
+    refs_no_refs: 'Noch keine Referenzen hinzugefügt',
     apps_tag: 'UNSERE PROJEKTE',
     apps_title: 'Unsere Projekte',
     apps_gold: 'In der ganzen Türkei',
