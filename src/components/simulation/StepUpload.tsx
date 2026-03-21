@@ -229,14 +229,6 @@ export default function StepUpload({ onUpload }: Props) {
         </div>
       )}
 
-      {/* Example photos hint */}
-      <div className="mt-8 grid grid-cols-3 gap-3">
-        {['Duvar / Wall', 'Zemin / Floor', 'Cephe / Facade'].map((label, i) => (
-          <div key={i} className="aspect-[4/3] rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
-            <span className="text-white/15 text-[9px] font-mono tracking-wider">{label}</span>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
