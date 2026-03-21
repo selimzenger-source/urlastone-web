@@ -51,7 +51,7 @@ const GEMINI_PROMPTS: Record<string, string> = {
 
 CRITICAL RULES:
 1. Replicate the EXACT stone texture, color, shape, and pattern from the second image. Do NOT invent a different stone type.
-2. SCALE: The reference image is a close-up. When applying to the building, each stone piece must be SMALL — approximately 15-25cm in real life. A single window opening should be surrounded by at least 15-20 stone pieces. Each floor of the building should have at least 10-12 stones vertically. Do NOT make large boulder-sized stones.
+2. SCALE — THIS IS THE MOST IMPORTANT RULE: The reference image is a macro close-up photo. The stones must be VERY SMALL on the building. Think of it this way: between two windows that are side by side, there should be at least 4-6 stones horizontally. Between two windows that are stacked vertically, there should be at least 5-8 stones. A single window should be completely surrounded by at least 25-40 individual stone pieces. Each individual stone piece should be roughly 1/5 to 1/8 the width of a window. If you can count fewer than 30 stones on any wall section between windows, the stones are TOO BIG. Make them SMALLER.
 3. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces — corners, edges, columns, every section. No variation between areas.
 
 Apply this stone cladding to EVERY visible wall surface. No bare plaster or concrete remaining. Preserve windows, doors, roof, sky, ground, vegetation. Real installed cladding with 3D depth and natural shadows. Keep the same camera angle. Photorealistic.`,
