@@ -36,21 +36,30 @@ function MultiClipPlayer({ urls }: { urls: string[] }) {
     })
   }, [urls])
 
+  const [fading, setFading] = useState(false)
+
   const handleEnded = useCallback((clipIndex: number) => {
     const nextClip = clipIndex < urls.length - 1 ? clipIndex + 1 : 0
-    setCurrentClip(nextClip)
-    // Instantly play next clip — no loading delay since it's preloaded
-    videoRefs.current[nextClip]?.play().catch(() => {})
+    // Fade out → switch → fade in
+    setFading(true)
+    setTimeout(() => {
+      setCurrentClip(nextClip)
+      videoRefs.current[nextClip]?.play().catch(() => {})
+      setTimeout(() => setFading(false), 100)
+    }, 500)
   }, [urls.length])
 
   if (phase === 'intro') {
     return (
-      <div className="flex flex-col items-center justify-center bg-black gap-4" style={{ minHeight: '40vh' }}>
-        <div className="animate-[fadeInScale_1.2s_ease-out_forwards]">
+      <div className="flex flex-col items-center justify-center bg-black gap-5" style={{ minHeight: '40vh' }}>
+        <div className="flex items-center gap-3 animate-[fadeInScale_1.2s_ease-out_forwards]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-watermark.jpeg" alt="URLASTONE" className="w-28 h-28 md:w-36 md:h-36 object-contain rounded-xl" />
+          <img src="/ur2-dark.png" alt="Urlastone" className="w-10 h-10 md:w-12 md:h-12 object-contain rounded-lg" />
+          <span className="font-heading text-xl md:text-2xl font-bold tracking-wider">
+            <span className="text-gold-400">URLA</span><span className="text-white">STONE</span>
+          </span>
         </div>
-        <p className="text-gold-400/60 text-[10px] font-mono tracking-[0.3em] uppercase animate-[fadeIn_1s_ease-out_0.5s_forwards] opacity-0">
+        <p className="text-white/30 text-[10px] font-mono tracking-[0.3em] uppercase animate-[fadeIn_1s_ease-out_0.5s_forwards] opacity-0">
           3D Showcase
         </p>
         <style>{`
@@ -68,7 +77,7 @@ function MultiClipPlayer({ urls }: { urls: string[] }) {
   }
 
   return (
-    <div className="relative">
+    <div className={`relative transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}>
       {urls.map((url, i) => (
         <video
           key={i}
@@ -395,9 +404,9 @@ export default function UygulamalarimPage() {
               {/* Logo watermark — top right */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo-watermark.jpeg"
+                src="/ur2-dark.png"
                 alt=""
-                className="absolute top-3 right-3 w-12 h-12 md:w-16 md:h-16 rounded-lg opacity-70 z-10 object-contain bg-white/10 backdrop-blur-sm p-1"
+                className="absolute top-3 right-3 w-8 h-8 md:w-10 md:h-10 rounded-md opacity-30 z-10 object-contain"
               />
               {/* Multi-clip player */}
               <MultiClipPlayer urls={videoModal.urls} />

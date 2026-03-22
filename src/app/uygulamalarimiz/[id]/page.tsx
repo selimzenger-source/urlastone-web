@@ -21,14 +21,20 @@ function DetailMultiPlayer({ urls, poster }: { urls: string[]; poster?: string }
     })
   }, [urls])
 
+  const [fading, setFading] = useState(false)
+
   const handleEnded = useCallback((clipIndex: number) => {
     const nextClip = clipIndex < urls.length - 1 ? clipIndex + 1 : 0
-    setCurrentClip(nextClip)
-    videoRefs.current[nextClip]?.play().catch(() => {})
+    setFading(true)
+    setTimeout(() => {
+      setCurrentClip(nextClip)
+      videoRefs.current[nextClip]?.play().catch(() => {})
+      setTimeout(() => setFading(false), 100)
+    }, 500)
   }, [urls.length])
 
   return (
-    <div className="relative">
+    <div className={`relative transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}>
       {urls.map((url, i) => (
         <video
           key={i}
@@ -153,9 +159,9 @@ export default function ProjectDetailPage() {
                 <div className="rounded-xl overflow-hidden bg-black relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/logo-watermark.jpeg"
+                    src="/ur2-dark.png"
                     alt=""
-                    className="absolute top-3 right-3 w-12 h-12 rounded-lg opacity-70 z-10 object-contain bg-white/10 backdrop-blur-sm p-1"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-md opacity-30 z-10 object-contain"
                   />
                   <DetailMultiPlayer urls={project.video_urls} poster={photos[0]} />
                   <audio src="/audio/project-ambient.mp3" autoPlay loop style={{ display: 'none' }} />
