@@ -71,13 +71,13 @@ export default function ReferanslarimizPage() {
                   className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-gold-400/20 hover:bg-white/[0.05] transition-all duration-300"
                 >
                   {/* Logo */}
-                  <div className="w-full h-24 flex items-center justify-center mb-5 rounded-xl bg-white/[0.03] border border-white/[0.04] overflow-hidden">
+                  <div className="w-20 h-20 mx-auto flex items-center justify-center mb-5 rounded-xl bg-white/[0.03] border border-white/[0.04] overflow-hidden">
                     {ref.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={ref.logo_url}
                         alt={ref.name}
-                        className="max-h-16 max-w-[80%] object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+                        className="w-full h-full object-contain p-2 opacity-70 group-hover:opacity-100 transition-opacity"
                       />
                     ) : (
                       <Building2 size={32} className="text-white/10" />
