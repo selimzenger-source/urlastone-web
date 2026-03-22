@@ -410,6 +410,74 @@ export default function AdminProjeler({ adminPassword }: Props) {
     }
   }
 
+  // AI Video üretimi
+  const [generatingVideo, setGeneratingVideo] = useState<string | null>(null)
+  const [videoProgress, setVideoProgress] = useState('')
+
+  const generateVideo = async (projectId: string) => {
+    try {
+      setGeneratingVideo(projectId)
+      setVideoProgress('Video üretiliyor...')
+
+      const startRes = await fetch(`/api/projects/${projectId}/generate-video`, {
+        method: 'POST',
+        headers,
+      })
+      const startData = await startRes.json()
+      if (!startRes.ok) {
+        alert('Video başlatılamadı: ' + (startData.error || 'Bilinmeyen hata'))
+        return
+      }
+
+      if (startData.status === 'COMPLETED' && startData.video_urls) {
+        setProjects(prev => prev.map(p =>
+          p.id === projectId ? { ...p, video_urls: startData.video_urls } : p
+        ))
+        alert('Video başarıyla oluşturuldu!')
+        return
+      }
+
+      const { status_url, response_url } = startData
+      if (!status_url) { alert('Video bilgileri alınamadı'); return }
+
+      const maxPolls = 60
+      const pollParams = `status_url=${encodeURIComponent(status_url)}&response_url=${encodeURIComponent(response_url || '')}`
+
+      for (let i = 0; i < maxPolls; i++) {
+        await new Promise(r => setTimeout(r, 5000))
+        setVideoProgress(`Video üretiliyor... (${(i + 1) * 5}sn)`)
+
+        const pollRes = await fetch(`/api/projects/${projectId}/generate-video?${pollParams}`, { headers })
+        const pollData = await pollRes.json()
+
+        if (pollData.status === 'COMPLETED') {
+          setVideoProgress('Video kaydediliyor...')
+          const saveRes = await fetch(`/api/projects/${projectId}/generate-video?${pollParams}&save=1`, { headers })
+          const saveData = await saveRes.json()
+          if (saveData.video_urls) {
+            setProjects(prev => prev.map(p =>
+              p.id === projectId ? { ...p, video_urls: saveData.video_urls } : p
+            ))
+            alert('Video başarıyla oluşturuldu!')
+          } else {
+            alert('Video kaydedilemedi: ' + (saveData.error || ''))
+          }
+          return
+        }
+        if (pollData.status === 'FAILED') {
+          alert('Video üretimi başarısız: ' + (pollData.error || ''))
+          return
+        }
+      }
+      alert('Video üretimi zaman aşımına uğradı')
+    } catch {
+      alert('Video oluşturulurken hata oluştu')
+    } finally {
+      setGeneratingVideo(null)
+      setVideoProgress('')
+    }
+  }
+
   // Otomatik çeviri
   const [translating, setTranslating] = useState<string | null>(null)
 
@@ -738,18 +806,32 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => { setVideoUploadProjectId(project.id); videoInputRef.current?.click() }}
-                    disabled={uploadingVideo === project.id}
-                    className="w-full flex items-center justify-center gap-2 py-2 mb-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40
-                      bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black hover:from-[#c9a84f] hover:to-[#e0c97a]"
-                  >
-                    {uploadingVideo === project.id ? (
-                      <><Loader2 size={14} className="animate-spin" /> Video Yükleniyor...</>
-                    ) : (
-                      <><Film size={14} /> Video Yükle</>
-                    )}
-                  </button>
+                  <div className="flex gap-2 mb-2">
+                    <button
+                      onClick={() => { setVideoUploadProjectId(project.id); videoInputRef.current?.click() }}
+                      disabled={uploadingVideo === project.id}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40
+                        bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black hover:from-[#c9a84f] hover:to-[#e0c97a]"
+                    >
+                      {uploadingVideo === project.id ? (
+                        <><Loader2 size={14} className="animate-spin" /> Yükleniyor...</>
+                      ) : (
+                        <><Upload size={14} /> Video Yükle</>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => generateVideo(project.id)}
+                      disabled={generatingVideo === project.id || !project.photos?.length}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40
+                        bg-white/[0.06] text-white/70 hover:bg-white/[0.1] hover:text-white"
+                    >
+                      {generatingVideo === project.id ? (
+                        <><Loader2 size={14} className="animate-spin" /> {videoProgress || 'Üretiliyor...'}</>
+                      ) : (
+                        <><Film size={14} /> AI Video Oluştur</>
+                      )}
+                    </button>
+                  </div>
                 )}
               </div>
 

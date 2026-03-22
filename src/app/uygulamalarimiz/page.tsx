@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter, Play, X } from 'lucide-react'
@@ -12,6 +12,53 @@ import type { Locale } from '@/lib/i18n'
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false })
 
+/** Video modal with URLASTONE intro */
+function VideoModal({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
+  const [phase, setPhase] = useState<'intro' | 'fade' | 'playing'>('intro')
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase('fade'), 1500)
+    const t2 = setTimeout(() => {
+      setPhase('playing')
+      videoRef.current?.play().catch(() => {})
+    }, 2000)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
+
+  return (
+    <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors z-10">
+          <X size={28} />
+        </button>
+        <p className="absolute -top-12 left-0 text-white/80 text-sm font-heading font-semibold">{name}</p>
+        <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl relative" style={{ minHeight: '40vh' }}>
+          {/* Intro overlay */}
+          {phase !== 'playing' && (
+            <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-black gap-4 transition-opacity duration-500 ${phase === 'fade' ? 'opacity-0' : 'opacity-100'}`}>
+              <div className="flex items-center gap-3 animate-[fadeInScale_1.2s_ease-out_forwards]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/ur2-dark.png" alt="" className="w-10 h-10 md:w-12 md:h-12 object-contain rounded-lg" />
+                <span className="font-heading text-xl md:text-2xl font-bold tracking-wider">
+                  <span className="text-gold-400">URLA</span><span className="text-white">STONE</span>
+                </span>
+              </div>
+              <style>{`
+                @keyframes fadeInScale {
+                  0% { opacity: 0; transform: scale(0.8); }
+                  60% { opacity: 1; transform: scale(1.02); }
+                  100% { opacity: 1; transform: scale(1); }
+                }
+              `}</style>
+            </div>
+          )}
+          <video ref={videoRef} src={url} controls playsInline loop className="w-full" style={{ maxHeight: '80vh' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function formatDate(dateStr: string, locale: string) {
   try {
@@ -303,35 +350,13 @@ export default function UygulamalarimPage() {
         </section>
       )}
 
-      {/* Video Modal */}
+      {/* Video Modal with Intro */}
       {videoModal && (
-        <div
-          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
-          onClick={() => setVideoModal(null)}
-        >
-          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setVideoModal(null)}
-              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors z-10"
-            >
-              <X size={28} />
-            </button>
-            <p className="absolute -top-12 left-0 text-white/80 text-sm font-heading font-semibold">
-              {videoModal.name}
-            </p>
-            <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl">
-              <video
-                src={videoModal.urls[0]}
-                controls
-                autoPlay
-                playsInline
-                loop
-                className="w-full"
-                style={{ maxHeight: '80vh' }}
-              />
-            </div>
-          </div>
-        </div>
+        <VideoModal
+          url={videoModal.urls[0]}
+          name={videoModal.name}
+          onClose={() => setVideoModal(null)}
+        />
       )}
 
       <Footer />
