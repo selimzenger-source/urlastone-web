@@ -14,6 +14,7 @@ import {
   FileText,
   Eye,
   Star,
+  Image,
 } from 'lucide-react'
 import AdminOverview from './AdminOverview'
 import AdminTeklifler from './AdminTeklifler'
@@ -22,10 +23,12 @@ import AdminProjeler from './AdminProjeler'
 import AdminReferanslar from './AdminReferanslar'
 import AdminAnalytics from './AdminAnalytics'
 import AdminKatalog from './AdminKatalog'
+import AdminHeroSlides from './AdminHeroSlides'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
   { id: 'analytics', label: 'İstatistikler', icon: TrendingUp },
+  { id: 'hero', label: 'Hero Slaytları', icon: Image },
   { id: 'teklifler', label: 'Teklif Talepleri', icon: MessageSquare },
   { id: 'taslar', label: 'Taş Yönetimi', icon: Gem },
   { id: 'projeler', label: 'Proje Yönetimi', icon: MapPin },
@@ -124,6 +127,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
         <div className="p-4 md:p-8">
           {activeTab === 'overview' && <AdminOverview />}
           {activeTab === 'analytics' && <AdminAnalytics />}
+          {activeTab === 'hero' && <AdminHeroSlides />}
           {activeTab === 'teklifler' && <AdminTeklifler />}
           {activeTab === 'taslar' && <AdminTaslar />}
           {activeTab === 'projeler' && <AdminProjeler adminPassword={adminPassword} />}

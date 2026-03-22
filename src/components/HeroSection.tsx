@@ -5,88 +5,83 @@ import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 
+interface SlideData {
+  image: string
+  tag: string
+  subtitle: string
+  gold: string
+  desc: string
+  bgSize: string
+  bgPos: string
+}
+
+// Fallback slides (mevcut hardcoded veriler)
+function getFallbackSlides(t: any): SlideData[] {
+  return [
+    { image: '/slide-1.jpg', tag: t.slide1_tag, subtitle: t.slide1_subtitle, gold: t.slide1_gold, desc: t.slide1_desc, bgSize: 'cover', bgPos: 'center center' },
+    { image: '/slide-2.jpg', tag: t.slide2_tag, subtitle: t.slide2_subtitle, gold: t.slide2_gold, desc: t.slide2_desc, bgSize: 'cover', bgPos: 'center 45%' },
+    { image: '/slide-3.jpg', tag: t.slide3_tag, subtitle: t.slide3_subtitle, gold: t.slide3_gold, desc: t.slide3_desc, bgSize: 'cover', bgPos: 'center 45%' },
+    { image: '/slide-4.jpg', tag: t.slide4_tag, subtitle: t.slide4_subtitle, gold: t.slide4_gold, desc: t.slide4_desc, bgSize: 'cover', bgPos: 'center center' },
+    { image: '/slide-5.jpg', tag: t.slide5_tag, subtitle: t.slide5_subtitle, gold: t.slide5_gold, desc: t.slide5_desc, bgSize: 'cover', bgPos: 'center 55%' },
+    { image: '/slide-6.png', tag: t.slide6_tag, subtitle: t.slide6_subtitle, gold: t.slide6_gold, desc: t.slide6_desc, bgSize: 'cover', bgPos: 'center center' },
+    { image: '/slide-7.jpg', tag: t.slide7_tag, subtitle: t.slide7_subtitle, gold: t.slide7_gold, desc: t.slide7_desc, bgSize: 'cover', bgPos: 'center 40%' },
+    { image: '/slide-8.jpg', tag: t.slide8_tag, subtitle: t.slide8_subtitle, gold: t.slide8_gold, desc: t.slide8_desc, bgSize: 'cover', bgPos: 'center 70%' },
+  ]
+}
+
 export default function HeroSection() {
   const { t, locale } = useLanguage()
   const isRtl = locale === 'ar'
 
-  const slides = [
-    {
-      image: '/slide-1.jpg',
-      tag: t.slide1_tag,
-      subtitle: t.slide1_subtitle,
-      gold: t.slide1_gold,
-      desc: t.slide1_desc,
-      bgSize: 'cover',
-      bgPos: 'center center',
-    },
-    {
-      image: '/slide-2.jpg',
-      tag: t.slide2_tag,
-      subtitle: t.slide2_subtitle,
-      gold: t.slide2_gold,
-      desc: t.slide2_desc,
-      bgSize: 'cover',
-      bgPos: 'center 45%',
-    },
-    {
-      image: '/slide-3.jpg',
-      tag: t.slide3_tag,
-      subtitle: t.slide3_subtitle,
-      gold: t.slide3_gold,
-      desc: t.slide3_desc,
-      bgSize: 'cover',
-      bgPos: 'center 45%',
-    },
-    {
-      image: '/slide-4.jpg',
-      tag: t.slide4_tag,
-      subtitle: t.slide4_subtitle,
-      gold: t.slide4_gold,
-      desc: t.slide4_desc,
-      bgSize: 'cover',
-      bgPos: 'center center',
-    },
-    {
-      image: '/slide-5.jpg',
-      tag: t.slide5_tag,
-      subtitle: t.slide5_subtitle,
-      gold: t.slide5_gold,
-      desc: t.slide5_desc,
-      bgSize: 'cover',
-      bgPos: 'center 55%',
-    },
-    {
-      image: '/slide-6.png',
-      tag: t.slide6_tag,
-      subtitle: t.slide6_subtitle,
-      gold: t.slide6_gold,
-      desc: t.slide6_desc,
-      bgSize: 'cover',
-      bgPos: 'center center',
-    },
-    {
-      image: '/slide-7.jpg',
-      tag: t.slide7_tag,
-      subtitle: t.slide7_subtitle,
-      gold: t.slide7_gold,
-      desc: t.slide7_desc,
-      bgSize: 'cover',
-      bgPos: 'center 40%',
-    },
-    {
-      image: '/slide-8.jpg',
-      tag: t.slide8_tag,
-      subtitle: t.slide8_subtitle,
-      gold: t.slide8_gold,
-      desc: t.slide8_desc,
-      bgSize: 'cover',
-      bgPos: 'center 70%',
-    },
-  ]
-
+  const [slides, setSlides] = useState<SlideData[]>(() => getFallbackSlides(t))
+  const [transitionMs, setTransitionMs] = useState(7000)
   const [current, setCurrent] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [animating, setAnimating] = useState(false)
+
+  // Fetch slides from API
+  useEffect(() => {
+    let cancelled = false
+    async function fetchSlides() {
+      try {
+        const res = await fetch('/api/hero-slides')
+        if (!res.ok) return
+        const data = await res.json()
+        if (!Array.isArray(data) || data.length === 0 || cancelled) return
+
+        const mapped: SlideData[] = data.map((s: any) => ({
+          image: s.image_url,
+          tag: s[`tag_${locale}`] || s.tag_tr || '',
+          subtitle: s[`subtitle_${locale}`] || s.subtitle_tr || '',
+          gold: s[`gold_${locale}`] || s.gold_tr || '',
+          desc: s[`desc_${locale}`] || s.desc_tr || '',
+          bgSize: 'cover',
+          bgPos: s.bg_position || 'center center',
+        }))
+        if (!cancelled) {
+          setSlides(mapped)
+          if (data[0]?.transition_seconds) {
+            setTransitionMs(data[0].transition_seconds * 1000)
+          }
+        }
+      } catch {
+        // Fallback slides already set
+      }
+    }
+    fetchSlides()
+    return () => { cancelled = true }
+  }, [locale])
+
+  // Update slide texts when locale changes and we have API data
+  useEffect(() => {
+    setSlides(prev => {
+      // If slides are from fallback (i18n), update with new locale
+      if (prev.length > 0 && prev[0].image.startsWith('/slide-')) {
+        return getFallbackSlides(t)
+      }
+      return prev
+    })
+  }, [t])
 
   const goTo = useCallback((index: number) => {
     if (animating) return
@@ -120,11 +115,11 @@ export default function HeroSection() {
 
   useEffect(() => { setLoaded(true) }, [])
 
-  // Auto-slide every 7 seconds
+  // Auto-slide with configurable duration
   useEffect(() => {
-    const timer = setInterval(next, 7000)
+    const timer = setInterval(next, transitionMs)
     return () => clearInterval(timer)
-  }, [next])
+  }, [next, transitionMs])
 
   return (
     <section
