@@ -10,37 +10,40 @@ import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
 
-/** Multi-clip player for detail page */
+/** Seamless multi-clip player for detail page */
 function DetailMultiPlayer({ urls, poster }: { urls: string[]; poster?: string }) {
   const [currentClip, setCurrentClip] = useState(0)
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  const handleEnded = useCallback(() => {
-    if (currentClip < urls.length - 1) {
-      setCurrentClip(prev => prev + 1)
-    } else {
-      setCurrentClip(0)
-    }
-  }, [currentClip, urls.length])
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch(() => {})
-    }
-  }, [currentClip])
+    urls.forEach((_, i) => {
+      if (videoRefs.current[i]) videoRefs.current[i]!.load()
+    })
+  }, [urls])
+
+  const handleEnded = useCallback((clipIndex: number) => {
+    const nextClip = clipIndex < urls.length - 1 ? clipIndex + 1 : 0
+    setCurrentClip(nextClip)
+    videoRefs.current[nextClip]?.play().catch(() => {})
+  }, [urls.length])
 
   return (
-    <video
-      ref={videoRef}
-      src={urls[currentClip]}
-      controls
-      playsInline
-      onEnded={handleEnded}
-      className="w-full"
-      style={{ maxHeight: '50vh' }}
-      poster={currentClip === 0 ? poster : undefined}
-    />
+    <div className="relative">
+      {urls.map((url, i) => (
+        <video
+          key={i}
+          ref={el => { videoRefs.current[i] = el }}
+          src={url}
+          preload="auto"
+          controls={i === currentClip}
+          playsInline
+          onEnded={() => handleEnded(i)}
+          className={`w-full ${i === currentClip ? 'block' : 'hidden'}`}
+          style={{ maxHeight: '50vh' }}
+          poster={i === 0 ? poster : undefined}
+        />
+      ))}
+    </div>
   )
 }
 

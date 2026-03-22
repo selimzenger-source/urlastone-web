@@ -12,31 +12,36 @@ import type { Locale } from '@/lib/i18n'
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false })
 
-/** Multi-clip player: logo intro (1.5s) → clip 1 → clip 2 → loop */
+/** Seamless multi-clip player: logo intro (1.5s) → clips play as one continuous video */
 function MultiClipPlayer({ urls }: { urls: string[] }) {
   const [phase, setPhase] = useState<'intro' | 'playing'>('intro')
   const [currentClip, setCurrentClip] = useState(0)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
 
   useEffect(() => {
-    const timer = setTimeout(() => setPhase('playing'), 1500)
+    const timer = setTimeout(() => {
+      setPhase('playing')
+      // Start first clip
+      videoRefs.current[0]?.play().catch(() => {})
+    }, 1500)
     return () => clearTimeout(timer)
   }, [])
 
-  const handleEnded = useCallback(() => {
-    if (currentClip < urls.length - 1) {
-      setCurrentClip(prev => prev + 1)
-    } else {
-      setCurrentClip(0) // loop
-    }
-  }, [currentClip, urls.length])
-
+  // Preload all clips on mount
   useEffect(() => {
-    if (phase === 'playing' && videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch(() => {})
-    }
-  }, [currentClip, phase])
+    urls.forEach((_, i) => {
+      if (videoRefs.current[i]) {
+        videoRefs.current[i]!.load()
+      }
+    })
+  }, [urls])
+
+  const handleEnded = useCallback((clipIndex: number) => {
+    const nextClip = clipIndex < urls.length - 1 ? clipIndex + 1 : 0
+    setCurrentClip(nextClip)
+    // Instantly play next clip — no loading delay since it's preloaded
+    videoRefs.current[nextClip]?.play().catch(() => {})
+  }, [urls.length])
 
   if (phase === 'intro') {
     return (
@@ -50,15 +55,20 @@ function MultiClipPlayer({ urls }: { urls: string[] }) {
   }
 
   return (
-    <video
-      ref={videoRef}
-      src={urls[currentClip]}
-      autoPlay
-      playsInline
-      onEnded={handleEnded}
-      className="w-full"
-      style={{ maxHeight: '80vh' }}
-    />
+    <div className="relative">
+      {urls.map((url, i) => (
+        <video
+          key={i}
+          ref={el => { videoRefs.current[i] = el }}
+          src={url}
+          preload="auto"
+          playsInline
+          onEnded={() => handleEnded(i)}
+          className={`w-full ${i === currentClip ? 'block' : 'hidden'}`}
+          style={{ maxHeight: '80vh' }}
+        />
+      ))}
+    </div>
   )
 }
 
