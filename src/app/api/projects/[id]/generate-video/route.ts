@@ -62,13 +62,14 @@ async function generateMultiClipPrompts(
               type: 'text',
               text: `These are ${photosToAnalyze.length} photos of a building/project called "${projectName}".
 
-Pick the 2 BEST photos that show different angles/perspectives of the building exterior. Then write 2 SHORT English video prompts (each under 40 words) for an AI video model.
+Pick the 2 BEST photos showing different angles of the building/stone work. Write 2 SHORT English video prompts for an AI image-to-video model. These 2 clips will play back-to-back as ONE continuous cinematic video.
 
 CRITICAL RULES:
-- Each prompt must have a DIFFERENT camera movement (e.g., one orbit, one crane/rise, one dolly-in, one pan)
-- Never repeat the same camera movement type
-- Keep prompts cinematic and professional
-- Describe atmosphere/lighting matching each photo
+- Clip 1 (10 seconds): Focus on the STONE WORK and BUILDING DETAILS — slow cinematic orbit or dolly showing the craftsmanship, texture of natural stone cladding, architectural details up close
+- Clip 2 (5 seconds): RISING upward shot — camera tilts/rises vertically from building base upward revealing the full structure against the sky. NOT bird's eye, but ground-to-sky reveal
+- Each prompt must feel like a PROFESSIONAL architectural showcase video
+- Focus on the STONE APPLICATION and BUILDING QUALITY, not generic scenery
+- Describe lighting/atmosphere matching each photo
 
 Reply ONLY with JSON, no markdown:
 {"photo1": 1, "prompt1": "...", "photo2": 2, "prompt2": "..."}
@@ -110,7 +111,7 @@ photo1/photo2 = photo number (1-based index)`
 }
 
 /** Submit one video to Fal AI queue */
-async function submitToFalQueue(imageUrl: string, prompt: string, falKey: string) {
+async function submitToFalQueue(imageUrl: string, prompt: string, falKey: string, duration: '5' | '10' = '10') {
   const res = await fetch(FAL_VIDEO_URL, {
     method: 'POST',
     headers: {
@@ -120,7 +121,7 @@ async function submitToFalQueue(imageUrl: string, prompt: string, falKey: string
     body: JSON.stringify({
       image_url: imageUrl,
       prompt,
-      duration: '10',
+      duration,
       negative_prompt: 'blur, distort, low quality, shaky camera, fast motion, text overlay',
       cfg_scale: 0.5,
     }),
@@ -186,8 +187,8 @@ export async function POST(
 
     // Submit 2 Fal AI requests in parallel
     const [submit1, submit2] = await Promise.all([
-      submitToFalQueue(clips.photo1, clips.prompt1, falKey),
-      submitToFalQueue(clips.photo2, clips.prompt2, falKey),
+      submitToFalQueue(clips.photo1, clips.prompt1, falKey, '5'),
+      submitToFalQueue(clips.photo2, clips.prompt2, falKey, '5'),
     ])
 
     const clip1 = {
