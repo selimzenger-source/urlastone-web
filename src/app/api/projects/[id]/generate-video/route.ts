@@ -191,10 +191,14 @@ export async function POST(
       return NextResponse.json({ error: 'Fal AI request_id alinamadi' }, { status: 500 })
     }
 
-    console.log('[Video] Queued, request_id:', requestId)
+    // Fal AI returns specific URLs for status/result — use them instead of constructing URLs
+    const statusUrl = submitResult.status_url || `${FAL_STATUS_BASE}/${requestId}/status`
+    const responseUrl = submitResult.response_url || `${FAL_STATUS_BASE}/${requestId}`
 
-    // Return request_id — client will poll GET endpoint
-    return NextResponse.json({ status: 'IN_QUEUE', request_id: requestId })
+    console.log('[Video] Queued, request_id:', requestId, 'status_url:', statusUrl)
+
+    // Return URLs — client will poll GET endpoint
+    return NextResponse.json({ status: 'IN_QUEUE', request_id: requestId, status_url: statusUrl, response_url: responseUrl })
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
@@ -215,11 +219,12 @@ export async function GET(
   }
 
   const projectId = params.id
-  const requestId = request.nextUrl.searchParams.get('request_id')
+  const statusUrl = request.nextUrl.searchParams.get('status_url')
+  const responseUrl = request.nextUrl.searchParams.get('response_url')
   const save = request.nextUrl.searchParams.get('save')
 
-  if (!requestId) {
-    return NextResponse.json({ error: 'request_id gerekli' }, { status: 400 })
+  if (!statusUrl) {
+    return NextResponse.json({ error: 'status_url gerekli' }, { status: 400 })
   }
 
   const falKey = process.env.FAL_API_KEY
@@ -228,22 +233,25 @@ export async function GET(
   }
 
   try {
-    // Check status
-    const statusResponse = await fetch(`${FAL_STATUS_BASE}/${requestId}/status`, {
+    // Check status using Fal AI's provided status URL (GET method)
+    const statusResponse = await fetch(statusUrl, {
       headers: { 'Authorization': `Key ${falKey}` },
     })
 
     if (!statusResponse.ok) {
+      const errText = await statusResponse.text()
+      console.error(`[Video] Status check failed: ${statusResponse.status} ${errText}`)
       return NextResponse.json({ error: 'Durum kontrol edilemedi' }, { status: 500 })
     }
 
     const statusData = await statusResponse.json()
-    console.log(`[Video] Status for ${requestId}: ${statusData.status}`)
+    console.log(`[Video] Status: ${statusData.status}`)
 
     if (statusData.status === 'COMPLETED') {
       if (save === '1') {
-        // Fetch result and save
-        const resultResponse = await fetch(`${FAL_STATUS_BASE}/${requestId}`, {
+        // Fetch result using Fal AI's provided response URL (GET method)
+        const resultUrl = responseUrl || statusUrl.replace('/status', '')
+        const resultResponse = await fetch(resultUrl, {
           headers: { 'Authorization': `Key ${falKey}` },
         })
 

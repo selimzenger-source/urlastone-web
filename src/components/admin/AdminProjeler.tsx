@@ -368,21 +368,22 @@ export default function AdminProjeler({ adminPassword }: Props) {
         return
       }
 
-      const requestId = startData.request_id
-      if (!requestId) {
-        alert('Video request ID alınamadı')
+      const { request_id: requestId, status_url, response_url } = startData
+      if (!requestId || !status_url) {
+        alert('Video request bilgileri alınamadı')
         return
       }
 
       // Step 2: Poll for completion — every 5s, max 5 min
       setVideoProgress('Video üretiliyor...')
       const maxPolls = 60
+      const pollParams = `status_url=${encodeURIComponent(status_url)}&response_url=${encodeURIComponent(response_url || '')}`
       for (let i = 0; i < maxPolls; i++) {
         await new Promise(r => setTimeout(r, 5000))
         setVideoProgress(`Video üretiliyor... (${(i + 1) * 5}sn)`)
 
         const pollRes = await fetch(
-          `/api/projects/${projectId}/generate-video?request_id=${requestId}`,
+          `/api/projects/${projectId}/generate-video?${pollParams}`,
           { headers }
         )
         const pollData = await pollRes.json()
@@ -391,7 +392,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
           // Step 3: Save video to Supabase — ~10-20s
           setVideoProgress('Video kaydediliyor...')
           const saveRes = await fetch(
-            `/api/projects/${projectId}/generate-video?request_id=${requestId}&save=1`,
+            `/api/projects/${projectId}/generate-video?${pollParams}&save=1`,
             { headers }
           )
           const saveData = await saveRes.json()
