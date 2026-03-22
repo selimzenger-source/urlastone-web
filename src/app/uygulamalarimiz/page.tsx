@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter } from 'lucide-react'
+import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter, Play, X } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import dynamic from 'next/dynamic'
@@ -37,6 +37,7 @@ export default function UygulamalarimPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [videoModal, setVideoModal] = useState<{ url: string; name: string } | null>(null)
 
   useEffect(() => {
     fetch('/api/projects')
@@ -261,6 +262,18 @@ export default function UygulamalarimPage() {
                         <MapPin size={12} />
                         {t.apps_navigate}
                       </a>
+                      {project.video_url && (
+                        <button
+                          onClick={() => setVideoModal({ url: project.video_url!, name: getTranslated(project, 'project_name', locale) })}
+                          className="group relative inline-flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-full transition-all overflow-hidden
+                            bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black font-semibold
+                            hover:from-[#c9a84f] hover:to-[#e0c97a] hover:shadow-[0_0_20px_rgba(179,147,69,0.3)]"
+                        >
+                          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                          <Play size={11} className="fill-current" />
+                          {t.apps_3d_video}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -286,6 +299,36 @@ export default function UygulamalarimPage() {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Video Modal */}
+      {videoModal && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setVideoModal(null)}
+        >
+          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setVideoModal(null)}
+              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors"
+            >
+              <X size={28} />
+            </button>
+            <p className="absolute -top-12 left-0 text-white/80 text-sm font-heading font-semibold">
+              {videoModal.name} — 3D Animasyon
+            </p>
+            <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl">
+              <video
+                src={videoModal.url}
+                controls
+                autoPlay
+                loop
+                className="w-full"
+                style={{ maxHeight: '80vh' }}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       <Footer />

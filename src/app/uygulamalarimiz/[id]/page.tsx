@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react'
+import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight, X, ZoomIn, Play } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
@@ -99,6 +99,34 @@ export default function ProjectDetailPage() {
             <ArrowLeft size={14} />
             {t.apps_all_projects}
           </Link>
+
+          {/* 3D Video Banner */}
+          {project.video_url && (
+            <div className="mb-8 rounded-2xl overflow-hidden border border-gold-400/20 bg-gradient-to-r from-[#b39345]/10 via-transparent to-[#d2b96e]/10">
+              <div className="p-4 md:p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#b39345] to-[#d2b96e] flex items-center justify-center">
+                    <Play size={18} className="text-black fill-current ml-0.5" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-heading font-semibold text-sm">{t.apps_3d_video}</h3>
+                    <p className="text-white/40 text-xs">{t.apps_3d_video_desc}</p>
+                  </div>
+                </div>
+                <div className="rounded-xl overflow-hidden bg-black">
+                  <video
+                    src={project.video_url}
+                    controls
+                    loop
+                    playsInline
+                    className="w-full"
+                    style={{ maxHeight: '50vh' }}
+                    poster={photos[0]}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Photo Gallery */}

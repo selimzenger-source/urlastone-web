@@ -17,6 +17,9 @@ import {
   Calendar,
   Globe,
   Languages,
+  Film,
+  CheckCircle,
+  RotateCcw,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -336,6 +339,50 @@ export default function AdminProjeler({ adminPassword }: Props) {
     }
   }
 
+  // 3D Video üretimi
+  const [generatingVideo, setGeneratingVideo] = useState<string | null>(null)
+
+  const generateVideo = async (projectId: string) => {
+    try {
+      setGeneratingVideo(projectId)
+      const res = await fetch(`/api/projects/${projectId}/generate-video`, {
+        method: 'POST',
+        headers,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert('Video oluşturulamadı: ' + (data.error || 'Bilinmeyen hata'))
+        return
+      }
+      // Update local state
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, video_url: data.video_url } : p
+      ))
+      alert('3D Video başarıyla oluşturuldu!')
+    } catch {
+      alert('Video oluşturulurken hata oluştu')
+    } finally {
+      setGeneratingVideo(null)
+    }
+  }
+
+  const deleteVideo = async (projectId: string) => {
+    if (!confirm('3D videoyu silmek istediğinize emin misiniz?')) return
+    try {
+      const res = await fetch(`/api/projects/${projectId}/generate-video`, {
+        method: 'DELETE',
+        headers,
+      })
+      if (res.ok) {
+        setProjects(prev => prev.map(p =>
+          p.id === projectId ? { ...p, video_url: null } : p
+        ))
+      }
+    } catch {
+      alert('Video silinirken hata oluştu')
+    }
+  }
+
   // Otomatik çeviri
   const [translating, setTranslating] = useState<string | null>(null)
 
@@ -649,8 +696,50 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 )}
               </div>
 
+              {/* 3D Video */}
+              <div className="pt-3 mt-3 border-t border-white/[0.06]">
+                {project.video_url ? (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-mono">
+                      <CheckCircle size={10} /> 3D Video Hazır
+                    </span>
+                    <button
+                      onClick={() => generateVideo(project.id)}
+                      disabled={generatingVideo === project.id}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 text-[10px] font-mono hover:bg-amber-400/20 transition-colors disabled:opacity-50"
+                      title="Yeniden Oluştur"
+                    >
+                      {generatingVideo === project.id ? (
+                        <><Loader2 size={9} className="animate-spin" /> Üretiliyor...</>
+                      ) : (
+                        <><RotateCcw size={9} /> Yeniden</>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => deleteVideo(project.id)}
+                      className="px-2 py-0.5 rounded bg-red-400/10 text-red-400 text-[10px] font-mono hover:bg-red-400/20 transition-colors"
+                    >
+                      Sil
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => generateVideo(project.id)}
+                    disabled={generatingVideo === project.id || !project.photos?.length}
+                    className="w-full flex items-center justify-center gap-2 py-2 mb-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40
+                      bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black hover:from-[#c9a84f] hover:to-[#e0c97a]"
+                  >
+                    {generatingVideo === project.id ? (
+                      <><Loader2 size={14} className="animate-spin" /> 3D Video Üretiliyor... (1-3dk)</>
+                    ) : (
+                      <><Film size={14} /> 3D Video Oluştur</>
+                    )}
+                  </button>
+                )}
+              </div>
+
               {/* Actions */}
-              <div className="flex items-center gap-2 pt-3 mt-3 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => openEdit(project)}
                   className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/[0.04] text-white/50 text-xs hover:bg-white/[0.08] hover:text-white transition-all"

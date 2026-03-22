@@ -399,6 +399,8 @@ type TranslationKeys = {
   apps_total_countries: string
   apps_details: string
   apps_navigate: string
+  apps_3d_video: string
+  apps_3d_video_desc: string
   apps_map_hint: string
   apps_all_projects: string
   apps_back_all: string
@@ -791,6 +793,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Ülke',
     apps_details: 'Detayları Gör',
     apps_navigate: 'Konuma Git',
+    apps_3d_video: '3D Animasyonunu Gör',
+    apps_3d_video_desc: 'Projenin 3D animasyon videosunu izleyin',
     apps_map_hint: 'Haritayı yakınlaştırarak projeleri keşfedin',
     apps_all_projects: 'Tüm Projeler',
     apps_back_all: 'Tüm Projelere Dön',
@@ -1166,6 +1170,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Countries',
     apps_details: 'View Details',
     apps_navigate: 'Get Directions',
+    apps_3d_video: 'View 3D Animation',
+    apps_3d_video_desc: 'Watch the 3D animation video of the project',
     apps_map_hint: 'Zoom in on the map to explore projects',
     apps_all_projects: 'All Projects',
     apps_back_all: 'Back to All Projects',
@@ -1541,6 +1547,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Países',
     apps_details: 'Ver Detalles',
     apps_navigate: 'Ir a Ubicación',
+    apps_3d_video: 'Ver Animación 3D',
+    apps_3d_video_desc: 'Mira el video de animación 3D del proyecto',
     apps_map_hint: 'Acerca el mapa para explorar los proyectos',
     apps_all_projects: 'Todos los Proyectos',
     apps_back_all: 'Volver a Todos los Proyectos',
@@ -1916,6 +1924,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'دول',
     apps_details: 'عرض التفاصيل',
     apps_navigate: 'انتقل إلى الموقع',
+    apps_3d_video: 'شاهد الرسوم المتحركة ثلاثية الأبعاد',
+    apps_3d_video_desc: 'شاهد فيديو الرسوم المتحركة ثلاثية الأبعاد للمشروع',
     apps_map_hint: 'قم بتكبير الخريطة لاستكشاف المشاريع',
     apps_all_projects: 'جميع المشاريع',
     apps_back_all: 'العودة إلى جميع المشاريع',
@@ -2291,6 +2301,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Länder',
     apps_details: 'Details ansehen',
     apps_navigate: 'Zum Standort',
+    apps_3d_video: '3D-Animation ansehen',
+    apps_3d_video_desc: 'Sehen Sie sich das 3D-Animationsvideo des Projekts an',
     apps_map_hint: 'Zoomen Sie in die Karte, um Projekte zu entdecken',
     apps_all_projects: 'Alle Projekte',
     apps_back_all: 'Zurück zu allen Projekten',
