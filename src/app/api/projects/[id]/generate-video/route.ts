@@ -20,9 +20,9 @@ async function generateMultiClipPrompts(
 
   const defaultResult = {
     photo1: photos[0],
-    prompt1: 'Slow cinematic orbit clockwise around this stone-clad building, camera focuses on natural stone texture and craftsmanship details, warm golden hour lighting, professional architectural drone footage, smooth steady movement',
+    prompt1: 'Slow cinematic orbit clockwise around this stone-clad building, camera stays close to facade focusing on natural stone texture and craftsmanship details, warm golden hour lighting, smooth steady horizontal movement',
     photo2: photos[Math.min(1, photos.length - 1)],
-    prompt2: 'Camera rises smoothly upward from ground level along the stone facade, revealing natural stone cladding floor by floor, ending with full building against clear sky, cinematic vertical reveal shot',
+    prompt2: 'Gentle dolly forward toward the stone-clad building facade from a slightly different angle, camera stays focused on natural stone cladding details and architectural elements, smooth professional movement, building fills entire frame',
   }
 
   if (!apiKey || photos.length < 1) return defaultResult
@@ -65,10 +65,11 @@ async function generateMultiClipPrompts(
 Pick the 2 BEST photos showing different angles of the building/stone work. Write 2 SHORT English video prompts for an AI image-to-video model. These 2 clips will play back-to-back as ONE continuous cinematic video.
 
 CRITICAL RULES:
-- Clip 1 (10 seconds): Slow cinematic orbit or dolly around the building, focusing on the NATURAL STONE CLADDING craftsmanship, texture details, architectural elements. Camera moves smoothly and steadily.
-- Clip 2 (10 seconds): Camera RISES vertically from ground level upward along the building facade, revealing stone work floor by floor, ending with the full structure against the sky. Smooth upward tilt, NOT bird's eye view.
+- BOTH clips must stay focused on the BUILDING and STONE CLADDING at all times. NEVER zoom out to sky, landscape, or surroundings. The camera must ALWAYS keep the stone-clad building filling most of the frame.
+- Clip 1 (10 seconds): Slow cinematic orbit or dolly around the building, camera stays close to the facade, showcasing the natural stone texture, craftsmanship, and architectural details. Smooth horizontal movement.
+- Clip 2 (10 seconds): DIFFERENT angle — slow pan or gentle tracking shot from a slightly different perspective. Still focused entirely on the building and stone work, but with a subtly different camera animation style (e.g., if clip 1 orbits left, clip 2 could slowly dolly forward or pan right). The building must remain the full subject.
 - Each prompt must feel like a PROFESSIONAL architectural showcase video
-- Focus on the STONE APPLICATION and BUILDING QUALITY — the stone is the star
+- The stone application is the STAR — camera never leaves the building
 - Describe lighting/atmosphere matching each photo
 - Keep each prompt under 40 words
 
