@@ -350,6 +350,21 @@ export default function AdminProjeler({ adminPassword }: Props) {
     const projectId = videoUploadProjectId
     if (!file || !projectId) return
 
+    // Max 14 saniye kontrolü
+    const duration = await new Promise<number>((resolve) => {
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      video.onloadedmetadata = () => { resolve(video.duration); URL.revokeObjectURL(video.src) }
+      video.onerror = () => resolve(0)
+      video.src = URL.createObjectURL(file)
+    })
+
+    if (duration > 14) {
+      alert(`Video çok uzun (${Math.round(duration)}sn). Maksimum 14 saniye olmalıdır.`)
+      if (videoInputRef.current) videoInputRef.current.value = ''
+      return
+    }
+
     try {
       setUploadingVideo(projectId)
       const formData = new FormData()
