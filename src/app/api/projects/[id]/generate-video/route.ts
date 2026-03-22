@@ -187,8 +187,8 @@ export async function POST(
 
     // Submit 2 Fal AI requests in parallel
     const [submit1, submit2] = await Promise.all([
-      submitToFalQueue(clips.photo1, clips.prompt1, falKey, '5'),
-      submitToFalQueue(clips.photo2, clips.prompt2, falKey, '5'),
+      submitToFalQueue(clips.photo1, clips.prompt1, falKey, '10'),
+      submitToFalQueue(clips.photo2, clips.prompt2, falKey, '10'),
     ])
 
     const clip1 = {
