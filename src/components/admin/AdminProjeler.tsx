@@ -321,20 +321,28 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const uploadPhotos = async (projectId: string, files: File[]): Promise<string[]> => {
     if (!files.length) return []
     setUploading(true)
-    const formData = new FormData()
-    formData.append('projectId', projectId)
-    files.forEach((file) => formData.append('files', file))
+    const urls: string[] = []
 
     try {
-      const res = await fetch('/api/projects/upload', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${adminPassword}` },
-        body: formData,
-      })
-      const data = await res.json()
-      return data.urls || []
+      // Upload one by one to avoid body size limits
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('projectId', projectId)
+        formData.append('files', file)
+
+        const res = await fetch('/api/projects/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${adminPassword}` },
+          body: formData,
+        })
+        const data = await res.json()
+        if (data.urls?.length) {
+          urls.push(...data.urls)
+        }
+      }
+      return urls
     } catch {
-      return []
+      return urls
     } finally {
       setUploading(false)
     }
