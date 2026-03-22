@@ -538,105 +538,123 @@ export default function AdminHeroSlides() {
                   </div>
                 </div>
 
-                {/* Focal Point Picker */}
+                {/* Focal Point & Preview */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-3">
                     <label className="text-white/60 text-xs font-medium flex items-center gap-1.5">
                       <Crosshair size={12} />
-                      Odak Noktası — Resmin üzerine tıklayın
+                      Odak Noktası Ayarla
                     </label>
                     <span className="text-[#b39345] text-xs font-mono">{editSlide.bg_position}</span>
                   </div>
-                  {/* Clickable image for focal point */}
-                  <div
-                    className="relative w-full rounded-xl overflow-hidden border border-white/10 cursor-crosshair group"
-                    style={{ aspectRatio: '16/7' }}
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      const x = Math.round(((e.clientX - rect.left) / rect.width) * 100)
-                      const y = Math.round(((e.clientY - rect.top) / rect.height) * 100)
-                      setEditSlide({ ...editSlide, bg_position: `${x}% ${y}%` })
-                    }}
-                  >
-                    <img
-                      src={editSlide.image_url}
-                      alt="Focal point"
-                      className="w-full h-full object-cover pointer-events-none"
-                      draggable={false}
-                    />
-                    {/* Crosshair overlay */}
-                    {(() => {
-                      const parts = editSlide.bg_position.split(/\s+/)
-                      let xPct = 50, yPct = 50
-                      if (parts[0]) {
-                        if (parts[0] === 'center') xPct = 50
-                        else if (parts[0] === 'left') xPct = 0
-                        else if (parts[0] === 'right') xPct = 100
-                        else xPct = parseFloat(parts[0]) || 50
-                      }
-                      if (parts[1]) {
-                        if (parts[1] === 'center') yPct = 50
-                        else if (parts[1] === 'top') yPct = 0
-                        else if (parts[1] === 'bottom') yPct = 100
-                        else yPct = parseFloat(parts[1]) || 50
-                      }
-                      return (
-                        <>
-                          {/* Crosshair lines */}
-                          <div className="absolute top-0 bottom-0 w-px bg-[#b39345]/60 pointer-events-none" style={{ left: `${xPct}%` }} />
-                          <div className="absolute left-0 right-0 h-px bg-[#b39345]/60 pointer-events-none" style={{ top: `${yPct}%` }} />
-                          {/* Center dot */}
-                          <div
-                            className="absolute w-5 h-5 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                            style={{ left: `${xPct}%`, top: `${yPct}%` }}
-                          >
-                            <div className="w-full h-full rounded-full border-2 border-[#b39345] bg-[#b39345]/30 shadow-lg shadow-black/50" />
+
+                  {/* Vertical slider to move focus up/down */}
+                  {(() => {
+                    const parts = editSlide.bg_position.split(/\s+/)
+                    let yPct = 50
+                    if (parts[1]) {
+                      if (parts[1] === 'center') yPct = 50
+                      else if (parts[1] === 'top') yPct = 0
+                      else if (parts[1] === 'bottom') yPct = 100
+                      else yPct = parseFloat(parts[1]) || 50
+                    }
+                    const xPart = parts[0] || '50%'
+                    return (
+                      <div className="space-y-3">
+                        {/* Slider + big image */}
+                        <div className="flex gap-3 items-stretch">
+                          {/* Vertical range slider */}
+                          <div className="flex flex-col items-center gap-1 py-1">
+                            <ChevronUp size={14} className="text-white/30" />
+                            <input
+                              type="range"
+                              min={0}
+                              max={100}
+                              value={yPct}
+                              onChange={(e) => setEditSlide({ ...editSlide, bg_position: `${xPart} ${e.target.value}%` })}
+                              className="accent-[#b39345] cursor-pointer"
+                              style={{
+                                writingMode: 'vertical-lr' as any,
+                                direction: 'rtl',
+                                height: '160px',
+                                width: '20px',
+                              }}
+                            />
+                            <ChevronDown size={14} className="text-white/30" />
+                            <span className="text-[#b39345] text-[10px] font-mono mt-1">{yPct}%</span>
                           </div>
-                        </>
-                      )
-                    })()}
-                    {/* Hover hint */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all pointer-events-none flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-black/60 px-3 py-1.5 rounded-full transition-opacity">
-                        Odak noktasını seçmek için tıklayın
-                      </span>
-                    </div>
-                  </div>
-                  {/* Preview: Desktop & Mobile */}
-                  <div className="flex gap-3 mt-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1 text-white/30 text-[10px] mb-1">
-                        <Monitor size={10} />
-                        Masaüstü Önizleme
+                          {/* Large clickable image */}
+                          <div
+                            className="relative flex-1 rounded-xl overflow-hidden border border-white/10 cursor-crosshair group"
+                            style={{ minHeight: '200px' }}
+                            onClick={(e) => {
+                              const rect = e.currentTarget.getBoundingClientRect()
+                              const x = Math.round(((e.clientX - rect.left) / rect.width) * 100)
+                              const y = Math.round(((e.clientY - rect.top) / rect.height) * 100)
+                              setEditSlide({ ...editSlide, bg_position: `${x}% ${y}%` })
+                            }}
+                          >
+                            <img
+                              src={editSlide.image_url}
+                              alt="Focal point"
+                              className="w-full h-full object-cover pointer-events-none"
+                              draggable={false}
+                            />
+                            {/* Horizontal focus line */}
+                            <div className="absolute left-0 right-0 h-0.5 bg-[#b39345]/70 pointer-events-none shadow-sm shadow-black/50" style={{ top: `${yPct}%` }} />
+                            {/* Center dot */}
+                            <div
+                              className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                              style={{ left: xPart.includes('%') ? xPart : '50%', top: `${yPct}%` }}
+                            >
+                              <div className="w-full h-full rounded-full border-2 border-[#b39345] bg-[#b39345]/30 shadow-lg shadow-black/50" />
+                            </div>
+                            {/* Hover hint */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all pointer-events-none flex items-center justify-center">
+                              <span className="opacity-0 group-hover:opacity-100 text-white text-[10px] font-medium bg-black/60 px-2 py-1 rounded-full transition-opacity">
+                                Tıkla veya slider ile ayarla
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Previews: Desktop & Mobile side by side, equal height */}
+                        <div className="flex gap-3 items-start">
+                          {/* Desktop */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-1.5 text-white/40 text-xs mb-1.5">
+                              <Monitor size={12} />
+                              Masaüstü
+                            </div>
+                            <div className="w-full rounded-xl overflow-hidden border border-white/[0.08] bg-black relative" style={{ aspectRatio: '16/9' }}>
+                              <div className="w-full h-full" style={{ backgroundImage: `url(${editSlide.image_url})`, backgroundSize: 'cover', backgroundPosition: editSlide.bg_position }} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                              <div className="absolute bottom-2 left-2">
+                                <p className="text-white/50 text-[7px] font-serif">{editSlide.subtitle_tr || 'Alt başlık'}</p>
+                                <p className="text-[#b39345] text-[10px] font-bold font-serif">{editSlide.gold_tr || 'Ana başlık'}</p>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Mobile */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-1.5 text-white/40 text-xs mb-1.5">
+                              <Smartphone size={12} />
+                              Mobil
+                            </div>
+                            <div className="w-full rounded-xl overflow-hidden border border-white/[0.08] bg-black relative" style={{ aspectRatio: '9/16' }}>
+                              <div className="w-full h-full" style={{ backgroundImage: `url(${editSlide.image_url})`, backgroundSize: 'cover', backgroundPosition: editSlide.bg_position }} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                              <div className="absolute bottom-4 left-3 right-3">
+                                <p className="text-white/50 text-[9px] font-serif">{editSlide.subtitle_tr || 'Alt başlık'}</p>
+                                <p className="text-[#b39345] text-sm font-bold font-serif">{editSlide.gold_tr || 'Ana başlık'}</p>
+                                <p className="text-white/30 text-[7px] font-mono mt-1 line-clamp-2">{editSlide.desc_tr || ''}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="w-full rounded-lg overflow-hidden border border-white/[0.06]" style={{ aspectRatio: '16/9' }}>
-                        <div
-                          className="w-full h-full"
-                          style={{
-                            backgroundImage: `url(${editSlide.image_url})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: editSlide.bg_position,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-16">
-                      <div className="flex items-center gap-1 text-white/30 text-[10px] mb-1">
-                        <Smartphone size={10} />
-                        Mobil
-                      </div>
-                      <div className="w-full rounded-lg overflow-hidden border border-white/[0.06]" style={{ aspectRatio: '9/16' }}>
-                        <div
-                          className="w-full h-full"
-                          style={{
-                            backgroundImage: `url(${editSlide.image_url})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: editSlide.bg_position,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    )
+                  })()}
                 </div>
 
                 {/* Text Fields - Turkish First */}
