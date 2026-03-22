@@ -348,9 +348,8 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const generateVideo = async (projectId: string) => {
     try {
       setGeneratingVideo(projectId)
-      setVideoProgress('Fotoğraflar analiz ediliyor...')
+      setVideoProgress('Fotoğraf analiz ediliyor...')
 
-      // Step 1: Start 2-clip generation (Sonnet + 2x Fal AI submit)
       const startRes = await fetch(`/api/projects/${projectId}/generate-video`, {
         method: 'POST',
         headers,
@@ -369,21 +368,19 @@ export default function AdminProjeler({ adminPassword }: Props) {
         return
       }
 
-      const clips = startData.clips
-      if (!clips || clips.length < 2) {
-        alert('Video clip bilgileri alınamadı')
+      const { status_url, response_url } = startData
+      if (!status_url) {
+        alert('Video bilgileri alınamadı')
         return
       }
 
-      // Step 2: Poll both clips — every 5s, max 8 min
-      setVideoProgress('2 klip üretiliyor...')
-      const maxPolls = 96
-      const pollParams = `status_url_1=${encodeURIComponent(clips[0].status_url)}&status_url_2=${encodeURIComponent(clips[1].status_url)}&response_url_1=${encodeURIComponent(clips[0].response_url)}&response_url_2=${encodeURIComponent(clips[1].response_url)}`
+      setVideoProgress('Video üretiliyor...')
+      const maxPolls = 60
+      const pollParams = `status_url=${encodeURIComponent(status_url)}&response_url=${encodeURIComponent(response_url || '')}`
 
       for (let i = 0; i < maxPolls; i++) {
         await new Promise(r => setTimeout(r, 5000))
-        const elapsed = (i + 1) * 5
-        setVideoProgress(`2 klip üretiliyor... (${elapsed}sn)`)
+        setVideoProgress(`Video üretiliyor... (${(i + 1) * 5}sn)`)
 
         const pollRes = await fetch(
           `/api/projects/${projectId}/generate-video?${pollParams}`,
@@ -391,12 +388,8 @@ export default function AdminProjeler({ adminPassword }: Props) {
         )
         const pollData = await pollRes.json()
 
-        if (pollData.clip1 && pollData.clip2) {
-          setVideoProgress(`Klip 1: ${pollData.clip1} | Klip 2: ${pollData.clip2} (${elapsed}sn)`)
-        }
-
         if (pollData.status === 'COMPLETED') {
-          setVideoProgress('Videolar kaydediliyor...')
+          setVideoProgress('Video kaydediliyor...')
           const saveRes = await fetch(
             `/api/projects/${projectId}/generate-video?${pollParams}&save=1`,
             { headers }
@@ -407,9 +400,9 @@ export default function AdminProjeler({ adminPassword }: Props) {
             setProjects(prev => prev.map(p =>
               p.id === projectId ? { ...p, video_urls: saveData.video_urls } : p
             ))
-            alert('3D Video (2 klip) başarıyla oluşturuldu!')
+            alert('3D Video başarıyla oluşturuldu!')
           } else {
-            alert('Videolar oluşturuldu ama kaydedilemedi: ' + (saveData.error || ''))
+            alert('Video kaydedilemedi: ' + (saveData.error || ''))
           }
           return
         }

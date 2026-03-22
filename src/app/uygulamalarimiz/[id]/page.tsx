@@ -10,45 +10,55 @@ import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
 
-/** Seamless multi-clip player for detail page */
-function DetailMultiPlayer({ urls, poster }: { urls: string[]; poster?: string }) {
-  const [currentClip, setCurrentClip] = useState(0)
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
+/** Video player with intro for detail page */
+function DetailVideoPlayer({ url, poster }: { url: string; poster?: string }) {
+  const [phase, setPhase] = useState<'intro' | 'fade' | 'playing'>('intro')
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    urls.forEach((_, i) => {
-      if (videoRefs.current[i]) videoRefs.current[i]!.load()
-    })
-  }, [urls])
-
-  const [fading, setFading] = useState(false)
-
-  const handleEnded = useCallback((clipIndex: number) => {
-    const nextClip = clipIndex < urls.length - 1 ? clipIndex + 1 : 0
-    setFading(true)
-    setTimeout(() => {
-      setCurrentClip(nextClip)
-      videoRefs.current[nextClip]?.play().catch(() => {})
-      setTimeout(() => setFading(false), 100)
-    }, 500)
-  }, [urls.length])
+    const t1 = setTimeout(() => setPhase('fade'), 1500)
+    const t2 = setTimeout(() => {
+      setPhase('playing')
+      videoRef.current?.play().catch(() => {})
+    }, 2000)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
 
   return (
-    <div className={`relative transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}>
-      {urls.map((url, i) => (
-        <video
-          key={i}
-          ref={el => { videoRefs.current[i] = el }}
-          src={url}
-          preload="auto"
-          controls={i === currentClip}
-          playsInline
-          onEnded={() => handleEnded(i)}
-          className={`w-full ${i === currentClip ? 'block' : 'hidden'}`}
-          style={{ maxHeight: '50vh' }}
-          poster={i === 0 ? poster : undefined}
-        />
-      ))}
+    <div className="relative" style={{ minHeight: '30vh' }}>
+      {phase !== 'playing' && (
+        <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-black gap-4 transition-opacity duration-500 ${phase === 'fade' ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="flex items-center gap-3 animate-[fadeInScale_1.2s_ease-out_forwards]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ur2-dark.png" alt="Urlastone" className="w-9 h-9 object-contain rounded-lg" />
+            <span className="font-heading text-lg font-bold tracking-wider">
+              <span className="text-gold-400">URLA</span><span className="text-white">STONE</span>
+            </span>
+          </div>
+          <p className="text-white/30 text-[9px] font-mono tracking-[0.3em] uppercase animate-[fadeIn_1s_ease-out_0.5s_forwards] opacity-0">
+            3D Showcase
+          </p>
+          <style>{`
+            @keyframes fadeInScale {
+              0% { opacity: 0; transform: scale(0.8); }
+              60% { opacity: 1; transform: scale(1.02); }
+              100% { opacity: 1; transform: scale(1); }
+            }
+            @keyframes fadeIn { to { opacity: 1; } }
+          `}</style>
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        src={url}
+        preload="auto"
+        controls
+        playsInline
+        loop
+        className="w-full"
+        style={{ maxHeight: '50vh' }}
+        poster={poster}
+      />
     </div>
   )
 }
@@ -163,7 +173,7 @@ export default function ProjectDetailPage() {
                     alt=""
                     className="absolute top-3 right-3 w-8 h-8 rounded-md opacity-30 z-10 object-contain"
                   />
-                  <DetailMultiPlayer urls={project.video_urls} poster={photos[0]} />
+                  <DetailVideoPlayer url={project.video_urls[0]} poster={photos[0]} />
                   <audio src="/audio/project-ambient.mp3" autoPlay loop style={{ display: 'none' }} />
                 </div>
               </div>
