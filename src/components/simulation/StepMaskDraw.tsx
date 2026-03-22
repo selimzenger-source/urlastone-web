@@ -374,9 +374,12 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
       </div>
 
       {/* Instruction note between toolbar and canvas */}
-      <p className="text-gold-400/70 text-xs font-heading italic mb-3 px-1">
-        {t.instructionNote}
-      </p>
+      <div className="flex items-start gap-2 mb-3 px-2 py-2 bg-gold-400/[0.06] rounded-lg border border-gold-400/[0.10]">
+        <span className="text-base leading-none mt-0.5">📌</span>
+        <p className="text-gold-400 text-[13px] font-body leading-snug">
+          {t.instructionNote}
+        </p>
+      </div>
 
       {/* Canvas area */}
       <div className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-black">
