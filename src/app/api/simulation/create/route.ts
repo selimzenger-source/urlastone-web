@@ -45,47 +45,95 @@ const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
   },
 }
 
-// Gemini prompt templates — the second image is ALWAYS the stone reference, Gemini must replicate it exactly
-const GEMINI_PROMPTS: Record<string, string> = {
-  facade: `The first image is a building photo. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
+// Surface-specific context — what to clad and what to preserve
+const SURFACE_CONTEXT: Record<string, { scene: string; apply: string; preserve: string }> = {
+  facade: {
+    scene: 'a building exterior',
+    apply: 'EVERY visible wall surface — front, sides, corners, columns, balcony walls, ALL of it. Zero bare plaster or concrete remaining.',
+    preserve: 'windows, doors, roof, sky, ground, vegetation, railings',
+  },
+  fireplace: {
+    scene: 'a room with a fireplace',
+    apply: 'the fireplace surround and chimney area',
+    preserve: 'furniture, floor, ceiling, walls away from fireplace',
+  },
+  interior: {
+    scene: 'an interior room',
+    apply: 'all bare wall surfaces',
+    preserve: 'fireplace, countertops, furniture, floor, ceiling, fixtures',
+  },
+  bathroom: {
+    scene: 'a bathroom',
+    apply: 'all bathroom wall surfaces',
+    preserve: 'toilet, sink, mirror, fixtures, bathtub, shower, floor',
+  },
+  floor: {
+    scene: 'a room',
+    apply: 'the entire floor surface',
+    preserve: 'walls, furniture, ceiling, fixtures',
+  },
+}
 
-CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
-2. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces — corners, edges, columns, every section. No variation between areas.
+// Build the final Gemini prompt — scale + color fidelity come FIRST (highest priority)
+function buildGeminiPrompt(
+  surfaceContext: string,
+  sizeDesc: string,
+  groutInstruction: string,
+  hasPattern: boolean,
+  patternImageNum: number | null,
+  hasMask: boolean,
+  maskImageNum: number | null,
+): string {
+  const ctx = SURFACE_CONTEXT[surfaceContext] || SURFACE_CONTEXT.facade
 
-Apply this stone cladding to EVERY visible wall surface. No bare plaster or concrete remaining. Preserve windows, doors, roof, sky, ground, vegetation. Real installed cladding with 3D depth and natural shadows. Keep the same camera angle. Photorealistic.`,
+  if (hasMask) {
+    // Brush mode with mask
+    const patternRef = hasPattern
+      ? ` Image ${patternImageNum} is a diagram showing the stone laying PATTERN.`
+      : ''
+    return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in).${patternRef} Image ${maskImageNum} is a black/white mask — WHITE = apply stone.
 
-  fireplace: `The first image is a room with a fireplace. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
+### MOST IMPORTANT — STONE SIZE (read this FIRST):
+COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
+${sizeDesc}
+${hasPattern ? `Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
 
-CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
-2. UNIFORMITY: Use the IDENTICAL stone pattern on the entire fireplace surface.
+### STONE COLOR FIDELITY:
+Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark grey), you MUST reproduce that SAME color distribution. Do NOT average the colors into one uniform tone. Each stone piece should randomly pick from the color range visible in Image 2.
 
-Apply this stone to the fireplace surround and chimney area. Real installed cladding with 3D depth and natural shadows. Keep furniture, floor, ceiling, and everything else exactly the same. Photorealistic result.`,
+### OTHER RULES:
+- Replicate the EXACT stone texture, surface quality from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: Same stone pattern everywhere in the masked area.
+- Apply ONLY to white mask areas. Black areas = untouched.
+- Real installed cladding with 3D depth and natural shadows — NOT flat wallpaper.
+- ${groutInstruction}
+- Photorealistic result.`
+  }
 
-  interior: `The first image is an interior room. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
+  // Full mode
+  const patternRef = hasPattern
+    ? `\n\nImage 3 is a diagram showing the stone laying PATTERN — follow it for stone arrangement.`
+    : ''
 
-CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
-2. UNIFORMITY: Use the IDENTICAL stone pattern on ALL wall surfaces.
+  return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in — NOT actual installed size).${patternRef}
 
-Apply this stone to bare wall surfaces only. Do not apply to fireplace, countertops, furniture, floor, ceiling, or fixtures. Real installed cladding with 3D depth and natural shadows. Keep everything else exactly the same. Photorealistic result.`,
+### MOST IMPORTANT — STONE SIZE (read this FIRST):
+COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct. Image 2 is a CLOSE-UP photo of a few stones — when installed on a real wall, each stone piece is TINY compared to the wall.
+${sizeDesc}
 
-  bathroom: `The first image is a bathroom. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
+### STONE COLOR FIDELITY:
+Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark/near-black, some cream), you MUST reproduce that EXACT SAME color variety and distribution. Do NOT simplify or average into one uniform color. Each stone piece should randomly vary across the full color range visible in Image 2.
 
-CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
-2. UNIFORMITY: ALL wall surfaces must use the IDENTICAL stone pattern.
+### COVERAGE:
+Apply this stone to ${ctx.apply} 100% coverage on target surfaces — no gaps, no bare patches, no uncovered areas.
+Preserve: ${ctx.preserve}. Keep the same camera angle.
 
-Apply this stone to all bathroom wall surfaces. Real installed cladding with 3D depth and natural shadows. Keep toilet, sink, mirror, fixtures, bathtub, shower, and floor unchanged. Photorealistic result.`,
-
-  floor: `The first image is a room. The second image is a close-up stone texture sample — it shows the stone type to use but is zoomed in.
-
-CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, and surface quality from the second image. Do NOT invent a different stone type.
-2. UNIFORMITY: The ENTIRE floor must use the IDENTICAL stone pattern.
-
-Apply this stone to the floor surface. Real installed tiles with 3D depth and natural shadows. Keep walls, furniture, and everything else unchanged. Photorealistic result.`,
+### QUALITY:
+- Replicate EXACT stone texture and surface quality from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: IDENTICAL stone pattern on ALL target surfaces — corners, edges, columns included.
+- Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper.
+- ${groutInstruction}
+- Photorealistic result.`
 }
 
 // Category-based scale instructions — adapted per surface type for correct size references
@@ -285,29 +333,16 @@ async function generateWithGemini(
   const patternImageNum = hasPattern ? 3 : null
   const maskImageNum = maskBase64 ? (hasPattern ? 4 : 3) : null
 
-  // Build prompt based on mode (full vs brush with mask)
-  let prompt: string
-  if (maskBase64) {
-    // Brush mode with mask
-    const patternRef = hasPattern
-      ? ` Image ${patternImageNum} is a diagram showing the stone laying PATTERN — how stones are arranged and their relative sizes.`
-      : ''
-    prompt = `Image 1 is a photo of a space. Image 2 is a close-up stone texture sample (zoomed in) showing the stone type to use.${patternRef} Image ${maskImageNum} is a black and white mask — the WHITE areas indicate exactly where to apply the stone.
-
-CRITICAL RULES:
-1. Replicate the EXACT stone texture, color, shape, and pattern from Image 2. Do NOT invent a different stone type.
-2. SCALE: Image 2 is a close-up. Each stone piece must be SMALL when applied — ${sizeDesc}${hasPattern ? ` Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
-3. UNIFORMITY: Use the IDENTICAL stone pattern across the entire masked area.
-
-Apply this stone ONLY to the white areas of the mask. Do NOT change anything in the black areas. Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper. ${groutInstruction} Photorealistic result.`
-  } else {
-    const basePrompt = GEMINI_PROMPTS[surfaceContext] || GEMINI_PROMPTS.facade
-    const patternRef = hasPattern
-      ? `\n\nImage 3 is a diagram showing the stone laying PATTERN — how stones should be arranged. Follow this pattern for the stone layout.`
-      : ''
-    // Append grout, size and pattern instructions to the base prompt
-    prompt = `${basePrompt}${patternRef}\n\nSTONE SIZE: ${sizeDesc}\n\n${groutInstruction}`
-  }
+  // Build prompt using unified builder — scale + color fidelity are prioritized at the top
+  const prompt = buildGeminiPrompt(
+    surfaceContext,
+    sizeDesc,
+    groutInstruction,
+    !!hasPattern,
+    patternImageNum,
+    !!maskBase64,
+    maskImageNum,
+  )
 
   console.log('[Gemini] Calling gemini-3-pro-image-preview...')
   console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern image)' : '', maskBase64 ? '(brush mode with mask)' : '(full mode)')
