@@ -254,6 +254,16 @@ export default function TeklifForm() {
         }),
       })
       if (!res.ok) throw new Error('Failed')
+      const teklifData = await res.json()
+
+      // Upload images if any
+      if (dosyalar.length > 0 && teklifData?.id) {
+        const uploadForm = new FormData()
+        uploadForm.append('teklif_id', teklifData.id)
+        dosyalar.forEach(file => uploadForm.append('files', file))
+        await fetch('/api/teklifler/upload', { method: 'POST', body: uploadForm })
+      }
+
       setBasarili(true)
     } catch {
       alert('Bir hata oluştu. Lütfen tekrar deneyin.')

@@ -30,6 +30,17 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   }
 
   const { id } = await params
+
+  // Delete storage files for this teklif
+  const { data: files } = await supabaseAdmin.storage
+    .from('teklifler')
+    .list(id)
+  if (files && files.length > 0) {
+    await supabaseAdmin.storage
+      .from('teklifler')
+      .remove(files.map(f => `${id}/${f.name}`))
+  }
+
   const { error } = await supabaseAdmin
     .from('teklifler')
     .delete()

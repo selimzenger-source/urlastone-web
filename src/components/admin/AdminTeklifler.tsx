@@ -12,6 +12,8 @@ import {
   Eye,
   Loader2,
   Trash2,
+  Download,
+  ZoomIn,
 } from 'lucide-react'
 
 type Durum = 'Yeni' | 'İletişime Geçildi' | 'Teklif Verildi' | 'Onaylandı' | 'Reddedildi'
@@ -51,6 +53,7 @@ export default function AdminTeklifler() {
   const [filterDurum, setFilterDurum] = useState<Durum | 'Tümü'>('Tümü')
   const [selectedTeklif, setSelectedTeklif] = useState<Teklif | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
@@ -75,18 +78,51 @@ export default function AdminTeklifler() {
     return matchSearch && matchDurum
   })
 
+  const deleteAllPhotos = async (teklifId: string, fotoUrls: string[]) => {
+    if (fotoUrls.length === 0) return
+    for (const url of fotoUrls) {
+      await fetch('/api/teklifler/delete-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ teklif_id: teklifId, photo_url: url }),
+      })
+    }
+  }
+
   const updateDurum = async (id: string, yeniDurum: Durum) => {
     await fetch(`/api/teklifler/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
       body: JSON.stringify({ durum: yeniDurum }),
     })
+
+    // Auto-delete photos when status is Reddedildi or Onaylandı (no longer needed)
+    if (yeniDurum === 'Reddedildi' || yeniDurum === 'Onaylandı') {
+      const teklif = teklifler.find(t => t.id === id)
+      if (teklif && teklif.foto_urls.length > 0) {
+        await deleteAllPhotos(id, teklif.foto_urls)
+      }
+    }
+
+    const clearedPhotos = yeniDurum === 'Reddedildi' || yeniDurum === 'Onaylandı'
     setTeklifler((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, durum: yeniDurum } : t))
+      prev.map((t) => (t.id === id ? { ...t, durum: yeniDurum, ...(clearedPhotos ? { foto_urls: [] } : {}) } : t))
     )
     if (selectedTeklif?.id === id) {
-      setSelectedTeklif((prev) => prev ? { ...prev, durum: yeniDurum } : null)
+      setSelectedTeklif((prev) => prev ? { ...prev, durum: yeniDurum, ...(clearedPhotos ? { foto_urls: [] } : {}) } : null)
     }
+  }
+
+  const handleDeletePhoto = async (teklifId: string, photoUrl: string) => {
+    await fetch('/api/teklifler/delete-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ teklif_id: teklifId, photo_url: photoUrl }),
+    })
+    // Update local state
+    const updatedUrls = (selectedTeklif?.foto_urls || []).filter(u => u !== photoUrl)
+    setSelectedTeklif(prev => prev ? { ...prev, foto_urls: updatedUrls } : null)
+    setTeklifler(prev => prev.map(t => t.id === teklifId ? { ...t, foto_urls: updatedUrls } : t))
   }
 
   const handleDelete = async (id: string) => {
@@ -275,6 +311,50 @@ export default function AdminTeklifler() {
                 </div>
               )}
 
+              {/* Fotoğraflar */}
+              {selectedTeklif.foto_urls.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">
+                    Fotoğraflar ({selectedTeklif.foto_urls.length})
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedTeklif.foto_urls.map((url, i) => (
+                      <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.08]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`Fotoğraf ${i + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setLightboxUrl(url) }}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                            title="Büyüt"
+                          >
+                            <ZoomIn size={14} className="text-white" />
+                          </button>
+                          <a
+                            href={url}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                            title="İndir"
+                          >
+                            <Download size={14} className="text-white" />
+                          </a>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeletePhoto(selectedTeklif.id, url) }}
+                            className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 transition-colors"
+                            title="Sil"
+                          >
+                            <Trash2 size={14} className="text-red-400" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Açıklama */}
               {selectedTeklif.aciklama && (
                 <div className="space-y-2">
@@ -310,6 +390,43 @@ export default function AdminTeklifler() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center">
+            <div className="absolute top-0 right-0 flex items-center gap-2 z-10">
+              <a
+                href={lightboxUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                title="İndir"
+              >
+                <Download size={20} className="text-white" />
+              </a>
+              <button
+                onClick={() => setLightboxUrl(null)}
+                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <X size={20} className="text-white" />
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxUrl}
+              alt="Fotoğraf"
+              className="max-w-full max-h-[85vh] object-contain rounded-xl"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}
