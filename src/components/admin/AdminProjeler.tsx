@@ -190,7 +190,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
       if (coords) {
         // Koordinatları bulduk, ters geocoding ile şehir/ülke al
         const revRes = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`,
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&zoom=8`,
           { headers: { 'Accept-Language': 'tr', 'User-Agent': 'UrlastoneAdmin/1.0' } }
         )
         const revData = await revRes.json()
@@ -238,7 +238,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
           if (!city && data.lat) {
             const revRes = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.lat}&lon=${data.lng}&addressdetails=1`,
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.lat}&lon=${data.lng}&addressdetails=1&zoom=8`,
               { headers: { 'Accept-Language': 'tr', 'User-Agent': 'UrlastoneAdmin/1.0' } }
             )
             const revData = await revRes.json()
