@@ -20,9 +20,9 @@ async function generateMultiClipPrompts(
 
   const defaultResult = {
     photo1: photos[0],
-    prompt1: 'Slow cinematic orbit clockwise around this building exterior, smooth steady camera, golden hour warm lighting, professional architectural drone footage',
+    prompt1: 'Slow cinematic orbit clockwise around this stone-clad building, camera focuses on natural stone texture and craftsmanship details, warm golden hour lighting, professional architectural drone footage, smooth steady movement',
     photo2: photos[Math.min(1, photos.length - 1)],
-    prompt2: 'Dramatic upward crane shot rising from ground level to reveal the full building facade, smooth vertical camera movement, natural daylight, cinematic architectural photography',
+    prompt2: 'Camera rises smoothly upward from ground level along the stone facade, revealing natural stone cladding floor by floor, ending with full building against clear sky, cinematic vertical reveal shot',
   }
 
   if (!apiKey || photos.length < 1) return defaultResult
@@ -65,11 +65,12 @@ async function generateMultiClipPrompts(
 Pick the 2 BEST photos showing different angles of the building/stone work. Write 2 SHORT English video prompts for an AI image-to-video model. These 2 clips will play back-to-back as ONE continuous cinematic video.
 
 CRITICAL RULES:
-- Clip 1 (10 seconds): Focus on the STONE WORK and BUILDING DETAILS — slow cinematic orbit or dolly showing the craftsmanship, texture of natural stone cladding, architectural details up close
-- Clip 2 (5 seconds): RISING upward shot — camera tilts/rises vertically from building base upward revealing the full structure against the sky. NOT bird's eye, but ground-to-sky reveal
+- Clip 1 (10 seconds): Slow cinematic orbit or dolly around the building, focusing on the NATURAL STONE CLADDING craftsmanship, texture details, architectural elements. Camera moves smoothly and steadily.
+- Clip 2 (10 seconds): Camera RISES vertically from ground level upward along the building facade, revealing stone work floor by floor, ending with the full structure against the sky. Smooth upward tilt, NOT bird's eye view.
 - Each prompt must feel like a PROFESSIONAL architectural showcase video
-- Focus on the STONE APPLICATION and BUILDING QUALITY, not generic scenery
+- Focus on the STONE APPLICATION and BUILDING QUALITY — the stone is the star
 - Describe lighting/atmosphere matching each photo
+- Keep each prompt under 40 words
 
 Reply ONLY with JSON, no markdown:
 {"photo1": 1, "prompt1": "...", "photo2": 2, "prompt2": "..."}

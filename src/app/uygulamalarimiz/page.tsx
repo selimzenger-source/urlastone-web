@@ -45,11 +45,24 @@ function MultiClipPlayer({ urls }: { urls: string[] }) {
 
   if (phase === 'intro') {
     return (
-      <div className="flex items-center justify-center bg-black" style={{ minHeight: '40vh' }}>
-        <div className="animate-pulse">
+      <div className="flex flex-col items-center justify-center bg-black gap-4" style={{ minHeight: '40vh' }}>
+        <div className="animate-[fadeInScale_1.2s_ease-out_forwards]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-watermark.jpeg" alt="URLASTONE" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
+          <img src="/logo-watermark.jpeg" alt="URLASTONE" className="w-28 h-28 md:w-36 md:h-36 object-contain rounded-xl" />
         </div>
+        <p className="text-gold-400/60 text-[10px] font-mono tracking-[0.3em] uppercase animate-[fadeIn_1s_ease-out_0.5s_forwards] opacity-0">
+          3D Showcase
+        </p>
+        <style>{`
+          @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.8); }
+            60% { opacity: 1; transform: scale(1.02); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes fadeIn {
+            to { opacity: 1; }
+          }
+        `}</style>
       </div>
     )
   }
