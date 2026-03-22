@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle, Mic, MicOff } from 'lucide-react'
+import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle, Mic, MicOff, MessageSquare } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Props {
@@ -22,74 +22,92 @@ const LOCALE_MAP: Record<string, string> = {
   de: 'de-DE',
 }
 
+const BRUSH_COLORS = [
+  { color: 'rgba(179, 147, 69, 0.45)', label: 'Gold' },
+  { color: 'rgba(59, 130, 246, 0.45)', label: 'Blue' },
+  { color: 'rgba(239, 68, 68, 0.45)', label: 'Red' },
+  { color: 'rgba(34, 197, 94, 0.45)', label: 'Green' },
+]
+
 const MASK_TEXTS: Record<string, {
-  title: string; desc: string; brush: string; undo: string; clear: string
-  submit: string; back: string; hint: string; notePlaceholder: string; micTooltip: string; micListening: string
+  title: string; desc: string; brush: string; undo: string; clear: string; color: string
+  submit: string; back: string; hint: string; chatPlaceholder: string; micTooltip: string; micListening: string
+  instructionNote: string
 }> = {
   tr: {
     title: 'Alanı İşaretleyin',
-    desc: 'Parmağınızla veya farenizle taş uygulamak istediğiniz duvar bölgelerini boyayın. Fırça boyutunu kaydırıcıyla ayarlayabilirsiniz. Pencere, kapı, gökyüzü ve zemin gibi alanları boyamayın — sadece taş kaplamak istediğiniz duvar yüzeylerini işaretleyin',
+    desc: 'Taş kaplamak istediğiniz duvar yüzeylerini boyayın',
     brush: 'Fırça',
+    color: 'Renk',
     undo: 'Geri Al',
     clear: 'Temizle',
     submit: 'AI ile Uygula',
     back: 'Geri',
     hint: 'Fırçayı büyütüp taş uygulanacak duvar alanlarını boyayın',
-    notePlaceholder: 'Opsiyonel: AI\'ya ek talimat yazın veya sesli not bırakın (🎤). Örn: "Sadece zemin kata uygula", "Köşeleri boş bırak", "Balkon altlarını kapla"',
+    instructionNote: 'Pencere, kapı, gökyüzü ve zemini boyamayın — sadece taş kaplamak istediğiniz duvarları işaretleyin. Fırça boyutunu ve rengini yukarıdan ayarlayabilirsiniz',
+    chatPlaceholder: 'AI\'ya ek talimat yazmak için buraya tıklayın... Örn: "Sadece zemin kata uygula"',
     micTooltip: 'Mikrofona basıp konuşarak not ekleyin',
-    micListening: 'Dinliyor... Konuşmayı bitirince otomatik duracak',
+    micListening: 'Dinliyor...',
   },
   en: {
     title: 'Mark the Area',
-    desc: 'Use your finger or mouse to paint the wall areas where you want stone applied. Adjust brush size with the slider. Avoid painting windows, doors, sky, and ground — only mark the wall surfaces you want clad with stone',
+    desc: 'Paint the wall surfaces where you want stone applied',
     brush: 'Brush',
+    color: 'Color',
     undo: 'Undo',
     clear: 'Clear',
     submit: 'Apply with AI',
     back: 'Back',
     hint: 'Increase brush size and paint the wall areas for stone cladding',
-    notePlaceholder: 'Optional: Add instructions for AI or use voice (🎤). E.g. "Only apply to ground floor", "Skip the corners", "Cover balcony walls too"',
+    instructionNote: 'Avoid painting windows, doors, sky, and ground — only mark the wall surfaces you want clad. Adjust brush size and color from the toolbar above',
+    chatPlaceholder: 'Click here to add instructions for AI... E.g. "Only apply to ground floor"',
     micTooltip: 'Tap and speak to add a voice note',
-    micListening: 'Listening... Will stop automatically when you finish',
+    micListening: 'Listening...',
   },
   es: {
     title: 'Marque el area',
-    desc: 'Use su dedo o raton para pintar las areas de pared donde desea aplicar piedra. Ajuste el tamano del pincel con el control deslizante. Evite pintar ventanas, puertas, cielo y suelo — solo marque las superficies de pared que desea revestir',
+    desc: 'Pinte las superficies de pared donde desea aplicar piedra',
     brush: 'Pincel',
+    color: 'Color',
     undo: 'Deshacer',
     clear: 'Limpiar',
     submit: 'Aplicar con IA',
     back: 'Atras',
-    hint: 'Aumente el tamano del pincel y pinte las areas de pared para revestimiento',
-    notePlaceholder: 'Opcional: Instrucciones para IA o use voz (🎤). Ej: "Solo planta baja", "Dejar las esquinas", "Cubrir balcones"',
+    hint: 'Aumente el tamano del pincel y pinte las areas de pared',
+    instructionNote: 'Evite pintar ventanas, puertas, cielo y suelo — solo marque las paredes. Ajuste tamano y color del pincel en la barra superior',
+    chatPlaceholder: 'Haga clic aqui para agregar instrucciones para IA... Ej: "Solo planta baja"',
     micTooltip: 'Toque y hable para agregar una nota de voz',
-    micListening: 'Escuchando... Se detendra automaticamente',
+    micListening: 'Escuchando...',
   },
   ar: {
     title: 'حدد المنطقة',
-    desc: 'استخدم إصبعك أو الماوس لرسم مناطق الجدران التي تريد تطبيق الحجر عليها. اضبط حجم الفرشاة باستخدام شريط التمرير. تجنب رسم النوافذ والأبواب والسماء والأرض — حدد فقط أسطح الجدران المراد تكسيتها',
+    desc: 'ارسم على أسطح الجدران التي تريد تطبيق الحجر عليها',
     brush: 'فرشاة',
+    color: 'لون',
     undo: 'تراجع',
     clear: 'مسح',
     submit: 'تطبيق بالذكاء الاصطناعي',
     back: 'رجوع',
-    hint: 'كبّر الفرشاة وارسم على مناطق الجدران المراد تكسيتها بالحجر',
-    notePlaceholder: 'اختياري: أضف تعليمات للذكاء الاصطناعي أو استخدم الصوت (🎤). مثال: "الطابق الأرضي فقط"، "اترك الزوايا"',
+    hint: 'كبّر الفرشاة وارسم على مناطق الجدران',
+    instructionNote: 'تجنب رسم النوافذ والأبواب والسماء والأرض — حدد فقط الجدران. اضبط حجم ولون الفرشاة من الشريط أعلاه',
+    chatPlaceholder: 'انقر هنا لإضافة تعليمات للذكاء الاصطناعي... مثال: "الطابق الأرضي فقط"',
     micTooltip: 'اضغط وتحدث لإضافة ملاحظة صوتية',
-    micListening: 'جارٍ الاستماع... سيتوقف تلقائياً',
+    micListening: 'جارٍ الاستماع...',
   },
   de: {
     title: 'Bereich markieren',
-    desc: 'Verwenden Sie Ihren Finger oder die Maus, um die Wandbereiche zu markieren, auf denen Stein angebracht werden soll. Passen Sie die Pinselgrosse mit dem Schieberegler an. Vermeiden Sie Fenster, Turen, Himmel und Boden — markieren Sie nur die Wandflachen fur die Steinverkleidung',
+    desc: 'Markieren Sie die Wandflachen fur die Steinverkleidung',
     brush: 'Pinsel',
+    color: 'Farbe',
     undo: 'Ruckgangig',
     clear: 'Loschen',
     submit: 'Mit KI anwenden',
     back: 'Zuruck',
-    hint: 'Pinselgrosse erhohen und Wandflachen fur Steinverkleidung bemalen',
-    notePlaceholder: 'Optional: Anweisungen fur KI oder Sprachnotiz (🎤). Z.B. "Nur Erdgeschoss", "Ecken auslassen", "Balkone abdecken"',
+    hint: 'Pinselgrosse erhohen und Wandflachen bemalen',
+    instructionNote: 'Vermeiden Sie Fenster, Turen, Himmel und Boden — markieren Sie nur die Wandflachen. Pinselgrosse und Farbe oben anpassen',
+    chatPlaceholder: 'Klicken Sie hier, um KI-Anweisungen hinzuzufugen... Z.B. "Nur Erdgeschoss"',
     micTooltip: 'Tippen und sprechen Sie fur eine Sprachnotiz',
-    micListening: 'Hort zu... Stoppt automatisch',
+    micListening: 'Hort zu...',
   },
 }
 
@@ -100,6 +118,7 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [brushSize, setBrushSize] = useState(60)
+  const [brushColor, setBrushColor] = useState(BRUSH_COLORS[0].color)
   const [history, setHistory] = useState<ImageData[]>([])
   const [hasMask, setHasMask] = useState(false)
 
@@ -147,12 +166,12 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
     ctx.globalCompositeOperation = 'source-over'
-    ctx.fillStyle = 'rgba(179, 147, 69, 0.45)' // gold with transparency
+    ctx.fillStyle = brushColor
     ctx.beginPath()
     ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2)
     ctx.fill()
     setHasMask(true)
-  }, [brushSize])
+  }, [brushSize, brushColor])
 
   const handleStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
@@ -304,7 +323,7 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-4 p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
+      <div className="flex items-center gap-3 mb-3 p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
         <Paintbrush size={14} className="text-gold-400" />
         <span className="text-white/40 text-xs font-mono">{t.brush}:</span>
         <input
@@ -316,6 +335,23 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
           className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400"
         />
         <span className="text-white/30 text-[10px] font-mono w-6 text-right">{brushSize}</span>
+
+        <div className="w-px h-5 bg-white/10 mx-1" />
+
+        {/* Brush color picker */}
+        <div className="flex items-center gap-1.5">
+          {BRUSH_COLORS.map((bc) => (
+            <button
+              key={bc.label}
+              onClick={() => setBrushColor(bc.color)}
+              className={`w-5 h-5 rounded-full border-2 transition-all ${
+                brushColor === bc.color ? 'border-white scale-110' : 'border-white/20 hover:border-white/50'
+              }`}
+              style={{ backgroundColor: bc.color.replace('0.45', '1') }}
+              title={bc.label}
+            />
+          ))}
+        </div>
 
         <div className="w-px h-5 bg-white/10 mx-1" />
 
@@ -336,6 +372,11 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
           <Trash2 size={14} />
         </button>
       </div>
+
+      {/* Instruction note between toolbar and canvas */}
+      <p className="text-gold-400/70 text-xs font-heading italic mb-3 px-1">
+        {t.instructionNote}
+      </p>
 
       {/* Canvas area */}
       <div className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-black">
@@ -372,19 +413,22 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
         )}
       </div>
 
-      {/* User note textarea + microphone */}
+      {/* Chat-style input box for AI instructions */}
       <div className="mt-4 relative">
+        <div className="absolute left-4 top-4 text-white/20">
+          <MessageSquare size={16} />
+        </div>
         <textarea
           value={userNote}
           onChange={(e) => setUserNote(e.target.value)}
-          placeholder={t.notePlaceholder}
-          rows={2}
-          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 pr-12 text-white/80 text-sm font-body placeholder:text-white/20 resize-none focus:outline-none focus:border-gold-400/30 transition-colors"
+          placeholder={t.chatPlaceholder}
+          rows={3}
+          className="w-full bg-white/[0.04] border border-white/[0.10] rounded-2xl pl-11 pr-12 py-3.5 text-white/80 text-sm font-body placeholder:text-white/25 resize-none focus:outline-none focus:border-gold-400/40 focus:bg-white/[0.06] transition-all"
         />
         {speechSupported && (
           <button
             onClick={toggleSpeech}
-            className={`absolute right-3 top-3 p-1.5 rounded-lg transition-all ${
+            className={`absolute right-3 top-3.5 p-2 rounded-xl transition-all ${
               isListening
                 ? 'text-red-400 bg-red-400/10 animate-pulse'
                 : 'text-white/30 hover:text-gold-400 hover:bg-white/[0.06]'
@@ -392,7 +436,7 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
             title={isListening ? t.micListening : t.micTooltip}
             type="button"
           >
-            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
           </button>
         )}
       </div>

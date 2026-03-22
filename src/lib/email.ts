@@ -5,7 +5,9 @@ function getResend() {
 }
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@urlastone.com'
+const ADMIN_EMAILS = (process.env.ADMIN_NOTIFICATION_EMAILS || 'info@urlastone.com,cihanzenger@gmail.com')
+  .split(',')
+  .map(e => e.trim())
 
 interface TeklifData {
   ad_soyad: string
@@ -310,7 +312,7 @@ export async function sendAdminNotification(data: TeklifData) {
 
   await getResend().emails.send({
     from: `URLASTONE Web <${FROM_EMAIL}>`,
-    to: ADMIN_EMAIL,
+    to: ADMIN_EMAILS,
     subject: `Yeni Teklif: ${data.ad_soyad} — ${data.proje_tipi}`,
     html,
   })
