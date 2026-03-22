@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// Fal AI video generation can take up to 3 minutes
-export const maxDuration = 300
+// Each request must finish within 60s (Vercel Hobby plan)
+export const maxDuration = 60
 
 const FAL_VIDEO_URL = 'https://queue.fal.run/fal-ai/kling-video/v2.1/standard/image-to-video'
 const FAL_STATUS_BASE = 'https://queue.fal.run/fal-ai/kling-video/v2.1/standard/image-to-video/requests'
@@ -27,7 +27,6 @@ async function generateVideoPrompt(
   const startTime = Date.now()
 
   try {
-    // Download image and convert to base64
     const imgResponse = await fetch(imageUrl)
     const imgBuffer = Buffer.from(await imgResponse.arrayBuffer())
     const base64 = imgBuffer.toString('base64')
@@ -83,88 +82,6 @@ Reply ONLY with the prompt text, nothing else. Keep it under 50 words.`,
   }
 }
 
-/** Submit video generation to Fal AI queue and poll for result */
-async function generateVideo(imageUrl: string, prompt: string): Promise<string> {
-  const falKey = process.env.FAL_API_KEY
-  if (!falKey) throw new Error('FAL_API_KEY not configured')
-
-  console.log('[Video] Submitting to Fal AI queue...')
-
-  // Submit to queue
-  const submitResponse = await fetch(FAL_VIDEO_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Key ${falKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      image_url: imageUrl,
-      prompt,
-      duration: '10',
-      negative_prompt: 'blur, distort, low quality, shaky camera, fast motion',
-      cfg_scale: 0.5,
-    }),
-  })
-
-  if (!submitResponse.ok) {
-    const errText = await submitResponse.text()
-    console.error('[Video] Fal AI submit error:', submitResponse.status, errText)
-    throw new Error(`Fal AI submission failed: ${submitResponse.status}`)
-  }
-
-  const submitResult = await submitResponse.json()
-  const requestId = submitResult.request_id
-
-  if (!requestId) {
-    // Direct response (not queued)
-    const videoUrl = submitResult.video?.url
-    if (videoUrl) return videoUrl
-    throw new Error('No request_id or video in response')
-  }
-
-  console.log('[Video] Queued, request_id:', requestId)
-
-  // Poll for completion (max 4 minutes)
-  const maxAttempts = 48
-  const pollInterval = 5000
-
-  for (let i = 0; i < maxAttempts; i++) {
-    await new Promise(resolve => setTimeout(resolve, pollInterval))
-
-    const statusResponse = await fetch(`${FAL_STATUS_BASE}/${requestId}/status`, {
-      headers: { 'Authorization': `Key ${falKey}` },
-    })
-
-    if (!statusResponse.ok) {
-      console.log(`[Video] Poll ${i + 1}: status check failed (${statusResponse.status})`)
-      continue
-    }
-
-    const status = await statusResponse.json()
-    console.log(`[Video] Poll ${i + 1}: ${status.status}`)
-
-    if (status.status === 'COMPLETED') {
-      // Fetch result
-      const resultResponse = await fetch(`${FAL_STATUS_BASE}/${requestId}`, {
-        headers: { 'Authorization': `Key ${falKey}` },
-      })
-
-      if (!resultResponse.ok) throw new Error('Failed to fetch completed result')
-
-      const result = await resultResponse.json()
-      const videoUrl = result.video?.url
-      if (!videoUrl) throw new Error('No video URL in completed result')
-      return videoUrl
-    }
-
-    if (status.status === 'FAILED') {
-      throw new Error(`Video generation failed: ${status.error || 'unknown error'}`)
-    }
-  }
-
-  throw new Error('Video generation timed out after 4 minutes')
-}
-
 /** Download video from Fal AI and upload to Supabase Storage */
 async function uploadVideoToStorage(videoUrl: string, projectId: string): Promise<string> {
   console.log('[Video] Downloading from Fal AI...')
@@ -196,7 +113,8 @@ async function uploadVideoToStorage(videoUrl: string, projectId: string): Promis
   return urlData.publicUrl
 }
 
-// POST — generate 3D video for project
+// ─── POST: Start video generation (submit to Fal AI queue) ───
+// Returns { request_id } — client polls GET for status
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -224,42 +142,151 @@ export async function POST(
       return NextResponse.json({ error: 'Proje fotografi yok' }, { status: 400 })
     }
 
-    // 2. Pick best photo (first/cover photo)
+    // 2. Pick cover photo
     const imageUrl = project.photos[0]
     console.log('[Video] Using cover photo:', imageUrl.substring(0, 80) + '...')
 
-    // 3. Generate video prompt with Sonnet
+    // 3. Generate video prompt with Sonnet (~5-10s)
     const prompt = await generateVideoPrompt(imageUrl, project.project_name)
 
-    // 4. Generate video with Fal AI
-    const falVideoUrl = await generateVideo(imageUrl, prompt)
-    console.log('[Video] Fal AI video ready:', falVideoUrl.substring(0, 80) + '...')
-
-    // 5. Upload to Supabase Storage
-    const storageUrl = await uploadVideoToStorage(falVideoUrl, projectId)
-
-    // 6. Update project with video URL
-    const { error: updateError } = await supabaseAdmin
-      .from('projects')
-      .update({ video_url: storageUrl })
-      .eq('id', projectId)
-
-    if (updateError) {
-      console.error('[Video] DB update error:', updateError)
-      return NextResponse.json({ error: 'Video olusturuldu ama DB guncellenemedi' }, { status: 500 })
+    // 4. Submit to Fal AI queue (~2-5s)
+    const falKey = process.env.FAL_API_KEY
+    if (!falKey) {
+      return NextResponse.json({ error: 'FAL_API_KEY not configured' }, { status: 500 })
     }
 
-    console.log(`[Video] Complete for project ${projectId}`)
-    return NextResponse.json({ success: true, video_url: storageUrl })
+    const submitResponse = await fetch(FAL_VIDEO_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${falKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image_url: imageUrl,
+        prompt,
+        duration: '10',
+        negative_prompt: 'blur, distort, low quality, shaky camera, fast motion',
+        cfg_scale: 0.5,
+      }),
+    })
+
+    if (!submitResponse.ok) {
+      const errText = await submitResponse.text()
+      console.error('[Video] Fal AI submit error:', submitResponse.status, errText)
+      return NextResponse.json({ error: `Fal AI hata: ${submitResponse.status}` }, { status: 500 })
+    }
+
+    const submitResult = await submitResponse.json()
+
+    // Check if direct response (not queued)
+    if (submitResult.video?.url) {
+      // Rare: immediate result — save directly
+      const storageUrl = await uploadVideoToStorage(submitResult.video.url, projectId)
+      await supabaseAdmin.from('projects').update({ video_url: storageUrl }).eq('id', projectId)
+      return NextResponse.json({ status: 'COMPLETED', video_url: storageUrl })
+    }
+
+    const requestId = submitResult.request_id
+    if (!requestId) {
+      return NextResponse.json({ error: 'Fal AI request_id alinamadi' }, { status: 500 })
+    }
+
+    console.log('[Video] Queued, request_id:', requestId)
+
+    // Return request_id — client will poll GET endpoint
+    return NextResponse.json({ status: 'IN_QUEUE', request_id: requestId })
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
-    console.error('[Video] Generation failed:', message)
+    console.error('[Video] Start failed:', message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
-// DELETE — remove video from project
+// ─── GET: Check status / Save completed video ───
+// ?request_id=xxx        → check status
+// ?request_id=xxx&save=1 → download + save to Supabase + update DB
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  if (!validateAdmin(request)) {
+    return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+  }
+
+  const projectId = params.id
+  const requestId = request.nextUrl.searchParams.get('request_id')
+  const save = request.nextUrl.searchParams.get('save')
+
+  if (!requestId) {
+    return NextResponse.json({ error: 'request_id gerekli' }, { status: 400 })
+  }
+
+  const falKey = process.env.FAL_API_KEY
+  if (!falKey) {
+    return NextResponse.json({ error: 'FAL_API_KEY not configured' }, { status: 500 })
+  }
+
+  try {
+    // Check status
+    const statusResponse = await fetch(`${FAL_STATUS_BASE}/${requestId}/status`, {
+      headers: { 'Authorization': `Key ${falKey}` },
+    })
+
+    if (!statusResponse.ok) {
+      return NextResponse.json({ error: 'Durum kontrol edilemedi' }, { status: 500 })
+    }
+
+    const statusData = await statusResponse.json()
+    console.log(`[Video] Status for ${requestId}: ${statusData.status}`)
+
+    if (statusData.status === 'COMPLETED') {
+      if (save === '1') {
+        // Fetch result and save
+        const resultResponse = await fetch(`${FAL_STATUS_BASE}/${requestId}`, {
+          headers: { 'Authorization': `Key ${falKey}` },
+        })
+
+        if (!resultResponse.ok) {
+          return NextResponse.json({ error: 'Sonuc alinamadi' }, { status: 500 })
+        }
+
+        const result = await resultResponse.json()
+        const falVideoUrl = result.video?.url
+        if (!falVideoUrl) {
+          return NextResponse.json({ error: 'Video URL bulunamadi' }, { status: 500 })
+        }
+
+        // Download + upload to Supabase
+        const storageUrl = await uploadVideoToStorage(falVideoUrl, projectId)
+
+        // Update DB
+        await supabaseAdmin
+          .from('projects')
+          .update({ video_url: storageUrl })
+          .eq('id', projectId)
+
+        console.log(`[Video] Saved for project ${projectId}`)
+        return NextResponse.json({ status: 'COMPLETED', video_url: storageUrl })
+      }
+
+      return NextResponse.json({ status: 'COMPLETED' })
+    }
+
+    if (statusData.status === 'FAILED') {
+      return NextResponse.json({ status: 'FAILED', error: statusData.error || 'Video uretimi basarisiz' })
+    }
+
+    // Still processing
+    return NextResponse.json({ status: statusData.status || 'IN_PROGRESS' })
+
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+// ─── DELETE: Remove video from project ───
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -271,14 +298,12 @@ export async function DELETE(
   const projectId = params.id
 
   try {
-    // Get current video URL
     const { data: project } = await supabaseAdmin
       .from('projects')
       .select('video_url')
       .eq('id', projectId)
       .single()
 
-    // Remove from storage
     if (project?.video_url) {
       const parts = project.video_url.split('/uploads/')
       if (parts[1]) {
@@ -286,7 +311,6 @@ export async function DELETE(
       }
     }
 
-    // Clear video_url
     await supabaseAdmin
       .from('projects')
       .update({ video_url: null })

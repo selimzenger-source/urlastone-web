@@ -339,30 +339,86 @@ export default function AdminProjeler({ adminPassword }: Props) {
     }
   }
 
-  // 3D Video üretimi
+  // 3D Video üretimi (client-side polling — Vercel 60s timeout uyumlu)
   const [generatingVideo, setGeneratingVideo] = useState<string | null>(null)
+  const [videoProgress, setVideoProgress] = useState('')
 
   const generateVideo = async (projectId: string) => {
     try {
       setGeneratingVideo(projectId)
-      const res = await fetch(`/api/projects/${projectId}/generate-video`, {
+      setVideoProgress('Fotoğraf analiz ediliyor...')
+
+      // Step 1: Start generation (Sonnet + Fal AI submit) — ~10-15s
+      const startRes = await fetch(`/api/projects/${projectId}/generate-video`, {
         method: 'POST',
         headers,
       })
-      const data = await res.json()
-      if (!res.ok) {
-        alert('Video oluşturulamadı: ' + (data.error || 'Bilinmeyen hata'))
+      const startData = await startRes.json()
+      if (!startRes.ok) {
+        alert('Video başlatılamadı: ' + (startData.error || 'Bilinmeyen hata'))
         return
       }
-      // Update local state
-      setProjects(prev => prev.map(p =>
-        p.id === projectId ? { ...p, video_url: data.video_url } : p
-      ))
-      alert('3D Video başarıyla oluşturuldu!')
+
+      // If direct completion (rare)
+      if (startData.status === 'COMPLETED' && startData.video_url) {
+        setProjects(prev => prev.map(p =>
+          p.id === projectId ? { ...p, video_url: startData.video_url } : p
+        ))
+        alert('3D Video başarıyla oluşturuldu!')
+        return
+      }
+
+      const requestId = startData.request_id
+      if (!requestId) {
+        alert('Video request ID alınamadı')
+        return
+      }
+
+      // Step 2: Poll for completion — every 5s, max 5 min
+      setVideoProgress('Video üretiliyor...')
+      const maxPolls = 60
+      for (let i = 0; i < maxPolls; i++) {
+        await new Promise(r => setTimeout(r, 5000))
+        setVideoProgress(`Video üretiliyor... (${(i + 1) * 5}sn)`)
+
+        const pollRes = await fetch(
+          `/api/projects/${projectId}/generate-video?request_id=${requestId}`,
+          { headers }
+        )
+        const pollData = await pollRes.json()
+
+        if (pollData.status === 'COMPLETED') {
+          // Step 3: Save video to Supabase — ~10-20s
+          setVideoProgress('Video kaydediliyor...')
+          const saveRes = await fetch(
+            `/api/projects/${projectId}/generate-video?request_id=${requestId}&save=1`,
+            { headers }
+          )
+          const saveData = await saveRes.json()
+
+          if (saveData.video_url) {
+            setProjects(prev => prev.map(p =>
+              p.id === projectId ? { ...p, video_url: saveData.video_url } : p
+            ))
+            alert('3D Video başarıyla oluşturuldu!')
+          } else {
+            alert('Video oluşturuldu ama kaydedilemedi: ' + (saveData.error || ''))
+          }
+          return
+        }
+
+        if (pollData.status === 'FAILED') {
+          alert('Video üretimi başarısız: ' + (pollData.error || 'Bilinmeyen hata'))
+          return
+        }
+      }
+
+      alert('Video üretimi zaman aşımına uğradı (5dk)')
     } catch {
       alert('Video oluşturulurken hata oluştu')
     } finally {
       setGeneratingVideo(null)
+      setVideoProgress('')
     }
   }
 
@@ -730,7 +786,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
                       bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black hover:from-[#c9a84f] hover:to-[#e0c97a]"
                   >
                     {generatingVideo === project.id ? (
-                      <><Loader2 size={14} className="animate-spin" /> 3D Video Üretiliyor... (1-3dk)</>
+                      <><Loader2 size={14} className="animate-spin" /> {videoProgress || '3D Video Üretiliyor...'}</>
                     ) : (
                       <><Film size={14} /> 3D Video Oluştur</>
                     )}
