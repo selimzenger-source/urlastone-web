@@ -256,7 +256,7 @@ export default function SimulationWizard() {
   }, [imageDataUrl, selectedStone, locale, checkLocalLimit])
 
   // Handle mask submit — start AI generation (brush mode)
-  const handleMaskSubmit = useCallback(async (mask: string) => {
+  const handleMaskSubmit = useCallback(async (mask: string, userNote?: string) => {
     // Check local limit first
     if (!checkLocalLimit()) return
 
@@ -282,6 +282,7 @@ export default function SimulationWizard() {
           locale,
           applyMode: 'brush',
           groutStyle,
+          userNote: userNote || undefined,
         }),
       })
 

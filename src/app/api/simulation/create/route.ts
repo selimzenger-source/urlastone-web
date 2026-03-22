@@ -83,6 +83,7 @@ function buildGeminiPrompt(
   patternImageNum: number | null,
   hasMask: boolean,
   maskImageNum: number | null,
+  userNote?: string,
 ): string {
   const ctx = SURFACE_CONTEXT[surfaceContext] || SURFACE_CONTEXT.facade
 
@@ -110,7 +111,7 @@ Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces 
 - IGNORE any text, numbers, signs, or markings on walls — cover them with stone.
 - Real installed cladding with 3D depth and natural shadows — NOT flat wallpaper.
 - ${groutInstruction}
-- Photorealistic result.`
+- Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
   }
 
   // Full mode
@@ -142,7 +143,7 @@ IGNORE any text, numbers, signs, labels, or markings painted/written on walls �
 - UNIFORMITY: IDENTICAL stone pattern on ALL target surfaces — corners, edges, columns included.
 - Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper.
 - ${groutInstruction}
-- Photorealistic result.`
+- Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
 }
 
 // Category-based scale instructions — adapted per surface type for correct size references
@@ -322,6 +323,7 @@ async function generateWithGemini(
   patternMimeType?: string | null,
   maskBase64?: string,
   maskMimeType?: string,
+  userNote?: string,
 ): Promise<string | null> {
   const apiKey = process.env.GOOGLE_AI_API_KEY
   if (!apiKey) {
@@ -351,6 +353,7 @@ async function generateWithGemini(
     patternImageNum,
     !!maskBase64,
     maskImageNum,
+    userNote,
   )
 
   console.log('[Gemini] Calling gemini-3-pro-image-preview...')
@@ -581,6 +584,7 @@ export async function POST(req: NextRequest) {
       applyMode = 'brush' as ApplyMode,
       surfaceContext = 'facade' as SurfaceContext,
       groutStyle = 'grouted',
+      userNote,
     } = await req.json()
 
     // Validate required fields
@@ -655,6 +659,8 @@ export async function POST(req: NextRequest) {
         groutStyle,
         categorySlug || 'nature',
         pattern?.base64, pattern?.mimeType,
+        undefined, undefined, // no mask in full mode
+        userNote,
       )
 
       if (geminiResult) {
@@ -736,7 +742,10 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 4. Try Gemini first (building + stone + optional pattern + mask)
+      // 4. Try Gemini first (building + stone + optional pattern + mask + userNote)
+      if (userNote) {
+        console.log('[Simulation] User note for brush mode:', userNote)
+      }
       const geminiResult = await generateWithGemini(
         building.base64, building.mimeType,
         stone.base64, stone.mimeType,
@@ -745,6 +754,7 @@ export async function POST(req: NextRequest) {
         categorySlug || 'nature',
         pattern?.base64, pattern?.mimeType,
         maskData.base64, maskData.mimeType,
+        userNote,
       )
 
       if (geminiResult) {
