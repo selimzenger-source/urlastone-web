@@ -125,7 +125,8 @@ export default function UygulamalarimPage() {
   // Şehir alanındaki son parçayı (il adını) al: "Çeşme, İzmir" → "İzmir", "İzmir" → "İzmir"
   const normalizeCity = (city: string) => {
     if (!city) return ''
-    const parts = city.split(',').map(s => s.trim().toLowerCase())
+    // Split by comma or slash, take the last part (main city)
+    const parts = city.split(/[,\/]/).map(s => s.trim().toLowerCase())
     return parts[parts.length - 1] || parts[0] || ''
   }
   const uniqueCities = new Set(projects.map((p) => normalizeCity(p.city))).size
