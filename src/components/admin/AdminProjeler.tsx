@@ -19,7 +19,6 @@ import {
   Languages,
   Film,
   CheckCircle,
-  RotateCcw,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -341,99 +340,71 @@ export default function AdminProjeler({ adminPassword }: Props) {
     }
   }
 
-  // 3D Video üretimi (client-side polling — Vercel 60s timeout uyumlu)
-  const [generatingVideo, setGeneratingVideo] = useState<string | null>(null)
-  const [videoProgress, setVideoProgress] = useState('')
+  // Video yükleme
+  const [uploadingVideo, setUploadingVideo] = useState<string | null>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const [videoUploadProjectId, setVideoUploadProjectId] = useState<string | null>(null)
 
-  const generateVideo = async (projectId: string) => {
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const projectId = videoUploadProjectId
+    if (!file || !projectId) return
+
     try {
-      setGeneratingVideo(projectId)
-      setVideoProgress('Fotoğraf analiz ediliyor...')
+      setUploadingVideo(projectId)
+      const formData = new FormData()
+      formData.append('projectId', projectId)
+      formData.append('file', file)
 
-      const startRes = await fetch(`/api/projects/${projectId}/generate-video`, {
+      const res = await fetch('/api/projects/upload-video', {
         method: 'POST',
-        headers,
+        headers: { 'Authorization': `Bearer ${adminPassword}` },
+        body: formData,
       })
-      const startData = await startRes.json()
-      if (!startRes.ok) {
-        alert('Video başlatılamadı: ' + (startData.error || 'Bilinmeyen hata'))
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert('Video yüklenemedi: ' + (data.error || 'Bilinmeyen hata'))
         return
       }
 
-      if (startData.status === 'COMPLETED' && startData.video_urls) {
-        setProjects(prev => prev.map(p =>
-          p.id === projectId ? { ...p, video_urls: startData.video_urls } : p
-        ))
-        alert('3D Video başarıyla oluşturuldu!')
-        return
-      }
-
-      const { status_url, response_url } = startData
-      if (!status_url) {
-        alert('Video bilgileri alınamadı')
-        return
-      }
-
-      setVideoProgress('Video üretiliyor...')
-      const maxPolls = 60
-      const pollParams = `status_url=${encodeURIComponent(status_url)}&response_url=${encodeURIComponent(response_url || '')}`
-
-      for (let i = 0; i < maxPolls; i++) {
-        await new Promise(r => setTimeout(r, 5000))
-        setVideoProgress(`Video üretiliyor... (${(i + 1) * 5}sn)`)
-
-        const pollRes = await fetch(
-          `/api/projects/${projectId}/generate-video?${pollParams}`,
-          { headers }
-        )
-        const pollData = await pollRes.json()
-
-        if (pollData.status === 'COMPLETED') {
-          setVideoProgress('Video kaydediliyor...')
-          const saveRes = await fetch(
-            `/api/projects/${projectId}/generate-video?${pollParams}&save=1`,
-            { headers }
-          )
-          const saveData = await saveRes.json()
-
-          if (saveData.video_urls) {
-            setProjects(prev => prev.map(p =>
-              p.id === projectId ? { ...p, video_urls: saveData.video_urls } : p
-            ))
-            alert('3D Video başarıyla oluşturuldu!')
-          } else {
-            alert('Video kaydedilemedi: ' + (saveData.error || ''))
-          }
-          return
-        }
-
-        if (pollData.status === 'FAILED') {
-          alert('Video üretimi başarısız: ' + (pollData.error || 'Bilinmeyen hata'))
-          return
-        }
-      }
-
-      alert('Video üretimi zaman aşımına uğradı (8dk)')
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, video_urls: [data.video_url] } : p
+      ))
     } catch {
-      alert('Video oluşturulurken hata oluştu')
+      alert('Video yüklenirken hata oluştu')
     } finally {
-      setGeneratingVideo(null)
-      setVideoProgress('')
+      setUploadingVideo(null)
+      setVideoUploadProjectId(null)
+      if (videoInputRef.current) videoInputRef.current.value = ''
     }
   }
 
   const deleteVideo = async (projectId: string) => {
-    if (!confirm('3D videoları silmek istediğinize emin misiniz?')) return
+    if (!confirm('Videoyu silmek istediğinize emin misiniz?')) return
     try {
-      const res = await fetch(`/api/projects/${projectId}/generate-video`, {
-        method: 'DELETE',
-        headers,
-      })
-      if (res.ok) {
-        setProjects(prev => prev.map(p =>
-          p.id === projectId ? { ...p, video_urls: null } : p
-        ))
+      // Get video URLs first
+      const project = projects.find(p => p.id === projectId)
+      if (project?.video_urls?.length) {
+        for (const url of project.video_urls) {
+          const parts = url.split('/uploads/')
+          if (parts[1]) {
+            await fetch(`/api/projects/${projectId}`, {
+              method: 'PUT',
+              headers,
+              body: JSON.stringify({ video_urls: null }),
+            })
+          }
+        }
       }
+      await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ video_urls: null }),
+      })
+      setProjects(prev => prev.map(p =>
+        p.id === projectId ? { ...p, video_urls: null } : p
+      ))
     } catch {
       alert('Video silinirken hata oluştu')
     }
@@ -752,25 +723,13 @@ export default function AdminProjeler({ adminPassword }: Props) {
                 )}
               </div>
 
-              {/* 3D Video */}
+              {/* Video */}
               <div className="pt-3 mt-3 border-t border-white/[0.06]">
                 {project.video_urls?.length ? (
                   <div className="flex items-center gap-2 mb-2">
                     <span className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-mono">
-                      <CheckCircle size={10} /> 3D Video Hazır ({project.video_urls.length} klip)
+                      <CheckCircle size={10} /> Video Yüklendi
                     </span>
-                    <button
-                      onClick={() => generateVideo(project.id)}
-                      disabled={generatingVideo === project.id}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 text-[10px] font-mono hover:bg-amber-400/20 transition-colors disabled:opacity-50"
-                      title="Yeniden Oluştur"
-                    >
-                      {generatingVideo === project.id ? (
-                        <><Loader2 size={9} className="animate-spin" /> Üretiliyor...</>
-                      ) : (
-                        <><RotateCcw size={9} /> Yeniden</>
-                      )}
-                    </button>
                     <button
                       onClick={() => deleteVideo(project.id)}
                       className="px-2 py-0.5 rounded bg-red-400/10 text-red-400 text-[10px] font-mono hover:bg-red-400/20 transition-colors"
@@ -780,15 +739,15 @@ export default function AdminProjeler({ adminPassword }: Props) {
                   </div>
                 ) : (
                   <button
-                    onClick={() => generateVideo(project.id)}
-                    disabled={generatingVideo === project.id || !project.photos?.length}
+                    onClick={() => { setVideoUploadProjectId(project.id); videoInputRef.current?.click() }}
+                    disabled={uploadingVideo === project.id}
                     className="w-full flex items-center justify-center gap-2 py-2 mb-2 rounded-lg text-xs font-medium transition-all disabled:opacity-40
                       bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black hover:from-[#c9a84f] hover:to-[#e0c97a]"
                   >
-                    {generatingVideo === project.id ? (
-                      <><Loader2 size={14} className="animate-spin" /> {videoProgress || '3D Video Üretiliyor...'}</>
+                    {uploadingVideo === project.id ? (
+                      <><Loader2 size={14} className="animate-spin" /> Video Yükleniyor...</>
                     ) : (
-                      <><Film size={14} /> 3D Video Oluştur</>
+                      <><Film size={14} /> Video Yükle</>
                     )}
                   </button>
                 )}
@@ -821,6 +780,15 @@ export default function AdminProjeler({ adminPassword }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Hidden video file input */}
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/mp4,video/quicktime,video/webm"
+        className="hidden"
+        onChange={handleVideoUpload}
+      />
 
       {/* Delete Confirmation */}
       {deleteConfirm !== null && (
