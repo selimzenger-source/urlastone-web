@@ -196,14 +196,15 @@ export default function AdminProjeler({ adminPassword }: Props) {
         )
         const revData = await revRes.json()
         const addr = revData?.address || {}
-        // İl seviyesinde şehir (province > city > county)
+        // İl seviyesinde şehir — Türkiye'de province/state her zaman il döner
         const province = addr.province || addr.state || ''
         const town = addr.city || addr.town || addr.county || ''
+        // Sadece il adını kullan (Alaçatı değil, İzmir)
         const city = province || town || ''
         const country = addr.country || 'Türkiye'
         // İlçe/semt bilgisi adrese yazılsın
-        const district = addr.suburb || addr.district || addr.town || addr.village || ''
-        const shortAddress = [district, town !== city ? town : ''].filter(Boolean).join(', ')
+        const district = addr.town || addr.suburb || addr.district || addr.village || ''
+        const shortAddress = [district, province && district ? province : ''].filter(Boolean).join(', ')
 
         setEditProject({
           ...editProject,
@@ -243,10 +244,11 @@ export default function AdminProjeler({ adminPassword }: Props) {
             )
             const revData = await revRes.json()
             const addr = revData?.address || {}
-            city = addr.province || addr.city || addr.town || addr.county || ''
+            const province = addr.province || addr.state || ''
+            city = province || addr.city || addr.town || addr.county || ''
             country = addr.country || 'Türkiye'
-            const district = addr.suburb || addr.district || addr.town || addr.village || ''
-            address = [district, city].filter(Boolean).join(', ')
+            const district = addr.town || addr.suburb || addr.district || addr.village || ''
+            address = [district, province && district ? province : ''].filter(Boolean).join(', ')
           }
 
           setEditProject({
