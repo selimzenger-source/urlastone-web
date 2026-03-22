@@ -815,9 +815,9 @@ export default function AdminProjeler({ adminPassword }: Props) {
                     </span>
                     <button
                       onClick={() => deleteVideo(project.id)}
-                      className="px-2 py-0.5 rounded bg-red-400/10 text-red-400 text-[10px] font-mono hover:bg-red-400/20 transition-colors"
+                      className="px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 text-[10px] font-mono hover:bg-amber-400/20 transition-colors"
                     >
-                      Sil
+                      Videoyu Kaldır
                     </button>
                   </div>
                 ) : (
