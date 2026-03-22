@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -9,6 +9,40 @@ import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
+
+/** Multi-clip player for detail page */
+function DetailMultiPlayer({ urls, poster }: { urls: string[]; poster?: string }) {
+  const [currentClip, setCurrentClip] = useState(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  const handleEnded = useCallback(() => {
+    if (currentClip < urls.length - 1) {
+      setCurrentClip(prev => prev + 1)
+    } else {
+      setCurrentClip(0)
+    }
+  }, [currentClip, urls.length])
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load()
+      videoRef.current.play().catch(() => {})
+    }
+  }, [currentClip])
+
+  return (
+    <video
+      ref={videoRef}
+      src={urls[currentClip]}
+      controls
+      playsInline
+      onEnded={handleEnded}
+      className="w-full"
+      style={{ maxHeight: '50vh' }}
+      poster={currentClip === 0 ? poster : undefined}
+    />
+  )
+}
 
 function getTranslated(project: Project, field: 'project_name' | 'description', locale: Locale): string {
   if (locale === 'tr') return (project[field] as string) || ''
@@ -101,7 +135,7 @@ export default function ProjectDetailPage() {
           </Link>
 
           {/* 3D Video Banner */}
-          {project.video_url && (
+          {project.video_urls?.length ? (
             <div className="mb-8 rounded-2xl overflow-hidden border border-gold-400/20 bg-gradient-to-r from-[#b39345]/10 via-transparent to-[#d2b96e]/10">
               <div className="p-4 md:p-6">
                 <div className="flex items-center gap-3 mb-3">
@@ -113,20 +147,19 @@ export default function ProjectDetailPage() {
                     <p className="text-white/40 text-xs">{t.apps_3d_video_desc}</p>
                   </div>
                 </div>
-                <div className="rounded-xl overflow-hidden bg-black">
-                  <video
-                    src={project.video_url}
-                    controls
-                    loop
-                    playsInline
-                    className="w-full"
-                    style={{ maxHeight: '50vh' }}
-                    poster={photos[0]}
+                <div className="rounded-xl overflow-hidden bg-black relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/logo-watermark.jpeg"
+                    alt=""
+                    className="absolute top-3 right-3 w-12 h-12 rounded-lg opacity-70 z-10 object-contain bg-white/10 backdrop-blur-sm p-1"
                   />
+                  <DetailMultiPlayer urls={project.video_urls} poster={photos[0]} />
+                  <audio src="/audio/project-ambient.mp3" autoPlay loop style={{ display: 'none' }} />
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Photo Gallery */}

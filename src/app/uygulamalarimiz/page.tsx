@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter, Play, X } from 'lucide-react'
@@ -11,6 +11,56 @@ import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false })
+
+/** Multi-clip player: logo intro (1.5s) → clip 1 → clip 2 → loop */
+function MultiClipPlayer({ urls }: { urls: string[] }) {
+  const [phase, setPhase] = useState<'intro' | 'playing'>('intro')
+  const [currentClip, setCurrentClip] = useState(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setPhase('playing'), 1500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleEnded = useCallback(() => {
+    if (currentClip < urls.length - 1) {
+      setCurrentClip(prev => prev + 1)
+    } else {
+      setCurrentClip(0) // loop
+    }
+  }, [currentClip, urls.length])
+
+  useEffect(() => {
+    if (phase === 'playing' && videoRef.current) {
+      videoRef.current.load()
+      videoRef.current.play().catch(() => {})
+    }
+  }, [currentClip, phase])
+
+  if (phase === 'intro') {
+    return (
+      <div className="flex items-center justify-center bg-black" style={{ minHeight: '40vh' }}>
+        <div className="animate-pulse">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-watermark.jpeg" alt="URLASTONE" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      src={urls[currentClip]}
+      autoPlay
+      playsInline
+      onEnded={handleEnded}
+      className="w-full"
+      style={{ maxHeight: '80vh' }}
+    />
+  )
+}
 
 function formatDate(dateStr: string, locale: string) {
   try {
@@ -37,7 +87,7 @@ export default function UygulamalarimPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string>('all')
-  const [videoModal, setVideoModal] = useState<{ url: string; name: string } | null>(null)
+  const [videoModal, setVideoModal] = useState<{ urls: string[]; name: string } | null>(null)
 
   useEffect(() => {
     fetch('/api/projects')
@@ -262,9 +312,9 @@ export default function UygulamalarimPage() {
                         <MapPin size={12} />
                         {t.apps_navigate}
                       </a>
-                      {project.video_url && (
+                      {project.video_urls?.length ? (
                         <button
-                          onClick={() => setVideoModal({ url: project.video_url!, name: getTranslated(project, 'project_name', locale) })}
+                          onClick={() => setVideoModal({ urls: project.video_urls!, name: getTranslated(project, 'project_name', locale) })}
                           className="group relative inline-flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-full transition-all overflow-hidden
                             bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black font-semibold
                             hover:from-[#c9a84f] hover:to-[#e0c97a] hover:shadow-[0_0_20px_rgba(179,147,69,0.3)]"
@@ -273,7 +323,7 @@ export default function UygulamalarimPage() {
                           <Play size={11} className="fill-current" />
                           {t.apps_3d_video}
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -301,31 +351,34 @@ export default function UygulamalarimPage() {
         </section>
       )}
 
-      {/* Video Modal */}
+      {/* Video Modal — Multi-clip + Music + Logo */}
       {videoModal && (
         <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
           onClick={() => setVideoModal(null)}
         >
           <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setVideoModal(null)}
-              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors"
+              className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors z-10"
             >
               <X size={28} />
             </button>
             <p className="absolute -top-12 left-0 text-white/80 text-sm font-heading font-semibold">
-              {videoModal.name} — 3D Animasyon
+              {videoModal.name}
             </p>
-            <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl">
-              <video
-                src={videoModal.url}
-                controls
-                autoPlay
-                loop
-                className="w-full"
-                style={{ maxHeight: '80vh' }}
+            <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl relative">
+              {/* Logo watermark — top right */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-watermark.jpeg"
+                alt=""
+                className="absolute top-3 right-3 w-12 h-12 md:w-16 md:h-16 rounded-lg opacity-70 z-10 object-contain bg-white/10 backdrop-blur-sm p-1"
               />
+              {/* Multi-clip player */}
+              <MultiClipPlayer urls={videoModal.urls} />
+              {/* Background music */}
+              <audio src="/audio/project-ambient.mp3" autoPlay loop style={{ display: 'none' }} />
             </div>
           </div>
         </div>

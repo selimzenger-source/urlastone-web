@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
-// Each request must finish within 60s (Vercel Hobby plan)
 export const maxDuration = 60
 
 const FAL_VIDEO_URL = 'https://queue.fal.run/fal-ai/kling-video/v2.1/standard/image-to-video'
-const FAL_STATUS_BASE = 'https://queue.fal.run/fal-ai/kling-video/v2.1/standard/image-to-video/requests'
 
 function validateAdmin(request: NextRequest): boolean {
   const auth = request.headers.get('Authorization')
@@ -13,24 +11,38 @@ function validateAdmin(request: NextRequest): boolean {
   return auth === `Bearer ${password}`
 }
 
-/** Use Claude Sonnet to analyze the project photo and generate an optimal video prompt */
-async function generateVideoPrompt(
-  imageUrl: string,
+/** Claude Sonnet picks 2 best photos and writes 2 different camera prompts */
+async function generateMultiClipPrompts(
+  photos: string[],
   projectName: string,
-): Promise<string> {
+): Promise<{ photo1: string; prompt1: string; photo2: string; prompt2: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return `Slow cinematic orbit around this building exterior, smooth camera movement, golden hour lighting, professional architectural photography, 4K quality`
+
+  const defaultResult = {
+    photo1: photos[0],
+    prompt1: 'Slow cinematic orbit clockwise around this building exterior, smooth steady camera, golden hour warm lighting, professional architectural drone footage',
+    photo2: photos[Math.min(1, photos.length - 1)],
+    prompt2: 'Dramatic upward crane shot rising from ground level to reveal the full building facade, smooth vertical camera movement, natural daylight, cinematic architectural photography',
   }
 
-  console.log('[Video] Sonnet analyzing photo for video prompt...')
-  const startTime = Date.now()
+  if (!apiKey || photos.length < 1) return defaultResult
+
+  console.log('[Video] Sonnet analyzing photos for multi-clip prompts...')
 
   try {
-    const imgResponse = await fetch(imageUrl)
-    const imgBuffer = Buffer.from(await imgResponse.arrayBuffer())
-    const base64 = imgBuffer.toString('base64')
-    const contentType = imgResponse.headers.get('content-type') || 'image/jpeg'
+    // Send up to 4 photos for Sonnet to choose from
+    const photosToAnalyze = photos.slice(0, 4)
+    const imageContents = await Promise.all(
+      photosToAnalyze.map(async (url, i) => {
+        const res = await fetch(url)
+        const buf = Buffer.from(await res.arrayBuffer())
+        const ct = res.headers.get('content-type') || 'image/jpeg'
+        return [
+          { type: 'image' as const, source: { type: 'base64' as const, media_type: ct, data: buf.toString('base64') } },
+          { type: 'text' as const, text: `Photo ${i + 1}` },
+        ]
+      })
+    )
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -41,80 +53,106 @@ async function generateVideoPrompt(
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
+        max_tokens: 400,
         messages: [{
           role: 'user',
           content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: contentType, data: base64 },
-            },
+            ...imageContents.flat(),
             {
               type: 'text',
-              text: `This is a photo of a building/project called "${projectName}". Generate a SHORT English video prompt (1-2 sentences) for an AI image-to-video model to create a slow cinematic orbit/flyover animation of this building.
+              text: `These are ${photosToAnalyze.length} photos of a building/project called "${projectName}".
 
-The prompt should describe:
-- Camera movement (slow orbit, drone flyover, etc.)
-- Lighting/atmosphere matching the photo
-- Architectural style visible
+Pick the 2 BEST photos that show different angles/perspectives of the building exterior. Then write 2 SHORT English video prompts (each under 40 words) for an AI video model.
 
-Reply ONLY with the prompt text, nothing else. Keep it under 50 words.`,
+CRITICAL RULES:
+- Each prompt must have a DIFFERENT camera movement (e.g., one orbit, one crane/rise, one dolly-in, one pan)
+- Never repeat the same camera movement type
+- Keep prompts cinematic and professional
+- Describe atmosphere/lighting matching each photo
+
+Reply ONLY with JSON, no markdown:
+{"photo1": 1, "prompt1": "...", "photo2": 2, "prompt2": "..."}
+
+photo1/photo2 = photo number (1-based index)`
             },
           ],
         }],
       }),
     })
 
-    const elapsed = Math.round((Date.now() - startTime) / 1000)
-
     if (!response.ok) {
-      console.error(`[Video] Sonnet error (${response.status}, ${elapsed}s)`)
-      return `Slow cinematic orbit around this building exterior, smooth camera movement, professional architectural photography`
+      console.error('[Video] Sonnet error:', response.status)
+      return defaultResult
     }
 
     const result = await response.json()
-    const prompt = result.content?.[0]?.text?.trim() || ''
-    console.log(`[Video] Sonnet prompt (${elapsed}s):`, prompt)
-    return prompt || `Slow cinematic orbit around this building exterior, smooth camera movement, professional architectural photography`
+    const text = result.content?.[0]?.text || ''
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0])
+      const idx1 = Math.max(0, Math.min((parsed.photo1 || 1) - 1, photos.length - 1))
+      const idx2 = Math.max(0, Math.min((parsed.photo2 || 2) - 1, photos.length - 1))
+      console.log('[Video] Sonnet chose photos', idx1 + 1, idx2 + 1)
+      return {
+        photo1: photos[idx1],
+        prompt1: parsed.prompt1 || defaultResult.prompt1,
+        photo2: photos[idx2 === idx1 ? Math.min(idx2 + 1, photos.length - 1) : idx2],
+        prompt2: parsed.prompt2 || defaultResult.prompt2,
+      }
+    }
+
+    return defaultResult
   } catch (err) {
-    console.error('[Video] Sonnet analysis failed:', err)
-    return `Slow cinematic orbit around this building exterior, smooth camera movement, professional architectural photography`
+    console.error('[Video] Sonnet multi-clip failed:', err)
+    return defaultResult
   }
 }
 
-/** Download video from Fal AI and upload to Supabase Storage */
-async function uploadVideoToStorage(videoUrl: string, projectId: string): Promise<string> {
-  console.log('[Video] Downloading from Fal AI...')
+/** Submit one video to Fal AI queue */
+async function submitToFalQueue(imageUrl: string, prompt: string, falKey: string) {
+  const res = await fetch(FAL_VIDEO_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Key ${falKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      image_url: imageUrl,
+      prompt,
+      duration: '10',
+      negative_prompt: 'blur, distort, low quality, shaky camera, fast motion, text overlay',
+      cfg_scale: 0.5,
+    }),
+  })
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Fal AI submit failed: ${res.status} ${err}`)
+  }
+
+  return await res.json()
+}
+
+/** Download video from URL and upload to Supabase Storage */
+async function uploadVideoToStorage(videoUrl: string, projectId: string, clipIndex: number): Promise<string> {
   const response = await fetch(videoUrl)
   if (!response.ok) throw new Error('Failed to download video')
 
   const buffer = Buffer.from(await response.arrayBuffer())
-  const filePath = `project-videos/${projectId}-${Date.now()}.mp4`
-
-  console.log(`[Video] Uploading to Supabase (${(buffer.length / 1024 / 1024).toFixed(1)}MB)...`)
+  const filePath = `project-videos/${projectId}-clip${clipIndex}-${Date.now()}.mp4`
 
   const { error } = await supabaseAdmin.storage
     .from('uploads')
-    .upload(filePath, buffer, {
-      contentType: 'video/mp4',
-      upsert: true,
-    })
+    .upload(filePath, buffer, { contentType: 'video/mp4', upsert: true })
 
-  if (error) {
-    console.error('[Video] Storage upload error:', error)
-    throw new Error('Failed to upload video to storage: ' + error.message)
-  }
+  if (error) throw new Error('Storage upload failed: ' + error.message)
 
-  const { data: urlData } = supabaseAdmin.storage
-    .from('uploads')
-    .getPublicUrl(filePath)
-
-  console.log('[Video] Uploaded:', urlData.publicUrl.substring(0, 80) + '...')
+  const { data: urlData } = supabaseAdmin.storage.from('uploads').getPublicUrl(filePath)
   return urlData.publicUrl
 }
 
-// ─── POST: Start video generation (submit to Fal AI queue) ───
-// Returns { request_id } — client polls GET for status
+// ─── POST: Start multi-clip video generation ───
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -124,81 +162,51 @@ export async function POST(
   }
 
   const projectId = params.id
-  console.log(`[Video] Starting video generation for project ${projectId}`)
 
   try {
-    // 1. Fetch project
     const { data: project, error: fetchError } = await supabaseAdmin
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .single()
+      .from('projects').select('*').eq('id', projectId).single()
 
     if (fetchError || !project) {
       return NextResponse.json({ error: 'Proje bulunamadi' }, { status: 404 })
     }
-
     if (!project.photos?.length) {
       return NextResponse.json({ error: 'Proje fotografi yok' }, { status: 400 })
     }
 
-    // 2. Pick cover photo
-    const imageUrl = project.photos[0]
-    console.log('[Video] Using cover photo:', imageUrl.substring(0, 80) + '...')
-
-    // 3. Generate video prompt with Sonnet (~5-10s)
-    const prompt = await generateVideoPrompt(imageUrl, project.project_name)
-
-    // 4. Submit to Fal AI queue (~2-5s)
     const falKey = process.env.FAL_API_KEY
     if (!falKey) {
       return NextResponse.json({ error: 'FAL_API_KEY not configured' }, { status: 500 })
     }
 
-    const submitResponse = await fetch(FAL_VIDEO_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${falKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image_url: imageUrl,
-        prompt,
-        duration: '10',
-        negative_prompt: 'blur, distort, low quality, shaky camera, fast motion',
-        cfg_scale: 0.5,
-      }),
+    // Sonnet picks 2 photos + writes 2 different prompts
+    const clips = await generateMultiClipPrompts(project.photos, project.project_name)
+    console.log('[Video] Clip 1 prompt:', clips.prompt1.substring(0, 80))
+    console.log('[Video] Clip 2 prompt:', clips.prompt2.substring(0, 80))
+
+    // Submit 2 Fal AI requests in parallel
+    const [submit1, submit2] = await Promise.all([
+      submitToFalQueue(clips.photo1, clips.prompt1, falKey),
+      submitToFalQueue(clips.photo2, clips.prompt2, falKey),
+    ])
+
+    const clip1 = {
+      status_url: submit1.status_url || '',
+      response_url: submit1.response_url || '',
+      request_id: submit1.request_id || '',
+    }
+    const clip2 = {
+      status_url: submit2.status_url || '',
+      response_url: submit2.response_url || '',
+      request_id: submit2.request_id || '',
+    }
+
+    console.log('[Video] Submitted 2 clips:', clip1.request_id, clip2.request_id)
+
+    return NextResponse.json({
+      status: 'IN_QUEUE',
+      clips: [clip1, clip2],
     })
-
-    if (!submitResponse.ok) {
-      const errText = await submitResponse.text()
-      console.error('[Video] Fal AI submit error:', submitResponse.status, errText)
-      return NextResponse.json({ error: `Fal AI hata: ${submitResponse.status}` }, { status: 500 })
-    }
-
-    const submitResult = await submitResponse.json()
-
-    // Check if direct response (not queued)
-    if (submitResult.video?.url) {
-      // Rare: immediate result — save directly
-      const storageUrl = await uploadVideoToStorage(submitResult.video.url, projectId)
-      await supabaseAdmin.from('projects').update({ video_url: storageUrl }).eq('id', projectId)
-      return NextResponse.json({ status: 'COMPLETED', video_url: storageUrl })
-    }
-
-    const requestId = submitResult.request_id
-    if (!requestId) {
-      return NextResponse.json({ error: 'Fal AI request_id alinamadi' }, { status: 500 })
-    }
-
-    // Fal AI returns specific URLs for status/result — use them instead of constructing URLs
-    const statusUrl = submitResult.status_url || `${FAL_STATUS_BASE}/${requestId}/status`
-    const responseUrl = submitResult.response_url || `${FAL_STATUS_BASE}/${requestId}`
-
-    console.log('[Video] Queued, request_id:', requestId, 'status_url:', statusUrl)
-
-    // Return URLs — client will poll GET endpoint
-    return NextResponse.json({ status: 'IN_QUEUE', request_id: requestId, status_url: statusUrl, response_url: responseUrl })
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
@@ -207,9 +215,7 @@ export async function POST(
   }
 }
 
-// ─── GET: Check status / Save completed video ───
-// ?request_id=xxx        → check status
-// ?request_id=xxx&save=1 → download + save to Supabase + update DB
+// ─── GET: Poll status of 2 clips / Save completed videos ───
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -219,12 +225,14 @@ export async function GET(
   }
 
   const projectId = params.id
-  const statusUrl = request.nextUrl.searchParams.get('status_url')
-  const responseUrl = request.nextUrl.searchParams.get('response_url')
+  const statusUrl1 = request.nextUrl.searchParams.get('status_url_1')
+  const statusUrl2 = request.nextUrl.searchParams.get('status_url_2')
+  const responseUrl1 = request.nextUrl.searchParams.get('response_url_1')
+  const responseUrl2 = request.nextUrl.searchParams.get('response_url_2')
   const save = request.nextUrl.searchParams.get('save')
 
-  if (!statusUrl) {
-    return NextResponse.json({ error: 'status_url gerekli' }, { status: 400 })
+  if (!statusUrl1 || !statusUrl2) {
+    return NextResponse.json({ error: 'status_url_1 ve status_url_2 gerekli' }, { status: 400 })
   }
 
   const falKey = process.env.FAL_API_KEY
@@ -233,60 +241,65 @@ export async function GET(
   }
 
   try {
-    // Check status using Fal AI's provided status URL (GET method)
-    const statusResponse = await fetch(statusUrl, {
-      headers: { 'Authorization': `Key ${falKey}` },
-    })
+    // Check both statuses in parallel
+    const [statusRes1, statusRes2] = await Promise.all([
+      fetch(statusUrl1, { headers: { 'Authorization': `Key ${falKey}` } }),
+      fetch(statusUrl2, { headers: { 'Authorization': `Key ${falKey}` } }),
+    ])
 
-    if (!statusResponse.ok) {
-      const errText = await statusResponse.text()
-      console.error(`[Video] Status check failed: ${statusResponse.status} ${errText}`)
+    if (!statusRes1.ok || !statusRes2.ok) {
       return NextResponse.json({ error: 'Durum kontrol edilemedi' }, { status: 500 })
     }
 
-    const statusData = await statusResponse.json()
-    console.log(`[Video] Status: ${statusData.status}`)
+    const [status1, status2] = await Promise.all([statusRes1.json(), statusRes2.json()])
 
-    if (statusData.status === 'COMPLETED') {
-      if (save === '1') {
-        // Fetch result using Fal AI's provided response URL (GET method)
-        const resultUrl = responseUrl || statusUrl.replace('/status', '')
-        const resultResponse = await fetch(resultUrl, {
-          headers: { 'Authorization': `Key ${falKey}` },
-        })
+    const s1 = status1.status || 'UNKNOWN'
+    const s2 = status2.status || 'UNKNOWN'
 
-        if (!resultResponse.ok) {
-          return NextResponse.json({ error: 'Sonuc alinamadi' }, { status: 500 })
-        }
+    if (s1 === 'FAILED' || s2 === 'FAILED') {
+      return NextResponse.json({ status: 'FAILED', error: 'Bir veya iki klip başarısız oldu' })
+    }
 
-        const result = await resultResponse.json()
-        const falVideoUrl = result.video?.url
-        if (!falVideoUrl) {
-          return NextResponse.json({ error: 'Video URL bulunamadi' }, { status: 500 })
-        }
+    const bothCompleted = s1 === 'COMPLETED' && s2 === 'COMPLETED'
 
-        // Download + upload to Supabase
-        const storageUrl = await uploadVideoToStorage(falVideoUrl, projectId)
+    if (bothCompleted && save === '1') {
+      // Fetch both results
+      const rUrl1 = responseUrl1 || statusUrl1.replace('/status', '')
+      const rUrl2 = responseUrl2 || statusUrl2.replace('/status', '')
 
-        // Update DB
-        await supabaseAdmin
-          .from('projects')
-          .update({ video_url: storageUrl })
-          .eq('id', projectId)
+      const [result1, result2] = await Promise.all([
+        fetch(rUrl1, { headers: { 'Authorization': `Key ${falKey}` } }).then(r => r.json()),
+        fetch(rUrl2, { headers: { 'Authorization': `Key ${falKey}` } }).then(r => r.json()),
+      ])
 
-        console.log(`[Video] Saved for project ${projectId}`)
-        return NextResponse.json({ status: 'COMPLETED', video_url: storageUrl })
+      const falUrl1 = result1.video?.url
+      const falUrl2 = result2.video?.url
+
+      if (!falUrl1 || !falUrl2) {
+        return NextResponse.json({ error: 'Video URL bulunamadi' }, { status: 500 })
       }
 
+      // Download + upload both to Supabase
+      const [storageUrl1, storageUrl2] = await Promise.all([
+        uploadVideoToStorage(falUrl1, projectId, 1),
+        uploadVideoToStorage(falUrl2, projectId, 2),
+      ])
+
+      // Update DB with array of URLs
+      await supabaseAdmin
+        .from('projects')
+        .update({ video_urls: [storageUrl1, storageUrl2] })
+        .eq('id', projectId)
+
+      console.log(`[Video] Saved 2 clips for project ${projectId}`)
+      return NextResponse.json({ status: 'COMPLETED', video_urls: [storageUrl1, storageUrl2] })
+    }
+
+    if (bothCompleted) {
       return NextResponse.json({ status: 'COMPLETED' })
     }
 
-    if (statusData.status === 'FAILED') {
-      return NextResponse.json({ status: 'FAILED', error: statusData.error || 'Video uretimi basarisiz' })
-    }
-
-    // Still processing
-    return NextResponse.json({ status: statusData.status || 'IN_PROGRESS' })
+    return NextResponse.json({ status: 'IN_PROGRESS', clip1: s1, clip2: s2 })
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
@@ -294,7 +307,7 @@ export async function GET(
   }
 }
 
-// ─── DELETE: Remove video from project ───
+// ─── DELETE: Remove all videos from project ───
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -303,26 +316,25 @@ export async function DELETE(
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
-  const projectId = params.id
-
   try {
     const { data: project } = await supabaseAdmin
-      .from('projects')
-      .select('video_url')
-      .eq('id', projectId)
-      .single()
+      .from('projects').select('video_urls').eq('id', params.id).single()
 
-    if (project?.video_url) {
-      const parts = project.video_url.split('/uploads/')
-      if (parts[1]) {
-        await supabaseAdmin.storage.from('uploads').remove([parts[1]])
+    if (project?.video_urls?.length) {
+      const filePaths = project.video_urls.map((url: string) => {
+        const parts = url.split('/uploads/')
+        return parts[1] || ''
+      }).filter(Boolean)
+
+      if (filePaths.length) {
+        await supabaseAdmin.storage.from('uploads').remove(filePaths)
       }
     }
 
     await supabaseAdmin
       .from('projects')
-      .update({ video_url: null })
-      .eq('id', projectId)
+      .update({ video_urls: null })
+      .eq('id', params.id)
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {

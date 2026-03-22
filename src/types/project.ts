@@ -24,7 +24,7 @@ export interface Project {
   translations: ProjectTranslations | null
   photos: string[]
   active: boolean
-  video_url: string | null
+  video_urls: string[] | null
   display_order: number
   created_at: string
   updated_at: string

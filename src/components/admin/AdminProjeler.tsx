@@ -346,9 +346,9 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const generateVideo = async (projectId: string) => {
     try {
       setGeneratingVideo(projectId)
-      setVideoProgress('Fotoğraf analiz ediliyor...')
+      setVideoProgress('Fotoğraflar analiz ediliyor...')
 
-      // Step 1: Start generation (Sonnet + Fal AI submit) — ~10-15s
+      // Step 1: Start 2-clip generation (Sonnet + 2x Fal AI submit)
       const startRes = await fetch(`/api/projects/${projectId}/generate-video`, {
         method: 'POST',
         headers,
@@ -359,28 +359,29 @@ export default function AdminProjeler({ adminPassword }: Props) {
         return
       }
 
-      // If direct completion (rare)
-      if (startData.status === 'COMPLETED' && startData.video_url) {
+      if (startData.status === 'COMPLETED' && startData.video_urls) {
         setProjects(prev => prev.map(p =>
-          p.id === projectId ? { ...p, video_url: startData.video_url } : p
+          p.id === projectId ? { ...p, video_urls: startData.video_urls } : p
         ))
         alert('3D Video başarıyla oluşturuldu!')
         return
       }
 
-      const { request_id: requestId, status_url, response_url } = startData
-      if (!requestId || !status_url) {
-        alert('Video request bilgileri alınamadı')
+      const clips = startData.clips
+      if (!clips || clips.length < 2) {
+        alert('Video clip bilgileri alınamadı')
         return
       }
 
-      // Step 2: Poll for completion — every 5s, max 5 min
-      setVideoProgress('Video üretiliyor...')
-      const maxPolls = 60
-      const pollParams = `status_url=${encodeURIComponent(status_url)}&response_url=${encodeURIComponent(response_url || '')}`
+      // Step 2: Poll both clips — every 5s, max 8 min
+      setVideoProgress('2 klip üretiliyor...')
+      const maxPolls = 96
+      const pollParams = `status_url_1=${encodeURIComponent(clips[0].status_url)}&status_url_2=${encodeURIComponent(clips[1].status_url)}&response_url_1=${encodeURIComponent(clips[0].response_url)}&response_url_2=${encodeURIComponent(clips[1].response_url)}`
+
       for (let i = 0; i < maxPolls; i++) {
         await new Promise(r => setTimeout(r, 5000))
-        setVideoProgress(`Video üretiliyor... (${(i + 1) * 5}sn)`)
+        const elapsed = (i + 1) * 5
+        setVideoProgress(`2 klip üretiliyor... (${elapsed}sn)`)
 
         const pollRes = await fetch(
           `/api/projects/${projectId}/generate-video?${pollParams}`,
@@ -388,22 +389,25 @@ export default function AdminProjeler({ adminPassword }: Props) {
         )
         const pollData = await pollRes.json()
 
+        if (pollData.clip1 && pollData.clip2) {
+          setVideoProgress(`Klip 1: ${pollData.clip1} | Klip 2: ${pollData.clip2} (${elapsed}sn)`)
+        }
+
         if (pollData.status === 'COMPLETED') {
-          // Step 3: Save video to Supabase — ~10-20s
-          setVideoProgress('Video kaydediliyor...')
+          setVideoProgress('Videolar kaydediliyor...')
           const saveRes = await fetch(
             `/api/projects/${projectId}/generate-video?${pollParams}&save=1`,
             { headers }
           )
           const saveData = await saveRes.json()
 
-          if (saveData.video_url) {
+          if (saveData.video_urls) {
             setProjects(prev => prev.map(p =>
-              p.id === projectId ? { ...p, video_url: saveData.video_url } : p
+              p.id === projectId ? { ...p, video_urls: saveData.video_urls } : p
             ))
-            alert('3D Video başarıyla oluşturuldu!')
+            alert('3D Video (2 klip) başarıyla oluşturuldu!')
           } else {
-            alert('Video oluşturuldu ama kaydedilemedi: ' + (saveData.error || ''))
+            alert('Videolar oluşturuldu ama kaydedilemedi: ' + (saveData.error || ''))
           }
           return
         }
@@ -414,7 +418,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
         }
       }
 
-      alert('Video üretimi zaman aşımına uğradı (5dk)')
+      alert('Video üretimi zaman aşımına uğradı (8dk)')
     } catch {
       alert('Video oluşturulurken hata oluştu')
     } finally {
@@ -424,7 +428,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
   }
 
   const deleteVideo = async (projectId: string) => {
-    if (!confirm('3D videoyu silmek istediğinize emin misiniz?')) return
+    if (!confirm('3D videoları silmek istediğinize emin misiniz?')) return
     try {
       const res = await fetch(`/api/projects/${projectId}/generate-video`, {
         method: 'DELETE',
@@ -432,7 +436,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
       })
       if (res.ok) {
         setProjects(prev => prev.map(p =>
-          p.id === projectId ? { ...p, video_url: null } : p
+          p.id === projectId ? { ...p, video_urls: null } : p
         ))
       }
     } catch {
@@ -755,10 +759,10 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
               {/* 3D Video */}
               <div className="pt-3 mt-3 border-t border-white/[0.06]">
-                {project.video_url ? (
+                {project.video_urls?.length ? (
                   <div className="flex items-center gap-2 mb-2">
                     <span className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-mono">
-                      <CheckCircle size={10} /> 3D Video Hazır
+                      <CheckCircle size={10} /> 3D Video Hazır ({project.video_urls.length} klip)
                     </span>
                     <button
                       onClick={() => generateVideo(project.id)}
