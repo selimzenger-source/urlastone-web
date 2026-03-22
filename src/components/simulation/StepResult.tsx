@@ -218,13 +218,29 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
       // Draw watermarks
       drawWatermarks(ctx, canvas.width, canvas.height, logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
 
-      // Download
-      canvas.toBlob((blob) => {
+      // Download — use Web Share API on mobile (saves to Photos on iOS)
+      canvas.toBlob(async (blob) => {
         if (!blob) return
+        const fileName = `urlastone-simulation-${Date.now()}.jpg`
+
+        // Try Web Share API first (iOS/mobile — allows "Save to Photos")
+        if (navigator.share && navigator.canShare) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/jpeg' })
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: 'Urlastone Simulation' })
+              return
+            }
+          } catch {
+            // User cancelled or share failed — fall through to download
+          }
+        }
+
+        // Fallback: standard download (desktop / Android)
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `urlastone-simulation-${Date.now()}.jpg`
+        a.download = fileName
         a.click()
         URL.revokeObjectURL(url)
       }, 'image/jpeg', 0.92)
@@ -275,13 +291,27 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
       ctx.drawImage(img, 0, 0)
       drawWatermarks(ctx, canvas.width, canvas.height, logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
 
-      // 4. Download
-      canvas.toBlob((blob) => {
+      // 4. Download — use Web Share API on mobile
+      canvas.toBlob(async (blob) => {
         if (!blob) return
+        const fileName = `urlastone-simulation-HD-${Date.now()}.jpg`
+
+        if (navigator.share && navigator.canShare) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/jpeg' })
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: 'Urlastone Simulation HD' })
+              return
+            }
+          } catch {
+            // Fall through
+          }
+        }
+
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `urlastone-simulation-HD-${Date.now()}.jpg`
+        a.download = fileName
         a.click()
         URL.revokeObjectURL(url)
       }, 'image/jpeg', 0.95)
