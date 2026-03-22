@@ -95,6 +95,8 @@ function buildGeminiPrompt(
 
 ### MOST IMPORTANT — STONE SIZE (read this FIRST):
 COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
+CRITICAL: Image 2 is a CLOSE-UP macro photo — COMPLETELY IGNORE the apparent size of stones in it. Only copy COLOR and TEXTURE, NOT the size.
+PIXEL RULE: Each stone piece should be no wider than 3-5% of the total image width.
 ${sizeDesc}
 ${hasPattern ? `Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
 
@@ -105,6 +107,7 @@ Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces 
 - Replicate the EXACT stone texture, surface quality from Image 2. Do NOT invent a different stone.
 - UNIFORMITY: Same stone pattern everywhere in the masked area.
 - Apply ONLY to white mask areas. Black areas = untouched.
+- IGNORE any text, numbers, signs, or markings on walls — cover them with stone.
 - Real installed cladding with 3D depth and natural shadows — NOT flat wallpaper.
 - ${groutInstruction}
 - Photorealistic result.`
@@ -118,15 +121,21 @@ Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces 
   return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in — NOT actual installed size).${patternRef}
 
 ### MOST IMPORTANT — STONE SIZE (read this FIRST):
-COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct. Image 2 is a CLOSE-UP photo of a few stones — when installed on a real wall, each stone piece is TINY compared to the wall.
+COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
+CRITICAL: Image 2 is a CLOSE-UP macro photo. It may show only 2-4 pieces filling the frame — COMPLETELY IGNORE the apparent size of stones in Image 2. Only copy COLOR, TEXTURE, and SURFACE from Image 2, NOT the size or scale.
+
+MANDATORY STONE COUNT: The ENTIRE building facade must contain AT LEAST 300-500 individual stone pieces total. Each floor (approximately 3 meters) must show at least 15-20 stones vertically. If the total visible stone count on the building is less than 200, the stones are WAY TOO BIG.
+
+PIXEL RULE: In the output image, each individual stone piece should be no wider than approximately 3-5% of the total image width. If any stone piece spans more than 8% of image width, it is TOO LARGE.
+
 ${sizeDesc}
 
 ### STONE COLOR FIDELITY:
 Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark/near-black, some cream), you MUST reproduce that EXACT SAME color variety and distribution. Do NOT simplify or average into one uniform color. Each stone piece should randomly vary across the full color range visible in Image 2.
 
 ### COVERAGE:
-Apply this stone to ${ctx.apply} 100% coverage on target surfaces — no gaps, no bare patches, no uncovered areas.
-Preserve: ${ctx.preserve}. Keep the same camera angle.
+Apply this stone to ${ctx.apply} 100% coverage on ALL target surfaces including ground floor, top floor, side walls, columns, and every visible wall area — no gaps, no bare patches, no uncovered areas. Every single wall section from bottom to top must be covered.
+IGNORE any text, numbers, signs, labels, or markings painted/written on walls — cover them with stone as if they don't exist. Only preserve: ${ctx.preserve}. Keep the same camera angle.
 
 ### QUALITY:
 - Replicate EXACT stone texture and surface quality from Image 2. Do NOT invent a different stone.
