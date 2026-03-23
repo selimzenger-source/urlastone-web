@@ -97,7 +97,7 @@ function buildGeminiPrompt(
 ### MOST IMPORTANT — STONE SIZE (read this FIRST):
 COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
 CRITICAL: Image 2 is a CLOSE-UP macro photo — COMPLETELY IGNORE the apparent size of stones in it. Only copy COLOR and TEXTURE, NOT the size.
-PIXEL RULE: Each stone piece should be no wider than 3-5% of the total image width.
+PIXEL RULE: Each stone piece should be no wider than 2-3% of the total image width. If any stone spans more than 5% of image width, it is TOO LARGE. Think palm-sized or smaller — NOT basketball-sized.
 ${sizeDesc}
 ${hasPattern ? `Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
 
@@ -106,7 +106,7 @@ Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces 
 
 ### OTHER RULES:
 - Replicate the EXACT stone texture, surface quality from Image 2. Do NOT invent a different stone.
-- UNIFORMITY: Same stone pattern everywhere in the masked area.
+- UNIFORMITY: Same stone pattern everywhere in the masked area — narrow columns, pillars between windows, and small sections get the same consistent pattern. Do NOT distort or stretch stones on narrow areas.
 - Apply ONLY to white mask areas. Black areas = untouched.
 - IGNORE any text, numbers, signs, or markings on walls — cover them with stone.
 - Real installed cladding with 3D depth and natural shadows — NOT flat wallpaper.
@@ -125,9 +125,9 @@ Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces 
 COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
 CRITICAL: Image 2 is a CLOSE-UP macro photo. It may show only 2-4 pieces filling the frame — COMPLETELY IGNORE the apparent size of stones in Image 2. Only copy COLOR, TEXTURE, and SURFACE from Image 2, NOT the size or scale.
 
-MANDATORY STONE COUNT: The ENTIRE building facade must contain AT LEAST 300-500 individual stone pieces total. Each floor (approximately 3 meters) must show at least 15-20 stones vertically. If the total visible stone count on the building is less than 200, the stones are WAY TOO BIG.
+MANDATORY STONE COUNT: The ENTIRE building facade must contain AT LEAST 500-1000 individual stone pieces total. Each floor (~3 meters) must show at least 20-30 stones vertically and 15-25 stones horizontally. If the total visible stone count on the building is less than 300, the stones are WAY TOO BIG — regenerate smaller.
 
-PIXEL RULE: In the output image, each individual stone piece should be no wider than approximately 3-5% of the total image width. If any stone piece spans more than 8% of image width, it is TOO LARGE.
+PIXEL RULE: In the output image, each individual stone piece should be no wider than approximately 2-3% of the total image width. If any stone piece spans more than 5% of image width, it is DEFINITELY TOO LARGE. Think of them as the size of a human palm or smaller — NOT the size of a basketball or pillow.
 
 ${sizeDesc}
 
@@ -140,7 +140,7 @@ IGNORE any text, numbers, signs, labels, or markings painted/written on walls �
 
 ### QUALITY:
 - Replicate EXACT stone texture and surface quality from Image 2. Do NOT invent a different stone.
-- UNIFORMITY: IDENTICAL stone pattern on ALL target surfaces — corners, edges, columns included.
+- UNIFORMITY: IDENTICAL stone pattern on ALL target surfaces — corners, edges, columns, narrow pillars between windows, and recessed areas ALL get the same consistent stone texture. Do NOT distort, stretch, or simplify the pattern on narrow columns or small wall sections.
 - Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper.
 - ${groutInstruction}
 - Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
