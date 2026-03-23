@@ -346,9 +346,11 @@ async function generateWithGemini(
   )
 
   // Model fallback chain — try each model in order, skip to next on 503/failure
+  // Model fallback chain — best quality first, highest availability last
   const MODELS = [
-    'gemini-2.5-flash-preview-image-generation',
-    'gemini-2.0-flash-exp',
+    'gemini-3-pro-image-preview',       // Best quality (20 RPM / 250 RPD)
+    'gemini-3.1-flash-image-preview',   // Fast + good quality (100 RPM / 1K RPD)
+    'gemini-2.5-flash-image',           // Most available (500 RPM / 2K RPD)
   ]
 
   console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern)' : '', maskBase64 ? '(brush)' : '(full)')
