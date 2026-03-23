@@ -31,28 +31,17 @@ export default function HakkimizdaPage() {
   const yearsExperience = new Date().getFullYear() - 2000
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/projects')
-        const data = await res.json()
+    fetch('/api/projects')
+      .then((res) => res.json())
+      .then((data) => {
         if (Array.isArray(data)) {
           setProjectCount(data.length)
-          // Collect ALL project photos, filter landscape only
+          // Collect ALL project photos and shuffle randomly
           const allPhotos = data.flatMap((p: { photos?: string[] }) => p.photos || [])
-          const landscapePhotos: string[] = []
-          await Promise.all(allPhotos.map((url: string) => new Promise<void>((resolve) => {
-            const img = new window.Image()
-            img.onload = () => {
-              if (img.naturalWidth >= img.naturalHeight) landscapePhotos.push(url)
-              resolve()
-            }
-            img.onerror = () => resolve()
-            img.src = url
-          })))
-          setHeroPhotos(landscapePhotos.sort(() => Math.random() - 0.5))
+          setHeroPhotos(allPhotos.sort(() => Math.random() - 0.5))
         }
-      } catch { /* ignore */ }
-    })()
+      })
+      .catch(() => {})
 
     fetch('/api/products')
       .then((res) => res.json())
