@@ -31,14 +31,14 @@ export default function HakkimizdaPage() {
   const yearsExperience = new Date().getFullYear() - 2000
 
   useEffect(() => {
-    fetch('/api/projects')
-      .then((res) => res.json())
-      .then(async (data) => {
+    (async () => {
+      try {
+        const res = await fetch('/api/projects')
+        const data = await res.json()
         if (Array.isArray(data)) {
           setProjectCount(data.length)
-          // Collect ALL project photos, then filter landscape ones via Image check
+          // Collect ALL project photos, filter landscape only
           const allPhotos = data.flatMap((p: { photos?: string[] }) => p.photos || [])
-          // Filter: only keep landscape (wider than tall) photos for hero background
           const landscapePhotos: string[] = []
           await Promise.all(allPhotos.map((url: string) => new Promise<void>((resolve) => {
             const img = new window.Image()
@@ -49,11 +49,10 @@ export default function HakkimizdaPage() {
             img.onerror = () => resolve()
             img.src = url
           })))
-          const shuffled = landscapePhotos.sort(() => Math.random() - 0.5)
-          setHeroPhotos(shuffled)
+          setHeroPhotos(landscapePhotos.sort(() => Math.random() - 0.5))
         }
-      })
-      .catch(() => {})
+      } catch { /* ignore */ }
+    })()
 
     fetch('/api/products')
       .then((res) => res.json())
@@ -70,7 +69,7 @@ export default function HakkimizdaPage() {
     if (heroPhotos.length < 2) return
     const timer = setInterval(() => {
       setCurrentPhotoIdx(prev => (prev + 1) % heroPhotos.length)
-    }, 5000)
+    }, 4000)
     return () => clearInterval(timer)
   }, [heroPhotos])
 
