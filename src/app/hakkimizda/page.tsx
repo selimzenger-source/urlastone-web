@@ -33,15 +33,23 @@ export default function HakkimizdaPage() {
   useEffect(() => {
     fetch('/api/projects')
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         if (Array.isArray(data)) {
           setProjectCount(data.length)
-          // Use only first (cover) photo from each project — best quality for hero
-          const coverPhotos = data
-            .map((p: { photos?: string[] }) => p.photos?.[0])
-            .filter(Boolean) as string[]
-          // Shuffle randomly
-          const shuffled = coverPhotos.sort(() => Math.random() - 0.5)
+          // Collect ALL project photos, then filter landscape ones via Image check
+          const allPhotos = data.flatMap((p: { photos?: string[] }) => p.photos || [])
+          // Filter: only keep landscape (wider than tall) photos for hero background
+          const landscapePhotos: string[] = []
+          await Promise.all(allPhotos.map((url: string) => new Promise<void>((resolve) => {
+            const img = new window.Image()
+            img.onload = () => {
+              if (img.naturalWidth >= img.naturalHeight) landscapePhotos.push(url)
+              resolve()
+            }
+            img.onerror = () => resolve()
+            img.src = url
+          })))
+          const shuffled = landscapePhotos.sort(() => Math.random() - 0.5)
           setHeroPhotos(shuffled)
         }
       })
