@@ -335,7 +335,7 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Bar */}
-                <div className="w-full flex items-end h-full">
+                <div className="w-full flex items-end flex-1 min-h-0">
                   <div
                     className={`w-full rounded-t-sm transition-all duration-500 ${isTodayBar
                       ? (isViews ? 'bg-gold-400' : 'bg-blue-400')
