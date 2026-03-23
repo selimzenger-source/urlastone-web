@@ -346,12 +346,10 @@ async function generateWithGemini(
   )
 
   // Model fallback chain — try each model in order, skip to next on 503/failure
-  // Use highest-availability model to avoid 503s and stay within Vercel 60s timeout
-  // gemini-2.5-flash-image: 500 RPM / 2K RPD — most reliable
-  // Fallback: gemini-3-pro-image-preview if flash fails (best quality but only 20 RPM)
+  // Best quality first, flash as fallback for 503/rate limit
   const MODELS = [
-    'gemini-2.5-flash-image',
     'gemini-3-pro-image-preview',
+    'gemini-2.5-flash-image',
   ]
 
   console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern)' : '', maskBase64 ? '(brush)' : '(full)')
