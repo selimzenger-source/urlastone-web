@@ -94,42 +94,56 @@ function buildGeminiPrompt(
       : ''
     return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in).${patternRef} Image ${maskImageNum} is a black/white mask — WHITE = apply stone.
 
-STONE SIZE: AI models generate stones TOO LARGE. Make them MUCH SMALLER. Image 2 is a macro close-up — IGNORE its apparent size, only copy COLOR and TEXTURE. Each stone piece ≤3% of image width.
+### MOST IMPORTANT — STONE SIZE (read this FIRST):
+COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
+CRITICAL: Image 2 is a CLOSE-UP macro photo — COMPLETELY IGNORE the apparent size of stones in it. Only copy COLOR and TEXTURE, NOT the size.
+PIXEL RULE: Each stone piece should be no wider than 3-5% of the total image width.
 ${sizeDesc}
 ${hasPattern ? `Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
 
-STONE COLOR FIDELITY: Study Image 2 carefully. If it contains MULTIPLE colors/tones (orange, brown, dark grey, cream), reproduce that SAME color distribution. Do NOT average into one uniform tone.
+### STONE COLOR FIDELITY:
+Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark grey), you MUST reproduce that SAME color distribution. Do NOT average the colors into one uniform tone. Each stone piece should randomly pick from the color range visible in Image 2.
 
-RULES:
-- Replicate EXACT stone texture from Image 2. Do NOT invent a different stone.
-- UNIFORMITY: Same stone pattern everywhere — narrow columns and small sections included.
-- Apply ONLY to white mask areas. Black = untouched.
-- IGNORE text/numbers on walls — cover with stone.
-- Real installed cladding with 3D depth and shadows — NOT flat wallpaper.
+### OTHER RULES:
+- Replicate the EXACT stone texture, surface quality from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: Same stone pattern everywhere in the masked area.
+- Apply ONLY to white mask areas. Black areas = untouched.
+- IGNORE any text, numbers, signs, or markings on walls — cover them with stone.
+- Real installed cladding with 3D depth and natural shadows — NOT flat wallpaper.
 - ${groutInstruction}
-- Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
+- Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
   }
 
   // Full mode
   const patternRef = hasPattern
-    ? `\nImage 3 is a diagram showing the stone laying PATTERN — follow it.`
+    ? `\n\nImage 3 is a diagram showing the stone laying PATTERN — follow it for stone arrangement.`
     : ''
 
   return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in — NOT actual installed size).${patternRef}
 
-STONE SIZE (CRITICAL): AI models generate stones TOO LARGE. Make them MUCH SMALLER than your instinct. Image 2 is a macro close-up — IGNORE its apparent size, only copy COLOR, TEXTURE, and SURFACE. Each stone piece ≤3% of image width. Each floor (~3m) needs 20+ stones vertically. Total building should have 500+ stones.
+### MOST IMPORTANT — STONE SIZE (read this FIRST):
+COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
+CRITICAL: Image 2 is a CLOSE-UP macro photo. It may show only 2-4 pieces filling the frame — COMPLETELY IGNORE the apparent size of stones in Image 2. Only copy COLOR, TEXTURE, and SURFACE from Image 2, NOT the size or scale.
+
+MANDATORY STONE COUNT: The ENTIRE building facade must contain AT LEAST 300-500 individual stone pieces total. Each floor (approximately 3 meters) must show at least 15-20 stones vertically. If the total visible stone count on the building is less than 200, the stones are WAY TOO BIG.
+
+PIXEL RULE: In the output image, each individual stone piece should be no wider than approximately 3-5% of the total image width. If any stone piece spans more than 8% of image width, it is TOO LARGE.
+
 ${sizeDesc}
 
-STONE COLOR FIDELITY: Study Image 2 carefully. If it contains MULTIPLE colors/tones (orange, brown, dark/near-black, cream), reproduce that EXACT SAME color variety. Do NOT simplify or average into one uniform color. Each stone piece should vary across the full color range.
+### STONE COLOR FIDELITY:
+Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark/near-black, some cream), you MUST reproduce that EXACT SAME color variety and distribution. Do NOT simplify or average into one uniform color. Each stone piece should randomly vary across the full color range visible in Image 2.
 
-COVERAGE: Apply stone to ${ctx.apply}. 100% coverage on ALL surfaces — walls, columns, corners. Cover wall text/numbers with stone. Preserve: ${ctx.preserve}. Same camera angle.
+### COVERAGE:
+Apply this stone to ${ctx.apply} 100% coverage on ALL target surfaces including ground floor, top floor, side walls, columns, and every visible wall area — no gaps, no bare patches, no uncovered areas. Every single wall section from bottom to top must be covered.
+IGNORE any text, numbers, signs, labels, or markings painted/written on walls — cover them with stone as if they don't exist. Only preserve: ${ctx.preserve}. Keep the same camera angle.
 
-QUALITY:
-- Replicate EXACT stone texture from Image 2. Do NOT invent a different stone.
-- UNIFORMITY: Identical pattern on ALL surfaces — narrow columns and pillars included.
-- Real installed cladding with 3D depth and shadows — NOT flat wallpaper.
+### QUALITY:
+- Replicate EXACT stone texture and surface quality from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: IDENTICAL stone pattern on ALL target surfaces — corners, edges, columns included.
+- Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper.
 - ${groutInstruction}
-- Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
+- Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
 }
 
 // Category-based scale instructions — adapted per surface type for correct size references
@@ -139,10 +153,10 @@ function getCategoryScale(categorySlug: string, surfaceContext: string): string 
   // Exterior (facade) — use windows, doors, bricks, floor height as size references
   if (surfaceContext === 'facade') {
     const scales: Record<string, string> = {
-      nature: `Irregular polygon-shaped flat stone pieces, 15-30cm each. Each stone ≈1/5 to 1/8 window width. 4-6 stones between windows horizontally, 15-20 per floor vertically. <30 stones between windows = TOO BIG.`,
-      mix: `Thin horizontal strips (2-3cm height, 20-40cm width) alternating with irregular natural pieces (10-15cm). 8-12 rows between windows vertically.`,
-      crazy: `Random mosaic of SMALL rounded/irregular pieces, 5-15cm. Very dense. 40-60 pieces between windows. Each piece smaller than a fist.`,
-      line: `THIN uniform horizontal strips, 2-3cm height × 30-60cm width. 30-40 strips between windows. Modern linear pattern — NOT irregular polygons.`,
+      nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-30cm wide. Use ANY visible objects for scale: each stone is roughly 1/5 to 1/8 the width of a window; a standard brick is ~6×22cm so each stone is about 2-3 bricks wide; a floor height (~3m) should have at least 15-20 stones vertically. Between two side-by-side windows there should be at least 4-6 stones horizontally. If you can count fewer than 30 stones on a wall section between windows, the stones are TOO BIG.`,
+      mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). Between two windows there should be at least 8-12 stone rows vertically. Each thin strip is about the height of a standard brick or smaller.`,
+      crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. Between two windows there should be at least 40-60 individual stone pieces. Each piece is smaller than a fist.`,
+      line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. Between two stacked windows there should be at least 30-40 horizontal strips. Each strip is thinner than a standard brick. Modern minimalist linear pattern — NOT irregular polygon stones.`,
     }
     return scales[cat] || scales.nature
   }
@@ -150,10 +164,10 @@ function getCategoryScale(categorySlug: string, surfaceContext: string): string 
   // Interior / fireplace / bathroom / floor — use ALL visible real-world objects as size reference
   // Gemini will pick whichever references are visible: doors, bricks, outlets, tiles, furniture, etc.
   const interiorScales: Record<string, string> = {
-    nature: `Irregular polygon-shaped flat stone pieces, 15-25cm each. Door height (2m) = 12-15 stones vertically. Each stone ≈ outlet-cover size (~10cm) or palm-sized. NOT boulders.`,
-    mix: `Thin horizontal strips (2-3cm height, 20-40cm width) alternating with irregular pieces (10-15cm). Door height (2m) = 15-20 rows. Use doors/outlets for scale.`,
-    crazy: `Random mosaic of SMALL pieces, 5-15cm. 1m×1m section = 30-50 pieces. Each piece smaller than a fist.`,
-    line: `THIN uniform horizontal strips, 2-3cm height × 30-60cm width. Door height (2m) = 40-50 strips. Modern linear — NOT irregular polygons.`,
+    nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-25cm wide. Use ANY visible objects for scale: a standard door height (2m) should have at least 12-15 stones vertically; a standard brick is ~6×22cm so each stone is about 2-3 bricks wide; an electrical outlet cover is ~10cm so each stone is about 1-2 outlet covers wide; a light switch is ~7cm; a door handle is ~12cm from the door edge. A fireplace opening height (~60cm) should contain at least 4-5 stones vertically. Do NOT make boulder-sized stones. The stones must be SMALL relative to the wall.`,
+    mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). A door height (2m) should have at least 15-20 stone rows. Each thin strip is about the height of a standard brick (6cm) or smaller. Use visible objects (doors, bricks, outlets, furniture) to calibrate size.`,
+    crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. A 1m×1m wall section should contain at least 30-50 individual stone pieces. Each piece is smaller than a fist. Use visible objects (doors, bricks, outlets, tiles) to calibrate.`,
+    line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. A door height (2m) should have at least 40-50 horizontal strips. Each strip is thinner than a standard brick. Modern minimalist linear pattern — NOT irregular polygon stones.`,
   }
   return interiorScales[cat] || interiorScales.nature
 }
