@@ -382,11 +382,11 @@ export default function TeklifForm() {
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">{t.form_preferred_lang_label}</label>
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
               {languages.map(lang => (
                 <button key={lang.code} type="button"
                   onClick={() => setForm(prev => ({ ...prev, tercihDil: lang.code }))}
-                  className={`flex-1 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-xs font-mono transition-all border ${
+                  className={`shrink-0 flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl text-xs font-mono transition-all border ${
                     form.tercihDil === lang.code
                       ? 'bg-gold-400/20 border-gold-400/40 text-gold-400'
                       : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:border-white/20'
