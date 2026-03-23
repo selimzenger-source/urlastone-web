@@ -89,31 +89,47 @@ function buildGeminiPrompt(
 
   if (hasMask) {
     // Brush mode with mask
-    const patternRef = hasPattern ? ` Image ${patternImageNum} shows the laying pattern.` : ''
-    const patternFollow = hasPattern ? `\nFollow the pattern in Image ${patternImageNum}.` : ''
-    return `Image 1: ${ctx.scene}. Image 2: close-up stone texture (zoomed in — ignore its apparent size, only copy color+texture). ${patternRef} Image ${maskImageNum}: black/white mask (WHITE=apply stone).
+    const patternRef = hasPattern
+      ? ` Image ${patternImageNum} is a diagram showing the stone laying PATTERN.`
+      : ''
+    return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in).${patternRef} Image ${maskImageNum} is a black/white mask — WHITE = apply stone.
 
-STONE SIZE: Make stones MUCH SMALLER than your instinct. Each piece ≤2-3% of image width. Palm-sized, not basketball-sized. Image 2 is macro — ignore its scale.
-${sizeDesc}${patternFollow}
+STONE SIZE: AI models generate stones TOO LARGE. Make them MUCH SMALLER. Image 2 is a macro close-up — IGNORE its apparent size, only copy COLOR and TEXTURE. Each stone piece ≤3% of image width.
+${sizeDesc}
+${hasPattern ? `Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
 
-COLOR: Reproduce ALL color tones from Image 2 — if it has orange, brown, dark pieces, use that same variety. Do NOT average into one color.
+STONE COLOR FIDELITY: Study Image 2 carefully. If it contains MULTIPLE colors/tones (orange, brown, dark grey, cream), reproduce that SAME color distribution. Do NOT average into one uniform tone.
 
-RULES: Apply ONLY to white mask areas. Ignore wall text/numbers — cover with stone. Uniform pattern everywhere including narrow columns. 3D depth with shadows, not flat. ${groutInstruction}. Photorealistic.${userNote ? `\nUSER NOTE: "${userNote}"` : ''}`
+RULES:
+- Replicate EXACT stone texture from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: Same stone pattern everywhere — narrow columns and small sections included.
+- Apply ONLY to white mask areas. Black = untouched.
+- IGNORE text/numbers on walls — cover with stone.
+- Real installed cladding with 3D depth and shadows — NOT flat wallpaper.
+- ${groutInstruction}
+- Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
   }
 
   // Full mode
-  const patternRef = hasPattern ? ` Image 3 shows the laying pattern — follow it.` : ''
+  const patternRef = hasPattern
+    ? `\nImage 3 is a diagram showing the stone laying PATTERN — follow it.`
+    : ''
 
-  return `Image 1: ${ctx.scene}. Image 2: close-up stone texture (zoomed in — ignore its apparent size, only copy color+texture+surface).${patternRef}
+  return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in — NOT actual installed size).${patternRef}
 
-STONE SIZE (CRITICAL): Make stones MUCH SMALLER than your instinct. Each piece ≤2-3% of image width max. Each floor (~3m) needs 20-30 stones vertically. Total building should have 500+ stones. Palm-sized, not basketball-sized.
+STONE SIZE (CRITICAL): AI models generate stones TOO LARGE. Make them MUCH SMALLER than your instinct. Image 2 is a macro close-up — IGNORE its apparent size, only copy COLOR, TEXTURE, and SURFACE. Each stone piece ≤3% of image width. Each floor (~3m) needs 20+ stones vertically. Total building should have 500+ stones.
 ${sizeDesc}
 
-COLOR: Reproduce ALL color tones from Image 2. If it has orange+brown+dark pieces, use that exact variety. Do NOT average into one uniform color.
+STONE COLOR FIDELITY: Study Image 2 carefully. If it contains MULTIPLE colors/tones (orange, brown, dark/near-black, cream), reproduce that EXACT SAME color variety. Do NOT simplify or average into one uniform color. Each stone piece should vary across the full color range.
 
-COVERAGE: Apply stone to ${ctx.apply}. 100% coverage — all walls, columns, corners. Cover wall text/numbers with stone. Preserve: ${ctx.preserve}. Same camera angle.
+COVERAGE: Apply stone to ${ctx.apply}. 100% coverage on ALL surfaces — walls, columns, corners. Cover wall text/numbers with stone. Preserve: ${ctx.preserve}. Same camera angle.
 
-QUALITY: Exact texture from Image 2 — don't invent different stone. Uniform pattern everywhere including narrow columns. 3D depth with shadows, not flat wallpaper. ${groutInstruction}. Photorealistic.${userNote ? `\nUSER NOTE: "${userNote}"` : ''}`
+QUALITY:
+- Replicate EXACT stone texture from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: Identical pattern on ALL surfaces — narrow columns and pillars included.
+- Real installed cladding with 3D depth and shadows — NOT flat wallpaper.
+- ${groutInstruction}
+- Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
 }
 
 // Category-based scale instructions — adapted per surface type for correct size references
@@ -123,10 +139,10 @@ function getCategoryScale(categorySlug: string, surfaceContext: string): string 
   // Exterior (facade) — use windows, doors, bricks, floor height as size references
   if (surfaceContext === 'facade') {
     const scales: Record<string, string> = {
-      nature: `Irregular polygon pieces, 15-30cm each. 1/5-1/8 of window width. 4-6 stones between windows horizontally, 15-20 per floor vertically.`,
-      mix: `Thin horizontal strips (2-3cm) alternating with irregular pieces (10-15cm). 8-12 rows between windows vertically.`,
-      crazy: `Dense mosaic of SMALL pieces 5-15cm. 40-60 pieces between two windows. Fist-sized or smaller.`,
-      line: `THIN horizontal strips 2-3cm height, 30-60cm width. 30-40 strips between windows. Minimalist linear — NOT polygons.`,
+      nature: `Irregular polygon-shaped flat stone pieces, 15-30cm each. Each stone ≈1/5 to 1/8 window width. 4-6 stones between windows horizontally, 15-20 per floor vertically. <30 stones between windows = TOO BIG.`,
+      mix: `Thin horizontal strips (2-3cm height, 20-40cm width) alternating with irregular natural pieces (10-15cm). 8-12 rows between windows vertically.`,
+      crazy: `Random mosaic of SMALL rounded/irregular pieces, 5-15cm. Very dense. 40-60 pieces between windows. Each piece smaller than a fist.`,
+      line: `THIN uniform horizontal strips, 2-3cm height × 30-60cm width. 30-40 strips between windows. Modern linear pattern — NOT irregular polygons.`,
     }
     return scales[cat] || scales.nature
   }
@@ -134,10 +150,10 @@ function getCategoryScale(categorySlug: string, surfaceContext: string): string 
   // Interior / fireplace / bathroom / floor — use ALL visible real-world objects as size reference
   // Gemini will pick whichever references are visible: doors, bricks, outlets, tiles, furniture, etc.
   const interiorScales: Record<string, string> = {
-    nature: `Irregular polygon pieces, 15-25cm each. Door height (2m) = 12-15 stones vertically. Outlet-cover-sized (~10cm) or palm-sized. NOT boulders.`,
-    mix: `Thin horizontal strips (2-3cm) alternating with irregular pieces (10-15cm). Door height = 15-20 rows. Use doors/bricks/outlets for scale.`,
-    crazy: `Dense mosaic of SMALL pieces 5-15cm. 1m×1m section = 30-50 pieces. Fist-sized or smaller.`,
-    line: `THIN horizontal strips 2-3cm height, 30-60cm width. Door height = 40-50 strips. Minimalist linear — NOT polygons.`,
+    nature: `Irregular polygon-shaped flat stone pieces, 15-25cm each. Door height (2m) = 12-15 stones vertically. Each stone ≈ outlet-cover size (~10cm) or palm-sized. NOT boulders.`,
+    mix: `Thin horizontal strips (2-3cm height, 20-40cm width) alternating with irregular pieces (10-15cm). Door height (2m) = 15-20 rows. Use doors/outlets for scale.`,
+    crazy: `Random mosaic of SMALL pieces, 5-15cm. 1m×1m section = 30-50 pieces. Each piece smaller than a fist.`,
+    line: `THIN uniform horizontal strips, 2-3cm height × 30-60cm width. Door height (2m) = 40-50 strips. Modern linear — NOT irregular polygons.`,
   }
   return interiorScales[cat] || interiorScales.nature
 }
