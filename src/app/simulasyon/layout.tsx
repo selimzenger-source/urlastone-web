@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'AI Simülasyon',
-  description: 'Yapay zeka ile doğal taş simülasyonu. Projenizde taşların nasıl görüneceğini önceden görün. URLASTONE - Urla, İzmir.',
+  title: 'AI Doğal Taş Simülasyonu - Cephenizde Taş Görün',
+  description: 'Yapay zeka ile doğal taş simülasyonu. Evinizin veya projenizin cephesinde rockshell, traverten, bazalt, kalker taşların nasıl görüneceğini önceden görün. Ücretsiz AI simülasyon. URLASTONE, Urla, İzmir.',
   openGraph: {
-    title: 'AI Simülasyon | URLASTONE',
-    description: 'Yapay zeka ile doğal taş simülasyonu.',
+    title: 'AI Doğal Taş Simülasyonu | URLASTONE',
+    description: 'Yapay zeka ile cephenizde doğal taşı önceden görün. Ücretsiz simülasyon.',
     url: 'https://urlastone.com/simulasyon',
   },
   alternates: {

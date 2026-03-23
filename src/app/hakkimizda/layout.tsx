@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Hakkımızda',
-  description: 'URLASTONE - Urla Doğal Taş Pazarı. Milyon yıllık doğal taşları modern mimariye taşıyan güvenilir çözüm ortağınız. Urla, İzmir.',
+  title: 'Hakkımızda - Doğal Taş Üreticisi Urla',
+  description: 'URLASTONE - Urla Doğal Taş Pazarı. 11 yıllık Daymar Stone markasıyla doğal taş üretim sektöründe. Traverten, bazalt, kalker, mermer üretimi ve ihracatı. Urla, İzmir.',
   openGraph: {
-    title: 'Hakkımızda | URLASTONE',
-    description: 'Urla Doğal Taş Pazarı - Güvenilir çözüm ortağınız.',
+    title: 'Hakkımızda | URLASTONE - Doğal Taş Üreticisi',
+    description: 'Urla Doğal Taş Pazarı - Doğal taş üretimi ve ihracatı. Urla, İzmir.',
     url: 'https://urlastone.com/hakkimizda',
   },
   alternates: {

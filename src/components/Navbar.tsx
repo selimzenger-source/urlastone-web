@@ -51,7 +51,7 @@ export default function Navbar() {
             className="flex items-center gap-1.5 text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2-dark.png" alt="" className="w-7 h-7 object-contain" />
+            <img src="/ur2-dark.png" alt="Urlastone Doğal Taş" className="w-7 h-7 object-contain" />
           </Link>
           {navLinks.map((link) => (
             <Link
@@ -92,7 +92,7 @@ export default function Navbar() {
             className="flex items-center gap-3 py-3 text-white/70 font-medium text-lg hover:text-white transition-colors"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2-dark.png" alt="" className="w-7 h-7 object-contain" />
+            <img src="/ur2-dark.png" alt="Urlastone Doğal Taş" className="w-7 h-7 object-contain" />
             {t.nav_anasayfa}
           </Link>
           {navLinks.map((link) => (

@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Referanslarımız',
-  description: 'URLASTONE - Güvenilir iş ortaklarımız ve tamamladığımız projeler. Doğal taş sektöründe yılların deneyimi.',
+  title: 'Referanslarımız - İş Ortakları ve Projeler',
+  description: 'URLASTONE referansları ve iş ortakları. Doğal taş sektöründe tamamladığımız cephe kaplama, zemin döşeme ve peyzaj projeleri. Güvenilir doğal taş tedarikçisi. Urla, İzmir.',
   openGraph: {
-    title: 'Referanslarımız | URLASTONE',
-    description: 'Güvenilir iş ortaklarımız ve tamamladığımız projeler.',
+    title: 'Referanslarımız | URLASTONE - Doğal Taş',
+    description: 'İş ortaklarımız ve tamamladığımız doğal taş projeleri.',
     url: 'https://urlastone.com/referanslarimiz',
   },
   alternates: {
