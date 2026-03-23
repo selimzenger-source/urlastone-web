@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ReferansMarquee from '@/components/ReferansMarquee'
@@ -24,6 +24,8 @@ export default function HakkimizdaPage() {
   const { t } = useLanguage()
   const [projectCount, setProjectCount] = useState(0)
   const [stoneCount, setStoneCount] = useState(0)
+  const [heroPhotos, setHeroPhotos] = useState<string[]>([])
+  const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0)
 
   // Calculate years of experience dynamically (founded ~2000)
   const yearsExperience = new Date().getFullYear() - 2000
@@ -34,6 +36,11 @@ export default function HakkimizdaPage() {
       .then((data) => {
         if (Array.isArray(data)) {
           setProjectCount(data.length)
+          // Collect all project photos for hero slideshow
+          const allPhotos = data.flatMap((p: { photos?: string[] }) => p.photos || [])
+          // Shuffle randomly
+          const shuffled = allPhotos.sort(() => Math.random() - 0.5)
+          setHeroPhotos(shuffled)
         }
       })
       .catch(() => {})
@@ -47,6 +54,15 @@ export default function HakkimizdaPage() {
       })
       .catch(() => {})
   }, [])
+
+  // Auto-rotate hero background every 5 seconds
+  useEffect(() => {
+    if (heroPhotos.length < 2) return
+    const timer = setInterval(() => {
+      setCurrentPhotoIdx(prev => (prev + 1) % heroPhotos.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [heroPhotos])
 
   const ekip = [
     {
@@ -113,8 +129,19 @@ export default function HakkimizdaPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gold-400/5 to-transparent" />
+      <section className="relative pt-40 pb-28 md:pt-48 md:pb-36 overflow-hidden">
+        {/* Slideshow background from project photos */}
+        {heroPhotos.map((photo, idx) => (
+          <div
+            key={photo}
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{
+              backgroundImage: `url(${photo})`,
+              opacity: idx === currentPhotoIdx ? 1 : 0,
+            }}
+          />
+        ))}
+        <div className="absolute inset-0 bg-black/60" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center max-w-3xl mx-auto">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
@@ -159,7 +186,7 @@ export default function HakkimizdaPage() {
             <div className="relative">
               <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
                 <img
-                  src="/hero-1.png"
+                  src="/about-story.jpg"
                   alt="Urla Stone Atölye"
                   className="w-full h-full object-cover"
                 />

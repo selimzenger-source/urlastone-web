@@ -122,7 +122,7 @@ export const negativePrompt = 'cartoon, drawing, painting, illustration, anime, 
 // Resize image to max dimension while keeping aspect ratio
 export function resizeImage(
   dataUrl: string,
-  maxSize: number = 1024
+  maxSize: number = 2048
 ): Promise<{ dataUrl: string; width: number; height: number }> {
   return new Promise((resolve) => {
     const img = new Image()

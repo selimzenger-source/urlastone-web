@@ -23,14 +23,14 @@ export async function POST(req: Request) {
   const body = await req.json()
   const {
     ad_soyad, telefon, email, ulke, il, ilce,
-    proje_tipi, tas_tercihi, metrekare,
+    proje_tipi, tas_tercihi, cephe_metre, dis_kose_uzunluk, fiyat_tipi,
     aciklama, kaynak, iletisim_turu, tercih_dil,
   } = body
 
   // Validate required fields
-  if (!ad_soyad || !telefon || !il || !proje_tipi) {
+  if (!ad_soyad || !telefon || !il || !proje_tipi || !cephe_metre) {
     return NextResponse.json(
-      { error: 'Ad Soyad, Telefon, İl ve Proje Tipi zorunludur' },
+      { error: 'Ad Soyad, Telefon, İl, Proje Tipi ve Cephe m² zorunludur' },
       { status: 400 }
     )
   }
@@ -46,7 +46,9 @@ export async function POST(req: Request) {
       ilce: ilce || null,
       proje_tipi,
       tas_tercihi: tas_tercihi || [],
-      metrekare: metrekare || null,
+      cephe_metre: cephe_metre || null,
+      dis_kose_uzunluk: dis_kose_uzunluk || null,
+      fiyat_tipi: fiyat_tipi || 'sadece_tas',
       aciklama: aciklama || null,
       kaynak: kaynak || null,
       foto_urls: [],
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
 
   // Send emails (don't block response on email failures)
   if (process.env.RESEND_API_KEY) {
-    const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], metrekare, aciklama, kaynak, iletisim_turu, tercih_dil: tercih_dil || 'tr' }
+    const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], cephe_metre, dis_kose_uzunluk, fiyat_tipi, aciklama, kaynak, iletisim_turu, tercih_dil: tercih_dil || 'tr' }
     Promise.allSettled([
       sendCustomerConfirmation(emailData),
       sendAdminNotification(emailData),

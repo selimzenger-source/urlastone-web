@@ -138,7 +138,12 @@ export default function TaslarPage() {
 
       {/* Hero */}
       <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gold-400/5 to-transparent" />
+        {/* Background: Traverten hero image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/featured-traverten.jpg)' }}
+        />
+        <div className="absolute inset-0 bg-black/65" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center max-w-3xl mx-auto">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">

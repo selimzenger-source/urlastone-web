@@ -49,8 +49,13 @@ export default function IletisimPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative pt-40 pb-28 md:pt-48 md:pb-36 px-6 md:px-12 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-top"
+          style={{ backgroundImage: 'url(/contact-hero.png)' }}
+        />
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="max-w-7xl mx-auto text-center relative">
           <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
             {t.contact_tag}
           </p>
@@ -64,7 +69,7 @@ export default function IletisimPage() {
       </section>
 
       {/* Two Column Layout: WhatsApp + Visit */}
-      <section className="px-6 md:px-12 pb-20">
+      <section className="px-6 md:px-12 pt-12 md:pt-16 pb-20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
 
           {/* WhatsApp Section */}

@@ -134,8 +134,13 @@ export default function UygulamalarimPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 md:pt-40 pb-16 md:pb-24 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative pt-32 md:pt-40 pb-16 md:pb-24 px-6 md:px-12 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/apps-hero.jpg)' }}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="max-w-7xl mx-auto relative">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2 mb-6">
               <div className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
@@ -166,7 +171,7 @@ export default function UygulamalarimPage() {
       </section>
 
       {/* Map Section */}
-      <section className="px-6 md:px-12 pb-16 md:pb-24">
+      <section className="px-6 md:px-12 pt-12 md:pt-16 pb-16 md:pb-24">
         <div className="max-w-7xl mx-auto">
           <div className="glass-card overflow-hidden">
             <div className="p-6 md:p-8 border-b border-white/[0.06]">

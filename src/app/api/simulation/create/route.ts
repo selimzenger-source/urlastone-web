@@ -67,6 +67,8 @@ function buildGeminiPrompt(
   surfaceContext: string,
   sizeDesc: string,
   groutInstruction: string,
+  hasReference: boolean,
+  referenceImageNum: number | null,
   hasPattern: boolean,
   patternImageNum: number | null,
   hasMask: boolean,
@@ -80,26 +82,28 @@ function buildGeminiPrompt(
     const patternRef = hasPattern
       ? ` Image ${patternImageNum} is a diagram showing the stone laying PATTERN.`
       : ''
-    return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in).${patternRef} Image ${maskImageNum} is a black/white mask — WHITE = apply stone.
+    const refInstruction = hasReference
+      ? ` Image ${referenceImageNum} shows a REAL COMPLETED PROJECT with stone veneer at CORRECT SCALE — match this stone-to-building size ratio.`
+      : ''
 
-### MOST IMPORTANT — STONE SIZE (read this FIRST):
-COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
-CRITICAL: Image 2 is a CLOSE-UP macro photo — COMPLETELY IGNORE the apparent size of stones in it. Only copy COLOR and TEXTURE, NOT the size.
-PIXEL RULE: Each stone piece should be no wider than 3-5% of the total image width.
+    return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample — copy ONLY color, texture, surface from it. IGNORE Image 2's apparent stone size (it's zoomed in).${refInstruction}${patternRef} Image ${maskImageNum} is a black/white mask — WHITE = apply stone.
+
+### STONE VENEER SCALE (MOST IMPORTANT):
+Apply thin split-face STONE VENEER CLADDING — NOT large boulders.
+Each stone piece ≈ 1/20th of floor height, 1/8th of window width. At least 20 pieces per floor vertically. If any stone looks larger than a human fist relative to the building, it is TOO LARGE.
 ${sizeDesc}
 ${hasPattern ? `Follow the arrangement pattern shown in Image ${patternImageNum}.` : ''}
 
-### STONE COLOR FIDELITY:
-Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark grey), you MUST reproduce that SAME color distribution. Do NOT average the colors into one uniform tone. Each stone piece should randomly pick from the color range visible in Image 2.
+### STONE COLOR: Reproduce ALL color tones from Image 2 (if it has orange, brown, dark — use that same variety). Do NOT average into one color.
 
-### OTHER RULES:
-- Replicate the EXACT stone texture, surface quality from Image 2. Do NOT invent a different stone.
-- UNIFORMITY: Same stone pattern everywhere in the masked area.
-- Apply ONLY to white mask areas. Black areas = untouched.
-- IGNORE any text, numbers, signs, or markings on walls — cover them with stone.
-- Real installed cladding with 3D depth and natural shadows — NOT flat wallpaper.
+### RULES:
+- Replicate EXACT stone texture from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: Same veneer pattern everywhere — narrow columns included.
+- Apply ONLY to white mask areas. Black = untouched. Do NOT change the building structure.
+- IGNORE wall text/numbers — cover with stone.
+- Real stone veneer with 3D depth and mortar shadows — NOT flat wallpaper.
 - ${groutInstruction}
-- Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
+- Photorealistic.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
   }
 
   // Full mode
@@ -107,31 +111,38 @@ Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces 
     ? `\n\nImage 3 is a diagram showing the stone laying PATTERN — follow it for stone arrangement.`
     : ''
 
-  return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample (zoomed in — NOT actual installed size).${patternRef}
+  const refInstruction = hasReference
+    ? ` Image ${referenceImageNum} is a REAL COMPLETED PROJECT photo showing this stone veneer already installed on a building at the CORRECT SCALE. Match this exact stone-to-building size ratio in your output.`
+    : ''
 
-### MOST IMPORTANT — STONE SIZE (read this FIRST):
-COMMON MISTAKE: AI models almost always generate stones WAY TOO LARGE. You MUST make them MUCH SMALLER than your instinct.
-CRITICAL: Image 2 is a CLOSE-UP macro photo. It may show only 2-4 pieces filling the frame — COMPLETELY IGNORE the apparent size of stones in Image 2. Only copy COLOR, TEXTURE, and SURFACE from Image 2, NOT the size or scale.
+  return `Image 1 is a photo of ${ctx.scene}. Image 2 is a close-up stone texture sample — copy ONLY the color, texture, and surface finish from it. Image 2 is heavily zoomed in so COMPLETELY IGNORE the apparent size of stones in it.${refInstruction}${patternRef}
 
-MANDATORY STONE COUNT: The ENTIRE building facade must contain AT LEAST 300-500 individual stone pieces total. Each floor (approximately 3 meters) must show at least 15-20 stones vertically. If the total visible stone count on the building is less than 200, the stones are WAY TOO BIG.
+### STONE VENEER SCALE (MOST IMPORTANT — read FIRST):
+Apply thin split-face STONE VENEER CLADDING — NOT large boulders or rock formations.
+Think of this as fine architectural stone veneer, like small mosaic tiles on a kitchen backsplash but in irregular natural stone shapes.
 
-PIXEL RULE: In the output image, each individual stone piece should be no wider than approximately 3-5% of the total image width. If any stone piece spans more than 8% of image width, it is TOO LARGE.
+PROPORTION RULES (use these instead of centimeters):
+- Each stone piece should be approximately 1/20th the height of one floor
+- Each stone piece should be approximately 1/8th the width of a window
+- One floor height must contain at least 20 stone pieces vertically
+- The width between two windows must contain at least 6 stone pieces horizontally
+- The ENTIRE visible facade must contain AT LEAST 500 individual stone pieces total
+- If any single stone piece appears larger than a human fist relative to the building, it is TOO LARGE
 
 ${sizeDesc}
 
 ### STONE COLOR FIDELITY:
-Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark/near-black, some cream), you MUST reproduce that EXACT SAME color variety and distribution. Do NOT simplify or average into one uniform color. Each stone piece should randomly vary across the full color range visible in Image 2.
+Study Image 2 carefully. If it contains MULTIPLE colors/tones (e.g. some pieces are orange, some brown, some dark/near-black, some cream), reproduce that EXACT SAME color variety. Do NOT simplify or average into one uniform color.
 
 ### COVERAGE:
-Apply this stone to ${ctx.apply} 100% coverage on ALL target surfaces including ground floor, top floor, side walls, columns, and every visible wall area — no gaps, no bare patches, no uncovered areas. Every single wall section from bottom to top must be covered.
-IGNORE any text, numbers, signs, labels, or markings painted/written on walls — cover them with stone as if they don't exist. Only preserve: ${ctx.preserve}. Keep the same camera angle.
+Apply this stone veneer to ${ctx.apply}. 100% coverage on ALL target surfaces — walls, columns, corners, every visible wall area. Cover wall text/numbers with stone. Preserve: ${ctx.preserve}. Same camera angle.
 
 ### QUALITY:
-- Replicate EXACT stone texture and surface quality from Image 2. Do NOT invent a different stone.
-- UNIFORMITY: IDENTICAL stone pattern on ALL target surfaces — corners, edges, columns included.
-- Real installed cladding with 3D depth and natural shadows — NOT flat like wallpaper.
+- Replicate EXACT stone texture from Image 2. Do NOT invent a different stone.
+- UNIFORMITY: Identical veneer pattern on ALL surfaces — narrow columns included.
+- Real installed stone veneer cladding with 3D depth, mortar shadows, surface relief — NOT flat wallpaper.
 - ${groutInstruction}
-- Photorealistic result.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
+- Professional architectural photography, photorealistic.${userNote ? `\n\n### USER INSTRUCTION:\nThe user added this note: "${userNote}". Follow this instruction as much as possible while keeping the other rules.` : ''}`
 }
 
 // Category-based scale instructions — adapted per surface type for correct size references
@@ -141,9 +152,9 @@ function getCategoryScale(categorySlug: string, surfaceContext: string): string 
   // Exterior (facade) — use windows, doors, bricks, floor height as size references
   if (surfaceContext === 'facade') {
     const scales: Record<string, string> = {
-      nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-30cm wide. Use ANY visible objects for scale: each stone is roughly 1/5 to 1/8 the width of a window; a standard brick is ~6×22cm so each stone is about 2-3 bricks wide; a floor height (~3m) should have at least 15-20 stones vertically. Between two side-by-side windows there should be at least 4-6 stones horizontally. If you can count fewer than 30 stones on a wall section between windows, the stones are TOO BIG.`,
-      mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). Between two windows there should be at least 8-12 stone rows vertically. Each thin strip is about the height of a standard brick or smaller.`,
-      crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. Between two windows there should be at least 40-60 individual stone pieces. Each piece is smaller than a fist.`,
+      nature: `SMALL thin flat stone veneer pieces in irregular shapes — like broken ceramic tiles or flagstone pavers, NOT boulders or large rocks. Each piece is the size of a smartphone or smaller. A window is at least 8 pieces wide. One floor is at least 20 pieces tall. Think: mosaic of SMALL flat pieces glued to the wall — like a jigsaw puzzle of many tiny pieces.`,
+      mix: `A mix of thin horizontal cut strips and small irregular flat pieces. The strips are like thin bricks (2-3cm tall). Between two windows there should be at least 8-12 rows. Each piece is small — smartphone-sized or smaller.`,
+      crazy: `Dense mosaic of MANY TINY rounded/irregular pieces — like a cobblestone path scaled to a wall. Each piece is the size of a coin to a fist. Between two windows there should be at least 40-60 pieces. Very dense, very small.`,
       line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. Between two stacked windows there should be at least 30-40 horizontal strips. Each strip is thinner than a standard brick. Modern minimalist linear pattern — NOT irregular polygon stones.`,
     }
     return scales[cat] || scales.nature
@@ -152,9 +163,9 @@ function getCategoryScale(categorySlug: string, surfaceContext: string): string 
   // Interior / fireplace / bathroom / floor — use ALL visible real-world objects as size reference
   // Gemini will pick whichever references are visible: doors, bricks, outlets, tiles, furniture, etc.
   const interiorScales: Record<string, string> = {
-    nature: `Irregular polygon-shaped flat stone pieces, each roughly 15-25cm wide. Use ANY visible objects for scale: a standard door height (2m) should have at least 12-15 stones vertically; a standard brick is ~6×22cm so each stone is about 2-3 bricks wide; an electrical outlet cover is ~10cm so each stone is about 1-2 outlet covers wide; a light switch is ~7cm; a door handle is ~12cm from the door edge. A fireplace opening height (~60cm) should contain at least 4-5 stones vertically. Do NOT make boulder-sized stones. The stones must be SMALL relative to the wall.`,
-    mix: `A combination of thin horizontal cut strips (2-3cm height, 20-40cm width) alternating with medium irregular natural pieces (10-15cm). A door height (2m) should have at least 15-20 stone rows. Each thin strip is about the height of a standard brick (6cm) or smaller. Use visible objects (doors, bricks, outlets, furniture) to calibrate size.`,
-    crazy: `Random mosaic of many SMALL rounded/irregular stone pieces, mixed sizes from 5cm to 15cm. Very dense pattern. A 1m×1m wall section should contain at least 30-50 individual stone pieces. Each piece is smaller than a fist. Use visible objects (doors, bricks, outlets, tiles) to calibrate.`,
+    nature: `SMALL thin flat stone veneer pieces in irregular shapes — like broken ceramic tiles or flagstone pavers, NOT boulders. Each piece is smartphone-sized or smaller. A door height (2m) should have at least 15 pieces vertically. An outlet cover (~10cm) is about the same size as one stone piece. Think: mosaic of SMALL flat pieces glued to the wall.`,
+    mix: `A mix of thin horizontal strips and small irregular flat pieces. Strips are thin like bricks (2-3cm tall). A door height (2m) = at least 15-20 rows. Each piece is small — smartphone-sized or smaller.`,
+    crazy: `Dense mosaic of MANY TINY rounded/irregular pieces — like cobblestones. Each piece is coin-to-fist sized. A 1m×1m section should have at least 30-50 pieces. Very dense, very small.`,
     line: `THIN uniform horizontal stone strips, each approximately 2-3cm height and 30-60cm width. A door height (2m) should have at least 40-50 horizontal strips. Each strip is thinner than a standard brick. Modern minimalist linear pattern — NOT irregular polygon stones.`,
   }
   return interiorScales[cat] || interiorScales.nature
@@ -312,7 +323,9 @@ async function generateWithGemini(
   maskBase64?: string,
   maskMimeType?: string,
   userNote?: string,
-  retryCount = 0,
+  preferredModel?: string,
+  referenceBase64?: string | null,
+  referenceMimeType?: string | null,
 ): Promise<string | null> {
   const apiKey = process.env.GOOGLE_AI_API_KEY
   if (!apiKey) {
@@ -328,16 +341,21 @@ async function generateWithGemini(
   // Get category-specific size description adapted to surface type
   const sizeDesc = getCategoryScale(categorySlug, surfaceContext)
 
-  // Determine image numbering based on whether pattern image is included
+  // Determine image numbering: building=1, stone=2, then reference?, pattern?, mask?
+  const hasReference = referenceBase64 && referenceMimeType
   const hasPattern = patternBase64 && patternMimeType
-  const patternImageNum = hasPattern ? 3 : null
-  const maskImageNum = maskBase64 ? (hasPattern ? 4 : 3) : null
+  let nextImgNum = 3
+  const referenceImageNum = hasReference ? nextImgNum++ : null
+  const patternImageNum = hasPattern ? nextImgNum++ : null
+  const maskImageNum = maskBase64 ? nextImgNum++ : null
 
-  // Build prompt using unified builder — scale + color fidelity are prioritized at the top
+  // Build prompt using unified builder
   const prompt = buildGeminiPrompt(
     surfaceContext,
     sizeDesc,
     groutInstruction,
+    !!hasReference,
+    referenceImageNum,
     !!hasPattern,
     patternImageNum,
     !!maskBase64,
@@ -346,21 +364,27 @@ async function generateWithGemini(
   )
 
   // Model fallback chain — try each model in order, skip to next on 503/failure
-  // gemini-2.5-flash-image: best results + highest availability (500 RPM / 2K RPD)
-  // gemini-3-pro-image-preview: fallback (only 20 RPM but good quality)
-  const MODELS = [
-    'gemini-2.5-flash-image',
-    'gemini-3-pro-image-preview',
+  // If a preferred model is specified, try it first then fallback to others
+  const ALL_MODELS = [
+    'gemini-2.5-flash-image',           // 500 RPM / 2K RPD
+    'gemini-3-pro-image-preview',       // 20 RPM / 250 RPD
+    'gemini-3.1-flash-image-preview',   // 100 RPM / 1K RPD
   ]
+  const MODELS = preferredModel
+    ? [preferredModel, ...ALL_MODELS.filter(m => m !== preferredModel)]
+    : ALL_MODELS
 
   console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern)' : '', maskBase64 ? '(brush)' : '(full)')
 
-  // Build parts array: building + stone + optional pattern + optional mask
+  // Build parts array: building + stone + optional reference + optional pattern + optional mask
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const imageParts: any[] = [
     { inlineData: { mimeType: buildingMimeType, data: buildingBase64 } },
     { inlineData: { mimeType: stoneMimeType, data: stoneBase64 } },
   ]
+  if (hasReference) {
+    imageParts.push({ inlineData: { mimeType: referenceMimeType, data: referenceBase64 } })
+  }
   if (hasPattern) {
     imageParts.push({ inlineData: { mimeType: patternMimeType, data: patternBase64 } })
   }
@@ -373,6 +397,7 @@ async function generateWithGemini(
     contents: [{ parts: imageParts }],
     generationConfig: {
       responseModalities: ['IMAGE'],
+      // Higher output resolution = more pixels for fine stone detail
     },
   })
 
@@ -507,6 +532,7 @@ export async function POST(req: NextRequest) {
       applyMode = 'brush' as ApplyMode,
       surfaceContext = 'facade' as SurfaceContext,
       groutStyle = 'grouted',
+      geminiModel,
       userNote,
     } = await req.json()
 
@@ -558,33 +584,20 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 3. Fetch category pattern illustration (if available)
-      let pattern: { base64: string; mimeType: string } | null = null
-      if (categoryImageUrl) {
-        try {
-          let resolvedPatternUrl = categoryImageUrl
-          if (categoryImageUrl.startsWith('/')) {
-            const origin = req.headers.get('origin') || req.headers.get('x-forwarded-host') || 'www.urlastone.com'
-            const protocol = origin.startsWith('http') ? '' : 'https://'
-            resolvedPatternUrl = `${protocol}${origin}${categoryImageUrl}`
-          }
-          pattern = await fetchImageAsBase64(resolvedPatternUrl)
-          console.log('[Simulation] Pattern image fetched for category:', categorySlug)
-        } catch (err) {
-          console.warn('[Simulation] Could not fetch pattern image, continuing without:', err)
-        }
-      }
+      // 3. Pattern image disabled — sending only 2 images (building + stone) like AI Studio
+      const pattern: { base64: string; mimeType: string } | null = null
 
-      // 4. Try Gemini first (sends building + stone + optional pattern)
+      // 4. Try Gemini (sends building + stone)
       const geminiResult = await generateWithGemini(
         building.base64, building.mimeType,
         stone.base64, stone.mimeType,
         surfaceContext,
         groutStyle,
         categorySlug || 'nature',
-        pattern?.base64, pattern?.mimeType,
+        null, null, // pattern disabled
         undefined, undefined, // no mask in full mode
         userNote,
+        geminiModel,
       )
 
       if (geminiResult) {
@@ -627,24 +640,10 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      // 3. Fetch category pattern illustration (if available)
-      let pattern: { base64: string; mimeType: string } | null = null
-      if (categoryImageUrl) {
-        try {
-          let resolvedPatternUrl = categoryImageUrl
-          if (categoryImageUrl.startsWith('/')) {
-            const origin = req.headers.get('origin') || req.headers.get('x-forwarded-host') || 'www.urlastone.com'
-            const protocol = origin.startsWith('http') ? '' : 'https://'
-            resolvedPatternUrl = `${protocol}${origin}${categoryImageUrl}`
-          }
-          pattern = await fetchImageAsBase64(resolvedPatternUrl)
-          console.log('[Simulation] Pattern image fetched for brush mode, category:', categorySlug)
-        } catch (err) {
-          console.warn('[Simulation] Could not fetch pattern image, continuing without:', err)
-        }
-      }
+      // 3. Pattern image disabled for brush mode too
+      const pattern: { base64: string; mimeType: string } | null = null
 
-      // 4. Try Gemini first (building + stone + optional pattern + mask + userNote)
+      // 4. Try Gemini (building + stone + mask)
       if (userNote) {
         console.log('[Simulation] User note for brush mode:', userNote)
       }
@@ -654,9 +653,10 @@ export async function POST(req: NextRequest) {
         surfaceContext,
         groutStyle,
         categorySlug || 'nature',
-        pattern?.base64, pattern?.mimeType,
+        null, null, // pattern disabled
         maskData.base64, maskData.mimeType,
         userNote,
+        geminiModel,
       )
 
       if (geminiResult) {

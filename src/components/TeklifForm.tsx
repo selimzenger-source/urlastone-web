@@ -15,7 +15,9 @@ interface FormData {
   il: string
   ilce: string
   projeTipi: string
-  metrekare: string
+  cepheMetre: string
+  disKoseUzunluk: string
+  fiyatTipi: 'sadece_tas' | 'tas_ve_malzeme'
   aciklama: string
   kaynak: string
   iletisimTuru: string
@@ -52,12 +54,12 @@ export default function TeklifForm() {
     t.form_opt_cephe, t.form_opt_zemin, t.form_opt_ic_mekan,
     t.form_opt_bahce, t.form_opt_havuz, t.form_opt_merdiven, t.form_opt_diger,
   ]
-  const metrekareSecenekleri = ['0 – 50 m\u00B2', '50 – 100 m\u00B2', '100 – 500 m\u00B2', '500+ m\u00B2', t.form_sqm_unknown]
   const kaynakSecenekleri = [t.form_source_google, t.form_source_instagram, t.form_source_referral, t.form_source_other]
 
   const [form, setForm] = useState<FormData>({
     adSoyad: '', telefon: '', email: '', ulke: 'Türkiye',
-    il: '', ilce: '', projeTipi: '', metrekare: '', aciklama: '', kaynak: '',
+    il: '', ilce: '', projeTipi: '', cepheMetre: '', disKoseUzunluk: '',
+    fiyatTipi: 'sadece_tas', aciklama: '', kaynak: '',
     iletisimTuru: 'phone', tercihDil: locale,
   })
 
@@ -249,7 +251,10 @@ export default function TeklifForm() {
           ad_soyad: form.adSoyad, telefon: form.telefon, email: form.email,
           ulke: form.ulke, il: form.il, ilce: form.ilce,
           proje_tipi: form.projeTipi, tas_tercihi: tasTermihi,
-          metrekare: form.metrekare, aciklama: form.aciklama, kaynak: form.kaynak,
+          cephe_metre: form.cepheMetre ? parseInt(form.cepheMetre) : null,
+          dis_kose_uzunluk: form.disKoseUzunluk ? parseInt(form.disKoseUzunluk) : null,
+          fiyat_tipi: form.fiyatTipi,
+          aciklama: form.aciklama, kaynak: form.kaynak,
           iletisim_turu: form.iletisimTuru, tercih_dil: form.tercihDil,
         }),
       })
@@ -461,12 +466,67 @@ export default function TeklifForm() {
             </select>
           </div>
           <div>
-            <label className="block text-white/50 text-xs font-mono mb-2">{t.form_sqm_label}</label>
-            <select name="metrekare" value={form.metrekare} onChange={handleChange}
-              className={`${inputClass} appearance-none cursor-pointer`}>
-              <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
-              {metrekareSecenekleri.map(m => <option key={m} value={m} className="bg-[#1a1a1a]">{m}</option>)}
-            </select>
+            <label className="block text-white/50 text-xs font-mono mb-2">
+              Kaplanacak Cephe (m²) <span className="text-gold-400">*</span>
+            </label>
+            <input
+              type="number"
+              name="cepheMetre"
+              required
+              min="1"
+              step="1"
+              placeholder="Örn: 150"
+              value={form.cepheMetre}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white/50 text-xs font-mono mb-2">
+              Dış Köşe Uzunluğu (metretül)
+            </label>
+            <input
+              type="number"
+              name="disKoseUzunluk"
+              min="0"
+              step="1"
+              placeholder="Örn: 25"
+              value={form.disKoseUzunluk}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className="block text-white/50 text-xs font-mono mb-2">
+              Fiyat Kapsamı <span className="text-gold-400">*</span>
+            </label>
+            <div className="flex gap-3 mt-1">
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, fiyatTipi: 'sadece_tas' }))}
+                className={`flex-1 px-3 py-3 rounded-xl text-xs font-body transition-all border ${
+                  form.fiyatTipi === 'sadece_tas'
+                    ? 'bg-gold-400/15 border-gold-400/50 text-gold-400'
+                    : 'bg-white/[0.03] border-white/[0.08] text-white/50 hover:bg-white/[0.06]'
+                }`}
+              >
+                Sadece Taş
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, fiyatTipi: 'tas_ve_malzeme' }))}
+                className={`flex-1 px-3 py-3 rounded-xl text-xs font-body transition-all border ${
+                  form.fiyatTipi === 'tas_ve_malzeme'
+                    ? 'bg-gold-400/15 border-gold-400/50 text-gold-400'
+                    : 'bg-white/[0.03] border-white/[0.08] text-white/50 hover:bg-white/[0.06]'
+                }`}
+              >
+                Taş + Yapıştırıcı + Derz
+              </button>
+            </div>
           </div>
         </div>
 

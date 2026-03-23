@@ -50,8 +50,13 @@ export default function SimulasyonPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-32 md:pt-40 pb-10 md:pb-14 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative pt-32 md:pt-40 pb-10 md:pb-14 px-6 md:px-12 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/sim-hero.png)' }}
+        />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="max-w-7xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2 mb-6">
             <Sparkles size={14} className="text-gold-400" />
             <span className="font-mono text-[10px] text-white/50 tracking-wider uppercase">
@@ -69,7 +74,7 @@ export default function SimulasyonPage() {
       </section>
 
       {/* Simulation Wizard */}
-      <section className="px-4 md:px-12 pb-24 md:pb-32">
+      <section className="px-4 md:px-12 pt-12 md:pt-16 pb-24 md:pb-32">
         <SimulationWizard />
       </section>
 
