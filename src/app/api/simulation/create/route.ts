@@ -357,9 +357,13 @@ async function generateWithGemini(
     userNote,
   )
 
-  console.log('[Gemini] Calling gemini-3-pro-image-preview...')
-  console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern image)' : '', maskBase64 ? '(brush mode with mask)' : '(full mode)')
-  const startTime = Date.now()
+  // Model fallback chain — try each model in order, skip to next on 503/failure
+  const MODELS = [
+    'gemini-2.5-flash-preview-image-generation',
+    'gemini-2.0-flash-exp',
+  ]
+
+  console.log('[Gemini] Surface context:', surfaceContext, hasPattern ? '(with pattern)' : '', maskBase64 ? '(brush)' : '(full)')
 
   // Build parts array: building + stone + optional pattern + optional mask
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -375,67 +379,70 @@ async function generateWithGemini(
   }
   imageParts.push({ text: prompt })
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: imageParts }],
-          generationConfig: {
-            responseModalities: ['IMAGE'],
-          },
-        }),
+  const requestBody = JSON.stringify({
+    contents: [{ parts: imageParts }],
+    generationConfig: {
+      responseModalities: ['IMAGE'],
+    },
+  })
+
+  for (const model of MODELS) {
+    console.log(`[Gemini] Trying model: ${model}...`)
+    const startTime = Date.now()
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
+        }
+      )
+
+      const elapsed = Math.round((Date.now() - startTime) / 1000)
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }))
+        console.error(`[Gemini] ${model} error (${res.status}, ${elapsed}s):`, JSON.stringify(err).substring(0, 200))
+        // Try next model
+        continue
       }
-    )
 
-    const elapsed = Math.round((Date.now() - startTime) / 1000)
+      const result = await res.json()
+      console.log(`[Gemini] ${model} responded in ${elapsed}s`)
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }))
-      console.error(`[Gemini] API error (${res.status}, ${elapsed}s):`, JSON.stringify(err).substring(0, 300))
-      // Retry on 503 (overloaded) — up to 2 retries with 5s delay
-      if (res.status === 503 && retryCount < 2) {
-        console.log(`[Gemini] 503 overloaded, retrying in 5s (attempt ${retryCount + 2}/3)...`)
-        await new Promise(r => setTimeout(r, 5000))
-        return generateWithGemini(buildingBase64, buildingMimeType, stoneBase64, stoneMimeType, surfaceContext, groutStyle, categorySlug, patternBase64, patternMimeType, maskBase64, maskMimeType, userNote, retryCount + 1)
+      // Find image in response parts
+      const resParts = result.candidates?.[0]?.content?.parts || []
+      for (const part of resParts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          const mimeType = part.inlineData.mimeType as string
+          console.log(`[Gemini] ${model} — image found (${mimeType})`)
+          return `data:${mimeType};base64,${part.inlineData.data}`
+        }
       }
-      return null
-    }
 
-    const result = await res.json()
-    console.log(`[Gemini] Response received in ${elapsed}s`)
-
-    // Find image in response parts
-    const resParts = result.candidates?.[0]?.content?.parts || []
-    for (const part of resParts) {
-      if (part.inlineData?.mimeType?.startsWith('image/')) {
-        const mimeType = part.inlineData.mimeType as string
-        console.log('[Gemini] Image found in response, mimeType:', mimeType)
-        return `data:${mimeType};base64,${part.inlineData.data}`
+      // Check for safety block
+      const finishReason = result.candidates?.[0]?.finishReason
+      if (finishReason && finishReason !== 'STOP') {
+        console.error(`[Gemini] ${model} finish reason:`, finishReason)
       }
-    }
 
-    // Check for safety block or other issues
-    const finishReason = result.candidates?.[0]?.finishReason
-    if (finishReason && finishReason !== 'STOP') {
-      console.error('[Gemini] Finish reason:', finishReason)
-    }
+      const textParts = resParts.filter((p: Record<string, unknown>) => p.text).map((p: Record<string, unknown>) => p.text)
+      if (textParts.length) {
+        console.log(`[Gemini] ${model} text:`, (textParts.join(' ') as string).substring(0, 200))
+      }
 
-    // Log text parts for debugging
-    const textParts = resParts.filter((p: Record<string, unknown>) => p.text).map((p: Record<string, unknown>) => p.text)
-    if (textParts.length) {
-      console.log('[Gemini] Text response:', (textParts.join(' ') as string).substring(0, 200))
+      console.error(`[Gemini] ${model} — no image in response, trying next model...`)
+    } catch (err) {
+      const elapsed = Math.round((Date.now() - startTime) / 1000)
+      console.error(`[Gemini] ${model} exception after ${elapsed}s:`, err)
+      // Try next model
     }
-
-    console.error('[Gemini] No image in response')
-    return null
-  } catch (err) {
-    const elapsed = Math.round((Date.now() - startTime) / 1000)
-    console.error(`[Gemini] Exception after ${elapsed}s:`, err)
-    return null
   }
+
+  console.error('[Gemini] All models failed')
+  return null
 }
 
 /** Generate with fal.ai (fallback for full mode, primary for brush mode) */
