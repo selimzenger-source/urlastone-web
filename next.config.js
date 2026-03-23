@@ -10,6 +10,8 @@ const nextConfig = {
       { source: '/Nature-Rockshell', destination: '/taslar', permanent: true },
       { source: '/Line-Rockshell/:slug', destination: '/taslar', permanent: true },
       { source: '/Nature-Rockshell/:slug', destination: '/taslar', permanent: true },
+      { source: '/Classic-Nature-Rockshell', destination: '/taslar', permanent: true },
+      { source: '/Mix-Rockshell', destination: '/taslar', permanent: true },
       { source: '/%C4%B0leti%C5%9Fim', destination: '/iletisim', permanent: true },
       { source: '/Referanslar%C4%B1m%C4%B1z', destination: '/uygulamalarimiz', permanent: true },
       // Küçük harfli versiyonlar
