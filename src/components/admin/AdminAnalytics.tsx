@@ -326,7 +326,7 @@ export default function AdminAnalytics() {
             const barColor = isViews ? 'bg-gold-400' : 'bg-blue-400'
 
             return (
-              <div key={day.date} className="flex-1 flex flex-col items-center gap-1 group relative">
+              <div key={day.date} className="flex-1 flex flex-col items-center group relative" style={{ height: '100%' }}>
                 {/* Tooltip */}
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 shadow-xl">
                   <p className="text-white/60 text-[9px] font-mono mb-1">{fullDate} {weekDay}</p>
@@ -335,7 +335,7 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Bar */}
-                <div className="w-full flex items-end flex-1 min-h-0">
+                <div className="w-full flex items-end" style={{ flex: '1 1 0', minHeight: 0 }}>
                   <div
                     className={`w-full rounded-t-sm transition-all duration-500 ${isTodayBar
                       ? (isViews ? 'bg-gold-400' : 'bg-blue-400')
@@ -346,7 +346,7 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Labels */}
-                <div className={`text-center ${isTodayBar ? (isViews ? 'text-gold-400' : 'text-blue-400') : 'text-white/25'}`}>
+                <div className={`text-center shrink-0 mt-1 ${isTodayBar ? (isViews ? 'text-gold-400' : 'text-blue-400') : 'text-white/25'}`}>
                   <span className="text-[8px] md:text-[9px] font-mono block leading-tight">
                     {dayNum}
                   </span>
