@@ -237,7 +237,7 @@ function getSurfaceDescription(surfaceContext: string, analysis: SonnetAnalysis)
 function getCategoryDesc(categorySlug: string): string {
   switch (categorySlug) {
     case 'nature': return 'Small irregular flat stone pieces in natural shapes — like broken ceramic tiles, NOT boulders'
-    case 'mix': return 'Mix of thin horizontal strips and small irregular flat pieces — strips are like thin bricks (2-3cm tall)'
+    case 'mix': return 'IMPORTANT: This is a MIX pattern — it must have TWO distinct elements: (1) thin HORIZONTAL stone strips like flat bricks (2-3cm tall, 20-40cm wide) AND (2) small irregular rounded natural pieces between them. Alternate between strip rows and irregular pieces. NOT all irregular — must include visible horizontal strip rows'
     case 'crazy': return 'Dense mosaic of MANY TINY rounded/irregular pieces — like cobblestones, very dense very small'
     case 'line': return 'THIN uniform horizontal stone strips (2-3cm tall, 30-60cm wide) — modern minimalist linear pattern'
     default: return 'Small irregular flat stone pieces — like broken tiles, NOT boulders'
