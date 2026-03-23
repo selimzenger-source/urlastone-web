@@ -324,6 +324,7 @@ async function generateWithGemini(
   maskBase64?: string,
   maskMimeType?: string,
   userNote?: string,
+  retryCount = 0,
 ): Promise<string | null> {
   const apiKey = process.env.GOOGLE_AI_API_KEY
   if (!apiKey) {
@@ -394,6 +395,12 @@ async function generateWithGemini(
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: res.statusText }))
       console.error(`[Gemini] API error (${res.status}, ${elapsed}s):`, JSON.stringify(err).substring(0, 300))
+      // Retry on 503 (overloaded) — up to 2 retries with 5s delay
+      if (res.status === 503 && retryCount < 2) {
+        console.log(`[Gemini] 503 overloaded, retrying in 5s (attempt ${retryCount + 2}/3)...`)
+        await new Promise(r => setTimeout(r, 5000))
+        return generateWithGemini(buildingBase64, buildingMimeType, stoneBase64, stoneMimeType, surfaceContext, groutStyle, categorySlug, patternBase64, patternMimeType, maskBase64, maskMimeType, userNote, retryCount + 1)
+      }
       return null
     }
 
