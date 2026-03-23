@@ -34,7 +34,7 @@ export default function TeklifPage() {
       </section>
 
       {/* Form Section */}
-      <section className="px-6 md:px-12 pb-20">
+      <section className="px-6 md:px-12 pt-12 md:pt-16 pb-20">
         <div className="max-w-3xl mx-auto">
           <Suspense fallback={<div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>}>
             <TeklifForm />
