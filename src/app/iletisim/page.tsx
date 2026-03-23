@@ -51,8 +51,8 @@ export default function IletisimPage() {
       {/* Hero Section */}
       <section className="relative pt-40 pb-28 md:pt-48 md:pb-36 px-6 md:px-12 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover"
-          style={{ backgroundImage: 'url(/contact-hero.png)', backgroundPosition: 'center 20%' }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/contact-hero.png)' }}
         />
         <div className="absolute inset-0 bg-black/55" />
         <div className="max-w-7xl mx-auto text-center relative">
