@@ -184,11 +184,11 @@ export default function HakkimizdaPage() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Sol - Görsel */}
             <div className="relative">
-              <div className="aspect-[4/3] rounded-3xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
+              <div className="rounded-3xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
                 <img
                   src="/about-story.jpg"
                   alt="Urla Stone Atölye"
-                  className="w-full h-full object-cover"
+                  className="w-full object-cover"
                 />
               </div>
               {/* Floating card */}
