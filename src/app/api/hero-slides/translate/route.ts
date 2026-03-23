@@ -5,7 +5,7 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-// POST /api/hero-slides/translate - Translate Turkish texts to 4 languages
+// POST /api/hero-slides/translate - Translate Turkish texts to 6 languages
 export async function POST(req: NextRequest) {
   const password = req.headers.get('x-admin-password')
   if (password !== process.env.ADMIN_PASSWORD) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: `Translate the following Turkish texts into English, Spanish, Arabic, and German. These are short hero banner texts for a natural stone company website. Keep them concise and impactful. Return ONLY valid JSON.
+          content: `Translate the following Turkish texts into English, Spanish, German, French, Russian, and Arabic. These are short hero banner texts for a natural stone company website. Keep them concise and impactful. Translations must be professional and natural-sounding. Return ONLY valid JSON.
 
 Turkish texts:
 ${tag ? `- tag: "${tag}"` : ''}
@@ -37,8 +37,10 @@ Return this exact JSON:
 {
   "en": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} },
   "es": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} },
-  "ar": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} },
-  "de": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} }
+  "de": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} },
+  "fr": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} },
+  "ru": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} },
+  "ar": { ${tag ? '"tag": "..."' : ''}${tag && subtitle ? ', ' : ''}${subtitle ? '"subtitle": "..."' : ''}${(tag || subtitle) && gold ? ', ' : ''}${gold ? '"gold": "..."' : ''}${(tag || subtitle || gold) && desc ? ', ' : ''}${desc ? '"desc": "..."' : ''} }
 }`,
         },
       ],

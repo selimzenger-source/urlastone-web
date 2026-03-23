@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: `Translate the following Turkish text into English, Spanish, Arabic, and German. Return ONLY valid JSON with no extra text.
+          content: `Translate the following Turkish text into English, Spanish, German, French, Russian, and Arabic. Return ONLY valid JSON with no extra text. Translations must be professional and natural-sounding, not machine-like.
 
 ${project_name ? `Project name (Turkish): "${project_name}"` : ''}
 ${description ? `Description (Turkish): "${description}"` : ''}
@@ -38,8 +38,10 @@ Return this exact JSON structure:
 {
   "en": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
   "es": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "ar": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "de": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} }
+  "de": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
+  "fr": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
+  "ru": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
+  "ar": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} }
 }`,
         },
       ],

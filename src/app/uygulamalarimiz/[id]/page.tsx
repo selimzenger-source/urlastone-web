@@ -76,7 +76,8 @@ export default function ProjectDetailPage() {
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr)
-      const loc = locale === 'tr' ? 'tr-TR' : locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : locale === 'ar' ? 'ar-SA' : 'en-US'
+      const locMap: Record<string, string> = { tr: 'tr-TR', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', ru: 'ru-RU', ar: 'ar-SA' }
+      const loc = locMap[locale] || 'en-US'
       return d.toLocaleDateString(loc, { year: 'numeric', month: 'long', day: 'numeric' })
     } catch {
       return dateStr
