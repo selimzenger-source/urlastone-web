@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildPrompt } from '@/lib/simulation'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 
@@ -9,17 +8,6 @@ export const maxDuration = 120
 const DAILY_LIMIT_PER_IP = 10
 const DAILY_LIMIT_GLOBAL = 50
 
-// fal.ai endpoints (brush mode + full mode fallback)
-const FAL_URL_KONTEXT = 'https://fal.run/fal-ai/flux-kontext/dev'
-const FAL_URL_INPAINT = 'https://fal.run/fal-ai/flux-general'
-
-// Short stone descriptions for fal.ai fallback prompts
-const STONE_DESCRIPTIONS: Record<string, string> = {
-  TRV: 'natural travertine stone with large irregular polygon-shaped cream beige pieces and thick grout lines',
-  MRMR: 'natural white marble stone with elegant grey veining in large irregular polygon-shaped pieces',
-  BZLT: 'natural dark basalt stone with deep charcoal grey irregular polygon-shaped pieces',
-  KLKR: 'natural limestone with warm sandy beige irregular polygon-shaped pieces and thick grout lines',
-}
 
 // Rate limit error messages per locale
 const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
@@ -445,87 +433,6 @@ async function generateWithGemini(
   return null
 }
 
-/** Generate with fal.ai (fallback for full mode, primary for brush mode) */
-async function generateWithFalAi(
-  imageUrl: string,
-  maskUrl: string | undefined,
-  stoneCode: string,
-  categorySlug: string,
-  applyMode: ApplyMode,
-  prompt: string,
-): Promise<string | null> {
-  const falKey = process.env.FAL_API_KEY
-  if (!falKey) {
-    console.log('[fal.ai] No API key configured')
-    return null
-  }
-
-  let falBody: Record<string, unknown>
-  let falEndpoint: string
-
-  if (applyMode === 'full') {
-    falEndpoint = FAL_URL_KONTEXT
-    const stoneDesc = STONE_DESCRIPTIONS[stoneCode] || 'natural irregular polygon stone'
-    falBody = {
-      image_url: imageUrl,
-      prompt: `Apply ${stoneDesc} cladding to ALL exterior wall surfaces of this building. Cover every wall completely with stone. Preserve EXACTLY: all windows, doors, roof, stairs, railings, sky, vegetation, ground. Do not add or remove any architectural elements. Do not change the building shape. Only replace the wall surface material with stone. Photorealistic result, professional architectural photography.`,
-      num_inference_steps: 28,
-      guidance_scale: 3.5,
-      num_images: 1,
-      output_format: 'jpeg',
-      enable_safety_checker: false,
-    }
-  } else {
-    falEndpoint = FAL_URL_INPAINT
-    falBody = {
-      prompt,
-      num_inference_steps: 30,
-      guidance_scale: 4.0,
-      num_images: 1,
-      output_format: 'jpeg',
-      enable_safety_checker: false,
-      controlnets: [
-        {
-          path: 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
-          control_image_url: imageUrl,
-          control_mode: 'inpainting',
-          mask_image_url: maskUrl,
-          conditioning_scale: 0.85,
-        },
-      ],
-    }
-  }
-
-  console.log(`[fal.ai] Calling ${falEndpoint.split('/').pop()} (${applyMode})...`)
-  const startTime = Date.now()
-
-  const falResponse = await fetch(falEndpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Key ${falKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(falBody),
-  })
-
-  const elapsed = Math.round((Date.now() - startTime) / 1000)
-
-  if (!falResponse.ok) {
-    const err = await falResponse.json().catch(() => ({}))
-    console.error(`[fal.ai] Error (${falResponse.status}, ${elapsed}s):`, JSON.stringify(err).substring(0, 300))
-    return null
-  }
-
-  const falResult = await falResponse.json()
-  console.log(`[fal.ai] Result received in ${elapsed}s`)
-
-  const outputUrl = falResult.images?.[0]?.url || null
-  if (outputUrl) {
-    console.log('[fal.ai] Output URL:', outputUrl.substring(0, 80))
-  }
-  return outputUrl
-}
-
 // ─── Rate Limiting ─────────────────────────────────────────
 
 async function checkRateLimit(ip: string, locale: string): Promise<NextResponse | null> {
@@ -621,9 +528,9 @@ export async function POST(req: NextRequest) {
 
     if (applyMode === 'full') {
       // ═══════════════════════════════════════════════════════
-      // FULL MODE: Gemini (primary) → fal.ai kontext (fallback)
+      // FULL MODE: Gemini only (model fallback chain)
       // ═══════════════════════════════════════════════════════
-      console.log('[Simulation] FULL mode — Gemini primary, fal.ai fallback')
+      console.log('[Simulation] FULL mode — Gemini')
 
       // 1. Extract building image base64
       const building = extractBase64(image)
@@ -685,36 +592,14 @@ export async function POST(req: NextRequest) {
           console.log('[Simulation] Gemini result saved:', outputUrl?.substring(0, 80))
         } catch (err) {
           console.error('[Simulation] Failed to upload Gemini result:', err)
-          // Don't give up — try fal.ai fallback
+          // Upload failed but we have the data URL
         }
-      }
-
-      // 4. Fallback to fal.ai if Gemini failed
-      if (!outputUrl) {
-        console.log('[Simulation] Falling back to fal.ai flux-kontext...')
-
-        // Upload building image to Supabase (fal.ai needs HTTP URL)
-        let imageUrl: string
-        try {
-          imageUrl = await uploadToStorage(image, 'img')
-        } catch (err) {
-          console.error('[Simulation] Image upload failed:', err)
-          return NextResponse.json(
-            { error: 'Failed to upload image. Please try again.' },
-            { status: 500 }
-          )
-        }
-
-        outputUrl = await generateWithFalAi(
-          imageUrl, undefined, stoneCode, categorySlug, 'full',
-          buildPrompt(stoneCode, categorySlug),
-        )
       }
     } else {
       // ═══════════════════════════════════════════════════════
-      // BRUSH MODE: Gemini (primary) → fal.ai inpainting (fallback)
+      // BRUSH MODE: Gemini only
       // ═══════════════════════════════════════════════════════
-      console.log('[Simulation] BRUSH mode — Gemini primary, fal.ai fallback')
+      console.log('[Simulation] BRUSH mode — Gemini')
 
       // 1. Extract building + mask base64
       const building = extractBase64(image)
@@ -779,31 +664,6 @@ export async function POST(req: NextRequest) {
         } catch (err) {
           console.error('[Simulation] Failed to upload Gemini result:', err)
         }
-      }
-
-      // 4. Fallback to fal.ai if Gemini failed
-      if (!outputUrl) {
-        console.log('[Simulation] Falling back to fal.ai inpainting...')
-
-        let imageUrl: string
-        let maskUrl: string | undefined
-        try {
-          imageUrl = await uploadToStorage(image, 'img')
-          if (mask) {
-            maskUrl = await uploadToStorage(mask, 'mask')
-          }
-        } catch (err) {
-          console.error('[Simulation] Image upload failed:', err)
-          return NextResponse.json(
-            { error: 'Failed to upload image. Please try again.' },
-            { status: 500 }
-          )
-        }
-
-        const prompt = buildPrompt(stoneCode, categorySlug)
-        outputUrl = await generateWithFalAi(
-          imageUrl, maskUrl, stoneCode, categorySlug, 'brush', prompt,
-        )
       }
     }
 
