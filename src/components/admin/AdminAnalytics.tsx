@@ -337,7 +337,10 @@ export default function AdminAnalytics() {
                 {/* Bar */}
                 <div className="w-full flex items-end h-full">
                   <div
-                    className={`w-full rounded-t-sm transition-all duration-500 ${isTodayBar ? barColor : `${barColor}/30 group-hover:${barColor}/60`}`}
+                    className={`w-full rounded-t-sm transition-all duration-500 ${isTodayBar
+                      ? (isViews ? 'bg-gold-400' : 'bg-blue-400')
+                      : (isViews ? 'bg-gold-400/30 group-hover:bg-gold-400/60' : 'bg-blue-400/30 group-hover:bg-blue-400/60')
+                    }`}
                     style={{ height: `${Math.max(barH, 3)}%` }}
                   />
                 </div>
