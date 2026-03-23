@@ -20,7 +20,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('urlastone-lang') as Locale | null
-    if (saved && ['tr', 'en', 'es', 'ar', 'de'].includes(saved)) {
+    if (saved && ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'].includes(saved)) {
       setLocaleState(saved)
       if (saved === 'ar') document.documentElement.dir = 'rtl'
     } else {
@@ -30,6 +30,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (browserLang.startsWith('tr')) detected = 'tr'
       else if (browserLang.startsWith('de')) detected = 'de'
       else if (browserLang.startsWith('es')) detected = 'es'
+      else if (browserLang.startsWith('fr')) detected = 'fr'
+      else if (browserLang.startsWith('ru')) detected = 'ru'
       else if (browserLang.startsWith('ar')) detected = 'ar'
       setLocaleState(detected)
       if (detected === 'ar') document.documentElement.dir = 'rtl'

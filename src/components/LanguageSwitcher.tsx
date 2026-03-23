@@ -10,8 +10,10 @@ const countryCodeMap: Record<string, string> = {
   tr: 'tr',
   en: 'gb',
   es: 'es',
-  ar: 'sa',
   de: 'de',
+  fr: 'fr',
+  ru: 'ru',
+  ar: 'sa',
 }
 
 function getFlagUrl(langCode: string, width = 40) {

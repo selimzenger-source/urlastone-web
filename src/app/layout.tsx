@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: '%s | URLASTONE - Doğal Taş',
   },
   description: 'Urla Doğal Taş Pazarı - Rockshell, traverten, bazalt, kalker ve mermer doğal taş üretimi ve ihracatı. Cephe kaplama, zemin döşeme, bahçe peyzaj taşı. Nature, Line, Mix, Classic, Crazy ebat seçenekleri. Çeşme, Urla, İzmir, Turkey.',
-  keywords: ['doğal taş', 'natural stone', 'urla', 'izmir', 'çeşme', 'turkey', 'türkiye', 'cephe kaplama', 'facade cladding', 'traverten', 'travertine', 'mermer', 'marble', 'bazalt', 'basalt', 'kalker', 'limestone', 'taş kaplama', 'stone cladding', 'zemin döşeme', 'floor tiling', 'urlastone', 'doğal taş pazarı', 'rockshell', 'nature rockshell', 'line rockshell', 'mix rockshell', 'doğal taş üretici', 'natural stone manufacturer', 'turkish natural stone', 'piedra natural', 'Naturstein', 'حجر طبيعي', 'dış cephe taş kaplama', 'exterior stone cladding', 'peyzaj taşı', 'landscape stone', 'bahçe taşı', 'garden stone'],
+  keywords: ['doğal taş', 'natural stone', 'pierre naturelle', 'натуральный камень', 'piedra natural', 'Naturstein', 'حجر طبيعي', 'urla', 'izmir', 'çeşme', 'turkey', 'türkiye', 'cephe kaplama', 'facade cladding', 'revêtement de façade', 'облицовка фасадов', 'traverten', 'travertine', 'travertin', 'травертин', 'mermer', 'marble', 'marbre', 'мрамор', 'bazalt', 'basalt', 'basalte', 'базальт', 'kalker', 'limestone', 'calcaire', 'известняк', 'taş kaplama', 'stone cladding', 'zemin döşeme', 'floor tiling', 'urlastone', 'doğal taş pazarı', 'rockshell', 'nature rockshell', 'line rockshell', 'mix rockshell', 'doğal taş üretici', 'natural stone manufacturer', 'fabricant de pierre naturelle', 'производитель натурального камня', 'turkish natural stone', 'dış cephe taş kaplama', 'exterior stone cladding', 'peyzaj taşı', 'landscape stone'],
   authors: [{ name: 'URLASTONE' }],
   creator: 'URLASTONE',
   openGraph: {
@@ -100,8 +100,10 @@ const jsonLd = {
         { '@type': 'Country', name: 'United Arab Emirates' },
         { '@type': 'Country', name: 'United Kingdom' },
         { '@type': 'Country', name: 'United States' },
+        { '@type': 'Country', name: 'France' },
+        { '@type': 'Country', name: 'Russia' },
       ],
-      knowsLanguage: ['tr', 'en', 'de', 'es', 'ar'],
+      knowsLanguage: ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'],
       sameAs: [
         'https://www.instagram.com/urlastone/',
       ],
@@ -131,7 +133,7 @@ const jsonLd = {
       name: 'URLASTONE',
       description: 'Doğal taş üreticisi - Urla, İzmir',
       publisher: { '@id': 'https://urlastone.com/#business' },
-      inLanguage: ['tr', 'en', 'de', 'es', 'ar'],
+      inLanguage: ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'],
     },
   ],
 }

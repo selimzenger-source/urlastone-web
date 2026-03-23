@@ -11,18 +11,18 @@ interface HeroSlide {
   id: string
   image_url: string
   bg_position: string
-  tag_tr: string; tag_en: string; tag_es: string; tag_ar: string; tag_de: string
-  subtitle_tr: string; subtitle_en: string; subtitle_es: string; subtitle_ar: string; subtitle_de: string
-  gold_tr: string; gold_en: string; gold_es: string; gold_ar: string; gold_de: string
-  desc_tr: string; desc_en: string; desc_es: string; desc_ar: string; desc_de: string
+  tag_tr: string; tag_en: string; tag_es: string; tag_de: string; tag_fr: string; tag_ru: string; tag_ar: string
+  subtitle_tr: string; subtitle_en: string; subtitle_es: string; subtitle_de: string; subtitle_fr: string; subtitle_ru: string; subtitle_ar: string
+  gold_tr: string; gold_en: string; gold_es: string; gold_de: string; gold_fr: string; gold_ru: string; gold_ar: string
+  desc_tr: string; desc_en: string; desc_es: string; desc_de: string; desc_fr: string; desc_ru: string; desc_ar: string
   sort_order: number
   active: boolean
   transition_seconds: number
   created_at: string
 }
 
-const LANGS = ['tr', 'en', 'es', 'ar', 'de'] as const
-const LANG_LABELS: Record<string, string> = { tr: 'Türkçe', en: 'English', es: 'Español', ar: 'العربية', de: 'Deutsch' }
+const LANGS = ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'] as const
+const LANG_LABELS: Record<string, string> = { tr: 'Türkçe', en: 'English', es: 'Español', de: 'Deutsch', fr: 'Français', ru: 'Русский', ar: 'العربية' }
 const TEXT_FIELDS = ['tag', 'subtitle', 'gold', 'desc'] as const
 const FIELD_LABELS: Record<string, string> = { tag: 'Etiket', subtitle: 'Alt Başlık', gold: 'Ana Başlık (Gold)', desc: 'Açıklama' }
 
@@ -253,10 +253,10 @@ export default function AdminHeroSlides() {
         body: JSON.stringify({
           image_url: imageUrl,
           bg_position: 'center center',
-          tag_tr: '', tag_en: '', tag_es: '', tag_ar: '', tag_de: '',
-          subtitle_tr: '', subtitle_en: '', subtitle_es: '', subtitle_ar: '', subtitle_de: '',
-          gold_tr: '', gold_en: '', gold_es: '', gold_ar: '', gold_de: '',
-          desc_tr: '', desc_en: '', desc_es: '', desc_ar: '', desc_de: '',
+          tag_tr: '', tag_en: '', tag_es: '', tag_de: '', tag_fr: '', tag_ru: '', tag_ar: '',
+          subtitle_tr: '', subtitle_en: '', subtitle_es: '', subtitle_de: '', subtitle_fr: '', subtitle_ru: '', subtitle_ar: '',
+          gold_tr: '', gold_en: '', gold_es: '', gold_de: '', gold_fr: '', gold_ru: '', gold_ar: '',
+          desc_tr: '', desc_en: '', desc_es: '', desc_de: '', desc_fr: '', desc_ru: '', desc_ar: '',
           active: true,
           transition_seconds: transitionSeconds
         })
