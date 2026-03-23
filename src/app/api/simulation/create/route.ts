@@ -520,6 +520,7 @@ export async function POST(req: NextRequest) {
     if (!stoneImageUrl) {
       return NextResponse.json({ error: 'stoneImageUrl is required' }, { status: 400 })
     }
+    console.log(`[Simulation] Stone: code=${stoneCode}, category=${categorySlug}, imageUrl=${stoneImageUrl.substring(0, 100)}`)
 
     // Rate limiting
     const ip = getClientIp(req)
