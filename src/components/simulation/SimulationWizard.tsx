@@ -170,7 +170,12 @@ export default function SimulationWizard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: resized.dataUrl }),
       })
-      const data = await res.json()
+      let data
+      try {
+        data = await res.json()
+      } catch {
+        throw new Error('Doğrulama hatası, tekrar deneyin')
+      }
 
       if (!data.valid) {
         const reason = data.reason || 'no_surface'
@@ -230,7 +235,12 @@ export default function SimulationWizard() {
           }),
         })
 
-        const data = await res.json()
+        let data
+        try {
+          data = await res.json()
+        } catch {
+          throw new Error(res.status >= 500 ? 'Sunucu hatası, lütfen tekrar deneyin' : 'Beklenmeyen hata')
+        }
 
         if (!res.ok) {
           throw new Error(data.error || 'API error')
@@ -286,7 +296,12 @@ export default function SimulationWizard() {
         }),
       })
 
-      const data = await res.json()
+      let data
+      try {
+        data = await res.json()
+      } catch {
+        throw new Error(res.status >= 500 ? 'Sunucu hatası, lütfen tekrar deneyin' : 'Beklenmeyen hata')
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'API error')
