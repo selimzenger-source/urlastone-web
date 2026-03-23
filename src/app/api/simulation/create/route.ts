@@ -161,6 +161,8 @@ Each stone piece is ~15cm in real life. ${analysis.scale_instruction ? `SCALE RE
 - Total visible surface must show ${totalEstimate}+ individual stone pieces
 - ${categoryDesc}
 
+⚠️ UNIFORMITY (CRITICAL): Every wall section must have the SAME stone size and pattern. Do NOT make some areas have large stones and other areas small stones. The stone size must be IDENTICAL on left wall, right wall, columns, upper floor, lower floor — everywhere. If one wall has 20 stones per floor height, ALL walls must have 20 stones per floor height. Zero variation in stone scale across the building.
+
 COVERAGE: ${coverageInstructions.full}
 
 ${surfaceContext === 'facade' ? 'WINDOWS: Install glass with dark aluminum frames in ALL openings.\n' : ''}COLOR: Copy EXACT tones from Image 2 — warm natural colors with variation between pieces. Do NOT average into one uniform color.
@@ -168,23 +170,25 @@ ${surfaceContext === 'facade' ? 'WINDOWS: Install glass with dark aluminum frame
 QUALITY: ${groutInstruction} 3D surface depth with natural shadows — NOT flat wallpaper. Photorealistic${surfaceContext === 'facade' ? ' architectural photograph' : ''}.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
   }
 
-  // Interior / fireplace — negative example approach (i6 winner from testing)
+  // Interior / fireplace — aggressive scale with real-object calibration
   return `Apply Image 2's stone texture to ${coverageInstructions.apply} in Image 1 (${getSurfaceDescription(surfaceContext, analysis)}).
 
-⚠️ THE MOST COMMON AI MISTAKE: Making stones WAY TOO LARGE for interior walls. A stone covering 1/4 of a wall is a BOULDER, not cladding.
+⚠️ STONE SIZE CALIBRATION — use REAL OBJECTS in the photo:
+Look at Image 1 carefully. Find these reference objects and use them to calibrate stone size:
+- Electrical OUTLET/SOCKET on the wall → it is ~10cm tall. Each stone piece must be THIS SIZE.
+- Ceiling SPOT LIGHTS → ~8cm diameter. Each stone should be slightly larger than one spot.
+- Ventilation GRILLE → ~30cm wide. At least 2-3 stones should fit across it.
+- Fireplace opening → ~50cm wide. At least 4-5 stones should fit across it.
+${analysis.scale_instruction ? `- AI ANALYSIS: ${analysis.scale_instruction}` : ''}
 
-CORRECT stone size for INTERIOR:
-✅ Each piece = size of an electrical outlet (10-15cm)
-✅ ${Math.round(wallHeight / 0.12)} pieces from floor to ceiling (~${wallHeight}m)
-✅ 200+ pieces on all visible walls combined
-✅ Dense mosaic of many small pieces
-✅ ${categoryDesc}
-${analysis.scale_instruction ? `✅ SCALE: ${analysis.scale_instruction}` : ''}
+MANDATORY STONE COUNT:
+- Floor to ceiling (~${wallHeight}m) = ${Math.round(wallHeight / 0.12)} stones vertically
+- Each wall section must show 200+ individual pieces total
+- ${categoryDesc}
 
-WRONG:
-❌ 5-10 large rocks covering the whole wall
-❌ Any stone bigger than a human head
-❌ Stones that look like boulders
+⚠️ THE #1 AI MISTAKE: Making stones WAY TOO LARGE. If any stone is bigger than a human fist relative to the room → TOO LARGE.
+
+⚠️ UNIFORMITY: ALL walls and surfaces must have IDENTICAL stone size. Narrow columns get the SAME small stones as wide walls. Zero size variation.
 
 ${coverageInstructions.preserve}
 
@@ -218,6 +222,7 @@ COLOR: Copy EXACT tones from Image 2 with natural color variety.
 RULES:
 - Apply stone ONLY to white mask areas. Black = untouched
 - ${groutInstruction}
+- ⚠️ UNIFORM stone size EVERYWHERE — narrow columns, wide walls, corners ALL must have the SAME stone size. Do NOT make stones larger on narrow surfaces.
 - 3D depth and mortar shadows — NOT flat wallpaper
 - Do NOT change the building structure
 - Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
