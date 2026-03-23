@@ -292,7 +292,7 @@ export default function TeklifForm() {
   const inputClass = "w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 transition-colors"
 
   return (
-    <form onSubmit={handleSubmit} className="glass-card p-8 md:p-10">
+    <form onSubmit={handleSubmit} className="glass-card p-5 sm:p-8 md:p-10 overflow-hidden">
       <div className="mb-8">
         <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-2">{t.form_free_quote}</p>
         <h3 className="font-heading text-2xl font-bold text-white">
@@ -303,20 +303,22 @@ export default function TeklifForm() {
       {simulationResult?.resultUrl && (
         <div className="mb-6 p-4 rounded-xl border border-gold-400/20 bg-gold-400/5">
           <p className="font-mono text-[10px] text-gold-400/70 tracking-wider uppercase mb-3">AI Simülasyon Sonucu</p>
-          <div className="flex items-start gap-3">
-            {simulationResult.originalUrl && (
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
+            <div className="flex gap-3">
+              {simulationResult.originalUrl && (
+                <div className="flex flex-col items-center gap-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={simulationResult.originalUrl} alt="Orijinal" className="w-24 h-20 object-cover rounded-lg border border-white/10" />
+                  <span className="text-white/30 text-[8px] font-mono">Önce</span>
+                </div>
+              )}
               <div className="flex flex-col items-center gap-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={simulationResult.originalUrl} alt="Orijinal" className="w-24 h-20 object-cover rounded-lg border border-white/10" />
-                <span className="text-white/30 text-[8px] font-mono">Önce</span>
+                <img src={simulationResult.resultUrl} alt="Simülasyon" className="w-24 h-20 object-cover rounded-lg border border-gold-400/20" />
+                <span className="text-gold-400/50 text-[8px] font-mono">Sonra</span>
               </div>
-            )}
-            <div className="flex flex-col items-center gap-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={simulationResult.resultUrl} alt="Simülasyon" className="w-24 h-20 object-cover rounded-lg border border-gold-400/20" />
-              <span className="text-gold-400/50 text-[8px] font-mono">Sonra</span>
             </div>
-            <div className="flex-1 min-w-0 pt-1">
+            <div className="text-center sm:text-left sm:flex-1 sm:min-w-0 sm:pt-1">
               <p className="text-white text-sm font-medium">{simulationResult.stoneName}</p>
               <p className="text-white/40 text-xs mt-1">Bu simülasyon sonucuna göre teklif alıyorsunuz</p>
             </div>
@@ -359,7 +361,7 @@ export default function TeklifForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">{t.form_contact_type_label}</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-hidden">
               {[
                 { value: 'phone', label: t.form_contact_type_phone, icon: Phone },
                 { value: 'email', label: t.form_contact_type_email, icon: Mail },
@@ -367,13 +369,13 @@ export default function TeklifForm() {
               ].map(opt => (
                 <button key={opt.value} type="button"
                   onClick={() => setForm(prev => ({ ...prev, iletisimTuru: opt.value }))}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono transition-all border ${
+                  className={`flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-[11px] font-mono transition-all border ${
                     form.iletisimTuru === opt.value
                       ? 'bg-gold-400/20 border-gold-400/40 text-gold-400'
                       : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:border-white/20'
                   }`}>
-                  <opt.icon size={14} />
-                  {opt.label}
+                  <opt.icon size={14} className="shrink-0" />
+                  <span className="truncate">{opt.label}</span>
                 </button>
               ))}
             </div>
