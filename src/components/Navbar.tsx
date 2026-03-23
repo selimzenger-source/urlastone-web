@@ -37,7 +37,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/ur2-dark.png" alt="Urlastone" className="h-9 md:h-10 w-9 md:w-10 object-contain rounded-lg" />
+          <img src="/ur2-dark.png" alt="Urlastone" className="h-9 md:h-10 w-9 md:w-10 object-contain" />
           <span className="text-white text-xl md:text-2xl tracking-[0.15em] font-light" style={{ fontFamily: 'Inter, sans-serif' }}>
             <span className="font-bold">URLA</span>
             <span className="font-light">STONE</span>
@@ -51,7 +51,7 @@ export default function Navbar() {
             className="flex items-center gap-1.5 text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2-dark.png" alt="" className="w-7 h-7 object-contain rounded" />
+            <img src="/ur2-dark.png" alt="" className="w-7 h-7 object-contain" />
           </Link>
           {navLinks.map((link) => (
             <Link
@@ -92,7 +92,7 @@ export default function Navbar() {
             className="flex items-center gap-3 py-3 text-white/70 font-medium text-lg hover:text-white transition-colors"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2-dark.png" alt="" className="w-7 h-7 rounded" />
+            <img src="/ur2-dark.png" alt="" className="w-7 h-7 object-contain" />
             {t.nav_anasayfa}
           </Link>
           {navLinks.map((link) => (
