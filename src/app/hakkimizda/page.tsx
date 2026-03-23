@@ -36,10 +36,12 @@ export default function HakkimizdaPage() {
       .then((data) => {
         if (Array.isArray(data)) {
           setProjectCount(data.length)
-          // Collect all project photos for hero slideshow
-          const allPhotos = data.flatMap((p: { photos?: string[] }) => p.photos || [])
+          // Use only first (cover) photo from each project — best quality for hero
+          const coverPhotos = data
+            .map((p: { photos?: string[] }) => p.photos?.[0])
+            .filter(Boolean) as string[]
           // Shuffle randomly
-          const shuffled = allPhotos.sort(() => Math.random() - 0.5)
+          const shuffled = coverPhotos.sort(() => Math.random() - 0.5)
           setHeroPhotos(shuffled)
         }
       })
