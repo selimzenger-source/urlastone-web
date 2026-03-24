@@ -16,6 +16,7 @@ const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false
 function VideoModal({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
   const [phase, setPhase] = useState<'intro' | 'fade' | 'playing'>('intro')
   const videoRef = useRef<HTMLVideoElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     const video = videoRef.current
@@ -25,6 +26,11 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
     const startVideo = () => {
       setPhase('playing')
       video?.play().catch(() => {})
+      // Arka plan müziği başlat
+      if (audioRef.current) {
+        audioRef.current.volume = 0.3
+        audioRef.current.play().catch(() => {})
+      }
     }
 
     t1 = setTimeout(() => setPhase('fade'), 1500)
@@ -72,6 +78,18 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
             </div>
           )}
           <video ref={videoRef} src={url} controls playsInline loop preload="auto" className="w-full" style={{ maxHeight: '80vh' }} />
+          {/* Arka plan müziği */}
+          <audio ref={audioRef} src="/audio/project-ambient.mp3" loop preload="auto" />
+          {/* Sağ üst URLASTONE logosu — video oynarken */}
+          {phase === 'playing' && (
+            <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1.5 pointer-events-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ur2-dark.png" alt="" className="w-5 h-5 object-contain" />
+              <span className="font-heading text-[11px] font-bold tracking-wider">
+                <span className="text-gold-400">URLA</span><span className="text-white/80">STONE</span>
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

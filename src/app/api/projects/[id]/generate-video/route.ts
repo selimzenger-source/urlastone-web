@@ -59,7 +59,8 @@ export async function POST(
     // Use first (cover) photo
     const imageUrl = project.photos[0]
 
-    // Fixed cinematic prompt — lateral tracking + dolly in toward stone, moderate pace
+    // Cinematic drone prompt — lateral tracking + dolly, elevated angle showing building + surroundings
+    // This prompt produced the excellent B2 Gökova drone-style video
     const prompt = 'Dynamic lateral tracking shot moving sideways at moderate speed while dollying closer to this building facade, camera reveals natural stone cladding texture and craftsmanship, smooth professional architectural footage with noticeable camera movement, building fills entire frame, warm natural lighting, cinematic motion'
 
     const res = await fetch(FAL_VIDEO_URL, {
