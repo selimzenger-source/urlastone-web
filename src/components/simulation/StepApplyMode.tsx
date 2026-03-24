@@ -23,8 +23,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushDesc: 'Taş uygulanacak alanı elle işaretleyin',
     fullExBefore: 'Önce',
     fullExAfter: 'Sonra',
-    brushExBefore: 'Önce',
-    brushExAfter: 'Sonra',
+    brushExBefore: 'Boyayın',
+    brushExAfter: 'Sonuç',
     brushHint: 'Parmağınızla taş uygulamak istediğiniz alanı boyayın',
     photoTip: 'En iyi sonuç için: Düz açıdan, iyi aydınlatılmış, net bir fotoğraf çekin',
     contextTitle: 'Yüzey Türü',
@@ -56,8 +56,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushDesc: 'Manually mark the area for stone application',
     fullExBefore: 'Before',
     fullExAfter: 'After',
-    brushExBefore: 'Before',
-    brushExAfter: 'After',
+    brushExBefore: 'Paint',
+    brushExAfter: 'Result',
     brushHint: 'Use your finger to paint the area where you want stone applied',
     photoTip: 'For best results: Take a clear, well-lit photo from a straight angle',
     contextTitle: 'Surface Type',
@@ -89,8 +89,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushDesc: 'Marque manualmente el área para la aplicación',
     fullExBefore: 'Antes',
     fullExAfter: 'Después',
-    brushExBefore: 'Antes',
-    brushExAfter: 'Después',
+    brushExBefore: 'Pintar',
+    brushExAfter: 'Resultado',
     brushHint: 'Use su dedo para pintar el área donde desea aplicar piedra',
     photoTip: 'Para mejores resultados: Tome una foto clara, bien iluminada, desde un ángulo recto',
     contextTitle: 'Tipo de superficie',
@@ -122,8 +122,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushDesc: 'حدد المنطقة يدوياً لتطبيق الحجر',
     fullExBefore: 'قبل',
     fullExAfter: 'بعد',
-    brushExBefore: 'قبل',
-    brushExAfter: 'بعد',
+    brushExBefore: 'ارسم',
+    brushExAfter: 'النتيجة',
     brushHint: 'استخدم إصبعك لتلوين المنطقة التي تريد تطبيق الحجر عليها',
     photoTip: 'للحصول على أفضل النتائج: التقط صورة واضحة وجيدة الإضاءة من زاوية مستقيمة',
     contextTitle: 'نوع السطح',
@@ -155,8 +155,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushDesc: 'Markieren Sie den Bereich manuell',
     fullExBefore: 'Vorher',
     fullExAfter: 'Nachher',
-    brushExBefore: 'Vorher',
-    brushExAfter: 'Nachher',
+    brushExBefore: 'Malen',
+    brushExAfter: 'Ergebnis',
     brushHint: 'Malen Sie mit dem Finger den Bereich, auf den Stein aufgetragen werden soll',
     photoTip: 'Für beste Ergebnisse: Machen Sie ein klares, gut beleuchtetes Foto aus geradem Winkel',
     contextTitle: 'Oberflächentyp',
@@ -240,13 +240,13 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
                 {/* Before half */}
                 <div className="w-1/2 relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/example-facade.jpg" alt="" className="w-full h-full object-cover" />
+                  <img src="/simulation-examples/ex-original.jpg" alt="" className="w-full h-full object-cover" />
                   <span className="absolute top-2 left-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.fullExBefore}</span>
                 </div>
                 {/* After half */}
                 <div className="w-1/2 relative border-l-2 border-gold-400/40">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/result-facade.jpg" alt="" className="w-full h-full object-cover" />
+                  <img src="/simulation-examples/ex-full-result.jpg" alt="" className="w-full h-full object-cover" />
                   <span className="absolute top-2 right-2 text-[9px] text-gold-400 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.fullExAfter}</span>
                 </div>
               </div>
@@ -274,19 +274,21 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
             onClick={() => onSelect('brush')}
             className="group relative rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left overflow-hidden"
           >
-            {/* Before/After preview */}
+            {/* 3-step preview: original → brushed → result */}
             <div className="relative h-36 md:h-44 overflow-hidden">
               <div className="absolute inset-0 flex">
-                {/* Before half */}
+                {/* Step 1: Brush mask */}
                 <div className="w-1/2 relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/example-interior.jpg" alt="" className="w-full h-full object-cover" />
-                  <span className="absolute top-2 left-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.brushExBefore}</span>
+                  <img src="/simulation-examples/ex-brush-mask.jpg" alt="" className="w-full h-full object-cover" />
+                  <span className="absolute top-2 left-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Paintbrush size={8} /> {t.brushExBefore}
+                  </span>
                 </div>
-                {/* After half with brush indicator */}
+                {/* Step 2: Result */}
                 <div className="w-1/2 relative border-l-2 border-white/20">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/result-interior.jpg" alt="" className="w-full h-full object-cover" />
+                  <img src="/simulation-examples/ex-brush-result.jpg" alt="" className="w-full h-full object-cover" />
                   <span className="absolute top-2 right-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.brushExAfter}</span>
                 </div>
               </div>
