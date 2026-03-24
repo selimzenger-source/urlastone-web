@@ -256,6 +256,8 @@ type TranslationKeys = {
   stones_thickness: string
   stones_technology: string
   stones_image_placeholder: string
+  stones_related_projects: string
+  stones_no_projects: string
 
   // İletişim
   contact_tag: string
@@ -642,6 +644,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'Kalınlık',
     stones_technology: 'Teknoloji',
     stones_image_placeholder: 'Ürün görseli eklenecek',
+    stones_related_projects: 'Bu Taşla Yapılan Projeler',
+    stones_no_projects: 'Henüz bu taşla yapılmış proje yok',
     about_story_p1: 'Urla Stone, doğal taş sektöründe uzun yıllar farklı alanlarda deneyim kazanmış üç ortağın bir araya gelmesiyle kurulmuştur. İhracat, üretim ve mimari proje yönetimi alanlarında birbirini tamamlayan bu üç isim, sektöre yenilikçi bir bakış açısı getirmek amacıyla güçlerini birleştirmiştir.',
     about_story_p2: 'TUREKS gibi Türkiye\'nin önde gelen ihracatçı firmalarında edinilen tecrübe, Daymar Stone ile üretim süreçlerinde mükemmelleştirilen uzmanlık ve Rockshell gibi yenilikçi ürün serilerinin geliştirilmesi — tüm bu birikim Urla Stone çatısı altında buluşmuştur.',
     about_story_p3: 'Bugün İzmir Urla\'daki merkezimizden, Türkiye genelinde ve 50\'den fazla ülkede projelerimizle doğal taşın eşsiz dokusunu modern yaşam alanlarına taşıyoruz.',
@@ -1021,6 +1025,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'Thickness',
     stones_technology: 'Technology',
     stones_image_placeholder: 'Product image coming soon',
+    stones_related_projects: 'Projects with This Stone',
+    stones_no_projects: 'No projects with this stone yet',
     about_story_p1: 'Urla Stone was founded by three partners who gained years of experience in different areas of the natural stone industry. These three individuals, complementing each other in export, production, and architectural project management, joined forces to bring an innovative perspective to the sector.',
     about_story_p2: 'Experience gained at leading Turkish export companies like TUREKS, expertise perfected in production processes with Daymar Stone, and the development of innovative product lines like Rockshell — all this knowledge has come together under the Urla Stone umbrella.',
     about_story_p3: 'Today, from our headquarters in Urla, Izmir, we bring the unique texture of natural stone to modern living spaces through our projects across Turkey and in more than 50 countries.',
@@ -1400,6 +1406,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'Espesor',
     stones_technology: 'Tecnología',
     stones_image_placeholder: 'Imagen del producto próximamente',
+    stones_related_projects: 'Proyectos con Esta Piedra',
+    stones_no_projects: 'Aún no hay proyectos con esta piedra',
     about_story_p1: 'Urla Stone fue fundada por tres socios con años de experiencia en diferentes áreas de la industria de la piedra natural. Estos tres profesionales, complementándose en exportación, producción y gestión de proyectos arquitectónicos, unieron fuerzas para aportar una perspectiva innovadora al sector.',
     about_story_p2: 'La experiencia adquirida en empresas exportadoras líderes como TUREKS, la especialización perfeccionada en producción con Daymar Stone y el desarrollo de líneas innovadoras como Rockshell — todo este conocimiento se ha reunido bajo el paraguas de Urla Stone.',
     about_story_p3: 'Hoy, desde nuestra sede en Urla, Esmirna, llevamos la textura única de la piedra natural a espacios de vida modernos en toda Turquía y en más de 50 países.',
@@ -1779,6 +1787,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'السُمك',
     stones_technology: 'التقنية',
     stones_image_placeholder: 'صورة المنتج قريباً',
+    stones_related_projects: 'مشاريع بهذا الحجر',
+    stones_no_projects: 'لا توجد مشاريع بهذا الحجر حتى الآن',
     about_story_p1: 'تأسست أورلا ستون من قبل ثلاثة شركاء اكتسبوا سنوات من الخبرة في مجالات مختلفة من صناعة الحجر الطبيعي. هؤلاء المحترفون الثلاثة، المتكاملون في التصدير والإنتاج وإدارة المشاريع المعمارية، وحدوا جهودهم لتقديم رؤية مبتكرة للقطاع.',
     about_story_p2: 'الخبرة المكتسبة في شركات التصدير الرائدة مثل TUREKS، والتخصص المتقن في الإنتاج مع Daymar Stone، وتطوير خطوط منتجات مبتكرة مثل Rockshell — كل هذه المعرفة اجتمعت تحت مظلة أورلا ستون.',
     about_story_p3: 'اليوم، من مقرنا في أورلا بإزمير، ننقل النسيج الفريد للحجر الطبيعي إلى مساحات المعيشة الحديثة عبر مشاريعنا في جميع أنحاء تركيا وفي أكثر من 50 دولة.',
@@ -2158,6 +2168,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'Dicke',
     stones_technology: 'Technologie',
     stones_image_placeholder: 'Produktbild folgt',
+    stones_related_projects: 'Projekte mit Diesem Stein',
+    stones_no_projects: 'Noch keine Projekte mit diesem Stein',
     about_story_p1: 'Urla Stone wurde von drei Partnern gegründet, die jahrelange Erfahrung in verschiedenen Bereichen der Natursteinindustrie gesammelt haben. Diese drei Fachleute, die sich in Export, Produktion und Architekturprojektmanagement ergänzen, bündelten ihre Kräfte, um eine innovative Perspektive in den Sektor zu bringen.',
     about_story_p2: 'Die bei führenden türkischen Exportunternehmen wie TUREKS gesammelte Erfahrung, die bei Daymar Stone perfektionierte Produktionsexpertise und die Entwicklung innovativer Produktlinien wie Rockshell — all dieses Wissen hat sich unter dem Dach von Urla Stone vereint.',
     about_story_p3: 'Heute bringen wir von unserem Hauptsitz in Urla, Izmir aus die einzigartige Textur von Naturstein in moderne Lebensräume — mit Projekten in der ganzen Türkei und in mehr als 50 Ländern.',
@@ -2537,6 +2549,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'Épaisseur',
     stones_technology: 'Technologie',
     stones_image_placeholder: 'Image du produit bientôt disponible',
+    stones_related_projects: 'Projets avec Cette Pierre',
+    stones_no_projects: 'Pas encore de projets avec cette pierre',
     about_story_p1: 'Urla Stone a été fondée par trois associés ayant acquis des années d\'expérience dans différents domaines de l\'industrie de la pierre naturelle. Ces trois personnes, complémentaires en export, production et gestion de projets architecturaux, ont uni leurs forces.',
     about_story_p2: 'L\'expérience acquise chez de grandes entreprises d\'export turques comme TUREKS, l\'expertise perfectionnée dans les processus de production avec Daymar Stone, et le développement de lignes de produits innovantes comme Rockshell — tout cela s\'est réuni sous l\'enseigne Urla Stone.',
     about_story_p3: 'Aujourd\'hui, depuis notre siège à Urla, Izmir, nous apportons la texture unique de la pierre naturelle aux espaces de vie modernes à travers nos projets en Turquie et dans plus de 50 pays.',
@@ -2916,6 +2930,8 @@ const translations: Record<Locale, TranslationKeys> = {
     stones_thickness: 'Толщина',
     stones_technology: 'Технология',
     stones_image_placeholder: 'Изображение продукта скоро появится',
+    stones_related_projects: 'Проекты с Этим Камнем',
+    stones_no_projects: 'Пока нет проектов с этим камнем',
     about_story_p1: 'Urla Stone была основана тремя партнёрами, накопившими многолетний опыт в различных областях индустрии натурального камня. Эти три человека, дополняя друг друга в экспорте, производстве и управлении архитектурными проектами, объединили усилия.',
     about_story_p2: 'Опыт, полученный в ведущих турецких экспортных компаниях, таких как TUREKS, мастерство, отточенное в производственных процессах с Daymar Stone, и разработка инновационных продуктовых линий, таких как Rockshell — всё это объединилось под знаменем Urla Stone.',
     about_story_p3: 'Сегодня из нашей штаб-квартиры в Урле, Измир, мы привносим уникальную текстуру натурального камня в современные жилые пространства через проекты в Турции и более чем в 50 странах.',

@@ -11,6 +11,9 @@ import {
   Palette,
   ChevronRight,
   X,
+  Building2,
+  MapPin,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
@@ -50,6 +53,32 @@ export default function TaslarPage() {
   const [activeCategory, setActiveCategory] = useState('nature')
   const [activeStoneType, setActiveStoneType] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [relatedProjects, setRelatedProjects] = useState<Array<{ id: string; project_name: string; city: string; category: string; photos: string[]; product: string | null }>>([])
+  const [loadingProjects, setLoadingProjects] = useState(false)
+
+  // Ürün seçilince o taşla yapılan projeleri fetch et
+  useEffect(() => {
+    if (!selectedProduct) {
+      setRelatedProjects([])
+      return
+    }
+    setLoadingProjects(true)
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return
+        const code = selectedProduct.code.toLowerCase()
+        const name = selectedProduct.name.toLowerCase()
+        const matched = data.filter((p: { product: string | null }) => {
+          if (!p.product) return false
+          const prod = p.product.toLowerCase()
+          return prod.includes(code) || prod.includes(name)
+        })
+        setRelatedProjects(matched)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingProjects(false))
+  }, [selectedProduct])
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [stoneTypes, setStoneTypes] = useState<StoneType[]>([])
@@ -504,7 +533,7 @@ export default function TaslarPage() {
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className="bg-[#111] border border-white/[0.08] rounded-3xl max-w-lg w-full p-6 md:p-8 relative"
+            className="bg-[#111] border border-white/[0.08] rounded-3xl max-w-lg w-full p-6 md:p-8 relative max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -554,13 +583,65 @@ export default function TaslarPage() {
                 </span>
               </div>
 
-              <Link
-                href={`/teklif?product=${encodeURIComponent(selectedProduct.code)}`}
-                onClick={() => setSelectedProduct(null)}
-                className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
-              >
-                {t.common_teklif_al} <ChevronRight size={14} />
-              </Link>
+              <div className="flex justify-center gap-3">
+                <Link
+                  href={`/teklif?product=${encodeURIComponent(selectedProduct.code)}`}
+                  onClick={() => setSelectedProduct(null)}
+                  className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
+                >
+                  {t.common_teklif_al} <ChevronRight size={14} />
+                </Link>
+              </div>
+
+              {/* Bu Taşla Yapılan Projeler */}
+              <div className="mt-6 pt-6 border-t border-white/[0.06]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Building2 size={14} className="text-gold-400" />
+                  <span className="text-white/60 text-xs font-mono uppercase tracking-wider">
+                    {t.stones_related_projects || 'Bu Taşla Yapılan Projeler'}
+                  </span>
+                </div>
+                {loadingProjects ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 size={18} className="animate-spin text-white/20" />
+                  </div>
+                ) : relatedProjects.length > 0 ? (
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                    {relatedProjects.map((proj) => (
+                      <Link
+                        key={proj.id}
+                        href={`/projelerimiz/${proj.id}`}
+                        onClick={() => setSelectedProduct(null)}
+                        className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all group"
+                      >
+                        {proj.photos?.[0] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={proj.photos[0]} alt={proj.project_name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+                            <Building2 size={16} className="text-white/20" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-white text-sm font-medium truncate">{proj.project_name}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <MapPin size={10} className="text-gold-400 flex-shrink-0" />
+                            <span className="text-white/40 text-[10px] font-mono truncate">{proj.city}</span>
+                            {proj.category && (
+                              <span className="text-gold-400/60 text-[10px] font-mono">· {proj.category}</span>
+                            )}
+                          </div>
+                        </div>
+                        <ChevronRight size={14} className="text-white/20 group-hover:text-gold-400 transition-colors flex-shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-white/20 text-xs font-mono text-center py-3">
+                    {t.stones_no_projects || 'Henüz bu taşla yapılmış proje yok'}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
