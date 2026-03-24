@@ -49,12 +49,12 @@ export default function IletisimPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-28 md:pt-48 md:pb-36 px-6 md:px-12 overflow-hidden">
+      <section className="relative pt-40 pb-28 md:pt-56 md:pb-48 lg:pt-64 lg:pb-56 px-6 md:px-12 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-[60%_center] md:bg-center"
+          className="absolute inset-0 bg-cover bg-[60%_center] md:bg-[center_30%]"
           style={{ backgroundImage: 'url(/contact-hero.png)' }}
         />
-        <div className="absolute inset-0 bg-black/55" />
+        <div className="absolute inset-0 bg-black/50" />
         <div className="max-w-7xl mx-auto text-center relative">
           <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
             {t.contact_tag}
