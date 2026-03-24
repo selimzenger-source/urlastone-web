@@ -325,7 +325,7 @@ export default function AdminReferanslar() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {ref.project_id && (
                       <a
-                        href={`/uygulamalarimiz/${ref.project_id}`}
+                        href={`/projelerimiz/${ref.project_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-1.5 rounded-lg text-white/20 hover:text-gold-400 hover:bg-white/[0.04] transition-colors"

@@ -30,9 +30,9 @@ export default function MiniStats() {
 
   const stats = [
     { value: `${yearsExperience}+`, label: t.about_stat1, icon: Award, href: '/hakkimizda' },
-    { value: projectCount > 0 ? `${projectCount}+` : '...', label: t.about_stat2, icon: Building2, href: '/uygulamalarimiz' },
+    { value: projectCount > 0 ? `${projectCount}+` : '...', label: t.about_stat2, icon: Building2, href: '/projelerimiz' },
     { value: '15+', label: t.about_stat3, icon: Globe, href: '/referanslarimiz' },
-    { value: productCount > 0 ? `${productCount}+` : '...', label: t.about_stat4, icon: Gem, href: '/taslar' },
+    { value: productCount > 0 ? `${productCount}+` : '...', label: t.about_stat4, icon: Gem, href: '/urunlerimiz' },
   ]
 
   return (

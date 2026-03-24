@@ -364,7 +364,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {selected.id && (
                   <a
-                    href={`/uygulamalarimiz/${selected.id}`}
+                    href={`/projelerimiz/${selected.id}`}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
                       padding: '7px 14px', borderRadius: '20px',

@@ -99,7 +99,7 @@ export default function ReferanslarimizPage() {
                   {/* Project link */}
                   {ref.project && ref.project_id && (
                     <Link
-                      href={`/uygulamalarimiz/${ref.project_id}`}
+                      href={`/projelerimiz/${ref.project_id}`}
                       className="inline-flex items-center gap-2 text-gold-400/70 hover:text-gold-400 text-xs font-mono tracking-wide transition-colors"
                     >
                       <ExternalLink size={12} />

@@ -35,9 +35,9 @@ export default function Footer() {
             <h4 className="text-white font-medium text-sm mb-6">{t.footer_links}</h4>
             <ul className="space-y-3">
               {[
-                { href: '/taslar', label: t.nav_taslarimiz },
+                { href: '/urunlerimiz', label: t.nav_taslarimiz },
                 { href: '/simulasyon', label: t.nav_simulasyon },
-                { href: '/uygulamalarimiz', label: t.nav_uygulamalar },
+                { href: '/projelerimiz', label: t.nav_uygulamalar },
                 { href: '/hakkimizda', label: t.nav_hakkimizda },
                 { href: '/iletisim', label: t.nav_iletisim },
               ].map((link) => (

@@ -72,7 +72,7 @@ export default function FeaturedStones() {
         {stones.map((stone) => (
           <Link
             key={stone.id}
-            href={`/taslar#${stone.id}`}
+            href={`/urunlerimiz#${stone.id}`}
             className="group relative overflow-hidden rounded-2xl aspect-[4/3] cursor-pointer"
             onMouseEnter={() => setHovered(stone.id)}
             onMouseLeave={() => setHovered(null)}
@@ -118,7 +118,7 @@ export default function FeaturedStones() {
 
       {/* View All */}
       <div className="max-w-7xl mx-auto mt-12 text-center">
-        <Link href="/taslar" className="btn-outline">
+        <Link href="/urunlerimiz" className="btn-outline">
           {t.featured_btn}
           <ArrowUpRight size={14} />
         </Link>

@@ -448,9 +448,9 @@ type TranslationKeys = {
 
 const translations: Record<Locale, TranslationKeys> = {
   tr: {
-    nav_taslarimiz: 'Taşlarımız',
+    nav_taslarimiz: 'Ürünlerimiz',
     nav_simulasyon: 'AI Simülasyon',
-    nav_uygulamalar: 'Uygulamalarımız',
+    nav_uygulamalar: 'Projelerimiz',
     nav_hakkimizda: 'Hakkımızda',
     nav_iletisim: 'İletişim',
     nav_anasayfa: 'Ana Sayfa',
@@ -825,9 +825,9 @@ const translations: Record<Locale, TranslationKeys> = {
   },
 
   en: {
-    nav_taslarimiz: 'Our Stones',
+    nav_taslarimiz: 'Our Products',
     nav_simulasyon: 'AI Simulation',
-    nav_uygulamalar: 'Applications',
+    nav_uygulamalar: 'Our Projects',
     nav_hakkimizda: 'About Us',
     nav_iletisim: 'Contact',
     nav_anasayfa: 'Home',
@@ -1202,9 +1202,9 @@ const translations: Record<Locale, TranslationKeys> = {
   },
 
   es: {
-    nav_taslarimiz: 'Nuestras Piedras',
+    nav_taslarimiz: 'Nuestros Productos',
     nav_simulasyon: 'Simulación IA',
-    nav_uygulamalar: 'Aplicaciones',
+    nav_uygulamalar: 'Nuestros Proyectos',
     nav_hakkimizda: 'Sobre Nosotros',
     nav_iletisim: 'Contacto',
     nav_anasayfa: 'Inicio',
@@ -1579,9 +1579,9 @@ const translations: Record<Locale, TranslationKeys> = {
   },
 
   ar: {
-    nav_taslarimiz: 'أحجارنا',
+    nav_taslarimiz: 'منتجاتنا',
     nav_simulasyon: 'محاكاة ذكية',
-    nav_uygulamalar: 'التطبيقات',
+    nav_uygulamalar: 'مشاريعنا',
     nav_hakkimizda: 'من نحن',
     nav_iletisim: 'اتصل بنا',
     nav_anasayfa: 'الرئيسية',
@@ -1956,9 +1956,9 @@ const translations: Record<Locale, TranslationKeys> = {
   },
 
   de: {
-    nav_taslarimiz: 'Unsere Steine',
+    nav_taslarimiz: 'Unsere Produkte',
     nav_simulasyon: 'KI-Simulation',
-    nav_uygulamalar: 'Anwendungen',
+    nav_uygulamalar: 'Unsere Projekte',
     nav_hakkimizda: 'Über Uns',
     nav_iletisim: 'Kontakt',
     nav_anasayfa: 'Startseite',
@@ -2333,9 +2333,9 @@ const translations: Record<Locale, TranslationKeys> = {
   },
 
   fr: {
-    nav_taslarimiz: 'Nos Pierres',
+    nav_taslarimiz: 'Nos Produits',
     nav_simulasyon: 'Simulation IA',
-    nav_uygulamalar: 'Réalisations',
+    nav_uygulamalar: 'Nos Projets',
     nav_hakkimizda: 'À Propos',
     nav_iletisim: 'Contact',
     nav_anasayfa: 'Accueil',
@@ -2710,9 +2710,9 @@ const translations: Record<Locale, TranslationKeys> = {
   },
 
   ru: {
-    nav_taslarimiz: 'Наши Камни',
+    nav_taslarimiz: 'Наша Продукция',
     nav_simulasyon: 'ИИ Симуляция',
-    nav_uygulamalar: 'Применения',
+    nav_uygulamalar: 'Наши Проекты',
     nav_hakkimizda: 'О Нас',
     nav_iletisim: 'Контакты',
     nav_anasayfa: 'Главная',

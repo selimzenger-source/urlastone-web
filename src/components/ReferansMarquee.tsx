@@ -63,7 +63,7 @@ export default function ReferansMarquee() {
               return (
                 <Link
                   key={`${ref.id}-${i}`}
-                  href={`/uygulamalarimiz/${ref.project_id}`}
+                  href={`/projelerimiz/${ref.project_id}`}
                   className="inline-flex items-center mx-12 cursor-pointer group"
                 >
                   {content}

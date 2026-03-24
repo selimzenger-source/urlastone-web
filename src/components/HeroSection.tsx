@@ -190,7 +190,7 @@ export default function HeroSection() {
             {t.hero_btn_simulasyon}
             <ArrowRight size={16} />
           </Link>
-          <Link href="/taslar" className="btn-outline text-sm px-6 md:px-8 py-3.5 md:py-4">
+          <Link href="/urunlerimiz" className="btn-outline text-sm px-6 md:px-8 py-3.5 md:py-4">
             {t.hero_btn_koleksiyon}
           </Link>
         </div>
