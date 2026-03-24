@@ -17,7 +17,7 @@ export default function TeklifPage() {
       <section className="relative pt-40 pb-16 md:pt-48 md:pb-20 px-6 md:px-12 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-[center_20%]"
-          style={{ backgroundImage: 'url(/teklif-hero.png)' }}
+          style={{ backgroundImage: 'url(/teklif-hero.jpg)' }}
         />
         <div className="absolute inset-0 bg-black/55" />
         <div className="max-w-3xl mx-auto text-center relative">

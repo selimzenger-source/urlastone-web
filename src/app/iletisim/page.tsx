@@ -52,7 +52,7 @@ export default function IletisimPage() {
       <section className="relative pt-40 pb-28 md:pt-56 md:pb-48 lg:pt-64 lg:pb-56 px-6 md:px-12 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-[60%_center] md:bg-[center_30%]"
-          style={{ backgroundImage: 'url(/contact-hero.png)' }}
+          style={{ backgroundImage: 'url(/contact-hero.jpg)' }}
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="max-w-7xl mx-auto text-center relative">

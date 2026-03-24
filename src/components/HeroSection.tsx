@@ -23,7 +23,7 @@ function getFallbackSlides(t: any): SlideData[] {
     { image: '/slide-3.jpg', tag: t.slide3_tag, subtitle: t.slide3_subtitle, gold: t.slide3_gold, desc: t.slide3_desc, bgSize: 'cover', bgPos: 'center 45%' },
     { image: '/slide-4.jpg', tag: t.slide4_tag, subtitle: t.slide4_subtitle, gold: t.slide4_gold, desc: t.slide4_desc, bgSize: 'cover', bgPos: 'center center' },
     { image: '/slide-5.jpg', tag: t.slide5_tag, subtitle: t.slide5_subtitle, gold: t.slide5_gold, desc: t.slide5_desc, bgSize: 'cover', bgPos: 'center 55%' },
-    { image: '/slide-6.png', tag: t.slide6_tag, subtitle: t.slide6_subtitle, gold: t.slide6_gold, desc: t.slide6_desc, bgSize: 'cover', bgPos: 'center center' },
+    { image: '/slide-6.jpg', tag: t.slide6_tag, subtitle: t.slide6_subtitle, gold: t.slide6_gold, desc: t.slide6_desc, bgSize: 'cover', bgPos: 'center center' },
     { image: '/slide-7.jpg', tag: t.slide7_tag, subtitle: t.slide7_subtitle, gold: t.slide7_gold, desc: t.slide7_desc, bgSize: 'cover', bgPos: 'center 40%' },
     { image: '/slide-8.jpg', tag: t.slide8_tag, subtitle: t.slide8_subtitle, gold: t.slide8_gold, desc: t.slide8_desc, bgSize: 'cover', bgPos: 'center 70%' },
   ]

@@ -53,7 +53,7 @@ export default function SimulasyonPage() {
       <section className="relative pt-32 md:pt-40 pb-10 md:pb-14 px-6 md:px-12 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/sim-hero.png)' }}
+          style={{ backgroundImage: 'url(/sim-hero.jpg)' }}
         />
         <div className="absolute inset-0 bg-black/60" />
         <div className="max-w-7xl mx-auto text-center relative">

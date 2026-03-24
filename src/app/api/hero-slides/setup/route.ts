@@ -143,7 +143,7 @@ function getSeedData() {
       desc_de: 'Wir werten Ihre Wohnräume mit Travertin-, Marmor- und Kalksteinanwendungen im Innendesign auf.',
     },
     {
-      image_url: '/slide-6.png', bg_position: 'center center', sort_order: 6, active: true,
+      image_url: '/slide-6.jpg', bg_position: 'center center', sort_order: 6, active: true,
       tag_tr: 'USTA İŞÇİLİK', tag_en: 'CRAFTSMANSHIP', tag_es: 'ARTESANÍA', tag_ar: 'الحرفية', tag_de: 'HANDWERKSKUNST',
       subtitle_tr: '25 yıllık birikimle', subtitle_en: 'With 25 years of expertise', subtitle_es: 'Con 25 años de experiencia', subtitle_ar: 'بخبرة 25 عاماً', subtitle_de: 'Mit 25 Jahren Erfahrung',
       gold_tr: 'Her detaya hakimiyet', gold_en: 'Mastery in every detail', gold_es: 'Dominio en cada detalle', gold_ar: 'إتقان كل التفاصيل', gold_de: 'Meisterschaft in jedem Detail',
