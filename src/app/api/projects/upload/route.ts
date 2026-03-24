@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { optimizeUploadedFile } from '@/lib/image-optimize'
 
 function validateAdmin(request: NextRequest): boolean {
   const auth = request.headers.get('Authorization')
@@ -7,7 +8,7 @@ function validateAdmin(request: NextRequest): boolean {
   return auth === `Bearer ${password}`
 }
 
-// POST — admin: fotoğraf yükle
+// POST — admin: fotoğraf yükle (auto-optimized)
 export async function POST(request: NextRequest) {
   if (!validateAdmin(request)) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
@@ -24,15 +25,14 @@ export async function POST(request: NextRequest) {
   const urls: string[] = []
 
   for (const file of files) {
-    const ext = file.name.split('.').pop()
-    const fileName = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-
-    const buffer = Buffer.from(await file.arrayBuffer())
+    // Auto-optimize
+    const optimized = await optimizeUploadedFile(file, { maxWidth: 1600, quality: 82 })
+    const fileName = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${optimized.ext}`
 
     const { error } = await supabaseAdmin.storage
       .from('project-photos')
-      .upload(fileName, buffer, {
-        contentType: file.type,
+      .upload(fileName, optimized.buffer, {
+        contentType: optimized.contentType,
         upsert: false,
       })
 

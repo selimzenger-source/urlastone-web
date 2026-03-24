@@ -1,3 +1,4 @@
+import { optimizeUploadedFile } from '@/lib/image-optimize'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
@@ -16,13 +17,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'file and stone_type_id required' }, { status: 400 })
   }
 
-  const ext = file.name.split('.').pop()
-  const fileName = `stone-types/${stoneTypeId}.${ext}`
+  const optimized = await optimizeUploadedFile(file, { maxWidth: 1200, quality: 82 })
+  const fileName = `stone-types/${stoneTypeId}.${optimized.ext}`
 
-  // Upload to Supabase Storage
+  // Upload optimized image to Supabase Storage
   const { error: uploadError } = await supabaseAdmin.storage
     .from('products')
-    .upload(fileName, file, { upsert: true, contentType: file.type })
+    .upload(fileName, optimized.buffer, { upsert: true, contentType: optimized.contentType })
 
   if (uploadError) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 })
