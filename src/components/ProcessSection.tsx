@@ -99,11 +99,11 @@ export default function ProcessSection() {
                 }}
               >
                 <Image
-                  src="/logo-rubble.png"
+                  src="/logo-rubble-v2.png"
                   alt="Taş yığını"
                   fill
                   className="object-contain object-bottom"
-                  style={{ filter: goldFilter }}
+                  style={{ filter: 'none' }}
                 />
               </div>
 
@@ -127,7 +127,7 @@ export default function ProcessSection() {
                     alt=""
                     fill
                     className="object-contain"
-                    style={{ filter: goldFilter }}
+                    style={{ filter: 'none' }}
                   />
                 </div>
               ))}
