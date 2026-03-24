@@ -245,10 +245,6 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        {/* Preload hero image for faster LCP */}
-        <link rel="preload" href="/slide-1.jpg" as="image" fetchPriority="high" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <Script
           id="json-ld"
           type="application/ld+json"
