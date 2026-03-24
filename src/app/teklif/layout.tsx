@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Ücretsiz Teklif Al | URLASTONE - Doğal Taş',
     description: 'Doğal taş projeniz için ücretsiz teklif alın. Urla, İzmir.',
-    url: 'https://urlastone.com/teklif',
+    url: 'https://www.urlastone.com/teklif',
   },
   alternates: {
-    canonical: 'https://urlastone.com/teklif',
+    canonical: 'https://www.urlastone.com/teklif',
   },
 }
 

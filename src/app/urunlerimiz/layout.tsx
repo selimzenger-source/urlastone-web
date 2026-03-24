@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Doğal Taş Çeşitleri - Rockshell, Traverten, Bazalt, Kalker | URLASTONE',
     description: 'Rockshell, traverten, bazalt, kalker doğal taş ürünleri. Nature, Line, Mix, Classic ebatlar. Urla, İzmir.',
-    url: 'https://urlastone.com/urunlerimiz',
+    url: 'https://www.urlastone.com/urunlerimiz',
   },
   alternates: {
-    canonical: 'https://urlastone.com/urunlerimiz',
+    canonical: 'https://www.urlastone.com/urunlerimiz',
   },
 }
 

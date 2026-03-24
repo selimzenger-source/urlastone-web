@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AI Doğal Taş Simülasyonu | URLASTONE',
     description: 'Yapay zeka ile cephenizde doğal taşı önceden görün. Ücretsiz simülasyon.',
-    url: 'https://urlastone.com/simulasyon',
+    url: 'https://www.urlastone.com/simulasyon',
   },
   alternates: {
-    canonical: 'https://urlastone.com/simulasyon',
+    canonical: 'https://www.urlastone.com/simulasyon',
   },
 }
 

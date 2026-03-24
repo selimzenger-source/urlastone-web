@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Doğal Taş Uygulamalarımız | URLASTONE',
     description: 'Cephe kaplama, zemin döşeme, peyzaj doğal taş projeleri. Urla, İzmir.',
-    url: 'https://urlastone.com/uygulamalarimiz',
+    url: 'https://www.urlastone.com/uygulamalarimiz',
   },
   alternates: {
-    canonical: 'https://urlastone.com/uygulamalarimiz',
+    canonical: 'https://www.urlastone.com/uygulamalarimiz',
   },
 }
 

@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://urlastone.com',
+    canonical: 'https://www.urlastone.com',
   },
   verification: {
     google: 'google3f6fffccc6484188',
