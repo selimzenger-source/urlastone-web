@@ -18,12 +18,30 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('fade'), 1500)
-    const t2 = setTimeout(() => {
+    const video = videoRef.current
+    let t1: NodeJS.Timeout, t2: NodeJS.Timeout
+
+    // Intro animasyonu bitince video'yu başlat — ama video hazır değilse bekle
+    const startVideo = () => {
       setPhase('playing')
-      videoRef.current?.play().catch(() => {})
+      video?.play().catch(() => {})
+    }
+
+    t1 = setTimeout(() => setPhase('fade'), 1500)
+    t2 = setTimeout(() => {
+      // Video yüklendiyse hemen başlat, yoksa canplay event'i bekle
+      if (video && video.readyState >= 3) {
+        startVideo()
+      } else {
+        video?.addEventListener('canplay', startVideo, { once: true })
+      }
     }, 2000)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      video?.removeEventListener('canplay', startVideo)
+    }
   }, [])
 
   return (
@@ -53,7 +71,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
               `}</style>
             </div>
           )}
-          <video ref={videoRef} src={url} controls playsInline loop className="w-full" style={{ maxHeight: '80vh' }} />
+          <video ref={videoRef} src={url} controls playsInline loop preload="auto" className="w-full" style={{ maxHeight: '80vh' }} />
         </div>
       </div>
     </div>

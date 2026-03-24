@@ -19,6 +19,7 @@ import {
   Languages,
   Film,
   CheckCircle,
+  RotateCw,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -1204,6 +1205,27 @@ export default function AdminProjeler({ adminPassword }: Props) {
                             Kapak Yap
                           </button>
                         )}
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch('/api/projects/rotate-photo', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
+                                body: JSON.stringify({ photoUrl: url, degrees: 90 }),
+                              })
+                              if (res.ok) {
+                                const { url: newUrl } = await res.json()
+                                const newPhotos = [...editProject.photos]
+                                newPhotos[i] = newUrl
+                                setEditProject({ ...editProject, photos: newPhotos })
+                              }
+                            } catch {}
+                          }}
+                          className="absolute top-1 left-1 w-6 h-6 rounded-full bg-black/80 flex items-center justify-center hover:bg-black transition-colors cursor-pointer"
+                          title="90° Döndür"
+                        >
+                          <RotateCw size={10} className="text-white" />
+                        </button>
                         <button
                           onClick={() => removePhoto(i)}
                           className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/90 flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
