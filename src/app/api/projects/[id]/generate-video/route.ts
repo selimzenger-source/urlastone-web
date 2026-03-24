@@ -56,8 +56,57 @@ export async function POST(
       return NextResponse.json({ error: 'FAL_API_KEY not configured' }, { status: 500 })
     }
 
-    // Use first (cover) photo
-    const imageUrl = project.photos[0]
+    // Use Claude Sonnet to pick the best photo for video — widest angle, most facade visible
+    let imageUrl = project.photos[0]
+
+    if (project.photos.length > 1 && process.env.ANTHROPIC_API_KEY) {
+      try {
+        const Anthropic = (await import('@anthropic-ai/sdk')).default
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+        // Send all photos to Claude, ask which is best for drone-style video
+        const imageContent = await Promise.all(
+          project.photos.slice(0, 8).map(async (url: string, i: number) => {
+            try {
+              const res = await fetch(url)
+              const buf = Buffer.from(await res.arrayBuffer())
+              const base64 = buf.toString('base64')
+              const mimeType = res.headers.get('content-type') || 'image/jpeg'
+              return [
+                { type: 'image' as const, source: { type: 'base64' as const, media_type: mimeType as 'image/jpeg', data: base64 } },
+                { type: 'text' as const, text: `Image ${i + 1}` },
+              ]
+            } catch {
+              return [{ type: 'text' as const, text: `Image ${i + 1}: failed to load` }]
+            }
+          })
+        )
+
+        const msg = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 50,
+          messages: [{
+            role: 'user',
+            content: [
+              ...imageContent.flat(),
+              {
+                type: 'text',
+                text: 'Which image number shows the WIDEST view of the building? I need the one that shows the most of the building exterior from the farthest distance — like an aerial/drone photo or a wide establishing shot. Reply with ONLY the number (e.g. "3").',
+              },
+            ],
+          }],
+        })
+
+        const answer = msg.content[0].type === 'text' ? msg.content[0].text.trim() : ''
+        const pickedIndex = parseInt(answer) - 1
+        if (pickedIndex >= 0 && pickedIndex < project.photos.length) {
+          imageUrl = project.photos[pickedIndex]
+          console.log(`[Video] Claude picked image ${pickedIndex + 1} of ${project.photos.length} for best wide shot`)
+        }
+      } catch (err) {
+        console.warn('[Video] Claude photo selection failed, using first photo:', err)
+      }
+    }
 
     // Cinematic drone prompt — lateral tracking + dolly, elevated angle showing building + surroundings
     // This prompt produced the excellent B2 Gökova drone-style video
