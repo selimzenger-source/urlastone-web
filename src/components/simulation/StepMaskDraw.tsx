@@ -32,7 +32,7 @@ const BRUSH_COLORS = [
 const MASK_TEXTS: Record<string, {
   title: string; desc: string; brush: string; undo: string; clear: string; color: string
   submit: string; back: string; hint: string; chatPlaceholder: string; micTooltip: string; micListening: string
-  instructionNote: string
+  instructionNote: string; brushNote: string
 }> = {
   tr: {
     title: 'Alanı İşaretleyin',
