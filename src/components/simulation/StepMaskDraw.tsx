@@ -43,8 +43,9 @@ const MASK_TEXTS: Record<string, {
     clear: 'Temizle',
     submit: 'AI ile Uygula',
     back: 'Geri',
-    hint: 'Fırçayı büyütüp taş uygulanacak duvar alanlarını boyayın',
-    instructionNote: 'Pencere, kapı, gökyüzü ve zemini boyamayın — sadece taş kaplamak istediğiniz duvarları işaretleyin. Fırça boyutunu ve rengini yukarıdan ayarlayabilirsiniz',
+    hint: 'Taş uygulamak istediğiniz duvar alanlarını boyayın',
+    instructionNote: 'Pencere, kapı, gökyüzü ve zemini boyamayın — sadece taş kaplamak istediğiniz duvarları işaretleyin',
+    brushNote: 'AI boyanan bölgeye yakın alanlara da uygulayabilir — tam hassas sonuç için "Tüm Alana Uygula" tercih edin',
     chatPlaceholder: 'AI\'ya ek talimat yazmak için buraya tıklayın... Örn: "Sadece zemin kata uygula"',
     micTooltip: 'Mikrofona basıp konuşarak not ekleyin',
     micListening: 'Dinliyor...',
@@ -58,8 +59,9 @@ const MASK_TEXTS: Record<string, {
     clear: 'Clear',
     submit: 'Apply with AI',
     back: 'Back',
-    hint: 'Increase brush size and paint the wall areas for stone cladding',
-    instructionNote: 'Avoid painting windows, doors, sky, and ground — only mark the wall surfaces you want clad. Adjust brush size and color from the toolbar above',
+    hint: 'Paint the wall areas where you want stone applied',
+    instructionNote: 'Avoid painting windows, doors, sky, and ground — only mark the walls you want clad',
+    brushNote: 'AI may also apply to nearby areas — for precise full coverage use "Apply to Full Surface" instead',
     chatPlaceholder: 'Click here to add instructions for AI... E.g. "Only apply to ground floor"',
     micTooltip: 'Tap and speak to add a voice note',
     micListening: 'Listening...',
@@ -74,7 +76,8 @@ const MASK_TEXTS: Record<string, {
     submit: 'Aplicar con IA',
     back: 'Atras',
     hint: 'Aumente el tamano del pincel y pinte las areas de pared',
-    instructionNote: 'Evite pintar ventanas, puertas, cielo y suelo — solo marque las paredes. Ajuste tamano y color del pincel en la barra superior',
+    instructionNote: 'Evite pintar ventanas, puertas, cielo y suelo — solo marque las paredes',
+    brushNote: 'La IA puede aplicar tambien a areas cercanas — para cobertura completa use "Aplicar a toda la superficie"',
     chatPlaceholder: 'Haga clic aqui para agregar instrucciones para IA... Ej: "Solo planta baja"',
     micTooltip: 'Toque y hable para agregar una nota de voz',
     micListening: 'Escuchando...',
@@ -89,7 +92,8 @@ const MASK_TEXTS: Record<string, {
     submit: 'تطبيق بالذكاء الاصطناعي',
     back: 'رجوع',
     hint: 'كبّر الفرشاة وارسم على مناطق الجدران',
-    instructionNote: 'تجنب رسم النوافذ والأبواب والسماء والأرض — حدد فقط الجدران. اضبط حجم ولون الفرشاة من الشريط أعلاه',
+    instructionNote: 'تجنب رسم النوافذ والأبواب والسماء والأرض — حدد فقط الجدران',
+    brushNote: 'قد يطبق الذكاء الاصطناعي على المناطق القريبة أيضًا — للتغطية الكاملة استخدم "تطبيق على كامل السطح"',
     chatPlaceholder: 'انقر هنا لإضافة تعليمات للذكاء الاصطناعي... مثال: "الطابق الأرضي فقط"',
     micTooltip: 'اضغط وتحدث لإضافة ملاحظة صوتية',
     micListening: 'جارٍ الاستماع...',
@@ -104,7 +108,8 @@ const MASK_TEXTS: Record<string, {
     submit: 'Mit KI anwenden',
     back: 'Zuruck',
     hint: 'Pinselgrosse erhohen und Wandflachen bemalen',
-    instructionNote: 'Vermeiden Sie Fenster, Turen, Himmel und Boden — markieren Sie nur die Wandflachen. Pinselgrosse und Farbe oben anpassen',
+    instructionNote: 'Vermeiden Sie Fenster, Turen, Himmel und Boden — markieren Sie nur die Wandflachen',
+    brushNote: 'KI kann auch auf nahe Bereiche anwenden — fur volle Abdeckung verwenden Sie "Auf gesamte Flache anwenden"',
     chatPlaceholder: 'Klicken Sie hier, um KI-Anweisungen hinzuzufugen... Z.B. "Nur Erdgeschoss"',
     micTooltip: 'Tippen und sprechen Sie fur eine Sprachnotiz',
     micListening: 'Hort zu...',
@@ -374,12 +379,15 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
       </div>
 
       {/* Instruction note between toolbar and canvas */}
-      <div className="flex items-start gap-2 mb-3 px-2 py-2 bg-gold-400/[0.06] rounded-lg border border-gold-400/[0.10]">
+      <div className="flex items-start gap-2 mb-2 px-2 py-2 bg-gold-400/[0.06] rounded-lg border border-gold-400/[0.10]">
         <span className="text-base leading-none mt-0.5">📌</span>
         <p className="text-gold-400 text-[13px] font-body leading-snug">
           {t.instructionNote}
         </p>
       </div>
+      <p className="text-white/25 text-[10px] font-body mb-3 px-2">
+        {t.brushNote}
+      </p>
 
       {/* Canvas area */}
       <div className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-black">
