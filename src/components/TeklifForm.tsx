@@ -227,9 +227,11 @@ export default function TeklifForm() {
       newErrors.telefon = 'Geçerli bir telefon numarası giriniz'
     }
 
-    // Email: format kontrolü (opsiyonel ama girilmişse geçerli olmalı)
-    if (form.email && !isValidEmail(form.email)) {
-      newErrors.email = 'Geçerli bir e-posta adresi giriniz'
+    // Email: her zaman zorunlu
+    if (!form.email) {
+      newErrors.email = t.form_email_required || 'E-posta adresi zorunludur'
+    } else if (!isValidEmail(form.email)) {
+      newErrors.email = t.form_email_invalid || 'Geçerli bir e-posta adresi giriniz'
     }
 
     setErrors(newErrors)
@@ -350,8 +352,8 @@ export default function TeklifForm() {
         </div>
 
         <div>
-          <label className="block text-white/50 text-xs font-mono mb-2">{t.form_email_label}</label>
-          <input type="email" name="email" value={form.email} onChange={handleChange}
+          <label className="block text-white/50 text-xs font-mono mb-2">{t.form_email_label} <span className="text-gold-400">*</span></label>
+          <input type="email" name="email" required value={form.email} onChange={handleChange}
             placeholder={t.form_email_placeholder}
             className={`${inputClass} ${errors.email ? 'border-red-500/50' : ''}`} />
           {errors.email && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.email}</p>}
@@ -469,7 +471,7 @@ export default function TeklifForm() {
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Kaplanacak Cephe (m²) <span className="text-gold-400">*</span>
+              {t.form_facade_area || 'Kaplanacak Cephe (m²)'} <span className="text-gold-400">*</span>
             </label>
             <input
               type="number"
@@ -477,7 +479,7 @@ export default function TeklifForm() {
               required
               min="1"
               step="1"
-              placeholder="Örn: 150"
+              placeholder={t.form_eg_150 || 'Örn: 150'}
               value={form.cepheMetre}
               onChange={handleChange}
               className={inputClass}
@@ -488,14 +490,14 @@ export default function TeklifForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Dış Köşe Uzunluğu (metretül)
+              {t.form_corner_length || 'Dış Köşe Uzunluğu (metretül)'}
             </label>
             <input
               type="number"
               name="disKoseUzunluk"
               min="0"
               step="1"
-              placeholder="Örn: 25"
+              placeholder={t.form_eg_25 || 'Örn: 25'}
               value={form.disKoseUzunluk}
               onChange={handleChange}
               className={inputClass}
@@ -503,7 +505,7 @@ export default function TeklifForm() {
           </div>
           <div>
             <label className="block text-white/50 text-xs font-mono mb-2">
-              Fiyat Kapsamı <span className="text-gold-400">*</span>
+              {t.form_price_scope || 'Fiyat Kapsamı'} <span className="text-gold-400">*</span>
             </label>
             <div className="flex gap-3 mt-1">
               <button
@@ -515,7 +517,7 @@ export default function TeklifForm() {
                     : 'bg-white/[0.03] border-white/[0.08] text-white/50 hover:bg-white/[0.06]'
                 }`}
               >
-                Sadece Taş
+                {t.form_stone_only || 'Sadece Taş'}
               </button>
               <button
                 type="button"
@@ -526,7 +528,7 @@ export default function TeklifForm() {
                     : 'bg-white/[0.03] border-white/[0.08] text-white/50 hover:bg-white/[0.06]'
                 }`}
               >
-                Taş + Yapıştırıcı + Derz
+                {t.form_stone_plus || 'Taş + Yapıştırıcı + Derz'}
               </button>
             </div>
           </div>

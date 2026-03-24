@@ -333,6 +333,8 @@ type TranslationKeys = {
   form_phone_label: string
   form_phone_placeholder: string
   form_email_label: string
+  form_email_required: string
+  form_email_invalid: string
   form_email_placeholder: string
   form_country_label: string
   form_city_label: string
@@ -342,6 +344,13 @@ type TranslationKeys = {
   form_project_type_label: string
   form_select_placeholder: string
   form_sqm_label: string
+  form_facade_area: string
+  form_eg_150: string
+  form_corner_length: string
+  form_eg_25: string
+  form_price_scope: string
+  form_stone_only: string
+  form_stone_plus: string
   form_stone_pref_label: string
   form_stone_pref_hint: string
   form_photos_label: string
@@ -731,6 +740,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'Telefon',
     form_phone_placeholder: '05XX XXX XX XX',
     form_email_label: 'E-posta',
+    form_email_required: 'E-posta adresi zorunludur',
+    form_email_invalid: 'Geçerli bir e-posta adresi giriniz',
     form_email_placeholder: 'ornek@mail.com',
     form_country_label: 'Ülke',
     form_city_label: 'İl',
@@ -740,6 +751,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'Proje Tipi',
     form_select_placeholder: 'Seçiniz...',
     form_sqm_label: 'Tahmini Metrekare',
+    form_facade_area: 'Kaplanacak Cephe (m²)',
+    form_eg_150: 'Örn: 150',
+    form_corner_length: 'Dış Köşe Uzunluğu (metretül)',
+    form_eg_25: 'Örn: 25',
+    form_price_scope: 'Fiyat Kapsamı',
+    form_stone_only: 'Sadece Taş',
+    form_stone_plus: 'Taş + Yapıştırıcı + Derz',
     form_stone_pref_label: 'Taş Tercihi',
     form_stone_pref_hint: '(birden fazla seçebilirsiniz)',
     form_photos_label: 'Uygulama Alanı Fotoğrafları',
@@ -1112,6 +1130,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'Phone',
     form_phone_placeholder: '+1 XXX XXX XXXX',
     form_email_label: 'Email',
+    form_email_required: 'Email address is required',
+    form_email_invalid: 'Please enter a valid email address',
     form_email_placeholder: 'example@mail.com',
     form_country_label: 'Country',
     form_city_label: 'City',
@@ -1121,6 +1141,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'Project Type',
     form_select_placeholder: 'Select...',
     form_sqm_label: 'Estimated Area',
+    form_facade_area: 'Facade Area (m²)',
+    form_eg_150: 'e.g. 150',
+    form_corner_length: 'Outer Corner Length (linear meters)',
+    form_eg_25: 'e.g. 25',
+    form_price_scope: 'Price Scope',
+    form_stone_only: 'Stone Only',
+    form_stone_plus: 'Stone + Adhesive + Grout',
     form_stone_pref_label: 'Stone Preference',
     form_stone_pref_hint: '(you can select multiple)',
     form_photos_label: 'Application Area Photos',
@@ -1493,6 +1520,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'Teléfono',
     form_phone_placeholder: '+34 XXX XXX XXX',
     form_email_label: 'Correo Electrónico',
+    form_email_required: 'El correo electrónico es obligatorio',
+    form_email_invalid: 'Ingrese un correo electrónico válido',
     form_email_placeholder: 'ejemplo@mail.com',
     form_country_label: 'País',
     form_city_label: 'Ciudad',
@@ -1502,6 +1531,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'Tipo de Proyecto',
     form_select_placeholder: 'Seleccione...',
     form_sqm_label: 'Metros Cuadrados Estimados',
+    form_facade_area: 'Área de Fachada (m²)',
+    form_eg_150: 'Ej: 150',
+    form_corner_length: 'Longitud de Esquina Exterior (metros lineales)',
+    form_eg_25: 'Ej: 25',
+    form_price_scope: 'Alcance del Precio',
+    form_stone_only: 'Solo Piedra',
+    form_stone_plus: 'Piedra + Adhesivo + Lechada',
     form_stone_pref_label: 'Preferencia de Piedra',
     form_stone_pref_hint: '(puede seleccionar varios)',
     form_photos_label: 'Fotos del Área de Aplicación',
@@ -1874,6 +1910,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'الهاتف',
     form_phone_placeholder: '+XXX XXX XXX XXXX',
     form_email_label: 'البريد الإلكتروني',
+    form_email_required: 'البريد الإلكتروني مطلوب',
+    form_email_invalid: 'يرجى إدخال بريد إلكتروني صالح',
     form_email_placeholder: 'example@mail.com',
     form_country_label: 'البلد',
     form_city_label: 'المدينة',
@@ -1883,6 +1921,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'نوع المشروع',
     form_select_placeholder: 'اختر...',
     form_sqm_label: 'المساحة التقديرية',
+    form_facade_area: 'مساحة الواجهة (م²)',
+    form_eg_150: 'مثال: 150',
+    form_corner_length: 'طول الزاوية الخارجية (متر طولي)',
+    form_eg_25: 'مثال: 25',
+    form_price_scope: 'نطاق السعر',
+    form_stone_only: 'حجر فقط',
+    form_stone_plus: 'حجر + لاصق + مونة',
     form_stone_pref_label: 'تفضيل الحجر',
     form_stone_pref_hint: '(يمكنك اختيار أكثر من واحد)',
     form_photos_label: 'صور منطقة التطبيق',
@@ -2255,6 +2300,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'Telefon',
     form_phone_placeholder: '+49 XXX XXX XXXX',
     form_email_label: 'E-Mail',
+    form_email_required: 'E-Mail-Adresse ist erforderlich',
+    form_email_invalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
     form_email_placeholder: 'beispiel@mail.com',
     form_country_label: 'Land',
     form_city_label: 'Stadt',
@@ -2264,6 +2311,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'Projekttyp',
     form_select_placeholder: 'Auswählen...',
     form_sqm_label: 'Geschätzte Fläche',
+    form_facade_area: 'Fassadenfläche (m²)',
+    form_eg_150: 'z.B. 150',
+    form_corner_length: 'Außeneckenlänge (Laufmeter)',
+    form_eg_25: 'z.B. 25',
+    form_price_scope: 'Preisumfang',
+    form_stone_only: 'Nur Stein',
+    form_stone_plus: 'Stein + Kleber + Fuge',
     form_stone_pref_label: 'Steinpräferenz',
     form_stone_pref_hint: '(Mehrfachauswahl möglich)',
     form_photos_label: 'Fotos des Anwendungsbereichs',
@@ -2636,6 +2690,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'Téléphone',
     form_phone_placeholder: '+33 X XX XX XX XX',
     form_email_label: 'Email',
+    form_email_required: 'L\'adresse email est obligatoire',
+    form_email_invalid: 'Veuillez entrer une adresse email valide',
     form_email_placeholder: 'exemple@mail.com',
     form_country_label: 'Pays',
     form_city_label: 'Ville',
@@ -2645,6 +2701,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'Type de Projet',
     form_select_placeholder: 'Sélectionner...',
     form_sqm_label: 'Surface Estimée (m²)',
+    form_facade_area: 'Surface de Façade (m²)',
+    form_eg_150: 'Ex: 150',
+    form_corner_length: 'Longueur d\'Angle Extérieur (mètres linéaires)',
+    form_eg_25: 'Ex: 25',
+    form_price_scope: 'Portée du Prix',
+    form_stone_only: 'Pierre Seule',
+    form_stone_plus: 'Pierre + Colle + Joint',
     form_stone_pref_label: 'Préférence de Pierre',
     form_stone_pref_hint: '(vous pouvez en sélectionner plusieurs)',
     form_photos_label: 'Photos de la Zone d\'Application',
@@ -3017,6 +3080,8 @@ const translations: Record<Locale, TranslationKeys> = {
     form_phone_label: 'Телефон',
     form_phone_placeholder: '+7 XXX XXX XX XX',
     form_email_label: 'Email',
+    form_email_required: 'Адрес электронной почты обязателен',
+    form_email_invalid: 'Введите действительный адрес электронной почты',
     form_email_placeholder: 'example@mail.ru',
     form_country_label: 'Страна',
     form_city_label: 'Город',
@@ -3026,6 +3091,13 @@ const translations: Record<Locale, TranslationKeys> = {
     form_project_type_label: 'Тип Проекта',
     form_select_placeholder: 'Выбрать...',
     form_sqm_label: 'Площадь (м²)',
+    form_facade_area: 'Площадь Фасада (м²)',
+    form_eg_150: 'Напр: 150',
+    form_corner_length: 'Длина Внешнего Угла (погонные метры)',
+    form_eg_25: 'Напр: 25',
+    form_price_scope: 'Объём Цены',
+    form_stone_only: 'Только Камень',
+    form_stone_plus: 'Камень + Клей + Затирка',
     form_stone_pref_label: 'Предпочтение Камня',
     form_stone_pref_hint: '(можно выбрать несколько)',
     form_photos_label: 'Фото Зоны Применения',

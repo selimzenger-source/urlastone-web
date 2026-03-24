@@ -109,11 +109,13 @@ export default function TaslarPage() {
     line: { slogan: t.stones_line_slogan, desc: t.stones_line_desc, features: [t.stones_line_f1, t.stones_line_f2, t.stones_line_f3], thickness: '1 – 2 cm' },
   }
 
-  // Build categoryInfo using DB fields when available, fallback to i18n
+  // Build categoryInfo — DB fields only for TR, i18n for other languages
   const getCategoryInfo = (slug: string) => {
     const fb = i18nFallback[slug] || { slogan: '', desc: '', features: [], thickness: '' }
     const cat = categories.find(c => c.slug === slug)
     if (!cat) return fb
+    // DB values are Turkish only — use i18n translations for other languages
+    if (locale !== 'tr') return { ...fb, thickness: cat.thickness || fb.thickness }
     return {
       slogan: cat.slogan || fb.slogan,
       desc: cat.description || fb.desc,
