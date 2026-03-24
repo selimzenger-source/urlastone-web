@@ -271,48 +271,14 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
             </div>
           </button>
 
-          {/* Brush Mode — temporarily disabled */}
-          <div
-            className="group relative rounded-2xl border-2 border-white/[0.05] bg-white/[0.01] text-left overflow-hidden opacity-50 cursor-not-allowed"
-          >
-            {/* 3-step preview: original → brushed → result */}
-            <div className="relative h-36 md:h-44 overflow-hidden">
-              <div className="absolute inset-0 flex">
-                {/* Step 1: Brush mask */}
-                <div className="w-1/2 relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/ex-brush-mask.jpg" alt="" className="w-full h-full object-cover" />
-                  <span className="absolute top-2 left-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <Paintbrush size={8} /> {t.brushExBefore}
-                  </span>
-                </div>
-                {/* Step 2: Result */}
-                <div className="w-1/2 relative border-l-2 border-white/20">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/ex-brush-result.jpg" alt="" className="w-full h-full object-cover" />
-                  <span className="absolute top-2 right-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.brushExAfter}</span>
-                </div>
-              </div>
+          {/* Brush Mode — coming soon */}
+          <div className="relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.05] bg-white/[0.01] text-left opacity-40 cursor-not-allowed">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
+              <Paintbrush size={24} className="text-white/30" />
             </div>
-            {/* Text content */}
-            <div className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors flex-shrink-0">
-                  <Paintbrush size={18} className="text-white/50" />
-                </div>
-                <div>
-                  <h3 className="font-heading text-base font-bold text-white">{t.brushTitle}</h3>
-                  <p className="text-white/40 text-xs font-body">{t.brushDesc}</p>
-                </div>
-              </div>
-              {/* Brush usage hint */}
-              <p className="text-white/25 text-[10px] font-body mt-1 pl-[52px]">
-                <Paintbrush size={9} className="inline mr-1 opacity-60" />
-                {t.brushHint}
-              </p>
-            </div>
-            {/* Coming soon badge */}
-            <div className="absolute top-2 right-2 bg-white/10 text-white/50 text-[9px] font-mono px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm z-10">
+            <h3 className="font-heading text-lg font-bold text-white/50 mb-2">{t.brushTitle}</h3>
+            <p className="text-white/30 text-sm font-body">{t.brushDesc}</p>
+            <div className="absolute top-4 right-4 bg-white/10 text-white/40 text-[9px] font-mono px-2.5 py-1 rounded-full border border-white/10">
               {t.comingSoon || 'Yakında'}
             </div>
           </div>
