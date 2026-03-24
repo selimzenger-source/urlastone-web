@@ -13,7 +13,22 @@ export const metadata: Metadata = {
     template: '%s | URLASTONE - Doğal Taş Üreticisi İzmir',
   },
   description: 'Türkiye\'nin önde gelen doğal taş üreticisi URLASTONE. Traverten, bazalt, kalker ve mermer ile dış cephe kaplama, iç mekan duvar kaplama, şömine ve peyzaj taşı çözümleri. Rockshell teknolojisi ile ince taş kaplama panelleri. AI simülasyon ile taşınızı binanızda görün. 50+ ülkeye ihracat. Urla, Çeşme, İzmir.',
-  keywords: ['doğal taş', 'natural stone', 'pierre naturelle', 'натуральный камень', 'piedra natural', 'Naturstein', 'حجر طبيعي', 'urla', 'izmir', 'çeşme', 'turkey', 'türkiye', 'cephe kaplama', 'facade cladding', 'revêtement de façade', 'облицовка фасадов', 'traverten', 'travertine', 'travertin', 'травертин', 'mermer', 'marble', 'marbre', 'мрамор', 'bazalt', 'basalt', 'basalte', 'базальт', 'kalker', 'limestone', 'calcaire', 'известняк', 'taş kaplama', 'stone cladding', 'zemin döşeme', 'floor tiling', 'urlastone', 'doğal taş pazarı', 'rockshell', 'nature rockshell', 'line rockshell', 'mix rockshell', 'doğal taş üretici', 'natural stone manufacturer', 'fabricant de pierre naturelle', 'производитель натурального камня', 'turkish natural stone', 'dış cephe taş kaplama', 'exterior stone cladding', 'peyzaj taşı', 'landscape stone'],
+  keywords: [
+    // TR
+    'doğal taş', 'traverten', 'bazalt', 'kalker', 'mermer', 'taş kaplama', 'cephe kaplama', 'dış cephe taş kaplama', 'iç mekan taş', 'şömine taş kaplama', 'peyzaj taşı', 'doğal taş üretici', 'doğal taş fabrikası', 'doğal taş fiyat', 'taş duvar kaplama', 'villa taş', 'otel taş cephe', 'doğal taş ihracat', 'urlastone', 'rockshell', 'urla', 'izmir', 'çeşme', 'alaçatı',
+    // EN
+    'natural stone', 'travertine', 'basalt', 'limestone', 'marble', 'stone cladding', 'facade cladding', 'stone veneer', 'natural stone manufacturer', 'turkish natural stone', 'natural stone exporter Turkey', 'exterior stone cladding', 'interior stone wall', 'stone veneer panels',
+    // ES
+    'piedra natural', 'travertino turco', 'revestimiento piedra', 'fabricante piedra natural',
+    // DE
+    'Naturstein', 'Naturstein Türkei', 'Travertin', 'Fassadenverkleidung', 'Steinverblender', 'Naturstein Hersteller',
+    // FR
+    'pierre naturelle', 'travertin turc', 'revêtement façade', 'fabricant pierre naturelle', 'parement pierre',
+    // RU
+    'натуральный камень', 'травертин', 'облицовка фасадов', 'производитель натурального камня', 'купить камень Турция',
+    // AR
+    'حجر طبيعي', 'ترافرتين تركي', 'كسوة واجهات', 'حجر طبيعي تركيا',
+  ],
   authors: [{ name: 'URLASTONE' }],
   creator: 'URLASTONE',
   openGraph: {
@@ -95,6 +110,7 @@ const jsonLd = {
       currenciesAccepted: 'TRY, USD, EUR',
       paymentAccepted: 'Cash, Credit Card, Bank Transfer',
       numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 10, maxValue: 50 },
+      slogan: '500+ completed projects worldwide — Premium Turkish natural stone manufacturer',
       areaServed: [
         { '@type': 'Country', name: 'Turkey' }, { '@type': 'Country', name: 'Germany' },
         { '@type': 'Country', name: 'Spain' }, { '@type': 'Country', name: 'France' },
