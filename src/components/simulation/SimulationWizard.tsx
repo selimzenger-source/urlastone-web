@@ -118,7 +118,7 @@ export default function SimulationWizard() {
   const [applyMode, setApplyMode] = useState<ApplyMode | null>(null)
   const [surfaceContext, setSurfaceContext] = useState<SurfaceContext | null>(null)
   const [groutStyle, setGroutStyle] = useState<GroutStyle>('grouted')
-  const [geminiModel, setGeminiModel] = useState<string>('gemini-2.5-flash-image')
+  const [geminiModel] = useState<string>('gemini-3-pro-image-preview')
   const [maskDataUrl, setMaskDataUrl] = useState<string | null>(null)
   const [predictionId, setPredictionId] = useState<string | null>(null)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
@@ -488,29 +488,7 @@ export default function SimulationWizard() {
               onSelect={handleModeSelect}
               onBack={() => setStep('select')}
             />
-            {/* Model selector — admin/test only */}
-            <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-xl">
-              <label className="text-xs text-white/40 font-body block mb-2">AI Model (test)</label>
-              <div className="flex gap-2 flex-wrap">
-                {[
-                  { id: 'gemini-2.5-flash-image', label: '2.5 Flash', desc: '500 RPM' },
-                  { id: 'gemini-3-pro-image-preview', label: '3 Pro', desc: '20 RPM' },
-                  { id: 'gemini-3.1-flash-image-preview', label: '3.1 Flash', desc: '100 RPM' },
-                ].map(m => (
-                  <button
-                    key={m.id}
-                    onClick={() => setGeminiModel(m.id)}
-                    className={`px-3 py-2 rounded-lg text-xs font-body transition-colors ${
-                      geminiModel === m.id
-                        ? 'bg-gold-400/20 border border-gold-400/50 text-gold-400'
-                        : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
-                    }`}
-                  >
-                    {m.label} <span className="text-white/30">({m.desc})</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Model auto-selected: gemini-3-pro first, flash fallback */}
             {error && (
               <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
                 <p className="text-red-400 text-sm font-body">{error}</p>

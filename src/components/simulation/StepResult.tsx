@@ -14,7 +14,7 @@ interface Props {
   onReset: () => void
 }
 
-const RESULT_TEXTS: Record<string, { title: string; before: string; after: string; download: string; downloadHd: string; upscaling: string; tryAnother: string; newPhoto: string; quote: string; slider: string }> = {
+const RESULT_TEXTS: Record<string, { title: string; before: string; after: string; download: string; downloadHd: string; upscaling: string; tryAnother: string; retryHint: string; retryBtn: string; quote: string; slider: string }> = {
   tr: {
     title: 'İşte Sonuç',
     before: 'Önce',
@@ -23,7 +23,8 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     downloadHd: 'HD İndir',
     upscaling: 'HD hazırlanıyor...',
     tryAnother: 'Başka Taş Dene',
-    newPhoto: 'Yeni Fotoğraf',
+    retryHint: 'Sonuçtan memnun değilseniz farklı bir açıdan tekrar deneyin',
+    retryBtn: 'Farklı Açıyla Tekrar Dene',
     quote: 'Teklif Al',
     slider: 'Kaydırarak karşılaştırın',
   },
@@ -35,7 +36,8 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     downloadHd: 'HD Download',
     upscaling: 'Preparing HD...',
     tryAnother: 'Try Another Stone',
-    newPhoto: 'New Photo',
+    retryHint: 'Not satisfied? Try again from a different angle',
+    retryBtn: 'Retry with Different Angle',
     quote: 'Get Quote',
     slider: 'Slide to compare',
   },
@@ -47,7 +49,8 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     downloadHd: 'Descargar HD',
     upscaling: 'Preparando HD...',
     tryAnother: 'Probar otra piedra',
-    newPhoto: 'Nueva foto',
+    retryHint: '¿No está satisfecho? Intente de nuevo desde otro ángulo',
+    retryBtn: 'Reintentar con otro ángulo',
     quote: 'Solicitar presupuesto',
     slider: 'Deslice para comparar',
   },
@@ -59,7 +62,8 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     downloadHd: 'تحميل HD',
     upscaling: 'جاري تحضير HD...',
     tryAnother: 'جرب حجراً آخر',
-    newPhoto: 'صورة جديدة',
+    retryHint: 'غير راضٍ؟ جرب مرة أخرى من زاوية مختلفة',
+    retryBtn: 'أعد المحاولة بزاوية مختلفة',
     quote: 'طلب عرض سعر',
     slider: 'اسحب للمقارنة',
   },
@@ -71,9 +75,36 @@ const RESULT_TEXTS: Record<string, { title: string; before: string; after: strin
     downloadHd: 'HD Herunterladen',
     upscaling: 'HD wird vorbereitet...',
     tryAnother: 'Anderen Stein testen',
-    newPhoto: 'Neues Foto',
+    retryHint: 'Nicht zufrieden? Versuchen Sie es aus einem anderen Winkel',
+    retryBtn: 'Mit anderem Winkel erneut versuchen',
     quote: 'Angebot anfordern',
     slider: 'Zum Vergleichen schieben',
+  },
+  fr: {
+    title: 'Voici le résultat',
+    before: 'Avant',
+    after: 'Après',
+    download: 'Télécharger',
+    downloadHd: 'Télécharger HD',
+    upscaling: 'Préparation HD...',
+    tryAnother: 'Essayer une autre pierre',
+    retryHint: 'Pas satisfait ? Réessayez sous un angle différent',
+    retryBtn: 'Réessayer avec un autre angle',
+    quote: 'Demander un devis',
+    slider: 'Glissez pour comparer',
+  },
+  ru: {
+    title: 'Вот результат',
+    before: 'До',
+    after: 'После',
+    download: 'Скачать',
+    downloadHd: 'Скачать HD',
+    upscaling: 'Подготовка HD...',
+    tryAnother: 'Попробовать другой камень',
+    retryHint: 'Не довольны? Попробуйте снова с другого ракурса',
+    retryBtn: 'Повторить с другим ракурсом',
+    quote: 'Запросить цену',
+    slider: 'Проведите для сравнения',
   },
 }
 
@@ -463,22 +494,25 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
         </Link>
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-4">
-        <button
-          onClick={onTryAnother}
-          className="inline-flex items-center gap-1.5 text-white/40 text-xs hover:text-white/70 transition-colors"
-        >
-          <RefreshCw size={12} />
-          {t.tryAnother}
-        </button>
-        <span className="text-white/10">|</span>
-        <button
-          onClick={onReset}
-          className="inline-flex items-center gap-1.5 text-white/40 text-xs hover:text-white/70 transition-colors"
-        >
-          <RotateCcw size={12} />
-          {t.newPhoto}
-        </button>
+      {/* Retry hint */}
+      <div className="mt-6 text-center">
+        <p className="text-white/30 text-xs font-body mb-3">{t.retryHint}</p>
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={onReset}
+            className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 text-white/60 px-4 py-2 rounded-full text-xs font-medium hover:bg-white/10 hover:text-white/80 transition-colors"
+          >
+            <RotateCcw size={12} />
+            {t.retryBtn}
+          </button>
+          <button
+            onClick={onTryAnother}
+            className="inline-flex items-center gap-1.5 text-white/40 text-xs hover:text-white/70 transition-colors"
+          >
+            <RefreshCw size={12} />
+            {t.tryAnother}
+          </button>
+        </div>
       </div>
     </div>
   )
