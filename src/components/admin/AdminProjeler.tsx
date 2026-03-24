@@ -1210,7 +1210,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
                             try {
                               const res = await fetch('/api/projects/rotate-photo', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
                                 body: JSON.stringify({ photoUrl: url, degrees: 90 }),
                               })
                               if (res.ok) {
