@@ -208,23 +208,33 @@ function buildBrushPrompt(
   const stoneSize = surfaceContext === 'facade' ? 0.15 : 0.12
   const wallHeight = analysis.estimated_wall_height_m || 6
   const stonesVertical = Math.round(wallHeight / stoneSize)
+  const totalEstimate = stonesVertical * 15
   const categoryDesc = getCategoryDesc(categorySlug)
 
-  return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP (real size: each piece is ${Math.round(stoneSize * 100)}cm). Image ${maskImageNum}: black/white MASK — apply stone ONLY to WHITE areas.
+  return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP (real size: each piece is ${Math.round(stoneSize * 100)}cm — the photo is zoomed in, IGNORE apparent stone size). Image ${maskImageNum}: black/white MASK — apply stone ONLY to WHITE areas, leave BLACK areas completely untouched.
 
-STONE SIZE (MOST IMPORTANT):
-Each stone piece ~${Math.round(stoneSize * 100)}cm. ${analysis.scale_instruction ? `SCALE: ${analysis.scale_instruction}` : ''}
-- Surface height ~${wallHeight}m → ${stonesVertical} stone pieces vertically
+⚠️ STONE SIZE — THE #1 PRIORITY (read this FIRST):
+Image 2 is heavily zoomed in. In real life each stone piece is only ${Math.round(stoneSize * 100)}cm.
+${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
+- Wall height ~${wallHeight}m ÷ ${stoneSize}m = ${stonesVertical} stone pieces from bottom to top
+- Each window/opening (~1m wide) = ~7 stone pieces across
+- The masked area must show ${totalEstimate}+ individual stone pieces
 - ${categoryDesc}
 
-COLOR: Copy EXACT tones from Image 2 with natural color variety.
+⚠️ THE MOST COMMON AI MISTAKE: Making stones WAY TOO LARGE — like boulders or large rocks.
+✅ CORRECT: Many small pieces (${Math.round(stoneSize * 100)}cm each), dense mosaic
+❌ WRONG: 5-10 large rocks covering the whole area
+❌ WRONG: Any stone bigger than a human fist relative to the building
+
+⚠️ UNIFORMITY: Every part of the masked area must have IDENTICAL stone size — narrow columns same as wide walls.
+
+COLOR: Copy EXACT tones from Image 2 with natural color variety. Do NOT average into one color.
 
 RULES:
-- Apply stone ONLY to white mask areas. Black = untouched
+- Apply stone ONLY to white mask areas. Black areas = completely untouched, no changes
 - ${groutInstruction}
-- ⚠️ UNIFORM stone size EVERYWHERE — narrow columns, wide walls, corners ALL must have the SAME stone size. Do NOT make stones larger on narrow surfaces.
 - 3D depth and mortar shadows — NOT flat wallpaper
-- Do NOT change the building structure
+- Do NOT change the building structure, windows, roof, sky
 - Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
 }
 
