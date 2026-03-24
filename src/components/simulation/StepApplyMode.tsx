@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Wand2, Paintbrush, Building2, Home } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Wand2, Paintbrush, Building2, Home, Camera } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { ApplyMode, SurfaceContext, GroutStyle } from '@/lib/simulation'
 
@@ -21,6 +21,11 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'AI yapıyı koruyarak taşı akıllıca tüm yüzeye uygular',
     brushTitle: 'Fırça ile Seç',
     brushDesc: 'Taş uygulanacak alanı elle işaretleyin',
+    fullExBefore: 'Önce',
+    fullExAfter: 'Sonra',
+    brushExBefore: 'Önce',
+    brushExAfter: 'Sonra',
+    photoTip: 'En iyi sonuç için: Düz açıdan, iyi aydınlatılmış, net bir fotoğraf çekin. Yüzeyin tamamı görünsün.',
     contextTitle: 'Yüzey Türü',
     contextDesc: 'AI doğru alanları tespit etsin — ne tür bir yüzey bu?',
     apply: 'AI ile Uygula',
@@ -48,6 +53,11 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'AI intelligently applies stone while preserving structure',
     brushTitle: 'Select with Brush',
     brushDesc: 'Manually mark the area for stone application',
+    fullExBefore: 'Before',
+    fullExAfter: 'After',
+    brushExBefore: 'Before',
+    brushExAfter: 'After',
+    photoTip: 'For best results: Take a clear, well-lit photo from a straight angle. Make sure the full surface is visible.',
     contextTitle: 'Surface Type',
     contextDesc: 'Help the AI detect the right areas — what type of surface is this?',
     apply: 'Apply with AI',
@@ -75,6 +85,11 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'La IA aplica la piedra de forma inteligente preservando la estructura',
     brushTitle: 'Seleccionar con pincel',
     brushDesc: 'Marque manualmente el área para la aplicación',
+    fullExBefore: 'Antes',
+    fullExAfter: 'Después',
+    brushExBefore: 'Antes',
+    brushExAfter: 'Después',
+    photoTip: 'Para mejores resultados: Tome una foto clara, bien iluminada, desde un ángulo recto. Asegúrese de que toda la superficie sea visible.',
     contextTitle: 'Tipo de superficie',
     contextDesc: 'Ayude a la IA a detectar las áreas correctas — ¿qué tipo de superficie es?',
     apply: 'Aplicar con IA',
@@ -102,6 +117,11 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'الذكاء الاصطناعي يطبق الحجر بذكاء مع الحفاظ على البنية',
     brushTitle: 'اختيار بالفرشاة',
     brushDesc: 'حدد المنطقة يدوياً لتطبيق الحجر',
+    fullExBefore: 'قبل',
+    fullExAfter: 'بعد',
+    brushExBefore: 'قبل',
+    brushExAfter: 'بعد',
+    photoTip: 'للحصول على أفضل النتائج: التقط صورة واضحة وجيدة الإضاءة من زاوية مستقيمة. تأكد من أن السطح بالكامل مرئي.',
     contextTitle: 'نوع السطح',
     contextDesc: 'ساعد الذكاء الاصطناعي في تحديد المناطق الصحيحة',
     apply: 'تطبيق بالذكاء الاصطناعي',
@@ -129,6 +149,11 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'KI wendet Stein intelligent an und bewahrt die Struktur',
     brushTitle: 'Mit Pinsel auswählen',
     brushDesc: 'Markieren Sie den Bereich manuell',
+    fullExBefore: 'Vorher',
+    fullExAfter: 'Nachher',
+    brushExBefore: 'Vorher',
+    brushExAfter: 'Nachher',
+    photoTip: 'Für beste Ergebnisse: Machen Sie ein klares, gut beleuchtetes Foto aus geradem Winkel. Die gesamte Fläche sollte sichtbar sein.',
     contextTitle: 'Oberflächentyp',
     contextDesc: 'Helfen Sie der KI die richtigen Bereiche zu erkennen',
     apply: 'Mit KI anwenden',
@@ -198,42 +223,80 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
 
       {!showContextPicker ? (
         /* Mode selection */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Full Apply Mode */}
-          <button
-            onClick={() => setShowContextPicker(true)}
-            className="group relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-gold-400/50 bg-white/[0.02] hover:bg-gold-400/[0.03] transition-all duration-300 text-left"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-gold-400/10 flex items-center justify-center mb-4 group-hover:bg-gold-400/20 transition-colors">
-              <Wand2 size={24} className="text-gold-400" />
-            </div>
-            <h3 className="font-heading text-lg font-bold text-white mb-2">
-              {t.fullTitle}
-            </h3>
-            <p className="text-white/40 text-sm font-body leading-relaxed">
-              {t.fullDesc}
-            </p>
-            {/* Recommended badge */}
-            <div className="absolute top-4 right-4 bg-gold-400/20 text-gold-400 text-[9px] font-mono px-2.5 py-1 rounded-full border border-gold-400/30">
-              AI
-            </div>
-          </button>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Full Apply Mode */}
+            <button
+              onClick={() => setShowContextPicker(true)}
+              className="group relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-gold-400/50 bg-white/[0.02] hover:bg-gold-400/[0.03] transition-all duration-300 text-left"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-gold-400/10 flex items-center justify-center mb-4 group-hover:bg-gold-400/20 transition-colors">
+                <Wand2 size={24} className="text-gold-400" />
+              </div>
+              <h3 className="font-heading text-lg font-bold text-white mb-2">
+                {t.fullTitle}
+              </h3>
+              <p className="text-white/40 text-sm font-body leading-relaxed mb-3">
+                {t.fullDesc}
+              </p>
+              {/* Mini before/after example */}
+              <div className="flex gap-2 items-center">
+                <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-white/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/simulation-examples/example-facade.jpg" alt="" className="w-full h-full object-cover opacity-70" />
+                  <span className="absolute bottom-0.5 left-0.5 text-[6px] text-white/60 font-mono bg-black/50 px-1 rounded">{t.fullExBefore}</span>
+                </div>
+                <ArrowRight size={10} className="text-gold-400/50 flex-shrink-0" />
+                <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-gold-400/20">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/simulation-examples/result-facade.jpg" alt="" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-0.5 left-0.5 text-[6px] text-gold-400/80 font-mono bg-black/50 px-1 rounded">{t.fullExAfter}</span>
+                </div>
+              </div>
+              {/* Recommended badge */}
+              <div className="absolute top-4 right-4 bg-gold-400/20 text-gold-400 text-[9px] font-mono px-2.5 py-1 rounded-full border border-gold-400/30">
+                AI
+              </div>
+            </button>
 
-          {/* Brush Mode */}
-          <button
-            onClick={() => onSelect('brush')}
-            className="group p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-4 group-hover:bg-white/[0.1] transition-colors">
-              <Paintbrush size={24} className="text-white/50" />
-            </div>
-            <h3 className="font-heading text-lg font-bold text-white mb-2">
-              {t.brushTitle}
-            </h3>
-            <p className="text-white/40 text-sm font-body leading-relaxed">
-              {t.brushDesc}
+            {/* Brush Mode */}
+            <button
+              onClick={() => onSelect('brush')}
+              className="group p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-4 group-hover:bg-white/[0.1] transition-colors">
+                <Paintbrush size={24} className="text-white/50" />
+              </div>
+              <h3 className="font-heading text-lg font-bold text-white mb-2">
+                {t.brushTitle}
+              </h3>
+              <p className="text-white/40 text-sm font-body leading-relaxed mb-3">
+                {t.brushDesc}
+              </p>
+              {/* Mini example — brush on specific area */}
+              <div className="flex gap-2 items-center">
+                <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-white/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/simulation-examples/example-interior.jpg" alt="" className="w-full h-full object-cover opacity-70" />
+                  <span className="absolute bottom-0.5 left-0.5 text-[6px] text-white/60 font-mono bg-black/50 px-1 rounded">{t.brushExBefore}</span>
+                </div>
+                <ArrowRight size={10} className="text-white/30 flex-shrink-0" />
+                <div className="relative w-16 h-12 rounded-lg overflow-hidden border border-white/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/simulation-examples/result-interior.jpg" alt="" className="w-full h-full object-cover" />
+                  <span className="absolute bottom-0.5 left-0.5 text-[6px] text-white/60 font-mono bg-black/50 px-1 rounded">{t.brushExAfter}</span>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* Photo tips */}
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3">
+            <p className="text-white/30 text-[10px] font-body leading-relaxed">
+              <Camera size={10} className="inline mr-1 opacity-60" />
+              {t.photoTip}
             </p>
-          </button>
+          </div>
         </div>
       ) : (
         /* Surface context picker */
