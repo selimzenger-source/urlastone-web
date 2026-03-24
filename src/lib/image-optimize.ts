@@ -15,6 +15,7 @@ export async function optimizeImage(
   const quality = options?.quality || 82
 
   const optimized = await sharp(buffer)
+    .rotate() // EXIF orientation'a göre otomatik döndür (telefon fotoğrafları için)
     .resize(maxWidth, null, { withoutEnlargement: true })
     .jpeg({ quality, progressive: true, mozjpeg: true })
     .toBuffer()
