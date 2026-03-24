@@ -86,6 +86,7 @@ export default function UygulamalarimPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [showCount, setShowCount] = useState(12)
   const [videoModal, setVideoModal] = useState<{ urls: string[]; name: string } | null>(null)
 
   useEffect(() => {
@@ -129,6 +130,19 @@ export default function UygulamalarimPage() {
   // Get unique categories from projects
   const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boolean)))
   const filteredProjects = activeCategory === 'all' ? projects : projects.filter((p) => p.category === activeCategory)
+
+  // Harita ile senkronize — filtre haritayı da etkiler
+  const filteredLocations = filteredProjects.map((p) => ({
+    id: p.id,
+    city: p.city,
+    lat: p.lat,
+    lng: p.lng,
+    project_name: getTranslated(p, 'project_name', locale),
+    address: p.address,
+    description: getTranslated(p, 'description', locale),
+    category: p.category,
+    photos: p.photos || [],
+  }))
 
   return (
     <main className="bg-[#0a0a0a] text-white min-h-screen">
@@ -185,7 +199,10 @@ export default function UygulamalarimPage() {
                   <Loader2 size={32} className="animate-spin text-white/20" />
                 </div>
               ) : (
-                <ProjectMap locations={locations} labels={{ details: t.apps_details, navigate: t.apps_navigate }} />
+                <ProjectMap
+                  locations={filteredLocations}
+                  labels={{ details: t.apps_details, navigate: t.apps_navigate, focus: t.apps_focus_densest }}
+                />
               )}
             </div>
           </div>
@@ -218,7 +235,7 @@ export default function UygulamalarimPage() {
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button
-                  onClick={() => setActiveCategory('all')}
+                  onClick={() => { setActiveCategory('all'); setShowCount(12) }}
                   className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-mono transition-all ${
                     activeCategory === 'all'
                       ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
@@ -230,7 +247,7 @@ export default function UygulamalarimPage() {
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
+                    onClick={() => { setActiveCategory(cat); setShowCount(12) }}
                     className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-mono transition-all ${
                       activeCategory === cat
                         ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
@@ -244,7 +261,7 @@ export default function UygulamalarimPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
+              {filteredProjects.slice(0, showCount).map((project) => (
                 <div key={project.id} className="glass-card-hover overflow-hidden group">
                   {/* Photo */}
                   <div className="aspect-[16/10] overflow-hidden relative">
@@ -334,6 +351,19 @@ export default function UygulamalarimPage() {
                 </div>
               ))}
             </div>
+
+            {/* Daha Fazla Göster butonu */}
+            {filteredProjects.length > showCount && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={() => setShowCount(prev => prev + 12)}
+                  className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-white/70 text-sm font-mono transition-all"
+                >
+                  {t.apps_load_more || 'Daha Fazla Göster'} ({filteredProjects.length - showCount})
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            )}
           </div>
         </section>
       ) : (

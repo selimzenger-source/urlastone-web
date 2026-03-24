@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect, useCallback } from 'react'
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
@@ -219,18 +219,86 @@ function PhotoSlider({ photos, alt }: { photos: string[]; alt: string }) {
 interface MapLabels {
   details: string
   navigate: string
+  focus?: string
+}
+
+// Inner component to access map instance for "Focus on densest area" button
+function FocusDensestButton({ locations, label }: { locations: Location[]; label: string }) {
+  const map = useMap()
+
+  const handleFocus = useCallback(() => {
+    if (locations.length === 0) return
+
+    // Find the densest cluster by counting neighbors within ~0.5 degree radius
+    let bestLat = 0, bestLng = 0, bestCount = 0
+    for (const loc of locations) {
+      let count = 0
+      for (const other of locations) {
+        const dist = Math.abs(loc.lat - other.lat) + Math.abs(loc.lng - other.lng)
+        if (dist < 0.5) count++
+      }
+      if (count > bestCount) {
+        bestCount = count
+        bestLat = loc.lat
+        bestLng = loc.lng
+      }
+    }
+
+    if (bestCount > 0) {
+      // Collect all locations near the densest point
+      const nearby = locations.filter(l =>
+        Math.abs(l.lat - bestLat) + Math.abs(l.lng - bestLng) < 0.5
+      )
+      const bounds = L.latLngBounds(nearby.map(l => [l.lat, l.lng]))
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 })
+    }
+  }, [locations, map])
+
+  return (
+    <button
+      onClick={handleFocus}
+      title={label}
+      style={{
+        position: 'absolute', top: '10px', right: '10px', zIndex: 500,
+        width: '40px', height: '40px', borderRadius: '8px',
+        background: 'rgba(26, 26, 26, 0.9)', border: '1px solid rgba(179, 147, 69, 0.4)',
+        color: '#d2b96e', fontSize: '18px',
+        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        backdropFilter: 'blur(8px)',
+      }}
+    >
+      ⊕
+    </button>
+  )
+}
+
+// Fit map to show all markers when locations change
+function FitBoundsOnLoad({ locations }: { locations: Location[] }) {
+  const map = useMap()
+  const fitted = useRef(false)
+
+  useEffect(() => {
+    if (locations.length > 0 && !fitted.current) {
+      fitted.current = true
+      const bounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]))
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 })
+    }
+  }, [locations, map])
+
+  return null
 }
 
 export default function ProjectMap({ locations, labels }: { locations: Location[]; labels?: MapLabels }) {
   const detailsText = labels?.details || 'Detayları Gör'
   const navigateText = labels?.navigate || 'Konuma Git'
+  const focusLabel = labels?.focus || 'En yoğun bölgeye odaklan'
   const [selected, setSelected] = useState<Location | null>(null)
 
   const markerIcons = useMemo(() => {
     return locations.map(loc => createPhotoIcon(loc.photos?.[0]))
   }, [locations])
 
-  // Marker tıklanınca — Leaflet Popup yerine kendi kartımızı göster
   const handleMarkerClick = useCallback((loc: Location) => {
     setSelected(loc)
   }, [])
@@ -240,13 +308,15 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
       <MapContainer
         center={[39.0, 35.0]}
         zoom={6}
-        minZoom={5}
+        minZoom={3}
         maxZoom={15}
         style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
         zoomControl={true}
         attributionControl={false}
       >
         <MobileTapFix />
+        <FitBoundsOnLoad locations={locations} />
+        <FocusDensestButton locations={locations} label={focusLabel} />
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
@@ -278,7 +348,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
         </MarkerClusterGroup>
       </MapContainer>
 
-      {/* Proje Kartı — Leaflet Popup yerine kendi React overlay'imiz */}
+      {/* Proje Kartı — mobil uyumlu bottom sheet */}
       {selected && (
         <div
           onClick={() => setSelected(null)}
@@ -300,96 +370,79 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
               fontFamily: 'Inter, sans-serif',
               overflow: 'hidden',
               animation: 'slideUp 0.3s ease-out',
-              maxHeight: '70%',
-              overflowY: 'hidden',
+              maxHeight: '60vh',
+              display: 'flex',
+              flexDirection: 'column' as const,
             }}
           >
-            {/* Photo Slider */}
-            {selected.photos && selected.photos.length > 0 && (
-              <div style={{ position: 'relative' }}>
-                <PhotoSlider photos={selected.photos} alt={selected.project_name || selected.city} />
-                {/* Close button — fotoğrafın sağ üstünde */}
-                <button
-                  onClick={() => setSelected(null)}
-                  style={{
-                    position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-                    width: '32px', height: '32px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
-                    color: 'white', fontSize: '18px', fontWeight: 300,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    lineHeight: 1,
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-            {/* Fotoğraf yoksa close button */}
-            {(!selected.photos || selected.photos.length === 0) && (
-              <button
-                onClick={() => setSelected(null)}
-                style={{
-                  position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
-                  color: 'white', fontSize: '18px', fontWeight: 300,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  lineHeight: 1,
-                }}
-              >
-                ✕
-              </button>
-            )}
+            {/* Close button — always visible, sticky top */}
+            <button
+              onClick={() => setSelected(null)}
+              style={{
+                position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+                width: '32px', height: '32px', borderRadius: '50%',
+                background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
+                color: 'white', fontSize: '18px', fontWeight: 300,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
 
-            <div style={{ padding: '10px 14px 14px' }}>
-              {/* Project Name */}
-              <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '2px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {selected.project_name || selected.city}
-              </div>
-              {/* City & Category */}
-              <div style={{ fontSize: '11px', color: '#b39345', fontWeight: 600, marginBottom: '6px' }}>
-                {selected.city}{selected.category ? ` · ${selected.category}` : ''}
-              </div>
-              {/* Description — max 3 satır */}
-              {selected.description && (
-                <div style={{
-                  fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '8px',
-                  lineHeight: '1.5',
-                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden',
-                }}>
-                  {selected.description}
-                </div>
+            {/* Scrollable content */}
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              {/* Photo Slider */}
+              {selected.photos && selected.photos.length > 0 && (
+                <PhotoSlider photos={selected.photos} alt={selected.project_name || selected.city} />
               )}
-              {/* Action buttons */}
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {selected.id && (
+
+              <div style={{ padding: '10px 14px 14px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '2px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {selected.project_name || selected.city}
+                </div>
+                <div style={{ fontSize: '11px', color: '#b39345', fontWeight: 600, marginBottom: '6px' }}>
+                  {selected.city}{selected.category ? ` · ${selected.category}` : ''}
+                </div>
+                {selected.description && (
+                  <div style={{
+                    fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: '8px',
+                    lineHeight: '1.5',
+                    display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden',
+                  }}>
+                    {selected.description}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {selected.id && (
+                    <a
+                      href={`/projelerimiz/${selected.id}`}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '7px 14px', borderRadius: '20px',
+                        background: 'rgba(255, 255, 255, 0.08)', color: 'white',
+                        fontSize: '11px', fontWeight: 600, textDecoration: 'none',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                      }}
+                    >
+                      {detailsText} →
+                    </a>
+                  )}
                   <a
-                    href={`/projelerimiz/${selected.id}`}
+                    href={`https://www.google.com/maps/search/?api=1&query=${selected.lat},${selected.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '6px',
                       padding: '7px 14px', borderRadius: '20px',
-                      background: 'rgba(255, 255, 255, 0.08)', color: 'white',
+                      background: 'rgba(179, 147, 69, 0.15)', color: '#b39345',
                       fontSize: '11px', fontWeight: 600, textDecoration: 'none',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      border: '1px solid rgba(179, 147, 69, 0.25)',
                     }}
                   >
-                    {detailsText} →
+                    🗺️ {navigateText}
                   </a>
-                )}
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${selected.lat},${selected.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '6px',
-                    padding: '7px 14px', borderRadius: '20px',
-                    background: 'rgba(179, 147, 69, 0.15)', color: '#b39345',
-                    fontSize: '11px', fontWeight: 600, textDecoration: 'none',
-                    border: '1px solid rgba(179, 147, 69, 0.25)',
-                  }}
-                >
-                  🗺️ {navigateText}
-                </a>
+                </div>
               </div>
             </div>
           </div>

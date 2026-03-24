@@ -401,6 +401,8 @@ type TranslationKeys = {
   apps_total_countries: string
   apps_details: string
   apps_navigate: string
+  apps_focus_densest: string
+  apps_load_more: string
   apps_video: string
   apps_video_desc: string
   apps_map_hint: string
@@ -795,6 +797,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Ülke',
     apps_details: 'Detayları Gör',
     apps_navigate: 'Konuma Git',
+    apps_focus_densest: 'En yoğun bölgeye odaklan',
+    apps_load_more: 'Daha Fazla Göster',
     apps_video: 'Video İzle',
     apps_video_desc: 'Proje videosunu izleyin',
     apps_map_hint: 'Haritayı yakınlaştırarak projeleri keşfedin',
@@ -1172,6 +1176,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Countries',
     apps_details: 'View Details',
     apps_navigate: 'Get Directions',
+    apps_focus_densest: 'Focus on densest area',
+    apps_load_more: 'Show More',
     apps_video: 'Watch Video',
     apps_video_desc: 'Watch the project video',
     apps_map_hint: 'Zoom in on the map to explore projects',
@@ -1549,6 +1555,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Países',
     apps_details: 'Ver Detalles',
     apps_navigate: 'Ir a Ubicación',
+    apps_focus_densest: 'Enfocar área más densa',
+    apps_load_more: 'Mostrar Más',
     apps_video: 'Ver Video',
     apps_video_desc: 'Mira el video del proyecto',
     apps_map_hint: 'Acerca el mapa para explorar los proyectos',
@@ -1926,6 +1934,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'دول',
     apps_details: 'عرض التفاصيل',
     apps_navigate: 'انتقل إلى الموقع',
+    apps_focus_densest: 'التركيز على المنطقة الأكثر كثافة',
+    apps_load_more: 'عرض المزيد',
     apps_video: 'شاهد الفيديو',
     apps_video_desc: 'شاهد فيديو المشروع',
     apps_map_hint: 'قم بتكبير الخريطة لاستكشاف المشاريع',
@@ -2303,6 +2313,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Länder',
     apps_details: 'Details ansehen',
     apps_navigate: 'Zum Standort',
+    apps_focus_densest: 'Auf dichtestes Gebiet fokussieren',
+    apps_load_more: 'Mehr Anzeigen',
     apps_video: 'Video ansehen',
     apps_video_desc: 'Sehen Sie sich das Projektvideo an',
     apps_map_hint: 'Zoomen Sie in die Karte, um Projekte zu entdecken',
@@ -2680,6 +2692,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Pays',
     apps_details: 'Voir les Détails',
     apps_navigate: 'Obtenir l\'Itinéraire',
+    apps_focus_densest: 'Focaliser sur la zone la plus dense',
+    apps_load_more: 'Afficher Plus',
     apps_video: 'Voir la Vidéo',
     apps_video_desc: 'Regarder la vidéo du projet',
     apps_map_hint: 'Zoomez sur la carte pour explorer les projets',
@@ -3057,6 +3071,8 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_total_countries: 'Стран',
     apps_details: 'Подробнее',
     apps_navigate: 'Проложить Маршрут',
+    apps_focus_densest: 'Фокус на самой плотной зоне',
+    apps_load_more: 'Показать Ещё',
     apps_video: 'Смотреть Видео',
     apps_video_desc: 'Посмотреть видео проекта',
     apps_map_hint: 'Приблизьте карту для изучения проектов',
