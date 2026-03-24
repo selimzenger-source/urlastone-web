@@ -150,12 +150,12 @@ function buildFullPrompt(
 
   if (surfaceContext === 'facade' || surfaceContext === 'bathroom' || surfaceContext === 'floor') {
     // Exterior / full coverage surfaces — math-based prompt (v27 winner)
-    return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP (real size: each piece is 10-20cm, photo is zoomed in).
+    return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP — this photo was taken from 20-30cm away so stones APPEAR large. In reality each stone piece is only 15cm. COMPLETELY IGNORE how large stones look in Image 2.
 
 EDIT Image 1: Apply Image 2's stone to ${coverageInstructions.apply}.
 
-STONE SIZE (MOST IMPORTANT):
-Each stone piece is ~15cm in real life. ${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
+STONE SIZE (MOST IMPORTANT — ALL stone products are the SAME real size):
+Each stone piece is exactly ~15cm in real life, regardless of how large it appears in the close-up photo. ${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
 - Wall height ~${wallHeight}m ÷ 0.15m = ${stonesVertical} stone pieces from bottom to top
 - Each window/opening width (~1m) = ~7 stone pieces across
 - Total visible surface must show ${totalEstimate}+ individual stone pieces
@@ -170,30 +170,26 @@ ${surfaceContext === 'facade' ? 'WINDOWS: Install glass with dark aluminum frame
 QUALITY: ${groutInstruction} 3D surface depth with natural shadows — NOT flat wallpaper. Photorealistic${surfaceContext === 'facade' ? ' architectural photograph' : ''}.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
   }
 
-  // Interior / fireplace — aggressive scale with real-object calibration
-  return `Apply Image 2's stone texture to ${coverageInstructions.apply} in Image 1 (${getSurfaceDescription(surfaceContext, analysis)}).
+  // Interior / fireplace — same stone size as exterior (15-20cm per piece)
+  const interiorStones = Math.round(wallHeight / stoneSize)
+  return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP — taken from 20-30cm away so stones APPEAR large. In reality each piece is only 15-20cm. IGNORE how large stones look in Image 2.
 
-⚠️ STONE SIZE CALIBRATION — use REAL OBJECTS in the photo:
-Look at Image 1 carefully. Find these reference objects and use them to calibrate stone size:
-- Electrical OUTLET/SOCKET on the wall → it is ~10cm tall. Each stone piece must be THIS SIZE.
-- Ceiling SPOT LIGHTS → ~8cm diameter. Each stone should be slightly larger than one spot.
-- Ventilation GRILLE → ~30cm wide. At least 2-3 stones should fit across it.
-- Fireplace opening → ~50cm wide. At least 4-5 stones should fit across it.
-${analysis.scale_instruction ? `- AI ANALYSIS: ${analysis.scale_instruction}` : ''}
+EDIT Image 1: Apply Image 2's stone to ${coverageInstructions.apply}.
 
-MANDATORY STONE COUNT:
-- Floor to ceiling (~${wallHeight}m) = ${Math.round(wallHeight / 0.12)} stones vertically
-- Each wall section must show 200+ individual pieces total
+STONE SIZE (MOST IMPORTANT):
+Each stone piece is ~15-20cm in real life — the SAME size as exterior stone cladding.
+${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
+- Room height ~${wallHeight}m ÷ 0.17m = ~${interiorStones} stone pieces floor to ceiling
+- Each stone is slightly larger than an electrical outlet
 - ${categoryDesc}
 
-⚠️ THE #1 AI MISTAKE: Making stones WAY TOO LARGE. If any stone is bigger than a human fist relative to the room → TOO LARGE.
-
-⚠️ UNIFORMITY: ALL walls and surfaces must have IDENTICAL stone size. Narrow columns get the SAME small stones as wide walls. Zero size variation.
+⚠️ UNIFORMITY: ALL walls must have IDENTICAL stone size. No size variation.
 
 ${coverageInstructions.preserve}
 
-COLOR: Copy EXACT tones from Image 2 with natural color variety.
-QUALITY: ${groutInstruction} 3D depth and shadows. Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
+COLOR: Copy EXACT tones from Image 2 — warm natural colors with variation between pieces. Do NOT average into one uniform color.
+
+QUALITY: ${groutInstruction} 3D surface depth with natural shadows — NOT flat wallpaper. Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
 }
 
 /** Build prompt for BRUSH mode — applies only to masked areas */

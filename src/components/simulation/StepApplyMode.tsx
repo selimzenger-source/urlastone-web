@@ -26,6 +26,7 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushExBefore: 'Boyayın',
     brushExAfter: 'Sonuç',
     brushHint: 'Parmağınızla taş uygulamak istediğiniz alanı boyayın',
+    comingSoon: 'Yakında',
     photoTip: 'En iyi sonuç için: Düz açıdan, iyi aydınlatılmış, net bir fotoğraf çekin',
     contextTitle: 'Yüzey Türü',
     contextDesc: 'AI doğru alanları tespit etsin — ne tür bir yüzey bu?',
@@ -59,6 +60,7 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     brushExBefore: 'Paint',
     brushExAfter: 'Result',
     brushHint: 'Use your finger to paint the area where you want stone applied',
+    comingSoon: 'Coming Soon',
     photoTip: 'For best results: Take a clear, well-lit photo from a straight angle',
     contextTitle: 'Surface Type',
     contextDesc: 'Help the AI detect the right areas — what type of surface is this?',
@@ -269,10 +271,9 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
             </div>
           </button>
 
-          {/* Brush Mode */}
-          <button
-            onClick={() => onSelect('brush')}
-            className="group relative rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left overflow-hidden"
+          {/* Brush Mode — temporarily disabled */}
+          <div
+            className="group relative rounded-2xl border-2 border-white/[0.05] bg-white/[0.01] text-left overflow-hidden opacity-50 cursor-not-allowed"
           >
             {/* 3-step preview: original → brushed → result */}
             <div className="relative h-36 md:h-44 overflow-hidden">
@@ -310,7 +311,11 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
                 {t.brushHint}
               </p>
             </div>
-          </button>
+            {/* Coming soon badge */}
+            <div className="absolute top-2 right-2 bg-white/10 text-white/50 text-[9px] font-mono px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm z-10">
+              {t.comingSoon || 'Yakında'}
+            </div>
+          </div>
 
           {/* Photo tip */}
           <div className="md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-2.5">
