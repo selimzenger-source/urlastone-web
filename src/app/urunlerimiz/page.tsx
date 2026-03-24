@@ -61,6 +61,15 @@ export default function TaslarPage() {
   const { t, locale } = useLanguage()
   const [activeCategory, setActiveCategory] = useState('nature')
   const [activeStoneType, setActiveStoneType] = useState<string | null>(null)
+
+  // URL'den stone_type parametresini oku (ana sayfadan yönlendirme)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const stoneType = params.get('stone_type')
+    if (stoneType) {
+      setActiveStoneType(stoneType)
+    }
+  }, [])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [relatedProjects, setRelatedProjects] = useState<Array<{ id: string; project_name: string; city: string; category: string; photos: string[]; product: string | null }>>([])
   const [loadingProjects, setLoadingProjects] = useState(false)

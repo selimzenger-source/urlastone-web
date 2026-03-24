@@ -12,6 +12,7 @@ export default function FeaturedStones() {
   const stones = [
     {
       id: 'traverten',
+      code: 'TRV',
       name: t.featured_traverten_name,
       description: t.featured_traverten_desc,
       origin: t.featured_traverten_origin,
@@ -21,6 +22,7 @@ export default function FeaturedStones() {
     },
     {
       id: 'mermer',
+      code: 'MRMR',
       name: t.featured_mermer_name,
       description: t.featured_mermer_desc,
       origin: t.featured_mermer_origin,
@@ -30,6 +32,7 @@ export default function FeaturedStones() {
     },
     {
       id: 'bazalt',
+      code: 'BZLT',
       name: t.featured_bazalt_name,
       description: t.featured_bazalt_desc,
       origin: t.featured_bazalt_origin,
@@ -39,6 +42,7 @@ export default function FeaturedStones() {
     },
     {
       id: 'kalker',
+      code: 'KLKR',
       name: t.featured_kalker_name,
       description: t.featured_kalker_desc,
       origin: t.featured_kalker_origin,
@@ -72,7 +76,7 @@ export default function FeaturedStones() {
         {stones.map((stone) => (
           <Link
             key={stone.id}
-            href={`/urunlerimiz#${stone.id}`}
+            href={`/urunlerimiz?stone_type=${stone.code}`}
             className="group relative overflow-hidden rounded-2xl aspect-[4/3] cursor-pointer"
             onMouseEnter={() => setHovered(stone.id)}
             onMouseLeave={() => setHovered(null)}
