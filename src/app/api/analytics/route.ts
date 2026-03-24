@@ -197,10 +197,13 @@ export async function GET(req: NextRequest) {
 
     // Daily chart (always last 14 days, Turkey timezone)
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
+    // Fetch ALL rows for last 14 days — must set high limit (Supabase default is 1000)
     const { data: dailyData } = await supabaseAdmin
       .from('page_views')
       .select('created_at, session_id')
       .gte('created_at', fourteenDaysAgo)
+      .limit(50000)
+      .order('created_at', { ascending: true })
 
     const dailyStats: Record<string, { views: number; visitors: Set<string> }> = {}
     for (let i = 13; i >= 0; i--) {
