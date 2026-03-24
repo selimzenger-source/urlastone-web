@@ -195,15 +195,9 @@ export async function GET(req: NextRequest) {
     // Breakdowns for selected period
     const breakdowns = await getBreakdowns(breakdownSince)
 
-    // Daily chart (always last 14 days, Turkey timezone)
+    // Daily chart (always last 14 days, Turkey timezone TR 00:00-23:59)
+    // Use pagination to fetch ALL rows (Supabase caps at 1000 per request)
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
-    // Fetch ALL rows for last 14 days — must set high limit (Supabase default is 1000)
-    const { data: dailyData } = await supabaseAdmin
-      .from('page_views')
-      .select('created_at, session_id')
-      .gte('created_at', fourteenDaysAgo)
-      .limit(50000)
-      .order('created_at', { ascending: true })
 
     const dailyStats: Record<string, { views: number; visitors: Set<string> }> = {}
     for (let i = 13; i >= 0; i--) {
@@ -211,16 +205,41 @@ export async function GET(req: NextRequest) {
       const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
       dailyStats[key] = { views: 0, visitors: new Set() }
     }
-    dailyData?.forEach(r => {
-      // Convert created_at to Turkey timezone for day grouping
-      const utcDate = new Date(r.created_at)
-      const trDate = new Date(utcDate.getTime() + turkeyOffset)
-      const key = `${trDate.getUTCFullYear()}-${String(trDate.getUTCMonth() + 1).padStart(2, '0')}-${String(trDate.getUTCDate()).padStart(2, '0')}`
-      if (dailyStats[key]) {
-        dailyStats[key].views++
-        if (r.session_id) dailyStats[key].visitors.add(r.session_id)
+
+    // Paginate through all rows (1000 per page)
+    let offset = 0
+    const PAGE_SIZE = 1000
+    let hasMore = true
+    while (hasMore) {
+      const { data: page } = await supabaseAdmin
+        .from('page_views')
+        .select('created_at, session_id')
+        .gte('created_at', fourteenDaysAgo)
+        .order('created_at', { ascending: true })
+        .range(offset, offset + PAGE_SIZE - 1)
+
+      if (!page || page.length === 0) {
+        hasMore = false
+        break
       }
-    })
+
+      page.forEach(r => {
+        const utcDate = new Date(r.created_at)
+        const trDate = new Date(utcDate.getTime() + turkeyOffset)
+        const key = `${trDate.getUTCFullYear()}-${String(trDate.getUTCMonth() + 1).padStart(2, '0')}-${String(trDate.getUTCDate()).padStart(2, '0')}`
+        if (dailyStats[key]) {
+          dailyStats[key].views++
+          if (r.session_id) dailyStats[key].visitors.add(r.session_id)
+        }
+      })
+
+      if (page.length < PAGE_SIZE) {
+        hasMore = false
+      } else {
+        offset += PAGE_SIZE
+      }
+    }
+
     const dailyChart = Object.entries(dailyStats).map(([date, data]) => ({ date, views: data.views, visitors: data.visitors.size }))
 
     return NextResponse.json({
