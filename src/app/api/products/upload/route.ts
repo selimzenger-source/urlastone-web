@@ -35,10 +35,11 @@ export async function POST(req: NextRequest) {
     .from('products')
     .getPublicUrl(fileName)
 
-  // Update product record
+  // Update product record with cache-busted URL
+  const imageUrl = `${urlData.publicUrl}?v=${Date.now()}`
   const { error: updateError } = await supabaseAdmin
     .from('products')
-    .update({ image_url: urlData.publicUrl, updated_at: new Date().toISOString() })
+    .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
     .eq('id', productId)
 
   if (updateError) {
