@@ -25,6 +25,14 @@ interface StoneType {
   image_url?: string | null
 }
 
+interface CategoryTranslation {
+  slogan?: string
+  description?: string
+  feature1?: string
+  feature2?: string
+  feature3?: string
+}
+
 interface Category {
   id: string
   name: string
@@ -36,6 +44,7 @@ interface Category {
   feature2?: string
   feature3?: string
   image_url?: string | null
+  translations?: Record<string, CategoryTranslation> | null
 }
 
 interface Product {
@@ -109,19 +118,35 @@ export default function TaslarPage() {
     line: { slogan: t.stones_line_slogan, desc: t.stones_line_desc, features: [t.stones_line_f1, t.stones_line_f2, t.stones_line_f3], thickness: '1 – 2 cm' },
   }
 
-  // Build categoryInfo — DB fields only for TR, i18n for other languages
+  // Build categoryInfo — use DB translations if available, fallback to i18n
   const getCategoryInfo = (slug: string) => {
     const fb = i18nFallback[slug] || { slogan: '', desc: '', features: [], thickness: '' }
     const cat = categories.find(c => c.slug === slug)
     if (!cat) return fb
-    // DB values are Turkish only — use i18n translations for other languages
-    if (locale !== 'tr') return { ...fb, thickness: cat.thickness || fb.thickness }
-    return {
-      slogan: cat.slogan || fb.slogan,
-      desc: cat.description || fb.desc,
-      features: [cat.feature1 || fb.features[0] || '', cat.feature2 || fb.features[1] || '', cat.feature3 || fb.features[2] || ''].filter(Boolean),
-      thickness: cat.thickness || fb.thickness,
+
+    // Turkish: always use DB values
+    if (locale === 'tr') {
+      return {
+        slogan: cat.slogan || fb.slogan,
+        desc: cat.description || fb.desc,
+        features: [cat.feature1 || fb.features[0] || '', cat.feature2 || fb.features[1] || '', cat.feature3 || fb.features[2] || ''].filter(Boolean),
+        thickness: cat.thickness || fb.thickness,
+      }
     }
+
+    // Other languages: use DB translations if available, fallback to i18n
+    const tr = cat.translations?.[locale]
+    if (tr) {
+      return {
+        slogan: tr.slogan || fb.slogan,
+        desc: tr.description || fb.desc,
+        features: [tr.feature1 || fb.features[0] || '', tr.feature2 || fb.features[1] || '', tr.feature3 || fb.features[2] || ''].filter(Boolean),
+        thickness: cat.thickness || fb.thickness,
+      }
+    }
+
+    // No DB translation for this locale — use i18n
+    return { ...fb, thickness: cat.thickness || fb.thickness }
   }
 
   const categoryInfo = Object.fromEntries(

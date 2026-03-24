@@ -16,32 +16,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
-  const { project_name, description } = await request.json()
+  const body = await request.json()
 
-  if (!project_name && !description) {
+  // Generic translate: accepts { fields: { key: "Turkish text", ... } }
+  // or legacy format: { project_name, description }
+  const fields: Record<string, string> = body.fields || {}
+
+  // Legacy support for project translate
+  if (!body.fields) {
+    if (body.project_name) fields.project_name = body.project_name
+    if (body.description) fields.description = body.description
+  }
+
+  const fieldKeys = Object.keys(fields).filter(k => fields[k]?.trim())
+  if (fieldKeys.length === 0) {
     return NextResponse.json({ error: 'Çevrilecek metin yok' }, { status: 400 })
   }
+
+  // Build field list for prompt
+  const fieldPrompts = fieldKeys.map(k => `${k} (Turkish): "${fields[k]}"`).join('\n')
+  const fieldStructure = fieldKeys.map(k => `"${k}": "..."`).join(', ')
 
   try {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages: [
         {
           role: 'user',
-          content: `Translate the following Turkish text into English, Spanish, German, French, Russian, and Arabic. Return ONLY valid JSON with no extra text. Translations must be professional and natural-sounding, not machine-like.
+          content: `Translate the following Turkish text into English, Spanish, German, French, Russian, and Arabic. Return ONLY valid JSON with no extra text. Translations must be professional and natural-sounding for a natural stone company website.
 
-${project_name ? `Project name (Turkish): "${project_name}"` : ''}
-${description ? `Description (Turkish): "${description}"` : ''}
+${fieldPrompts}
 
 Return this exact JSON structure:
 {
-  "en": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "es": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "de": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "fr": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "ru": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} },
-  "ar": { ${project_name ? '"project_name": "..."' : ''}${project_name && description ? ', ' : ''}${description ? '"description": "..."' : ''} }
+  "en": { ${fieldStructure} },
+  "es": { ${fieldStructure} },
+  "de": { ${fieldStructure} },
+  "fr": { ${fieldStructure} },
+  "ru": { ${fieldStructure} },
+  "ar": { ${fieldStructure} }
 }`,
         },
       ],

@@ -249,6 +249,8 @@ export default function AdminTaslar() {
 
   const handleUpdateCategory = async () => {
     if (!editCategory) return
+
+    // 1. Kaydet
     await fetch('/api/categories', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
@@ -264,8 +266,40 @@ export default function AdminTaslar() {
         feature3: editCategory.feature3,
       }),
     })
+    showSuccess('Kategori güncellendi, çeviriler yapılıyor...')
+
+    // 2. Otomatik 6 dile çevir (arka planda)
+    const fieldsToTranslate: Record<string, string> = {}
+    if (editCategory.slogan) fieldsToTranslate.slogan = editCategory.slogan
+    if (editCategory.description) fieldsToTranslate.description = editCategory.description
+    if (editCategory.feature1) fieldsToTranslate.feature1 = editCategory.feature1
+    if (editCategory.feature2) fieldsToTranslate.feature2 = editCategory.feature2
+    if (editCategory.feature3) fieldsToTranslate.feature3 = editCategory.feature3
+
+    if (Object.keys(fieldsToTranslate).length > 0) {
+      try {
+        const trRes = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
+          body: JSON.stringify({ fields: fieldsToTranslate }),
+        })
+        if (trRes.ok) {
+          const translations = await trRes.json()
+          // Çevirileri DB'ye kaydet
+          await fetch('/api/categories', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+            body: JSON.stringify({ id: editCategory.id, translations }),
+          })
+          showSuccess('Kategori güncellendi ve 6 dile çevrildi ✓')
+        }
+      } catch {
+        // Çeviri başarısız olsa bile kayıt yapıldı
+        console.warn('Kategori çevirisi başarısız')
+      }
+    }
+
     setEditCategory(null)
-    showSuccess('Kategori güncellendi')
     fetchData()
   }
 
