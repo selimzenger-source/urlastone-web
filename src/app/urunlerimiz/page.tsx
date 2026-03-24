@@ -62,12 +62,16 @@ export default function TaslarPage() {
   const [activeCategory, setActiveCategory] = useState('nature')
   const [activeStoneType, setActiveStoneType] = useState<string | null>(null)
 
-  // URL'den stone_type parametresini oku (ana sayfadan yönlendirme)
+  // URL'den stone_type parametresini oku ve o bölüme scroll yap
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const stoneType = params.get('stone_type')
     if (stoneType) {
       setActiveStoneType(stoneType)
+      // Kısa gecikme ile taş koleksiyonu bölümüne scroll
+      setTimeout(() => {
+        document.getElementById('tas-koleksiyonu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
     }
   }, [])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -347,7 +351,7 @@ export default function TaslarPage() {
       </section>
 
       {/* Taş Türleri - 4 Kart */}
-      <section className="py-20 md:py-28 bg-white/[0.02] border-t border-white/[0.06]">
+      <section id="tas-koleksiyonu" className="py-20 md:py-28 bg-white/[0.02] border-t border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
             <p className="text-gold-400 text-xs font-mono tracking-[0.3em] uppercase mb-4">
