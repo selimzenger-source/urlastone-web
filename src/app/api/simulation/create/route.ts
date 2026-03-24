@@ -137,31 +137,29 @@ function buildFullPrompt(
   analysis: SonnetAnalysis,
   userNote?: string,
 ): string {
-  const stoneSize = 0.15 // meters — average stone piece size
+  const stoneSize = 0.18 // meters — each stone piece ~18cm
   const wallHeight = analysis.estimated_wall_height_m || 6
   const stonesVertical = Math.round(wallHeight / stoneSize)
-  const totalEstimate = stonesVertical * 30 // rough width estimate
+  const totalEstimate = stonesVertical * 20
 
-  // Category-specific stone description
   const categoryDesc = getCategoryDesc(categorySlug)
-
-  // Surface-specific coverage instructions
   const coverageInstructions = getCoverageInstructions(surfaceContext)
 
   if (surfaceContext === 'facade' || surfaceContext === 'bathroom' || surfaceContext === 'floor') {
-    // Exterior / full coverage surfaces — math-based prompt (v27 winner)
-    return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP — this photo was taken from 20-30cm away so stones APPEAR large. In reality each stone piece is only 15cm. COMPLETELY IGNORE how large stones look in Image 2.
+    return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture — copy the EXACT COLOR, TEXTURE and SURFACE from this image. The stone SIZE in Image 2 is misleading (close-up photo) — real size is ~18cm per piece.
 
 EDIT Image 1: Apply Image 2's stone to ${coverageInstructions.apply}.
 
-STONE SIZE (MOST IMPORTANT — ALL stone products are the SAME real size):
-Each stone piece is exactly ~15cm in real life, regardless of how large it appears in the close-up photo. ${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
-- Wall height ~${wallHeight}m ÷ 0.15m = ${stonesVertical} stone pieces from bottom to top
-- Each window/opening width (~1m) = ~7 stone pieces across
-- Total visible surface must show ${totalEstimate}+ individual stone pieces
+⚠️ STONE COLOR & TEXTURE (HIGHEST PRIORITY):
+Study Image 2 carefully. Copy its EXACT colors — if it has brown, red-brown, cream, dark patches, reproduce ALL of those tones. Do NOT simplify to one uniform beige/cream color. The color variety in Image 2 is what makes this stone unique.
+
+STONE SIZE:
+Each stone piece is ~18cm in real life. ${analysis.scale_instruction ? `SCALE: ${analysis.scale_instruction}` : ''}
+- Wall height ~${wallHeight}m ÷ 0.18m = ${stonesVertical} pieces bottom to top
+- Each window width (~1m) = ~5 pieces across
 - ${categoryDesc}
 
-⚠️ UNIFORMITY (CRITICAL): Every wall section must have the SAME stone size and pattern. Do NOT make some areas have large stones and other areas small stones. The stone size must be IDENTICAL on left wall, right wall, columns, upper floor, lower floor — everywhere. If one wall has 20 stones per floor height, ALL walls must have 20 stones per floor height. Zero variation in stone scale across the building.
+⚠️ UNIFORMITY: Same stone size on ALL walls — left, right, columns, upper, lower. Zero size variation.
 
 COVERAGE: ${coverageInstructions.full}
 
@@ -170,26 +168,26 @@ ${surfaceContext === 'facade' ? 'WINDOWS: Install glass with dark aluminum frame
 QUALITY: ${groutInstruction} 3D surface depth with natural shadows — NOT flat wallpaper. Photorealistic${surfaceContext === 'facade' ? ' architectural photograph' : ''}.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
   }
 
-  // Interior / fireplace — same stone size as exterior (15-20cm per piece)
-  const interiorStones = Math.round(wallHeight / stoneSize)
-  return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture CLOSE-UP — taken from 20-30cm away so stones APPEAR large. In reality each piece is only 15-20cm. IGNORE how large stones look in Image 2.
+  // Interior / fireplace — smaller stones than exterior (14cm vs 18cm)
+  const interiorStoneSize = 0.14
+  const interiorStones = Math.round(wallHeight / interiorStoneSize)
+  return `Image 1: ${getSurfaceDescription(surfaceContext, analysis)}. Image 2: stone texture — copy the EXACT COLOR, TEXTURE and SURFACE. Size in Image 2 is misleading (close-up) — real size is ~14cm per piece.
 
 EDIT Image 1: Apply Image 2's stone to ${coverageInstructions.apply}.
 
-STONE SIZE (MOST IMPORTANT):
-Each stone piece is ~15-20cm in real life — the SAME size as exterior stone cladding.
-${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
-- Room height ~${wallHeight}m ÷ 0.17m = ~${interiorStones} stone pieces floor to ceiling
-- Each stone is slightly larger than an electrical outlet
+⚠️ STONE COLOR & TEXTURE (HIGHEST PRIORITY):
+Study Image 2 carefully. Copy its EXACT colors — if it has brown, red-brown, cream, dark patches, reproduce ALL of those tones. Do NOT simplify to uniform beige/cream.
+
+STONE SIZE:
+Each piece ~14cm (smaller than exterior cladding — interior veneer is more refined). ${analysis.scale_instruction ? `SCALE: ${analysis.scale_instruction}` : ''}
+- Room height ~${wallHeight}m ÷ 0.14m = ~${interiorStones} pieces floor to ceiling
 - ${categoryDesc}
 
-⚠️ UNIFORMITY: ALL walls must have IDENTICAL stone size. No size variation.
+⚠️ UNIFORMITY: ALL walls same stone size.
 
 ${coverageInstructions.preserve}
 
-COLOR: Copy EXACT tones from Image 2 — warm natural colors with variation between pieces. Do NOT average into one uniform color.
-
-QUALITY: ${groutInstruction} 3D surface depth with natural shadows — NOT flat wallpaper. Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
+QUALITY: ${groutInstruction} 3D depth and shadows. Photorealistic.${userNote ? `\n\nUSER NOTE: "${userNote}"` : ''}`
 }
 
 /** Build prompt for BRUSH mode — applies only to masked areas */

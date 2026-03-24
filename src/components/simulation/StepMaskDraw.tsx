@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowLeft, Paintbrush, RotateCcw, Trash2, Sparkles, AlertCircle, Mic, MicOff, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Square, RotateCcw, Sparkles, AlertCircle, Mic, MicOff, MessageSquare, Move } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Props {
@@ -20,112 +20,99 @@ const LOCALE_MAP: Record<string, string> = {
   es: 'es-ES',
   ar: 'ar-SA',
   de: 'de-DE',
+  fr: 'fr-FR',
+  ru: 'ru-RU',
 }
 
-const BRUSH_COLORS = [
-  { color: 'rgba(179, 147, 69, 0.45)', label: 'Gold' },
-  { color: 'rgba(59, 130, 246, 0.45)', label: 'Blue' },
-  { color: 'rgba(239, 68, 68, 0.45)', label: 'Red' },
-  { color: 'rgba(34, 197, 94, 0.45)', label: 'Green' },
-]
-
 const MASK_TEXTS: Record<string, {
-  title: string; desc: string; brush: string; undo: string; clear: string; color: string
-  submit: string; back: string; hint: string; chatPlaceholder: string; micTooltip: string; micListening: string
+  title: string; desc: string; clear: string
+  submit: string; back: string; hint: string
+  chatPlaceholder: string; micTooltip: string; micListening: string
   instructionNote: string; brushNote: string
 }> = {
   tr: {
-    title: 'Alanı İşaretleyin',
-    desc: 'Taş kaplamak istediğiniz duvar yüzeylerini boyayın',
-    brush: 'Fırça',
-    color: 'Renk',
-    undo: 'Geri Al',
+    title: 'Alanı Seçin',
+    desc: 'Taş uygulamak istediğiniz alanı dikdörtgen ile seçin',
     clear: 'Temizle',
-    submit: 'AI ile Uygula',
+    submit: 'Seçili Alana Uygula',
     back: 'Geri',
-    hint: 'Taş uygulamak istediğiniz duvar alanlarını boyayın',
-    instructionNote: 'Pencere, kapı, gökyüzü ve zemini boyamayın — sadece taş kaplamak istediğiniz duvarları işaretleyin',
-    brushNote: 'AI boyanan bölgeye yakın alanlara da uygulayabilir — tam hassas sonuç için "Tüm Alana Uygula" tercih edin',
-    chatPlaceholder: 'AI\'ya ek talimat yazmak için buraya tıklayın... Örn: "Sadece zemin kata uygula"',
+    hint: 'Parmağınızla sürükleyerek alan seçin',
+    instructionNote: 'Taş uygulamak istediğiniz duvar alanını dikdörtgen çizerek seçin',
+    brushNote: 'AI seçilen bölgeye taş uygulayacak, diğer alanlar aynen kalacak',
+    chatPlaceholder: 'AI\'ya ek talimat... Örn: "Sadece duvarlara uygula, pencereyi atla"',
     micTooltip: 'Mikrofona basıp konuşarak not ekleyin',
     micListening: 'Dinliyor...',
   },
   en: {
-    title: 'Mark the Area',
-    desc: 'Paint the wall surfaces where you want stone applied',
-    brush: 'Brush',
-    color: 'Color',
-    undo: 'Undo',
+    title: 'Select Area',
+    desc: 'Draw a rectangle to select the area for stone application',
     clear: 'Clear',
-    submit: 'Apply with AI',
+    submit: 'Apply to Selected Area',
     back: 'Back',
-    hint: 'Paint the wall areas where you want stone applied',
-    instructionNote: 'Avoid painting windows, doors, sky, and ground — only mark the walls you want clad',
-    brushNote: 'AI may also apply to nearby areas — for precise full coverage use "Apply to Full Surface" instead',
-    chatPlaceholder: 'Click here to add instructions for AI... E.g. "Only apply to ground floor"',
+    hint: 'Drag to select an area',
+    instructionNote: 'Draw a rectangle over the wall area where you want stone applied',
+    brushNote: 'AI will apply stone to the selected area, other areas remain unchanged',
+    chatPlaceholder: 'Add instructions for AI... E.g. "Only apply to walls, skip windows"',
     micTooltip: 'Tap and speak to add a voice note',
     micListening: 'Listening...',
   },
   es: {
-    title: 'Marque el area',
-    desc: 'Pinte las superficies de pared donde desea aplicar piedra',
-    brush: 'Pincel',
-    color: 'Color',
-    undo: 'Deshacer',
+    title: 'Seleccionar área',
+    desc: 'Dibuje un rectángulo para seleccionar el área de aplicación',
     clear: 'Limpiar',
-    submit: 'Aplicar con IA',
-    back: 'Atras',
-    hint: 'Aumente el tamano del pincel y pinte las areas de pared',
-    instructionNote: 'Evite pintar ventanas, puertas, cielo y suelo — solo marque las paredes',
-    brushNote: 'La IA puede aplicar tambien a areas cercanas — para cobertura completa use "Aplicar a toda la superficie"',
-    chatPlaceholder: 'Haga clic aqui para agregar instrucciones para IA... Ej: "Solo planta baja"',
-    micTooltip: 'Toque y hable para agregar una nota de voz',
+    submit: 'Aplicar al área seleccionada',
+    back: 'Atrás',
+    hint: 'Arrastre para seleccionar un área',
+    instructionNote: 'Dibuje un rectángulo sobre el área de pared donde desea aplicar piedra',
+    brushNote: 'La IA aplicará piedra al área seleccionada, otras áreas permanecerán sin cambios',
+    chatPlaceholder: 'Instrucciones para IA... Ej: "Solo paredes, omitir ventanas"',
+    micTooltip: 'Toque y hable para agregar nota de voz',
     micListening: 'Escuchando...',
   },
   ar: {
     title: 'حدد المنطقة',
-    desc: 'ارسم على أسطح الجدران التي تريد تطبيق الحجر عليها',
-    brush: 'فرشاة',
-    color: 'لون',
-    undo: 'تراجع',
+    desc: 'ارسم مستطيلاً لتحديد منطقة تطبيق الحجر',
     clear: 'مسح',
-    submit: 'تطبيق بالذكاء الاصطناعي',
+    submit: 'تطبيق على المنطقة المحددة',
     back: 'رجوع',
-    hint: 'كبّر الفرشاة وارسم على مناطق الجدران',
-    instructionNote: 'تجنب رسم النوافذ والأبواب والسماء والأرض — حدد فقط الجدران',
-    brushNote: 'قد يطبق الذكاء الاصطناعي على المناطق القريبة أيضًا — للتغطية الكاملة استخدم "تطبيق على كامل السطح"',
-    chatPlaceholder: 'انقر هنا لإضافة تعليمات للذكاء الاصطناعي... مثال: "الطابق الأرضي فقط"',
-    micTooltip: 'اضغط وتحدث لإضافة ملاحظة صوتية',
+    hint: 'اسحب لتحديد منطقة',
+    instructionNote: 'ارسم مستطيلاً فوق منطقة الجدار التي تريد تطبيق الحجر عليها',
+    brushNote: 'سيطبق الذكاء الاصطناعي الحجر على المنطقة المحددة فقط',
+    chatPlaceholder: 'تعليمات للذكاء الاصطناعي... مثال: "فقط الجدران"',
+    micTooltip: 'اضغط وتحدث لإضافة ملاحظة',
     micListening: 'جارٍ الاستماع...',
   },
   de: {
-    title: 'Bereich markieren',
-    desc: 'Markieren Sie die Wandflachen fur die Steinverkleidung',
-    brush: 'Pinsel',
-    color: 'Farbe',
-    undo: 'Ruckgangig',
-    clear: 'Loschen',
-    submit: 'Mit KI anwenden',
-    back: 'Zuruck',
-    hint: 'Pinselgrosse erhohen und Wandflachen bemalen',
-    instructionNote: 'Vermeiden Sie Fenster, Turen, Himmel und Boden — markieren Sie nur die Wandflachen',
-    brushNote: 'KI kann auch auf nahe Bereiche anwenden — fur volle Abdeckung verwenden Sie "Auf gesamte Flache anwenden"',
-    chatPlaceholder: 'Klicken Sie hier, um KI-Anweisungen hinzuzufugen... Z.B. "Nur Erdgeschoss"',
-    micTooltip: 'Tippen und sprechen Sie fur eine Sprachnotiz',
-    micListening: 'Hort zu...',
+    title: 'Bereich auswählen',
+    desc: 'Zeichnen Sie ein Rechteck, um den Bereich auszuwählen',
+    clear: 'Löschen',
+    submit: 'Auf ausgewählten Bereich anwenden',
+    back: 'Zurück',
+    hint: 'Ziehen Sie, um einen Bereich auszuwählen',
+    instructionNote: 'Zeichnen Sie ein Rechteck über den Wandbereich für die Steinverkleidung',
+    brushNote: 'KI wendet Stein nur auf den ausgewählten Bereich an',
+    chatPlaceholder: 'KI-Anweisungen... Z.B. "Nur Wände, Fenster überspringen"',
+    micTooltip: 'Tippen und sprechen für Sprachnotiz',
+    micListening: 'Hört zu...',
   },
+}
+
+interface Rect {
+  x: number
+  y: number
+  w: number
+  h: number
 }
 
 export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, stoneName, onSubmit, onBack, error }: Props) {
   const { locale } = useLanguage()
   const t = MASK_TEXTS[locale] || MASK_TEXTS.tr
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [brushSize, setBrushSize] = useState(60)
-  const [brushColor, setBrushColor] = useState(BRUSH_COLORS[0].color)
-  const [history, setHistory] = useState<ImageData[]>([])
-  const [hasMask, setHasMask] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [rect, setRect] = useState<Rect | null>(null)
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 })
 
   // User note + speech
   const [userNote, setUserNote] = useState('')
@@ -133,110 +120,75 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
   const [speechSupported, setSpeechSupported] = useState(false)
   const recognitionRef = useRef<ReturnType<typeof createRecognition> | null>(null)
 
-  // Check speech API support on mount
   useEffect(() => {
     const supported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
     setSpeechSupported(supported)
   }, [])
 
-  // Initialize canvas
+  // Measure container
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-
-    // Set canvas size to match image
-    const container = canvas.parentElement!
-    const maxW = container.clientWidth
-    const scale = Math.min(maxW / imageWidth, 600 / imageHeight)
-    canvas.width = Math.round(imageWidth * scale)
-    canvas.height = Math.round(imageHeight * scale)
-
-    // Clear with transparent
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    const el = containerRef.current
+    if (!el) return
+    const updateSize = () => {
+      const w = el.clientWidth
+      const h = Math.round(w * (imageHeight / imageWidth))
+      setContainerSize({ w, h })
+    }
+    updateSize()
+    window.addEventListener('resize', updateSize)
+    return () => window.removeEventListener('resize', updateSize)
   }, [imageWidth, imageHeight])
 
   const getPos = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current!
-    const rect = canvas.getBoundingClientRect()
+    const el = containerRef.current!
+    const bounds = el.getBoundingClientRect()
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
     return {
-      x: (clientX - rect.left) * (canvas.width / rect.width),
-      y: (clientY - rect.top) * (canvas.height / rect.height),
+      x: Math.max(0, Math.min(1, (clientX - bounds.left) / bounds.width)),
+      y: Math.max(0, Math.min(1, (clientY - bounds.top) / bounds.height)),
     }
   }, [])
 
-  const drawCircle = useCallback((x: number, y: number) => {
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.fillStyle = brushColor
-    ctx.beginPath()
-    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2)
-    ctx.fill()
-    setHasMask(true)
-  }, [brushSize, brushColor])
-
   const handleStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
-    // Save state for undo
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
-    setHistory(prev => [...prev, ctx.getImageData(0, 0, canvas.width, canvas.height)])
-
-    setIsDrawing(true)
     const pos = getPos(e)
-    drawCircle(pos.x, pos.y)
-  }, [getPos, drawCircle])
+    setDragStart(pos)
+    setIsDragging(true)
+    setRect(null)
+  }, [getPos])
 
   const handleMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
-    if (!isDrawing) return
+    if (!isDragging || !dragStart) return
     const pos = getPos(e)
-    drawCircle(pos.x, pos.y)
-  }, [isDrawing, getPos, drawCircle])
+    setRect({
+      x: Math.min(dragStart.x, pos.x),
+      y: Math.min(dragStart.y, pos.y),
+      w: Math.abs(pos.x - dragStart.x),
+      h: Math.abs(pos.y - dragStart.y),
+    })
+  }, [isDragging, dragStart, getPos])
 
   const handleEnd = useCallback(() => {
-    setIsDrawing(false)
-  }, [])
+    setIsDragging(false)
+    setDragStart(null)
+    // Remove tiny rectangles (accidental clicks)
+    if (rect && (rect.w < 0.03 || rect.h < 0.03)) {
+      setRect(null)
+    }
+  }, [rect])
 
-  const handleUndo = useCallback(() => {
-    if (history.length === 0) return
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
-    const prev = history[history.length - 1]
-    ctx.putImageData(prev, 0, 0)
-    setHistory(h => h.slice(0, -1))
-    // Check if any mask remains
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
-    setHasMask(data.some((v, i) => i % 4 === 3 && v > 0))
-  }, [history])
-
-  const handleClear = useCallback(() => {
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    setHistory([])
-    setHasMask(false)
-  }, [])
-
-  // Speech recognition toggle
+  // Speech
   const toggleSpeech = useCallback(() => {
     if (isListening) {
-      // Stop
       recognitionRef.current?.stop()
       setIsListening(false)
       return
     }
-
-    // Start
     const recognition = createRecognition(locale)
     if (!recognition) return
-
     recognitionRef.current = recognition
-    recognition.lang = LOCALE_MAP[locale] || 'tr-TR'
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       let transcript = ''
@@ -245,68 +197,41 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
       }
       setUserNote(prev => prev ? prev + ' ' + transcript : transcript)
     }
-
-    recognition.onend = () => {
-      setIsListening(false)
-    }
-
-    recognition.onerror = () => {
-      setIsListening(false)
-    }
-
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
     recognition.start()
     setIsListening(true)
   }, [isListening, locale])
 
-  // Cleanup speech on unmount
   useEffect(() => {
-    return () => {
-      recognitionRef.current?.stop()
-    }
+    return () => { recognitionRef.current?.stop() }
   }, [])
 
+  // Generate mask from rectangle
   const handleSubmit = useCallback(() => {
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
+    if (!rect) return
 
-    // Read the drawing canvas pixels (gold overlay with alpha)
-    const srcData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-    // Create mask at original image dimensions
     const maskCanvas = document.createElement('canvas')
     maskCanvas.width = imageWidth
     maskCanvas.height = imageHeight
-    const maskCtx = maskCanvas.getContext('2d')!
+    const ctx = maskCanvas.getContext('2d')!
 
-    // Fill entire mask with black (= keep original)
-    maskCtx.fillStyle = '#000000'
-    maskCtx.fillRect(0, 0, imageWidth, imageHeight)
+    // Black background (= keep original)
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(0, 0, imageWidth, imageHeight)
 
-    // Scale factors from drawing canvas → original image
-    const scaleX = imageWidth / canvas.width
-    const scaleY = imageHeight / canvas.height
-
-    // For each pixel in the drawing canvas, if it has alpha > 10,
-    // fill a scaled rectangle with white in the mask
-    maskCtx.fillStyle = '#ffffff'
-    const step = 2 // Process every 2nd pixel for performance
-    for (let y = 0; y < canvas.height; y += step) {
-      for (let x = 0; x < canvas.width; x += step) {
-        const idx = (y * canvas.width + x) * 4
-        if (srcData.data[idx + 3] > 10) {
-          maskCtx.fillRect(
-            Math.floor(x * scaleX),
-            Math.floor(y * scaleY),
-            Math.ceil(step * scaleX),
-            Math.ceil(step * scaleY)
-          )
-        }
-      }
-    }
+    // White rectangle (= apply stone)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(
+      Math.round(rect.x * imageWidth),
+      Math.round(rect.y * imageHeight),
+      Math.round(rect.w * imageWidth),
+      Math.round(rect.h * imageHeight),
+    )
 
     const maskDataUrl = maskCanvas.toDataURL('image/png')
     onSubmit(maskDataUrl, userNote.trim() || undefined)
-  }, [imageWidth, imageHeight, onSubmit, userNote])
+  }, [rect, imageWidth, imageHeight, onSubmit, userNote])
 
   return (
     <div className="glass-card p-6 md:p-10">
@@ -327,60 +252,9 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
         </button>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-3 p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
-        <Paintbrush size={14} className="text-gold-400" />
-        <span className="text-white/40 text-xs font-mono">{t.brush}:</span>
-        <input
-          type="range"
-          min={10}
-          max={200}
-          value={brushSize}
-          onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gold-400"
-        />
-        <span className="text-white/30 text-[10px] font-mono w-6 text-right">{brushSize}</span>
-
-        <div className="w-px h-5 bg-white/10 mx-1" />
-
-        {/* Brush color picker */}
-        <div className="flex items-center gap-1.5">
-          {BRUSH_COLORS.map((bc) => (
-            <button
-              key={bc.label}
-              onClick={() => setBrushColor(bc.color)}
-              className={`w-5 h-5 rounded-full border-2 transition-all ${
-                brushColor === bc.color ? 'border-white scale-110' : 'border-white/20 hover:border-white/50'
-              }`}
-              style={{ backgroundColor: bc.color.replace('0.45', '1') }}
-              title={bc.label}
-            />
-          ))}
-        </div>
-
-        <div className="w-px h-5 bg-white/10 mx-1" />
-
-        <button
-          onClick={handleUndo}
-          disabled={history.length === 0}
-          className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/[0.06] transition-colors disabled:opacity-20"
-          title={t.undo}
-        >
-          <RotateCcw size={14} />
-        </button>
-        <button
-          onClick={handleClear}
-          disabled={!hasMask}
-          className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-400/[0.06] transition-colors disabled:opacity-20"
-          title={t.clear}
-        >
-          <Trash2 size={14} />
-        </button>
-      </div>
-
-      {/* Instruction note between toolbar and canvas */}
+      {/* Instruction */}
       <div className="flex items-start gap-2 mb-2 px-2 py-2 bg-gold-400/[0.06] rounded-lg border border-gold-400/[0.10]">
-        <span className="text-base leading-none mt-0.5">📌</span>
+        <Square size={14} className="text-gold-400 mt-0.5 flex-shrink-0" />
         <p className="text-gold-400 text-[13px] font-body leading-snug">
           {t.instructionNote}
         </p>
@@ -389,8 +263,18 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
         {t.brushNote}
       </p>
 
-      {/* Canvas area */}
-      <div className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-black">
+      {/* Image + Rectangle selection area */}
+      <div
+        ref={containerRef}
+        className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-black cursor-crosshair select-none touch-none"
+        onMouseDown={handleStart}
+        onMouseMove={handleMove}
+        onMouseUp={handleEnd}
+        onMouseLeave={handleEnd}
+        onTouchStart={handleStart}
+        onTouchMove={handleMove}
+        onTouchEnd={handleEnd}
+      >
         {/* Background image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -400,31 +284,59 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
           draggable={false}
         />
 
-        {/* Drawing canvas overlay */}
-        <canvas
-          ref={canvasRef}
-          onMouseDown={handleStart}
-          onMouseMove={handleMove}
-          onMouseUp={handleEnd}
-          onMouseLeave={handleEnd}
-          onTouchStart={handleStart}
-          onTouchMove={handleMove}
-          onTouchEnd={handleEnd}
-          className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
-          style={{ mixBlendMode: 'normal' }}
-        />
+        {/* Semi-transparent overlay outside rectangle */}
+        {rect && (
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black/50" />
+            {/* Clear window (the selected area) */}
+            <div
+              className="absolute bg-transparent border-2 border-gold-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"
+              style={{
+                left: `${rect.x * 100}%`,
+                top: `${rect.y * 100}%`,
+                width: `${rect.w * 100}%`,
+                height: `${rect.h * 100}%`,
+              }}
+            >
+              {/* Corner handles */}
+              <div className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-gold-400 rounded-sm" />
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-gold-400 rounded-sm" />
+              <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 bg-gold-400 rounded-sm" />
+              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-gold-400 rounded-sm" />
+              {/* Center move icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Move size={20} className="text-gold-400/60" />
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Hint overlay when no mask */}
-        {!hasMask && (
+        {/* Hint overlay when no rect */}
+        {!rect && !isDragging && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+            <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
+              <Square size={14} className="text-gold-400/60" />
               <span className="text-white/60 text-xs font-mono">{t.hint}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Chat-style input box for AI instructions */}
+      {/* Clear button */}
+      {rect && (
+        <div className="mt-3 text-center">
+          <button
+            onClick={() => setRect(null)}
+            className="inline-flex items-center gap-1.5 text-white/40 text-xs hover:text-white/70 transition-colors"
+          >
+            <RotateCcw size={12} />
+            {t.clear}
+          </button>
+        </div>
+      )}
+
+      {/* Chat input */}
       <div className="mt-4 relative">
         <div className="absolute left-4 top-4 text-white/20">
           <MessageSquare size={16} />
@@ -433,7 +345,7 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
           value={userNote}
           onChange={(e) => setUserNote(e.target.value)}
           placeholder={t.chatPlaceholder}
-          rows={3}
+          rows={2}
           className="w-full bg-white/[0.04] border border-white/[0.10] rounded-2xl pl-11 pr-12 py-3.5 text-white/80 text-sm font-body placeholder:text-white/25 resize-none focus:outline-none focus:border-gold-400/40 focus:bg-white/[0.06] transition-all"
         />
         {speechSupported && (
@@ -460,11 +372,11 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
         </div>
       )}
 
-      {/* Submit button */}
+      {/* Submit */}
       <div className="mt-6 text-center">
         <button
           onClick={handleSubmit}
-          disabled={!hasMask}
+          disabled={!rect}
           className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <Sparkles size={16} />
@@ -475,7 +387,7 @@ export default function StepMaskDraw({ imageDataUrl, imageWidth, imageHeight, st
   )
 }
 
-// Helper to create SpeechRecognition instance (browser compat)
+// Helper to create SpeechRecognition instance
 function createRecognition(locale: string) {
   if (typeof window === 'undefined') return null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

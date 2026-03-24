@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Wand2, Paintbrush, Building2, Home, Camera } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Wand2, Square, Building2, Home, Camera } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { ApplyMode, SurfaceContext, GroutStyle } from '@/lib/simulation'
 
@@ -19,8 +19,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     back: 'Geri',
     fullTitle: 'Tüm Alana Uygula',
     fullDesc: 'AI yapıyı koruyarak taşı akıllıca tüm yüzeye uygular',
-    brushTitle: 'Fırça ile Seç',
-    brushDesc: 'Taş uygulanacak alanı elle işaretleyin',
+    brushTitle: 'Seçili Alana Uygula',
+    brushDesc: 'Dikdörtgen çizerek taş uygulanacak alanı belirleyin',
     fullExBefore: 'Önce',
     fullExAfter: 'Sonra',
     brushExBefore: 'Boyayın',
@@ -53,8 +53,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     back: 'Back',
     fullTitle: 'Apply to Full Surface',
     fullDesc: 'AI intelligently applies stone while preserving structure',
-    brushTitle: 'Select with Brush',
-    brushDesc: 'Manually mark the area for stone application',
+    brushTitle: 'Apply to Selected Area',
+    brushDesc: 'Draw a rectangle to define the stone application area',
     fullExBefore: 'Before',
     fullExAfter: 'After',
     brushExBefore: 'Paint',
@@ -87,8 +87,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     back: 'Atrás',
     fullTitle: 'Aplicar a toda la superficie',
     fullDesc: 'La IA aplica la piedra de forma inteligente preservando la estructura',
-    brushTitle: 'Seleccionar con pincel',
-    brushDesc: 'Marque manualmente el área para la aplicación',
+    brushTitle: 'Aplicar al área seleccionada',
+    brushDesc: 'Dibuje un rectángulo para definir el área de aplicación',
     fullExBefore: 'Antes',
     fullExAfter: 'Después',
     brushExBefore: 'Pintar',
@@ -120,8 +120,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     back: 'رجوع',
     fullTitle: 'تطبيق على كامل السطح',
     fullDesc: 'الذكاء الاصطناعي يطبق الحجر بذكاء مع الحفاظ على البنية',
-    brushTitle: 'اختيار بالفرشاة',
-    brushDesc: 'حدد المنطقة يدوياً لتطبيق الحجر',
+    brushTitle: 'تطبيق على المنطقة المحددة',
+    brushDesc: 'ارسم مستطيلاً لتحديد منطقة تطبيق الحجر',
     fullExBefore: 'قبل',
     fullExAfter: 'بعد',
     brushExBefore: 'ارسم',
@@ -153,8 +153,8 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     back: 'Zurück',
     fullTitle: 'Auf gesamte Fläche anwenden',
     fullDesc: 'KI wendet Stein intelligent an und bewahrt die Struktur',
-    brushTitle: 'Mit Pinsel auswählen',
-    brushDesc: 'Markieren Sie den Bereich manuell',
+    brushTitle: 'Auf ausgewählten Bereich anwenden',
+    brushDesc: 'Zeichnen Sie ein Rechteck für den Anwendungsbereich',
     fullExBefore: 'Vorher',
     fullExAfter: 'Nachher',
     brushExBefore: 'Malen',
@@ -271,17 +271,17 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
             </div>
           </button>
 
-          {/* Brush Mode — coming soon */}
-          <div className="relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.05] bg-white/[0.01] text-left opacity-40 cursor-not-allowed">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
-              <Paintbrush size={24} className="text-white/30" />
+          {/* Select Area Mode */}
+          <button
+            onClick={() => onSelect('brush')}
+            className="group relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-4 group-hover:bg-white/[0.1] transition-colors">
+              <Square size={24} className="text-white/50" />
             </div>
-            <h3 className="font-heading text-lg font-bold text-white/50 mb-2">{t.brushTitle}</h3>
-            <p className="text-white/30 text-sm font-body">{t.brushDesc}</p>
-            <div className="absolute top-4 right-4 bg-white/10 text-white/40 text-[9px] font-mono px-2.5 py-1 rounded-full border border-white/10">
-              {t.comingSoon || 'Yakında'}
-            </div>
-          </div>
+            <h3 className="font-heading text-lg font-bold text-white mb-2">{t.brushTitle}</h3>
+            <p className="text-white/40 text-sm font-body">{t.brushDesc}</p>
+          </button>
 
           {/* Photo tip */}
           <div className="md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-2.5">
