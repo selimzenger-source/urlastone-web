@@ -68,10 +68,14 @@ export default function TaslarPage() {
     const stoneType = params.get('stone_type')
     if (stoneType) {
       setActiveStoneType(stoneType)
-      // Kısa gecikme ile taş koleksiyonu bölümüne scroll
+      // Taş koleksiyonu ürün grid'ine scroll (navbar + başlık offset ile)
       setTimeout(() => {
-        document.getElementById('tas-koleksiyonu')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 300)
+        const el = document.getElementById('tas-urunler')
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - 80 // 80px navbar offset
+          window.scrollTo({ top: y, behavior: 'smooth' })
+        }
+      }, 400)
     }
   }, [])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -401,7 +405,7 @@ export default function TaslarPage() {
 
           {/* Stone Type Products (expandable) */}
           {activeStoneType && (
-            <div className="mt-12 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div id="tas-urunler" className="mt-12 animate-in fade-in slide-in-from-top-4 duration-500">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="font-heading text-2xl font-bold text-white">
                   {stoneTypeInfo[activeStoneType]?.name} <span className="text-gold-400">Rockshell</span>
