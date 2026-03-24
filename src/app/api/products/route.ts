@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const category = searchParams.get('category') // slug: nature, mix, crazy, line
   const stoneType = searchParams.get('stone_type') // code: TRV, MRMR, BZLT, KLKR
+  const includeHidden = searchParams.get('include_hidden') === 'true' // admin panel uses this
 
   let query = supabase
     .from('products')
@@ -14,8 +15,12 @@ export async function GET(req: NextRequest) {
       category:categories(id, name, slug, thickness, image_url),
       stone_type:stone_types(id, name, code)
     `)
-    .eq('is_active', true)
     .order('sort_order')
+
+  // Public endpoints only show active products, admin gets all
+  if (!includeHidden) {
+    query = query.eq('is_active', true)
+  }
 
   if (category) {
     // Filter by category slug

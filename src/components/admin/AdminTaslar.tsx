@@ -99,7 +99,7 @@ export default function AdminTaslar() {
   const fetchData = async () => {
     setLoading(true)
     const [prods, cats, types] = await Promise.all([
-      fetch('/api/products').then(r => r.json()),
+      fetch('/api/products?include_hidden=true').then(r => r.json()),
       fetch('/api/categories').then(r => r.json()),
       fetch('/api/stone-types').then(r => r.json()),
     ])
