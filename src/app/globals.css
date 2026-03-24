@@ -41,12 +41,17 @@
   }
 
   .text-gradient-gold {
-    background: linear-gradient(135deg, #b39345 0%, #d2b96e 35%, #b39345 70%, #82692e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
+    /* Fallback for older devices — plain gold color */
+    color: #b39345;
+    /* Gradient for modern browsers */
+    @supports (-webkit-background-clip: text) or (background-clip: text) {
+      background: linear-gradient(135deg, #b39345 0%, #d2b96e 35%, #b39345 70%, #82692e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
   }
 
   /* Hero title — no background-clip so descenders never clip */
