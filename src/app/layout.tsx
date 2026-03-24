@@ -247,10 +247,8 @@ export default function RootLayout({
       <head>
         {/* Preload hero image for faster LCP */}
         <link rel="preload" href="/slide-1.jpg" as="image" fetchPriority="high" />
-        {/* Fonts: loaded via link instead of CSS @import for non-blocking render */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <Script
           id="json-ld"
           type="application/ld+json"
