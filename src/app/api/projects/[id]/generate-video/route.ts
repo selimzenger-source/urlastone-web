@@ -56,15 +56,15 @@ export async function POST(
       return NextResponse.json({ error: 'FAL_API_KEY not configured' }, { status: 500 })
     }
 
-    // Use Claude Sonnet to pick the best photo for video — widest angle, most facade visible
-    let imageUrl = project.photos[0]
+    // Use Claude to find an aerial/drone-angle photo (min ~30° angle, showing full building)
+    // If no suitable photo exists, reject video generation
+    let imageUrl: string | null = null
 
-    if (project.photos.length > 1 && process.env.ANTHROPIC_API_KEY) {
+    if (process.env.ANTHROPIC_API_KEY) {
       try {
         const Anthropic = (await import('@anthropic-ai/sdk')).default
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-        // Send all photos to Claude, ask which is best for drone-style video
         const imageContent = await Promise.all(
           project.photos.slice(0, 8).map(async (url: string, i: number) => {
             try {
@@ -91,22 +91,42 @@ export async function POST(
               ...imageContent.flat(),
               {
                 type: 'text',
-                text: 'Which image number shows the WIDEST view of the building? I need the one that shows the most of the building exterior from the farthest distance — like an aerial/drone photo or a wide establishing shot. Reply with ONLY the number (e.g. "3").',
+                text: `I need to create a cinematic drone-style video. Which image is taken from an ELEVATED/AERIAL angle (like a drone at 30+ degrees above ground) showing the FULL building and surroundings?
+
+Requirements:
+- Must be taken from above (elevated angle, not ground level)
+- Must show the entire building or most of it
+- Must NOT be a close-up of stone texture or wall detail
+- Must NOT be taken from ground level / eye level
+
+If ANY image meets these criteria, reply with ONLY the number (e.g. "3").
+If NONE of the images are taken from an elevated/aerial angle, reply with ONLY "NONE".`,
               },
             ],
           }],
         })
 
         const answer = msg.content[0].type === 'text' ? msg.content[0].text.trim() : ''
+        console.log(`[Video] Claude analysis: "${answer}"`)
+
+        if (answer === 'NONE' || answer.toLowerCase().includes('none')) {
+          return NextResponse.json({
+            error: 'Bu projede drone/kuş bakışı açıdan çekilmiş fotoğraf bulunamadı. Video üretimi için en az 30° açıyla yukarıdan çekilmiş, tüm binayı gösteren bir fotoğraf gereklidir.',
+          }, { status: 400 })
+        }
+
         const pickedIndex = parseInt(answer) - 1
         if (pickedIndex >= 0 && pickedIndex < project.photos.length) {
           imageUrl = project.photos[pickedIndex]
-          console.log(`[Video] Claude picked image ${pickedIndex + 1} of ${project.photos.length} for best wide shot`)
+          console.log(`[Video] Claude picked image ${pickedIndex + 1} of ${project.photos.length}`)
         }
       } catch (err) {
-        console.warn('[Video] Claude photo selection failed, using first photo:', err)
+        console.warn('[Video] Claude photo analysis failed:', err)
       }
     }
+
+    // Fallback: if Claude unavailable, use first photo
+    if (!imageUrl) imageUrl = project.photos[0]
 
     // Cinematic drone prompt — lateral tracking + dolly, elevated angle showing building + surroundings
     // This prompt produced the excellent B2 Gökova drone-style video
