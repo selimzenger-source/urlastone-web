@@ -1,13 +1,20 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase, supabaseAdmin } from '@/lib/supabase'
 
 // GET /api/referanslar
-export async function GET() {
-  const { data, error } = await supabase
+export async function GET(req: NextRequest) {
+  const includeHidden = new URL(req.url).searchParams.get('include_hidden') === 'true'
+
+  let query = supabase
     .from('referanslar')
     .select('*, project:projects(id, project_name)')
-    .eq('is_active', true)
     .order('sort_order')
+
+  if (!includeHidden) {
+    query = query.eq('is_active', true)
+  }
+
+  const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
