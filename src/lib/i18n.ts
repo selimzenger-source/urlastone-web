@@ -94,6 +94,8 @@ type TranslationKeys = {
   process_tag: string
   process_title: string
   process_subtitle: string
+  process_subtitle_line1: string
+  process_subtitle_line2: string
   process_step1_title: string
   process_step1_desc: string
   process_step2_title: string
@@ -527,7 +529,9 @@ const translations: Record<Locale, TranslationKeys> = {
     featured_kalker_origin: 'Ören',
     process_tag: 'SÜREÇ',
     process_title: 'Nasıl Çalışıyoruz?',
-    process_subtitle: '25 yıllık deneyimimizle tüm süreci yönetiyor, projenize en uygun\ndoğal taşı birlikte belirliyoruz',
+    process_subtitle: '25 yıllık deneyimimizle tüm süreci yönetiyor, projenize en uygun doğal taşı birlikte belirliyoruz',
+    process_subtitle_line1: '25 Yıllık Deneyimle Tüm Süreci Yönetiyor, Projelerinize En Uygun Doğal Taşı Birlikte',
+    process_subtitle_line2: 'BELİRLİYORUZ.',
     process_step1_title: 'Keşif & Analiz',
     process_step1_desc: 'Projenizi yerinde inceliyor, ihtiyaçlarınızı analiz ediyoruz. Mekanınıza en uygun taş türünü zevkinize göre birlikte belirliyoruz.',
     process_step2_title: 'Üretim & Termin',
@@ -918,6 +922,8 @@ const translations: Record<Locale, TranslationKeys> = {
     process_tag: 'PROCESS',
     process_title: 'How We Work',
     process_subtitle: 'With 25 years of experience, we manage the entire process and help you choose the perfect natural stone for your project',
+    process_subtitle_line1: 'With 25 Years of Experience We Manage the Entire Process, Choosing the Perfect Natural Stone',
+    process_subtitle_line2: 'TOGETHER.',
     process_step1_title: 'Discovery & Analysis',
     process_step1_desc: 'We inspect your project on-site and analyze your needs. Together we determine the most suitable stone type — travertine, marble, basalt or limestone — for your space.',
     process_step2_title: 'Production & Schedule',
@@ -1308,6 +1314,8 @@ const translations: Record<Locale, TranslationKeys> = {
     process_tag: 'PROCESO',
     process_title: '¿Cómo Trabajamos?',
     process_subtitle: 'Con 25 años de experiencia, gestionamos todo el proceso y le ayudamos a elegir la piedra natural perfecta para su proyecto',
+    process_subtitle_line1: 'Con 25 Años de Experiencia Gestionamos Todo el Proceso, Eligiendo la Piedra Natural Perfecta',
+    process_subtitle_line2: 'JUNTOS.',
     process_step1_title: 'Descubrimiento & Análisis',
     process_step1_desc: 'Inspeccionamos su proyecto in situ y analizamos sus necesidades. Juntos determinamos el tipo de piedra más adecuado — travertino, mármol, basalto o caliza — para su espacio.',
     process_step2_title: 'Producción & Plazo',
@@ -1698,6 +1706,8 @@ const translations: Record<Locale, TranslationKeys> = {
     process_tag: 'العملية',
     process_title: 'كيف نعمل؟',
     process_subtitle: 'بخبرة 25 عامًا، ندير العملية بأكملها ونساعدك في اختيار الحجر الطبيعي المثالي لمشروعك',
+    process_subtitle_line1: 'بخبرة 25 عامًا ندير العملية بأكملها ونختار معكم الحجر الطبيعي المثالي',
+    process_subtitle_line2: 'معًا.',
     process_step1_title: 'الاكتشاف والتحليل',
     process_step1_desc: 'نفحص مشروعك في الموقع ونحلل احتياجاتك. معاً نحدد نوع الحجر الأنسب — ترافرتين أو رخام أو بازلت أو حجر جيري — لمساحتك.',
     process_step2_title: 'الإنتاج والجدولة',
@@ -2088,6 +2098,8 @@ const translations: Record<Locale, TranslationKeys> = {
     process_tag: 'PROZESS',
     process_title: 'Wie wir arbeiten',
     process_subtitle: 'Mit 25 Jahren Erfahrung verwalten wir den gesamten Prozess und helfen Ihnen, den perfekten Naturstein für Ihr Projekt zu wählen',
+    process_subtitle_line1: 'Mit 25 Jahren Erfahrung Verwalten Wir den Gesamten Prozess und Wählen den Perfekten Naturstein',
+    process_subtitle_line2: 'GEMEINSAM.',
     process_step1_title: 'Besichtigung & Analyse',
     process_step1_desc: 'Wir besichtigen Ihr Projekt vor Ort und analysieren Ihre Bedürfnisse. Gemeinsam bestimmen wir den am besten geeigneten Steintyp — Travertin, Marmor, Basalt oder Kalkstein — für Ihren Raum.',
     process_step2_title: 'Produktion & Zeitplan',
@@ -2478,6 +2490,8 @@ const translations: Record<Locale, TranslationKeys> = {
     process_tag: 'PROCESSUS',
     process_title: 'Comment Nous Travaillons',
     process_subtitle: 'Avec 25 ans d\'expérience, nous gérons l\'ensemble du processus et vous aidons à choisir la pierre naturelle parfaite pour votre projet',
+    process_subtitle_line1: 'Avec 25 Ans d\'Expérience Nous Gérons l\'Ensemble du Processus, Choisissant la Pierre Naturelle Parfaite',
+    process_subtitle_line2: 'ENSEMBLE.',
     process_step1_title: 'Découverte & Analyse',
     process_step1_desc: 'Nous inspectons votre projet sur site et analysons vos besoins. Ensemble, nous déterminons le type de pierre le plus adapté à votre espace.',
     process_step2_title: 'Production & Planification',
@@ -2868,6 +2882,8 @@ const translations: Record<Locale, TranslationKeys> = {
     process_tag: 'ПРОЦЕСС',
     process_title: 'Как Мы Работаем',
     process_subtitle: 'С 25-летним опытом мы управляем всем процессом и помогаем вам выбрать идеальный натуральный камень для вашего проекта',
+    process_subtitle_line1: 'С 25-Летним Опытом Управляем Всем Процессом, Выбирая Идеальный Натуральный Камень',
+    process_subtitle_line2: 'ВМЕСТЕ.',
     process_step1_title: 'Анализ & Исследование',
     process_step1_desc: 'Мы осматриваем ваш проект на месте и анализируем ваши потребности. Вместе определяем наиболее подходящий тип камня для вашего пространства.',
     process_step2_title: 'Производство & Планирование',
