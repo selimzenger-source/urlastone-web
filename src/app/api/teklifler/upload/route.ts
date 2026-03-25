@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Allow larger body size for file uploads (Vercel Hobby max: 4.5MB)
+export const maxDuration = 30
+
 // POST /api/teklifler/upload — public (form submission uploads)
 export async function POST(req: NextRequest) {
+  console.log('[Upload] Received upload request')
   const formData = await req.formData()
   const teklifId = formData.get('teklif_id') as string
   const files = formData.getAll('files') as File[]
