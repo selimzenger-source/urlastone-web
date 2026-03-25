@@ -13,9 +13,29 @@ export default function ProcessSection() {
     setActiveStep(prev => (prev >= 3 ? 0 : prev + 1))
   }, [])
 
+  // Section görünür olduğunda step 0'dan başla, çıkınca durdur
+  const sectionRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    timerRef.current = setInterval(nextStep, 4000)
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+    const section = sectionRef.current
+    if (!section) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Section görününce step 0'dan başla
+          setActiveStep(0)
+          if (timerRef.current) clearInterval(timerRef.current)
+          timerRef.current = setInterval(nextStep, 4000)
+        } else {
+          // Section görünmeyince durdur
+          if (timerRef.current) clearInterval(timerRef.current)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    observer.observe(section)
+    return () => { observer.disconnect(); if (timerRef.current) clearInterval(timerRef.current) }
   }, [nextStep])
 
   const goToStep = (step: number) => {
@@ -41,6 +61,7 @@ export default function ProcessSection() {
 
   return (
     <section
+      ref={sectionRef}
       className="section-padding border-t border-white/[0.06] overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1510 50%, #0a0a0a 100%)' }}
     >
@@ -62,7 +83,7 @@ export default function ProcessSection() {
           <div className="flex-1 w-full" style={{ minHeight: '180px' }}>
             {activeStep === 0 && (
               <div className="animate-fadeIn">
-                <p className="text-white/30 text-base font-mono leading-relaxed max-w-md">
+                <p className="text-white/30 text-sm font-body leading-relaxed max-w-md">
                   {t.process_subtitle}
                 </p>
               </div>
@@ -77,7 +98,7 @@ export default function ProcessSection() {
                   <h3 className="text-white font-heading text-xl md:text-2xl font-semibold mt-3 mb-4">
                     {step.title}
                   </h3>
-                  <p className="text-white/45 text-sm md:text-base leading-relaxed max-w-md">
+                  <p className="text-white/45 text-sm md:text-base font-body leading-relaxed max-w-md">
                     {step.desc}
                   </p>
                 </div>
