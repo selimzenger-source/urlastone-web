@@ -527,7 +527,7 @@ const translations: Record<Locale, TranslationKeys> = {
     featured_kalker_origin: 'Ören',
     process_tag: 'SÜREÇ',
     process_title: 'Nasıl Çalışıyoruz?',
-    process_subtitle: '25 yıllık deneyimimizle tüm süreci yönetiyor, projenize en uygun doğal taşı birlikte belirliyoruz',
+    process_subtitle: '25 yıllık deneyimimizle tüm süreci yönetiyor, projenize en uygun\ndoğal taşı birlikte belirliyoruz',
     process_step1_title: 'Keşif & Analiz',
     process_step1_desc: 'Projenizi yerinde inceliyor, ihtiyaçlarınızı analiz ediyoruz. Mekanınıza en uygun taş türünü zevkinize göre birlikte belirliyoruz.',
     process_step2_title: 'Üretim & Termin',

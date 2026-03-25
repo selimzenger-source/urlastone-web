@@ -25,7 +25,7 @@ export default function ProcessSection() {
           // Section görününce step 0'dan başla
           setActiveStep(0)
           if (timerRef.current) clearInterval(timerRef.current)
-          timerRef.current = setInterval(nextStep, 4000)
+          timerRef.current = setInterval(nextStep, 4250)
         } else {
           // Section görünmeyince durdur
           if (timerRef.current) clearInterval(timerRef.current)
@@ -83,7 +83,7 @@ export default function ProcessSection() {
           <div className="flex-1 w-full" style={{ minHeight: '180px' }}>
             {activeStep === 0 && (
               <div className="animate-fadeIn">
-                <h3 className="text-gold-400 font-heading text-lg sm:text-xl md:text-2xl italic leading-snug">
+                <h3 className="text-gold-400 font-heading text-lg sm:text-xl md:text-2xl italic leading-snug uppercase tracking-wide whitespace-pre-line">
                   {t.process_subtitle}
                 </h3>
               </div>
