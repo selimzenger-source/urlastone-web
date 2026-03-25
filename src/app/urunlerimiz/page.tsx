@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
+import { generateSlug } from '@/lib/slug'
 
 interface StoneType {
   id: string
@@ -654,7 +655,7 @@ export default function TaslarPage() {
                     {relatedProjects.map((proj) => (
                       <Link
                         key={proj.id}
-                        href={`/projelerimiz/${proj.id}`}
+                        href={`/projelerimiz/${generateSlug(proj.project_name)}`}
                         onClick={() => setSelectedProduct(null)}
                         className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all group"
                       >

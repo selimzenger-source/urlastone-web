@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import { Building2, ArrowRight, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
+import { generateSlug } from '@/lib/slug'
 import PageTracker from '@/components/PageTracker'
 // PageTracker auto-detects pathname
 
@@ -99,7 +100,7 @@ export default function ReferanslarimizPage() {
                   {/* Project link */}
                   {ref.project && ref.project_id && (
                     <Link
-                      href={`/projelerimiz/${ref.project_id}`}
+                      href={`/projelerimiz/${generateSlug(ref.project!.project_name)}`}
                       className="inline-flex items-center gap-2 text-gold-400/70 hover:text-gold-400 text-xs font-mono tracking-wide transition-colors"
                     >
                       <ExternalLink size={12} />

@@ -9,6 +9,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
+import { generateSlug } from '@/lib/slug'
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false })
 
@@ -355,7 +356,7 @@ export default function UygulamalarimPage() {
                     )}
                     <div className="flex items-center gap-3">
                       <Link
-                        href={`/projelerimiz/${project.id}`}
+                        href={`/projelerimiz/${generateSlug(project.project_name)}`}
                         className="inline-flex items-center gap-2 text-white text-xs font-mono bg-white/[0.06] hover:bg-white/[0.12] px-3 py-1.5 rounded-full transition-colors"
                       >
                         {t.apps_details}

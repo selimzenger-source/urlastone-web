@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight, X, ZoomIn, Play } from 'lucide-react'
@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
+import { generateSlug } from '@/lib/slug'
 
 
 function getTranslated(project: Project, field: 'project_name' | 'description', locale: Locale): string {
@@ -21,8 +22,12 @@ function getTranslated(project: Project, field: 'project_name' | 'description', 
   return (project[field] as string) || ''
 }
 
+// Detect UUID pattern for old URL redirects
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export default function ProjectDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const { t, locale } = useLanguage()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,15 +35,34 @@ export default function ProjectDetailPage() {
   const [lightbox, setLightbox] = useState(false)
 
   useEffect(() => {
-    if (!params.id) return
-    fetch(`/api/projects/${params.id}`)
+    if (!params.slug) return
+    const slug = params.slug as string
+
+    // If the URL contains a UUID, fetch by ID and redirect to slug URL
+    if (UUID_RE.test(slug)) {
+      fetch(`/api/projects/${slug}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.id && data.project_name) {
+            const newSlug = generateSlug(data.project_name)
+            router.replace(`/projelerimiz/${newSlug}`)
+          } else {
+            setLoading(false)
+          }
+        })
+        .catch(() => setLoading(false))
+      return
+    }
+
+    // Normal slug-based fetch
+    fetch(`/api/projects/by-slug/${slug}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.id) setProject(data)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [params.id])
+  }, [params.slug, router])
 
   if (loading) {
     return (

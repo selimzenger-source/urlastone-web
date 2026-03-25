@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Plus, Trash2, Save, X, ExternalLink, Link2, Upload, Image } from 'lucide-react'
+import { generateSlug } from '@/lib/slug'
 
 interface Project {
   id: string
@@ -325,7 +326,7 @@ export default function AdminReferanslar() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {ref.project_id && (
                       <a
-                        href={`/projelerimiz/${ref.project_id}`}
+                        href={`/projelerimiz/${ref.project?.project_name ? generateSlug(ref.project.project_name) : ref.project_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-1.5 rounded-lg text-white/20 hover:text-gold-400 hover:bg-white/[0.04] transition-colors"

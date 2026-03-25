@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
 import Link from 'next/link'
+import { generateSlug } from '@/lib/slug'
 
 interface Referans {
   id: string
@@ -63,7 +64,7 @@ export default function ReferansMarquee() {
               return (
                 <Link
                   key={`${ref.id}-${i}`}
-                  href={`/projelerimiz/${ref.project_id}`}
+                  href={`/projelerimiz/${ref.project?.project_name ? generateSlug(ref.project.project_name) : ref.project_id}`}
                   className="inline-flex items-center mx-12 cursor-pointer group"
                 >
                   {content}

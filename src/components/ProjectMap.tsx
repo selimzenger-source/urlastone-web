@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { generateSlug } from '@/lib/slug'
 
 // Mobilde Leaflet tap handler sorun çıkarıyor — devre dışı bırak
 function MobileTapFix() {
@@ -416,7 +417,7 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {selected.id && (
                     <a
-                      href={`/projelerimiz/${selected.id}`}
+                      href={`/projelerimiz/${selected.project_name ? generateSlug(selected.project_name) : selected.id}`}
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: '6px',
                         padding: '7px 14px', borderRadius: '20px',

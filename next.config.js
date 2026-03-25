@@ -25,6 +25,7 @@ const nextConfig = {
       { source: '/taslar', destination: '/urunlerimiz', permanent: true },
       { source: '/taslar/:slug', destination: '/urunlerimiz/:slug', permanent: true },
       { source: '/uygulamalarimiz', destination: '/projelerimiz', permanent: true },
+      { source: '/uygulamalarimiz/:slug', destination: '/projelerimiz/:slug', permanent: true },
     ]
   },
   images: {
