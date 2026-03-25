@@ -31,6 +31,9 @@ interface Teklif {
   tas_tercihi: string[]
   aciklama: string | null
   kaynak: string | null
+  fiyat_tipi: string | null
+  iletisim_turu: string | null
+  tercih_dil: string | null
   foto_urls: string[]
   durum: Durum
   created_at: string
@@ -297,6 +300,28 @@ export default function AdminTeklifler() {
                     <p className="text-white text-sm mt-1">{selectedTeklif.metrekare || '—'}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Fiyat Kapsamı + İletişim Tercihi + Kaynak */}
+              <div className="grid grid-cols-3 gap-3">
+                {selectedTeklif.fiyat_tipi && (
+                  <div className="bg-white/[0.03] rounded-xl p-3">
+                    <p className="text-white/30 text-[10px] font-mono">Fiyat Kapsamı</p>
+                    <p className="text-white text-sm mt-1">{selectedTeklif.fiyat_tipi === 'sadece_tas' ? 'Sadece Taş' : 'Taş + Yapıştırıcı + Derz'}</p>
+                  </div>
+                )}
+                {selectedTeklif.iletisim_turu && (
+                  <div className="bg-white/[0.03] rounded-xl p-3">
+                    <p className="text-white/30 text-[10px] font-mono">İletişim Tercihi</p>
+                    <p className="text-white text-sm mt-1">{selectedTeklif.iletisim_turu}</p>
+                  </div>
+                )}
+                {selectedTeklif.kaynak && (
+                  <div className="bg-white/[0.03] rounded-xl p-3">
+                    <p className="text-white/30 text-[10px] font-mono">Nerden Buldu</p>
+                    <p className="text-white text-sm mt-1">{selectedTeklif.kaynak}</p>
+                  </div>
+                )}
               </div>
 
               {/* Taş Tercihleri */}

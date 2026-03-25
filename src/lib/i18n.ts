@@ -398,6 +398,7 @@ type TranslationKeys = {
   form_source_google: string
   form_source_instagram: string
   form_source_referral: string
+  form_source_ai: string
   form_source_other: string
 
   // Uygulamalarımız
@@ -799,6 +800,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'Google',
     form_source_instagram: 'Instagram',
     form_source_referral: 'Tavsiye',
+    form_source_ai: 'Yapay Zeka Önerisi',
     form_source_other: 'Diğer',
     common_teklif_al: 'Teklif Al',
     common_whatsapp: 'WhatsApp ile Ulaşın',
@@ -1191,6 +1193,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'Google',
     form_source_instagram: 'Instagram',
     form_source_referral: 'Referral',
+    form_source_ai: 'AI Recommendation',
     form_source_other: 'Other',
     common_teklif_al: 'Get Quote',
     common_whatsapp: 'Contact Us on WhatsApp',
@@ -1583,6 +1586,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'Google',
     form_source_instagram: 'Instagram',
     form_source_referral: 'Recomendación',
+    form_source_ai: 'Recomendación de IA',
     form_source_other: 'Otro',
     common_teklif_al: 'Solicitar Cotización',
     common_whatsapp: 'Contactar por WhatsApp',
@@ -1975,6 +1979,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'جوجل',
     form_source_instagram: 'إنستاغرام',
     form_source_referral: 'توصية',
+    form_source_ai: 'توصية الذكاء الاصطناعي',
     form_source_other: 'أخرى',
     common_teklif_al: 'طلب عرض سعر',
     common_whatsapp: 'تواصل عبر واتساب',
@@ -2367,6 +2372,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'Google',
     form_source_instagram: 'Instagram',
     form_source_referral: 'Empfehlung',
+    form_source_ai: 'KI-Empfehlung',
     form_source_other: 'Sonstiges',
     common_teklif_al: 'Angebot anfordern',
     common_whatsapp: 'Über WhatsApp Kontaktieren',
@@ -2759,6 +2765,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'Google',
     form_source_instagram: 'Instagram',
     form_source_referral: 'Recommandation',
+    form_source_ai: 'Recommandation IA',
     form_source_other: 'Autre',
     common_teklif_al: 'Demander un Devis',
     common_whatsapp: 'Contactez-nous sur WhatsApp',
@@ -3151,6 +3158,7 @@ const translations: Record<Locale, TranslationKeys> = {
     form_source_google: 'Google',
     form_source_instagram: 'Instagram',
     form_source_referral: 'По рекомендации',
+    form_source_ai: 'Рекомендация ИИ',
     form_source_other: 'Другое',
     common_teklif_al: 'Запросить Цену',
     common_whatsapp: 'Связаться через WhatsApp',

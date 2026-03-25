@@ -54,7 +54,7 @@ export default function TeklifForm() {
     t.form_opt_cephe, t.form_opt_zemin, t.form_opt_ic_mekan,
     t.form_opt_bahce, t.form_opt_havuz, t.form_opt_merdiven, t.form_opt_diger,
   ]
-  const kaynakSecenekleri = [t.form_source_google, t.form_source_instagram, t.form_source_referral, t.form_source_other]
+  const kaynakSecenekleri = [t.form_source_google, t.form_source_instagram, t.form_source_referral, t.form_source_ai || 'Yapay Zeka Önerisi', t.form_source_other]
 
   const [form, setForm] = useState<FormData>({
     adSoyad: '', telefon: '', email: '', ulke: 'Türkiye',
@@ -156,9 +156,9 @@ export default function TeklifForm() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Baş harfleri büyük yap
+  // Baş harfleri büyük, geri kalanı küçük yap (Ersin Gökçen formatı)
   const capitalizeWords = (str: string) =>
-    str.replace(/\b\w/g, (c) => c.toLocaleUpperCase('tr-TR'))
+    str.toLocaleLowerCase('tr-TR').replace(/(?:^|\s)\S/g, (c) => c.toLocaleUpperCase('tr-TR'))
 
   // Email format kontrolü
   const isValidEmail = (email: string) =>
@@ -221,9 +221,13 @@ export default function TeklifForm() {
       newErrors.adSoyad = 'Ad Soyad en az 3 karakter olmalıdır'
     }
 
-    // Telefon: min 7 karakter (uluslararası numaralar için)
-    const cleanPhone = form.telefon.replace(/[\s\-\(\)]/g, '')
-    if (cleanPhone.length < 7) {
+    // Telefon: Türkiye ise 05XX format (11 hane), diğer ülkeler min 7 hane
+    const cleanPhone = form.telefon.replace(/[\s\-\(\)+]/g, '')
+    if (form.ulke === 'Türkiye') {
+      if (!/^0[5]\d{9}$/.test(cleanPhone)) {
+        newErrors.telefon = 'Türkiye telefon formatı: 05XX XXX XX XX (11 hane)'
+      }
+    } else if (cleanPhone.length < 7) {
       newErrors.telefon = 'Geçerli bir telefon numarası giriniz'
     }
 
@@ -365,7 +369,12 @@ export default function TeklifForm() {
             <label className="block text-white/50 text-xs font-mono mb-2">
               {t.form_phone_label} <span className="text-gold-400">*</span>
             </label>
-            <input type="tel" name="telefon" required value={form.telefon} onChange={handleChange}
+            <input type="tel" name="telefon" required value={form.telefon}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9+\-\s()]/g, '')
+                setForm(prev => ({ ...prev, telefon: val }))
+                if (errors.telefon) setErrors(prev => ({ ...prev, telefon: '' }))
+              }}
               placeholder={t.form_phone_placeholder}
               className={`${inputClass} ${errors.telefon ? 'border-red-500/50' : ''}`} />
             {errors.telefon && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.telefon}</p>}
