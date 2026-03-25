@@ -83,6 +83,7 @@ export default function TeklifForm() {
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [bilmiyorum, setBilmiyorum] = useState(false)
   const [showPicker, setShowPicker] = useState(false)
+  const [phoneCode, setPhoneCode] = useState('+90')
 
   const isTurkiye = form.ulke === 'Türkiye'
 
@@ -177,9 +178,15 @@ export default function TeklifForm() {
     // Hata mesajını temizle
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
+  const countryPhoneCodes: Record<string, string> = {
+    'Türkiye': '+90', 'Deutschland': '+49', 'España': '+34', 'France': '+33',
+    'Россия': '+7', 'United Kingdom': '+44', 'United States': '+1',
+  }
   const handleCountryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm(prev => ({ ...prev, ulke: e.target.value, il: '', ilce: '' }))
+    const country = e.target.value
+    setForm(prev => ({ ...prev, ulke: country, il: '', ilce: '' }))
     setCityQuery('')
+    if (countryPhoneCodes[country]) setPhoneCode(countryPhoneCodes[country])
   }
   const selectCity = (city: string) => {
     setForm(prev => ({ ...prev, il: city, ilce: '' }))
@@ -286,7 +293,7 @@ export default function TeklifForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ad_soyad: form.adSoyad, telefon: form.telefon, email: form.email,
+          ad_soyad: form.adSoyad, telefon: `${phoneCode} ${form.telefon}`, email: form.email,
           ulke: form.ulke, il: form.il, ilce: form.ilce,
           proje_tipi: form.projeTipi, tas_tercihi: tasTermihi,
           cephe_metre: form.cepheMetre ? parseInt(form.cepheMetre) : null,
@@ -382,9 +389,32 @@ export default function TeklifForm() {
               {t.form_phone_label} <span className="text-gold-400">*</span>
             </label>
             <div className="flex gap-2">
-              <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 text-white/50 text-sm font-mono shrink-0">
-                {form.ulke === 'Türkiye' ? '🇹🇷 +90' : form.ulke === 'Deutschland' ? '🇩🇪 +49' : form.ulke === 'España' ? '🇪🇸 +34' : form.ulke === 'France' ? '🇫🇷 +33' : form.ulke === 'Россия' ? '🇷🇺 +7' : '🌍'}
-              </div>
+              <select
+                value={phoneCode}
+                onChange={(e) => setPhoneCode(e.target.value)}
+                className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-2 py-3 text-white/70 text-sm font-mono shrink-0 appearance-none cursor-pointer focus:outline-none focus:border-gold-400/40"
+              >
+                <option value="+90" className="bg-[#1a1a1a]">🇹🇷 +90</option>
+                <option value="+49" className="bg-[#1a1a1a]">🇩🇪 +49</option>
+                <option value="+34" className="bg-[#1a1a1a]">🇪🇸 +34</option>
+                <option value="+33" className="bg-[#1a1a1a]">🇫🇷 +33</option>
+                <option value="+7" className="bg-[#1a1a1a]">🇷🇺 +7</option>
+                <option value="+966" className="bg-[#1a1a1a]">🇸🇦 +966</option>
+                <option value="+971" className="bg-[#1a1a1a]">🇦🇪 +971</option>
+                <option value="+44" className="bg-[#1a1a1a]">🇬🇧 +44</option>
+                <option value="+1" className="bg-[#1a1a1a]">🇺🇸 +1</option>
+                <option value="+39" className="bg-[#1a1a1a]">🇮🇹 +39</option>
+                <option value="+30" className="bg-[#1a1a1a]">🇬🇷 +30</option>
+                <option value="+31" className="bg-[#1a1a1a]">🇳🇱 +31</option>
+                <option value="+46" className="bg-[#1a1a1a]">🇸🇪 +46</option>
+                <option value="+41" className="bg-[#1a1a1a]">🇨🇭 +41</option>
+                <option value="+43" className="bg-[#1a1a1a]">🇦🇹 +43</option>
+                <option value="+32" className="bg-[#1a1a1a]">🇧🇪 +32</option>
+                <option value="+48" className="bg-[#1a1a1a]">🇵🇱 +48</option>
+                <option value="+380" className="bg-[#1a1a1a]">🇺🇦 +380</option>
+                <option value="+972" className="bg-[#1a1a1a]">🇮🇱 +972</option>
+                <option value="+251" className="bg-[#1a1a1a]">🇪🇹 +251</option>
+              </select>
               <input type="tel" name="telefon" required value={form.telefon}
                 onChange={(e) => {
                   let val = e.target.value
