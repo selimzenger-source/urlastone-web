@@ -210,10 +210,34 @@ export default function TeklifForm() {
     if (!bilmiyorum) setSelectedProducts([])
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Client-side image compression to avoid Vercel 4.5MB body limit
+  const compressImage = async (file: File, maxSizeKB = 800): Promise<File> => {
+    if (file.size <= maxSizeKB * 1024) return file
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let { width, height } = img
+        // Max 1920px
+        if (width > 1920) { height = (height * 1920) / width; width = 1920 }
+        if (height > 1920) { width = (width * 1920) / height; height = 1920 }
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        canvas.toBlob((blob) => {
+          resolve(new File([blob!], file.name, { type: 'image/jpeg' }))
+        }, 'image/jpeg', 0.7)
+      }
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files).slice(0, 5 - dosyalar.length)
-      setDosyalar(prev => [...prev, ...newFiles].slice(0, 5))
+      const rawFiles = Array.from(e.target.files).slice(0, 5 - dosyalar.length)
+      // Compress each file
+      const compressed = await Promise.all(rawFiles.map(f => compressImage(f)))
+      setDosyalar(prev => [...prev, ...compressed].slice(0, 5))
     }
   }
   const removeFile = (index: number) => {
