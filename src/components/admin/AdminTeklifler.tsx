@@ -223,9 +223,9 @@ export default function AdminTeklifler() {
                 t.kaynak || '',
                 t.aciklama || '',
                 t.durum,
-              ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+              ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')
             })
-            const csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n')
+            const csv = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n')
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
