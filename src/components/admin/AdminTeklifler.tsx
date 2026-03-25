@@ -187,16 +187,57 @@ export default function AdminTeklifler() {
         ))}
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Ad, il veya proje tipi ara..."
-          className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.12] transition-colors"
-        />
+      {/* Search + Excel Export */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Ad, il veya proje tipi ara..."
+            className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl pl-11 pr-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/[0.12] transition-colors"
+          />
+        </div>
+        <button
+          onClick={() => {
+            // CSV oluştur (Excel uyumlu, UTF-8 BOM)
+            const headers = ['Tarih', 'Saat', 'Ad Soyad', 'Telefon', 'E-posta', 'Ülke', 'İl', 'İlçe', 'Proje Tipi', 'Metrekare', 'Taş Tercihi', 'Fiyat Kapsamı', 'İletişim Tercihi', 'Kaynak', 'Açıklama', 'Durum']
+            const rows = teklifler.map(t => {
+              const d = new Date(t.created_at)
+              return [
+                d.toLocaleDateString('tr-TR'),
+                d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+                t.ad_soyad,
+                t.telefon,
+                t.email || '',
+                t.ulke,
+                t.il,
+                t.ilce || '',
+                t.proje_tipi,
+                t.metrekare || '',
+                t.tas_tercihi?.join(', ') || '',
+                t.fiyat_tipi === 'sadece_tas' ? 'Sadece Taş' : t.fiyat_tipi === 'tas_ve_malzeme' ? 'Taş + Yapıştırıcı + Derz' : (t.fiyat_tipi || ''),
+                t.iletisim_turu || '',
+                t.kaynak || '',
+                t.aciklama || '',
+                t.durum,
+              ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+            })
+            const csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n')
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `urlastone-teklifler-${new Date().toISOString().split('T')[0]}.csv`
+            a.click()
+            URL.revokeObjectURL(url)
+          }}
+          className="flex items-center gap-2 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-xs font-mono hover:bg-green-500/20 transition-colors whitespace-nowrap"
+        >
+          <Download size={14} />
+          Excel İndir
+        </button>
       </div>
 
       {/* Cards */}

@@ -231,35 +231,46 @@ export default function TeklifForm() {
       newErrors.telefon = 'Geçerli bir telefon numarası giriniz'
     }
 
-    // Email: her zaman zorunlu
+    // Email: her zaman zorunlu + format kontrol
     if (!form.email) {
       newErrors.email = t.form_email_required || 'E-posta adresi zorunludur'
     } else if (!isValidEmail(form.email)) {
-      newErrors.email = t.form_email_invalid || 'Geçerli bir e-posta adresi giriniz'
+      newErrors.email = 'E-posta adresinizi ornek@gmail.com formatında giriniz'
     }
 
     // Metrekare: zorunlu, 0'dan büyük tam sayı
     const m2 = parseInt(form.cepheMetre)
     if (!form.cepheMetre || isNaN(m2) || m2 < 1 || !Number.isInteger(Number(form.cepheMetre))) {
-      newErrors.cepheMetre = 'Kaplanacak alan 0\'dan büyük bir tam sayı olmalıdır (m²)'
+      newErrors.cepheMetre = 'Lütfen kaplanacak alanın m² değerini girin (örn: 150)'
     }
 
     // Taş tercihi: en az 1 seçilmeli veya "bilmiyorum" seçili olmalı
     if (selectedProducts.length === 0 && !bilmiyorum) {
-      newErrors.tasTermihi = 'Taş tercihi seçiniz veya "Tavsiye İstiyorum" işaretleyiniz'
+      newErrors.tasTermihi = 'Lütfen bir taş türü seçin veya "Tavsiye İstiyorum" işaretleyin'
     }
 
     // İletişim tercihi: zorunlu
     if (!form.iletisimTuru) {
-      newErrors.iletisimTuru = 'İletişim tercihi seçiniz'
+      newErrors.iletisimTuru = 'Lütfen iletişim tercihinizi seçin (Telefon, WhatsApp veya E-posta)'
+    }
+
+    // İlçe: zorunlu
+    if (!form.ilce || form.ilce.trim().length < 2) {
+      newErrors.ilce = 'Lütfen ilçe seçin'
     }
 
     // Bizi nerden buldunuz: zorunlu
     if (!form.kaynak) {
-      newErrors.kaynak = 'Bu alanı doldurunuz'
+      newErrors.kaynak = 'Lütfen bizi nereden bulduğunuzu seçin'
     }
 
     setErrors(newErrors)
+    // İlk hatalı alana scroll
+    if (Object.keys(newErrors).length > 0) {
+      const firstErrorField = Object.keys(newErrors)[0]
+      const el = document.querySelector(`[name="${firstErrorField}"]`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
     return Object.keys(newErrors).length === 0
   }
 
@@ -371,11 +382,17 @@ export default function TeklifForm() {
             </label>
             <input type="tel" name="telefon" required value={form.telefon}
               onChange={(e) => {
-                const val = e.target.value.replace(/[^0-9+\-\s()]/g, '')
+                let val = e.target.value
+                if (form.ulke === 'Türkiye') {
+                  // Türkiye: sadece rakam, max 11 hane, 0 ile başlamalı
+                  val = val.replace(/[^0-9]/g, '').slice(0, 11)
+                } else {
+                  val = val.replace(/[^0-9+\-\s()]/g, '')
+                }
                 setForm(prev => ({ ...prev, telefon: val }))
                 if (errors.telefon) setErrors(prev => ({ ...prev, telefon: '' }))
               }}
-              placeholder={t.form_phone_placeholder}
+              placeholder={form.ulke === 'Türkiye' ? '05XX XXX XX XX' : (t.form_phone_placeholder || '+1 555 123 4567')}
               className={`${inputClass} ${errors.telefon ? 'border-red-500/50' : ''}`} />
             {errors.telefon && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.telefon}</p>}
           </div>
@@ -484,6 +501,7 @@ export default function TeklifForm() {
                 disabled={isTurkiye && !form.il}
                 className={`${inputClass} ${isTurkiye && !form.il ? 'opacity-40 cursor-not-allowed' : ''}`} />
             )}
+            {errors.ilce && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.ilce}</p>}
           </div>
         </div>
 
@@ -512,8 +530,9 @@ export default function TeklifForm() {
               placeholder={t.form_eg_150 || 'Örn: 150'}
               value={form.cepheMetre}
               onChange={handleChange}
-              className={inputClass}
+              className={`${inputClass} ${errors.cepheMetre ? 'border-red-500/50' : ''}`}
             />
+            {errors.cepheMetre && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.cepheMetre}</p>}
           </div>
         </div>
 
@@ -731,10 +750,11 @@ export default function TeklifForm() {
         <div>
           <label className="block text-white/50 text-xs font-mono mb-2">{t.form_source_label}</label>
           <select name="kaynak" value={form.kaynak} onChange={handleChange}
-            className={`${inputClass} appearance-none cursor-pointer`}>
+            className={`${inputClass} appearance-none cursor-pointer ${errors.kaynak ? 'border-red-500/50' : ''}`}>
             <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
             {kaynakSecenekleri.map(k => <option key={k} value={k} className="bg-[#1a1a1a]">{k}</option>)}
           </select>
+          {errors.kaynak && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.kaynak}</p>}
         </div>
 
         {/* Submit */}
