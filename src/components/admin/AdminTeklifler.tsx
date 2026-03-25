@@ -314,9 +314,16 @@ export default function AdminTeklifler() {
               <div className="space-y-2">
                 <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">İletişim</p>
                 <div className="space-y-2">
-                  <a href={`tel:${selectedTeklif.telefon}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
-                    <Phone size={14} className="text-green-400" />{selectedTeklif.telefon}
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a href={`tel:${selectedTeklif.telefon}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
+                      <Phone size={14} className="text-green-400" />{selectedTeklif.telefon}
+                    </a>
+                    <a href={`https://wa.me/${selectedTeklif.telefon.replace(/[\s\-\(\)]/g, '').replace(/^0/, '90')}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="px-2 py-1 rounded-lg bg-green-500/10 text-green-400 text-[10px] font-mono hover:bg-green-500/20 transition-colors">
+                      WP
+                    </a>
+                  </div>
                   {selectedTeklif.email && (
                     <a href={`mailto:${selectedTeklif.email}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
                       <Mail size={14} className="text-blue-400" />{selectedTeklif.email}

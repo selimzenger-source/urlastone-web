@@ -221,11 +221,11 @@ export default function TeklifForm() {
       newErrors.adSoyad = 'Ad Soyad en az 3 karakter olmalıdır'
     }
 
-    // Telefon: Türkiye ise 05XX format (11 hane), diğer ülkeler min 7 hane
+    // Telefon: Türkiye ise 5XX format (10 hane, ülke kodu hariç), diğer ülkeler min 7 hane
     const cleanPhone = form.telefon.replace(/[\s\-\(\)+]/g, '')
     if (form.ulke === 'Türkiye') {
-      if (!/^0[5]\d{9}$/.test(cleanPhone)) {
-        newErrors.telefon = 'Türkiye telefon formatı: 05XX XXX XX XX (11 hane)'
+      if (!/^5\d{9}$/.test(cleanPhone)) {
+        newErrors.telefon = 'Telefon numaranızı 5XX XXX XX XX formatında girin (10 hane)'
       }
     } else if (cleanPhone.length < 7) {
       newErrors.telefon = 'Geçerli bir telefon numarası giriniz'
@@ -336,6 +336,7 @@ export default function TeklifForm() {
         <h3 className="font-heading text-2xl font-bold text-white">
           {t.form_title} <span className="text-gradient-gold">{t.form_title_gold}</span>
         </h3>
+        <p className="text-white/20 text-[10px] font-mono mt-2"><span className="text-gold-400">*</span> zorunlu alanlar</p>
       </div>
 
       {simulationResult?.resultUrl && (
@@ -380,20 +381,29 @@ export default function TeklifForm() {
             <label className="block text-white/50 text-xs font-mono mb-2">
               {t.form_phone_label} <span className="text-gold-400">*</span>
             </label>
-            <input type="tel" name="telefon" required value={form.telefon}
-              onChange={(e) => {
-                let val = e.target.value
-                if (form.ulke === 'Türkiye') {
-                  // Türkiye: sadece rakam, max 11 hane, 0 ile başlamalı
-                  val = val.replace(/[^0-9]/g, '').slice(0, 11)
-                } else {
-                  val = val.replace(/[^0-9+\-\s()]/g, '')
-                }
-                setForm(prev => ({ ...prev, telefon: val }))
-                if (errors.telefon) setErrors(prev => ({ ...prev, telefon: '' }))
-              }}
-              placeholder={form.ulke === 'Türkiye' ? '05XX XXX XX XX' : (t.form_phone_placeholder || '+1 555 123 4567')}
-              className={`${inputClass} ${errors.telefon ? 'border-red-500/50' : ''}`} />
+            <div className="flex gap-2">
+              <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 text-white/50 text-sm font-mono shrink-0">
+                {form.ulke === 'Türkiye' ? '🇹🇷 +90' : form.ulke === 'Deutschland' ? '🇩🇪 +49' : form.ulke === 'España' ? '🇪🇸 +34' : form.ulke === 'France' ? '🇫🇷 +33' : form.ulke === 'Россия' ? '🇷🇺 +7' : '🌍'}
+              </div>
+              <input type="tel" name="telefon" required value={form.telefon}
+                onChange={(e) => {
+                  let val = e.target.value
+                  if (form.ulke === 'Türkiye') {
+                    const digits = val.replace(/[^0-9]/g, '').slice(0, 10)
+                    // Auto-format: 532 258 41 11
+                    if (digits.length <= 3) val = digits
+                    else if (digits.length <= 6) val = `${digits.slice(0, 3)} ${digits.slice(3)}`
+                    else if (digits.length <= 8) val = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+                    else val = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`
+                  } else {
+                    val = val.replace(/[^0-9\s]/g, '')
+                  }
+                  setForm(prev => ({ ...prev, telefon: val }))
+                  if (errors.telefon) setErrors(prev => ({ ...prev, telefon: '' }))
+                }}
+                placeholder={form.ulke === 'Türkiye' ? '532 258 41 11' : '555 123 4567'}
+                className={`${inputClass} flex-1 ${errors.telefon ? 'border-red-500/50' : ''}`} />
+            </div>
             {errors.telefon && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.telefon}</p>}
           </div>
         </div>
@@ -487,11 +497,11 @@ export default function TeklifForm() {
             )}
           </div>
           <div>
-            <label className="block text-white/50 text-xs font-mono mb-2">{t.form_district_label}</label>
+            <label className="block text-white/50 text-xs font-mono mb-2">{t.form_district_label} <span className="text-gold-400">*</span></label>
             {isTurkiye && form.il && availableDistricts.length > 0 ? (
               <select value={form.ilce} onChange={(e) => setForm(prev => ({ ...prev, ilce: e.target.value }))}
                 className={`${inputClass} appearance-none cursor-pointer`}>
-                <option value="" className="bg-[#1a1a1a]">{t.form_district_placeholder}</option>
+                <option value="" className="bg-[#1a1a1a]">Seçiniz</option>
                 {availableDistricts.map(d => <option key={d} value={d} className="bg-[#1a1a1a]">{d}</option>)}
               </select>
             ) : (
@@ -586,7 +596,7 @@ export default function TeklifForm() {
         {/* ═══ 3-STEP TAŞ SEÇİMİ ═══ */}
         <div>
           <label className="block text-white/50 text-xs font-mono mb-3">
-            {t.form_stone_pref_label} <span className="text-white/30">(max 4 ürün)</span>
+            {t.form_stone_pref_label} <span className="text-gold-400">*</span> <span className="text-white/30">(max 4 ürün)</span>
           </label>
 
           {/* Selected products chips */}
@@ -707,6 +717,7 @@ export default function TeklifForm() {
               </div>
             </div>
           )}
+          {errors.tasTermihi && <p className="text-red-400 text-[10px] font-mono mt-2">{errors.tasTermihi}</p>}
         </div>
 
         {/* Fotoğraf Yükleme */}
@@ -748,7 +759,7 @@ export default function TeklifForm() {
 
         {/* Bizi Nereden Buldunuz */}
         <div>
-          <label className="block text-white/50 text-xs font-mono mb-2">{t.form_source_label}</label>
+          <label className="block text-white/50 text-xs font-mono mb-2">{t.form_source_label} <span className="text-gold-400">*</span></label>
           <select name="kaynak" value={form.kaynak} onChange={handleChange}
             className={`${inputClass} appearance-none cursor-pointer ${errors.kaynak ? 'border-red-500/50' : ''}`}>
             <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
