@@ -83,7 +83,7 @@ export default function ProcessSection() {
           <div className="flex-1 w-full" style={{ minHeight: '180px' }}>
             {activeStep === 0 && (
               <div className="animate-fadeIn">
-                <h3 className="text-white font-heading text-xl md:text-2xl font-semibold mt-3 mb-4 leading-relaxed">
+                <h3 className="text-white font-heading text-xl md:text-2xl font-semibold mt-10 mb-4 leading-relaxed">
                   {t.process_subtitle}
                 </h3>
               </div>
