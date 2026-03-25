@@ -28,9 +28,9 @@ export async function POST(req: Request) {
   } = body
 
   // Validate required fields
-  if (!ad_soyad || !telefon || !il || !proje_tipi || !cephe_metre) {
+  if (!ad_soyad || !telefon || !il || !proje_tipi || !cephe_metre || !iletisim_turu || !kaynak) {
     return NextResponse.json(
-      { error: 'Ad Soyad, Telefon, İl, Proje Tipi ve Cephe m² zorunludur' },
+      { error: 'Tüm zorunlu alanları doldurunuz' },
       { status: 400 }
     )
   }
@@ -51,6 +51,8 @@ export async function POST(req: Request) {
       fiyat_tipi: fiyat_tipi || 'sadece_tas',
       aciklama: aciklama || null,
       kaynak: kaynak || null,
+      iletisim_turu: iletisim_turu || null,
+      tercih_dil: tercih_dil || 'tr',
       foto_urls: [],
       durum: 'Yeni',
     })

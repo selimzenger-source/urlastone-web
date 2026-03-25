@@ -142,7 +142,9 @@ export default function AdminTeklifler() {
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
-    return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const date = d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+    return `${date} ${time}`
   }
 
   if (loading) {

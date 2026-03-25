@@ -234,6 +234,27 @@ export default function TeklifForm() {
       newErrors.email = t.form_email_invalid || 'Geçerli bir e-posta adresi giriniz'
     }
 
+    // Metrekare: zorunlu, 0'dan büyük tam sayı
+    const m2 = parseInt(form.cepheMetre)
+    if (!form.cepheMetre || isNaN(m2) || m2 < 1 || !Number.isInteger(Number(form.cepheMetre))) {
+      newErrors.cepheMetre = 'Kaplanacak alan 0\'dan büyük bir tam sayı olmalıdır (m²)'
+    }
+
+    // Taş tercihi: en az 1 seçilmeli veya "bilmiyorum" seçili olmalı
+    if (selectedProducts.length === 0 && !bilmiyorum) {
+      newErrors.tasTermihi = 'Taş tercihi seçiniz veya "Tavsiye İstiyorum" işaretleyiniz'
+    }
+
+    // İletişim tercihi: zorunlu
+    if (!form.iletisimTuru) {
+      newErrors.iletisimTuru = 'İletişim tercihi seçiniz'
+    }
+
+    // Bizi nerden buldunuz: zorunlu
+    if (!form.kaynak) {
+      newErrors.kaynak = 'Bu alanı doldurunuz'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
