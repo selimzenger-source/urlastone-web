@@ -19,6 +19,7 @@ interface TeklifData {
   proje_tipi: string
   tas_tercihi: string[]
   metrekare?: string
+  cephe_metre?: number | string
   aciklama?: string
   kaynak?: string
   iletisim_turu?: string
@@ -45,21 +46,21 @@ const emailTranslations: Record<string, {
   contactTypes: Record<string, string>
 }> = {
   tr: {
-    subject: 'Teklif Talebiniz Alindi',
-    subtitle: 'DOGAL TAS',
-    heading: 'Talebiniz Alindi',
-    greeting: (name) => `Sayin <strong style="color:#d2b96e;">${name}</strong>, teklif talebiniz basariyla alinmistir. En kisa surede sizinle iletisime gececegiz.`,
-    body: 'En kisa surede sizinle iletisime gececegiz.',
-    summaryTitle: 'Talep Ozeti',
+    subject: 'Teklif Talebiniz Alındı',
+    subtitle: 'DOĞAL TAŞ',
+    heading: 'Talebiniz Alındı',
+    greeting: (name) => `Sayın <strong style="color:#d2b96e;">${name}</strong>, teklif talebiniz başarıyla alınmıştır.`,
+    body: 'En kısa sürede sizinle iletişime geçeceğiz.',
+    summaryTitle: 'Talep Özeti',
     projectType: 'Proje Tipi',
     location: 'Konum',
-    area: 'Alan',
-    stonePreference: 'Tas Tercihi',
-    contactPreference: 'Iletisim Tercihi',
-    responseTime: 'Genellikle <strong style="color:#999;">24 saat</strong> icinde donus yapiyoruz. Acil durumlar icin bizi dogrudan arayabilirsiniz.',
+    area: 'Kaplanacak Alan',
+    stonePreference: 'Taş Tercihi',
+    contactPreference: 'İletişim Tercihi',
+    responseTime: 'Genellikle <strong style="color:#999;">24 saat</strong> içinde dönüş yapıyoruz. Acil durumlar için bizi doğrudan arayabilirsiniz.',
     responseNote: '',
-    contactTitle: 'Iletisim',
-    footer: 'Bu mail otomatik olarak gonderilmistir',
+    contactTitle: 'İletişim',
+    footer: 'Bu e-posta otomatik olarak gönderilmiştir',
     contactTypes: { phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' },
   },
   en: {
@@ -145,75 +146,87 @@ export async function sendCustomerConfirmation(data: TeklifData) {
   const dir = lang === 'ar' ? 'rtl' : 'ltr'
   const contactLabel = data.iletisim_turu ? (t.contactTypes[data.iletisim_turu] || data.iletisim_turu) : ''
 
+  const areaValue = data.cephe_metre || data.metrekare || ''
+
   const html = `
 <!DOCTYPE html>
 <html dir="${dir}">
 <head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Arial,sans-serif;direction:${dir};">
-  <div style="max-width:600px;margin:0 auto;background:#111111;border-radius:16px;overflow:hidden;margin-top:20px;margin-bottom:20px;">
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif;direction:${dir};">
+  <div style="max-width:600px;margin:0 auto;background:#0a0a0a;overflow:hidden;margin-top:0;margin-bottom:0;">
 
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#b39345,#d2b96e,#b39345);padding:32px;text-align:center;">
-      <h1 style="margin:0;font-size:28px;font-weight:700;color:#0a0a0a;letter-spacing:2px;">URLASTONE</h1>
-      <p style="margin:4px 0 0;font-size:12px;color:#0a0a0a;opacity:0.7;letter-spacing:1px;">${t.subtitle}</p>
+    <!-- Header with Logo -->
+    <div style="background:#0a0a0a;padding:28px 32px;text-align:center;border-bottom:2px solid #b39345;">
+      <img src="https://www.urlastone.com/logo-outline.png" alt="URLASTONE" width="48" height="48" style="display:inline-block;vertical-align:middle;margin-right:12px;" />
+      <span style="display:inline-block;vertical-align:middle;">
+        <span style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:3px;">URLA</span><span style="font-size:24px;font-weight:300;color:#ffffff;letter-spacing:3px;">STONE</span>
+      </span>
+      <p style="margin:6px 0 0;font-size:11px;color:#b39345;letter-spacing:2px;text-transform:uppercase;">${t.subtitle}</p>
     </div>
+
+    <!-- Gold accent bar -->
+    <div style="height:3px;background:linear-gradient(90deg,#b39345,#d2b96e,#b39345);"></div>
 
     <!-- Body -->
     <div style="padding:32px;">
-      <h2 style="color:#ffffff;font-size:20px;margin:0 0 8px;">${t.heading}</h2>
-      <p style="color:#999;font-size:14px;line-height:1.6;margin:0 0 24px;">
+      <h2 style="color:#b39345;font-size:22px;margin:0 0 16px;font-weight:600;">${t.heading}</h2>
+      <p style="color:#aaa;font-size:14px;line-height:1.7;margin:0 0 28px;">
         ${t.greeting(data.ad_soyad)}
       </p>
 
-      <!-- Talep Ozeti -->
-      <div style="background:#1a1a1a;border:1px solid #222;border-radius:12px;padding:20px;margin-bottom:24px;">
-        <h3 style="color:#b39345;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">${t.summaryTitle}</h3>
+      <!-- Talep Özeti -->
+      <div style="background:#141414;border:1px solid #222;border-radius:12px;padding:24px;margin-bottom:28px;">
+        <h3 style="color:#b39345;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 20px;border-bottom:1px solid #222;padding-bottom:12px;">${t.summaryTitle}</h3>
         <table style="width:100%;border-collapse:collapse;">
           <tr>
-            <td style="color:#666;font-size:12px;padding:6px 0;vertical-align:top;width:140px;">${t.projectType}</td>
-            <td style="color:#ccc;font-size:13px;padding:6px 0;">${data.proje_tipi}</td>
+            <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;width:150px;">${t.projectType}</td>
+            <td style="color:#ddd;font-size:13px;padding:8px 0;font-weight:500;">${data.proje_tipi}</td>
           </tr>
-          <tr>
-            <td style="color:#666;font-size:12px;padding:6px 0;vertical-align:top;">${t.location}</td>
-            <td style="color:#ccc;font-size:13px;padding:6px 0;">${data.ilce ? data.ilce + ', ' : ''}${data.il}, ${data.ulke}</td>
+          <tr style="border-top:1px solid #1a1a1a;">
+            <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;">${t.location}</td>
+            <td style="color:#ddd;font-size:13px;padding:8px 0;">${data.ilce ? data.ilce + ', ' : ''}${data.il}, ${data.ulke}</td>
           </tr>
-          ${data.metrekare ? `<tr>
-            <td style="color:#666;font-size:12px;padding:6px 0;vertical-align:top;">${t.area}</td>
-            <td style="color:#ccc;font-size:13px;padding:6px 0;">${data.metrekare}</td>
+          ${areaValue ? `<tr style="border-top:1px solid #1a1a1a;">
+            <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;">${t.area}</td>
+            <td style="color:#ddd;font-size:13px;padding:8px 0;">${areaValue} m&sup2;</td>
           </tr>` : ''}
-          ${data.tas_tercihi.length > 0 ? `<tr>
-            <td style="color:#666;font-size:12px;padding:6px 0;vertical-align:top;">${t.stonePreference}</td>
-            <td style="color:#ccc;font-size:13px;padding:6px 0;">${data.tas_tercihi.join(', ')}</td>
+          ${data.tas_tercihi.length > 0 ? `<tr style="border-top:1px solid #1a1a1a;">
+            <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;">${t.stonePreference}</td>
+            <td style="color:#ddd;font-size:13px;padding:8px 0;">${data.tas_tercihi.join(', ')}</td>
           </tr>` : ''}
-          ${contactLabel ? `<tr>
-            <td style="color:#666;font-size:12px;padding:6px 0;vertical-align:top;">${t.contactPreference}</td>
-            <td style="color:#ccc;font-size:13px;padding:6px 0;">${contactLabel}</td>
+          ${contactLabel ? `<tr style="border-top:1px solid #1a1a1a;">
+            <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;">${t.contactPreference}</td>
+            <td style="color:#ddd;font-size:13px;padding:8px 0;">${contactLabel}</td>
           </tr>` : ''}
         </table>
       </div>
 
-      <p style="color:#666;font-size:13px;line-height:1.6;margin:0 0 24px;">
-        ${t.responseTime}
-      </p>
+      <!-- Response time -->
+      <div style="background:#141414;border-left:3px solid #b39345;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#888;font-size:13px;line-height:1.6;margin:0;">
+          ${t.responseTime}
+        </p>
+      </div>
 
       <!-- Contact -->
-      <div style="text-align:center;padding:16px;background:#1a1a1a;border-radius:12px;">
-        <p style="color:#666;font-size:11px;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px;">${t.contactTitle}</p>
+      <div style="text-align:center;padding:20px;background:#141414;border-radius:12px;border:1px solid #222;">
+        <p style="color:#666;font-size:10px;margin:0 0 12px;text-transform:uppercase;letter-spacing:2px;">${t.contactTitle}</p>
         <p style="margin:0;">
-          <a href="tel:+905532322144" style="color:#d2b96e;font-size:14px;text-decoration:none;">+90 553 232 2144</a>
+          <a href="tel:+905532322144" style="color:#b39345;font-size:16px;text-decoration:none;font-weight:600;">+90 553 232 2144</a>
         </p>
-        <p style="margin:4px 0 0;">
-          <a href="mailto:info@urlastone.com" style="color:#999;font-size:12px;text-decoration:none;">info@urlastone.com</a>
+        <p style="margin:6px 0 0;">
+          <a href="mailto:info@urlastone.com" style="color:#888;font-size:12px;text-decoration:none;">info@urlastone.com</a>
+        </p>
+        <p style="margin:8px 0 0;">
+          <a href="https://www.urlastone.com" style="color:#b39345;font-size:11px;text-decoration:none;letter-spacing:1px;">www.urlastone.com</a>
         </p>
       </div>
     </div>
 
     <!-- Footer -->
-    <div style="padding:20px 32px;border-top:1px solid #1a1a1a;text-align:center;">
-      <p style="color:#444;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} URLASTONE — Urla, Izmir</p>
-      <p style="color:#333;font-size:10px;margin:4px 0 0;">
-        <a href="https://urlastone.com" style="color:#b39345;text-decoration:none;">urlastone.com</a>
-      </p>
+    <div style="padding:20px 32px;background:#080808;text-align:center;border-top:1px solid #1a1a1a;">
+      <p style="color:#444;font-size:10px;margin:0;">&copy; ${new Date().getFullYear()} URLASTONE &mdash; Urla, İzmir, T&uuml;rkiye</p>
+      <p style="color:#333;font-size:9px;margin:6px 0 0;">${t.footer}</p>
     </div>
   </div>
 </body>

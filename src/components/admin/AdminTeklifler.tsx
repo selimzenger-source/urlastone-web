@@ -28,6 +28,7 @@ interface Teklif {
   ilce: string | null
   proje_tipi: string
   metrekare: string | null
+  cephe_metre: number | null
   tas_tercihi: string[]
   aciklama: string | null
   kaynak: string | null
@@ -218,7 +219,7 @@ export default function AdminTeklifler() {
                 t.metrekare || '',
                 t.tas_tercihi?.join(', ') || '',
                 t.fiyat_tipi === 'sadece_tas' ? 'Sadece Taş' : t.fiyat_tipi === 'tas_ve_malzeme' ? 'Taş + Yapıştırıcı + Derz' : (t.fiyat_tipi || ''),
-                t.iletisim_turu || '',
+                ({ phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' } as Record<string, string>)[t.iletisim_turu || ''] || t.iletisim_turu || '',
                 t.kaynak || '',
                 t.aciklama || '',
                 t.durum,
@@ -318,7 +319,7 @@ export default function AdminTeklifler() {
                     <a href={`tel:${selectedTeklif.telefon}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
                       <Phone size={14} className="text-green-400" />{selectedTeklif.telefon}
                     </a>
-                    <a href={`https://wa.me/${selectedTeklif.telefon.replace(/[\s\-\(\)]/g, '').replace(/^0/, '90')}`}
+                    <a href={`https://wa.me/90${selectedTeklif.telefon.replace(/[\s\-\(\)+]/g, '').replace(/^0+/, '')}`}
                       target="_blank" rel="noopener noreferrer"
                       className="px-2 py-1 rounded-lg bg-green-500/10 text-green-400 text-[10px] font-mono hover:bg-green-500/20 transition-colors">
                       WP
@@ -345,7 +346,7 @@ export default function AdminTeklifler() {
                   </div>
                   <div className="bg-white/[0.03] rounded-xl p-3">
                     <p className="text-white/30 text-[10px] font-mono">Metrekare</p>
-                    <p className="text-white text-sm mt-1">{selectedTeklif.metrekare || '—'}</p>
+                    <p className="text-white text-sm mt-1">{selectedTeklif.cephe_metre ? `${selectedTeklif.cephe_metre} m²` : (selectedTeklif.metrekare || '—')}</p>
                   </div>
                 </div>
               </div>
@@ -361,7 +362,7 @@ export default function AdminTeklifler() {
                 {selectedTeklif.iletisim_turu && (
                   <div className="bg-white/[0.03] rounded-xl p-3">
                     <p className="text-white/30 text-[10px] font-mono">İletişim Tercihi</p>
-                    <p className="text-white text-sm mt-1">{selectedTeklif.iletisim_turu}</p>
+                    <p className="text-white text-sm mt-1">{{ phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' }[selectedTeklif.iletisim_turu] || selectedTeklif.iletisim_turu}</p>
                   </div>
                 )}
                 {selectedTeklif.kaynak && (

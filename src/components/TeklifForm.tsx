@@ -532,14 +532,17 @@ export default function TeklifForm() {
               {t.form_facade_area || 'Kaplanacak Cephe (m²)'} <span className="text-gold-400">*</span>
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               name="cepheMetre"
-              required
-              min="1"
-              step="1"
               placeholder={t.form_eg_150 || 'Örn: 150'}
               value={form.cepheMetre}
-              onChange={handleChange}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, '')
+                setForm(prev => ({ ...prev, cepheMetre: val }))
+                if (errors.cepheMetre) setErrors(prev => ({ ...prev, cepheMetre: '' }))
+              }}
               className={`${inputClass} ${errors.cepheMetre ? 'border-red-500/50' : ''}`}
             />
             {errors.cepheMetre && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.cepheMetre}</p>}
