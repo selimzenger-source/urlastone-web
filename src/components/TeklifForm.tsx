@@ -308,10 +308,15 @@ export default function TeklifForm() {
 
       // Upload images if any
       if (dosyalar.length > 0 && teklifData?.id) {
-        const uploadForm = new FormData()
-        uploadForm.append('teklif_id', teklifData.id)
-        dosyalar.forEach(file => uploadForm.append('files', file))
-        await fetch('/api/teklifler/upload', { method: 'POST', body: uploadForm })
+        try {
+          const uploadForm = new FormData()
+          uploadForm.append('teklif_id', teklifData.id)
+          dosyalar.forEach(file => uploadForm.append('files', file))
+          const uploadRes = await fetch('/api/teklifler/upload', { method: 'POST', body: uploadForm })
+          if (!uploadRes.ok) console.error('Upload failed:', await uploadRes.text())
+        } catch (err) {
+          console.error('Upload error:', err)
+        }
       }
 
       setBasarili(true)

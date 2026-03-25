@@ -157,7 +157,7 @@ export async function sendCustomerConfirmation(data: TeklifData) {
 
     <!-- Header with Logo -->
     <div style="background:#0a0a0a;padding:28px 32px;text-align:center;border-bottom:2px solid #b39345;">
-      <img src="https://www.urlastone.com/logo-outline.png" alt="URLASTONE" width="48" height="48" style="display:inline-block;vertical-align:middle;margin-right:12px;" />
+      <img src="https://www.urlastone.com/logo-outline.png" alt="URLASTONE" width="48" height="48" style="display:inline-block;vertical-align:middle;margin-right:12px;background:#0a0a0a;padding:4px;border-radius:8px;" />
       <span style="display:inline-block;vertical-align:middle;">
         <span style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:3px;">URLA</span><span style="font-size:24px;font-weight:300;color:#ffffff;letter-spacing:3px;">STONE</span>
       </span>
