@@ -57,10 +57,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No files uploaded' }, { status: 400 })
   }
 
-  // Update teklif record with foto_urls
+  // Append to existing foto_urls (supports one-by-one uploads)
+  const { data: existing } = await supabaseAdmin
+    .from('teklifler')
+    .select('foto_urls')
+    .eq('id', teklifId)
+    .single()
+
+  const existingUrls = existing?.foto_urls || []
+  const allUrls = [...existingUrls, ...uploadedUrls].slice(0, 10) // max 10 photos
+
   const { error: updateError } = await supabaseAdmin
     .from('teklifler')
-    .update({ foto_urls: uploadedUrls })
+    .update({ foto_urls: allUrls })
     .eq('id', teklifId)
 
   if (updateError) {

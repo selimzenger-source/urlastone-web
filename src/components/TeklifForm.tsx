@@ -330,16 +330,18 @@ export default function TeklifForm() {
       if (!res.ok) throw new Error('Failed')
       const teklifData = await res.json()
 
-      // Upload images if any
+      // Upload images one by one (avoids Vercel 4.5MB body limit)
       if (dosyalar.length > 0 && teklifData?.id) {
-        try {
-          const uploadForm = new FormData()
-          uploadForm.append('teklif_id', teklifData.id)
-          dosyalar.forEach(file => uploadForm.append('files', file))
-          const uploadRes = await fetch('/api/teklifler/upload', { method: 'POST', body: uploadForm })
-          if (!uploadRes.ok) console.error('Upload failed:', await uploadRes.text())
-        } catch (err) {
-          console.error('Upload error:', err)
+        for (const file of dosyalar) {
+          try {
+            const uploadForm = new FormData()
+            uploadForm.append('teklif_id', teklifData.id)
+            uploadForm.append('files', file)
+            const uploadRes = await fetch('/api/teklifler/upload', { method: 'POST', body: uploadForm })
+            if (!uploadRes.ok) console.error('Upload failed:', await uploadRes.text())
+          } catch (err) {
+            console.error('Upload error:', err)
+          }
         }
       }
 
