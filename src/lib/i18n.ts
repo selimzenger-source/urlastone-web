@@ -432,6 +432,9 @@ type TranslationKeys = {
   apps_filter_all: string
   apps_gallery_title: string
   apps_showing_count: string
+  apps_city_projects: string
+  apps_city_select: string
+  apps_city_teklif_cta: string
 
   // Simülasyon
   sim_tag: string
@@ -842,6 +845,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'Tümü',
     apps_gallery_title: 'Proje Galerisi',
     apps_showing_count: 'proje gösteriliyor',
+    apps_city_projects: 'deki Projelerimiz',
+    apps_city_select: 'İl Bazlı Projeler',
+    apps_city_teklif_cta: 'Bu bölge için teklif alın',
     sim_tag: 'AI SİMÜLASYON',
     sim_title: 'Mekanınızda',
     sim_gold: 'Doğal Taş Simülasyonu',
@@ -1235,6 +1241,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'All',
     apps_gallery_title: 'Project Gallery',
     apps_showing_count: 'projects shown',
+    apps_city_projects: ' Projects',
+    apps_city_select: 'Projects by City',
+    apps_city_teklif_cta: 'Get a quote for this region',
     sim_tag: 'AI SIMULATION',
     sim_title: 'In Your Space',
     sim_gold: 'Natural Stone Simulation',
@@ -1628,6 +1637,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'Todos',
     apps_gallery_title: 'Galería de Proyectos',
     apps_showing_count: 'proyectos mostrados',
+    apps_city_projects: ' Proyectos',
+    apps_city_select: 'Proyectos por Ciudad',
+    apps_city_teklif_cta: 'Solicitar cotización para esta región',
     sim_tag: 'SIMULACIÓN IA',
     sim_title: 'En su espacio',
     sim_gold: 'Simulación de piedra natural',
@@ -2021,6 +2033,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'الكل',
     apps_gallery_title: 'معرض المشاريع',
     apps_showing_count: 'مشاريع معروضة',
+    apps_city_projects: ' مشاريع',
+    apps_city_select: 'مشاريع حسب المدينة',
+    apps_city_teklif_cta: 'احصل على عرض أسعار لهذه المنطقة',
     sim_tag: 'محاكاة ذكية',
     sim_title: 'في مساحتك',
     sim_gold: 'محاكاة الحجر الطبيعي',
@@ -2414,6 +2429,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'Alle',
     apps_gallery_title: 'Projektgalerie',
     apps_showing_count: 'Projekte angezeigt',
+    apps_city_projects: ' Projekte',
+    apps_city_select: 'Projekte nach Stadt',
+    apps_city_teklif_cta: 'Angebot für diese Region anfordern',
     sim_tag: 'KI-SIMULATION',
     sim_title: 'In Ihrem Raum',
     sim_gold: 'Natursteinsimulation',
@@ -2807,6 +2825,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'Tous',
     apps_gallery_title: 'Galerie du Projet',
     apps_showing_count: 'projets affichés',
+    apps_city_projects: ' Projets',
+    apps_city_select: 'Projets par Ville',
+    apps_city_teklif_cta: 'Demander un devis pour cette région',
     sim_tag: 'SIMULATION IA',
     sim_title: 'Dans Votre Espace',
     sim_gold: 'Simulation Pierre Naturelle',
@@ -3200,6 +3221,9 @@ const translations: Record<Locale, TranslationKeys> = {
     apps_filter_all: 'Все',
     apps_gallery_title: 'Галерея Проекта',
     apps_showing_count: 'проектов показано',
+    apps_city_projects: ' Проекты',
+    apps_city_select: 'Проекты по городу',
+    apps_city_teklif_cta: 'Запросить цену для этого региона',
     sim_tag: 'ИИ СИМУЛЯЦИЯ',
     sim_title: 'В Вашем Пространстве',
     sim_gold: 'Симуляция Натурального Камня',

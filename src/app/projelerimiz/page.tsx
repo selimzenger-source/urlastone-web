@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter, Play, X } from 'lucide-react'
+import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter, Play, X, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import dynamic from 'next/dynamic'
@@ -119,6 +120,7 @@ function getTranslated(project: Project, field: 'project_name' | 'description', 
 }
 
 export default function UygulamalarimPage() {
+  const router = useRouter()
   const { t, locale } = useLanguage()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -167,6 +169,20 @@ export default function UygulamalarimPage() {
   // Get unique categories from projects
   const categories = Array.from(new Set(projects.map((p) => p.category).filter(Boolean)))
   const filteredProjects = activeCategory === 'all' ? projects : projects.filter((p) => p.category === activeCategory)
+
+  // City list for SEO dropdown — extract unique main cities
+  const cityList = Array.from(
+    new Map(
+      projects
+        .filter((p) => p.city)
+        .map((p) => {
+          // Get last part as main city: "Cesme, Izmir" -> "Izmir"
+          const parts = p.city.split(/[,\/]/).map(s => s.trim())
+          const mainCity = parts[parts.length - 1] || parts[0]
+          return [generateSlug(mainCity), mainCity] as [string, string]
+        })
+    ).entries()
+  ).map(([slug, name]) => ({ slug, name })).sort((a, b) => a.name.localeCompare(b.name, 'tr'))
 
   // Harita ile senkronize — filtre haritayı da etkiler
   const filteredLocations = filteredProjects.map((p) => ({
@@ -295,6 +311,29 @@ export default function UygulamalarimPage() {
                   </button>
                 ))}
               </div>
+
+              {/* City SEO Dropdown */}
+              {cityList.length > 0 && (
+                <div className="flex items-center gap-3 mt-4">
+                  <MapPin size={14} className="text-gold-400 flex-shrink-0" />
+                  <span className="text-white/40 text-xs font-mono whitespace-nowrap">{t.apps_city_select}</span>
+                  <div className="relative">
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) router.push(`/projelerimiz/${e.target.value}-dogal-tas`)
+                      }}
+                      defaultValue=""
+                      className="appearance-none bg-white/[0.04] border border-white/[0.08] rounded-full pl-4 pr-9 py-2 text-xs font-mono text-white/70 cursor-pointer hover:bg-white/[0.08] transition-colors focus:outline-none focus:border-gold-400/30"
+                    >
+                      <option value="" disabled className="bg-[#0a0a0a]">--</option>
+                      {cityList.map((c) => (
+                        <option key={c.slug} value={c.slug} className="bg-[#0a0a0a]">{c.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

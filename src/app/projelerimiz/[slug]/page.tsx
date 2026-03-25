@@ -22,23 +22,82 @@ function getTranslated(project: Project, field: 'project_name' | 'description', 
   return (project[field] as string) || ''
 }
 
+/** Normalize city: "Cesme, Izmir" -> "izmir" (last segment, lowercased) */
+function normalizeCity(city: string): string {
+  if (!city) return ''
+  const parts = city.split(/[,\/]/).map(s => s.trim().toLowerCase())
+  return parts[parts.length - 1] || parts[0] || ''
+}
+
+/** Check if a project matches a city slug */
+function projectMatchesCity(project: Project, citySlug: string): boolean {
+  if (!project.city) return false
+  // Check full city field slug
+  if (generateSlug(project.city) === citySlug) return true
+  // Check each part of the city field (comma/slash separated)
+  const parts = project.city.split(/[,\/]/).map(s => s.trim())
+  return parts.some(part => generateSlug(part) === citySlug)
+}
+
+/** Get display name for city from projects */
+function getCityDisplayName(projects: Project[], citySlug: string): string {
+  for (const p of projects) {
+    if (!p.city) continue
+    const parts = p.city.split(/[,\/]/).map(s => s.trim())
+    for (const part of parts) {
+      if (generateSlug(part) === citySlug) return part
+    }
+  }
+  // Fallback: capitalize slug
+  return citySlug.charAt(0).toUpperCase() + citySlug.slice(1)
+}
+
 // Detect UUID pattern for old URL redirects
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Detect city page pattern: ends with -dogal-tas
+const CITY_SUFFIX = '-dogal-tas'
 
-export default function ProjectDetailPage() {
+export default function ProjectSlugPage() {
   const params = useParams()
   const router = useRouter()
   const { t, locale } = useLanguage()
+  const slug = (params.slug as string) || ''
+  const isCityPage = slug.endsWith(CITY_SUFFIX)
+
+  // === City page state ===
+  const [cityProjects, setCityProjects] = useState<Project[]>([])
+  const [cityName, setCityName] = useState('')
+  const [cityLoading, setCityLoading] = useState(true)
+
+  // === Detail page state ===
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const [lightbox, setLightbox] = useState(false)
 
+  // City page data fetch
   useEffect(() => {
-    if (!params.slug) return
-    const slug = params.slug as string
+    if (!isCityPage || !slug) return
+    const citySlug = slug.replace(CITY_SUFFIX, '')
 
-    // If the URL contains a UUID, fetch by ID and redirect to slug URL
+    fetch('/api/projects')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!Array.isArray(data)) { setCityProjects([]); return }
+        const matched = data.filter((p: Project) => projectMatchesCity(p, citySlug))
+        setCityProjects(matched)
+        if (matched.length > 0) {
+          setCityName(getCityDisplayName(matched, citySlug))
+        }
+      })
+      .catch(() => setCityProjects([]))
+      .finally(() => setCityLoading(false))
+  }, [slug, isCityPage])
+
+  // Detail page data fetch
+  useEffect(() => {
+    if (isCityPage || !slug) return
+
     if (UUID_RE.test(slug)) {
       fetch(`/api/projects/${slug}`)
         .then((res) => res.json())
@@ -54,7 +113,6 @@ export default function ProjectDetailPage() {
       return
     }
 
-    // Normal slug-based fetch
     fetch(`/api/projects/by-slug/${slug}`)
       .then((res) => res.json())
       .then((data) => {
@@ -62,8 +120,151 @@ export default function ProjectDetailPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [params.slug, router])
+  }, [slug, router, isCityPage])
 
+  // =====================
+  // CITY PAGE RENDER
+  // =====================
+  if (isCityPage) {
+    if (cityLoading) {
+      return (
+        <main className="bg-[#0a0a0a] text-white min-h-screen">
+          <Navbar />
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="w-8 h-8 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin" />
+          </div>
+          <Footer />
+        </main>
+      )
+    }
+
+    if (cityProjects.length === 0) {
+      return (
+        <main className="bg-[#0a0a0a] text-white min-h-screen">
+          <Navbar />
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+            <Building2 size={48} className="text-white/10" />
+            <p className="text-white/30">{t.apps_not_found}</p>
+            <Link href="/projelerimiz" className="text-gold-400 text-sm font-mono hover:text-gold-300 transition-colors flex items-center gap-2">
+              <ArrowLeft size={14} />
+              {t.apps_back_all}
+            </Link>
+          </div>
+          <Footer />
+        </main>
+      )
+    }
+
+    const seoTitle = `${cityName} Dogal Tas Projeleri | URLASTONE`
+
+    return (
+      <main className="bg-[#0a0a0a] text-white min-h-screen">
+        <title>{seoTitle}</title>
+        <meta name="description" content={`${cityName} bolgesindeki dogal tas projelerimiz. Traverten, mermer, bazalt uygulamalari.`} />
+        <Navbar />
+
+        <section className="pt-28 md:pt-36 pb-16 md:pb-24 px-4 md:px-12">
+          <div className="max-w-7xl mx-auto">
+            {/* Back link */}
+            <Link
+              href="/projelerimiz"
+              className="inline-flex items-center gap-2 text-white/40 text-sm font-mono hover:text-gold-400 transition-colors mb-8"
+            >
+              <ArrowLeft size={14} />
+              {t.apps_all_projects}
+            </Link>
+
+            {/* Title */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin size={24} className="text-gold-400" />
+                <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold">
+                  {cityName}&apos;{locale === 'tr' ? t.apps_city_projects : t.apps_city_projects}
+                </h1>
+              </div>
+              <p className="text-white/40 text-sm font-mono">
+                {cityProjects.length} {t.apps_showing_count}
+              </p>
+            </div>
+
+            {/* Project Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cityProjects.map((proj) => (
+                <Link
+                  key={proj.id}
+                  href={`/projelerimiz/${generateSlug(proj.project_name)}`}
+                  className="glass-card-hover overflow-hidden group block"
+                >
+                  {/* Photo */}
+                  <div className="aspect-[16/10] overflow-hidden relative">
+                    {proj.photos?.[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={proj.photos[0]}
+                        alt={getTranslated(proj, 'project_name', locale)}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-white/[0.04] flex items-center justify-center">
+                        <Building2 size={32} className="text-white/10" />
+                      </div>
+                    )}
+                    {proj.category && (
+                      <div className="absolute top-3 left-3">
+                        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-gold-400 text-[10px] font-mono">
+                          {proj.category}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div className="p-5">
+                    <h3 className="font-heading text-lg font-bold text-white mb-1">
+                      {getTranslated(proj, 'project_name', locale)}
+                    </h3>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <MapPin size={12} className="text-gold-400" />
+                      <span className="text-white/40 text-xs font-mono">{proj.city}</span>
+                    </div>
+                    {proj.product && (
+                      <p className="text-white/50 text-xs font-mono mb-2">{proj.product}</p>
+                    )}
+                    {getTranslated(proj, 'description', locale) && (
+                      <p className="text-white/40 text-sm leading-relaxed line-clamp-2">
+                        {getTranslated(proj, 'description', locale)}
+                      </p>
+                    )}
+                    <div className="mt-3 inline-flex items-center gap-2 text-gold-400 text-xs font-mono">
+                      {t.apps_details}
+                      <ArrowRight size={10} />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Teklif Al CTA */}
+            <div className="text-center mt-16">
+              <p className="text-white/40 text-sm mb-4">{t.apps_city_teklif_cta}</p>
+              <Link
+                href="/teklif"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-[#b39345] to-[#d2b96e] text-black font-heading font-semibold text-sm hover:shadow-[0_0_30px_rgba(179,147,69,0.3)] transition-all"
+              >
+                {t.common_teklif_al}
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
+      </main>
+    )
+  }
+
+  // =====================
+  // PROJECT DETAIL RENDER
+  // =====================
   if (loading) {
     return (
       <main className="bg-[#0a0a0a] text-white min-h-screen">
