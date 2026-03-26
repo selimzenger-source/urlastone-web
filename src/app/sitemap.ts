@@ -9,7 +9,7 @@ async function getProjects(): Promise<Array<{ project_name: string; city: string
 
   try {
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/projects?is_active=eq.true&select=project_name,city,updated_at`,
+      `${supabaseUrl}/rest/v1/projects?active=eq.true&select=project_name,city,updated_at`,
       {
         headers: {
           'apikey': supabaseKey,
