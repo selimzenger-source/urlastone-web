@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   // Public: only published blogs
   let query = supabase
     .from('blogs')
-    .select('id, slug, title, cover_image_url, author_name, meta_description, is_published, ai_generated, published_at, created_at')
+    .select('id, slug, title, title_en, title_es, title_ar, title_de, title_fr, title_ru, cover_image_url, author_name, meta_description, meta_description_en, meta_description_es, meta_description_ar, meta_description_de, meta_description_fr, meta_description_ru, is_published, ai_generated, published_at, created_at')
     .eq('is_published', true)
     .order('published_at', { ascending: false })
 

@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { Calendar, User, ArrowRight, Loader2 } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { getTranslations } from '@/lib/i18n'
 
 interface BlogItem {
   id: string
@@ -36,6 +37,7 @@ function formatDate(dateStr: string) {
 
 export default function BlogPage() {
   const { locale } = useLanguage()
+  const t = getTranslations(locale)
   const [blogs, setBlogs] = useState<BlogItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState<string>('all')
@@ -90,10 +92,10 @@ export default function BlogPage() {
               <span className="text-gold-400 text-[11px] font-mono tracking-wider uppercase">Blog</span>
             </div>
             <h1 className="font-heading text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-5">
-              Doğal Taş Dünyasından
+              {t.blog_hero_title}
             </h1>
             <p className="text-white/50 text-sm md:text-base max-w-2xl mx-auto font-body leading-relaxed">
-              Mimari trendler, uygulama rehberleri ve doğal taş sektöründen güncel içerikler
+              {t.blog_hero_desc}
             </p>
 
             {/* Year Filter */}
@@ -107,7 +109,7 @@ export default function BlogPage() {
                       : 'bg-white/[0.06] text-white/50 border border-white/[0.1] hover:text-white/70'
                   }`}
                 >
-                  Tümü
+                  {t.blog_all_filter}
                 </button>
                 {years.map(year => (
                   <button
@@ -135,7 +137,7 @@ export default function BlogPage() {
             </div>
           ) : filteredBlogs.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-white/30 text-lg">Henüz blog yazısı yayınlanmamış</p>
+              <p className="text-white/30 text-lg">{t.blog_no_posts}</p>
             </div>
           ) : (
             <>
@@ -164,7 +166,7 @@ export default function BlogPage() {
                       <div className="relative p-6 md:p-8 lg:p-10 flex flex-col justify-center bg-white/[0.02]">
                         <div className="inline-flex items-center gap-2 mb-4">
                           <span className="px-3 py-1 bg-gold-400/10 text-gold-400 text-[10px] font-mono rounded-full border border-gold-400/20">
-                            Son Yazı
+                            {t.blog_latest}
                           </span>
                         </div>
 
@@ -192,7 +194,7 @@ export default function BlogPage() {
 
                         <div>
                           <span className="inline-flex items-center gap-2 text-gold-400 text-sm font-medium group-hover:gap-3 transition-all duration-300">
-                            Devamını Oku <ArrowRight size={16} />
+                            {t.blog_read_more} <ArrowRight size={16} />
                           </span>
                         </div>
                       </div>
@@ -205,7 +207,7 @@ export default function BlogPage() {
               {restBlogs.length > 0 && (
                 <div className="flex items-center gap-4 mb-10">
                   <div className="flex-1 h-px bg-white/[0.06]" />
-                  <span className="text-white/20 text-[10px] font-mono tracking-widest uppercase">Tüm Yazılar</span>
+                  <span className="text-white/20 text-[10px] font-mono tracking-widest uppercase">{t.blog_all_posts}</span>
                   <div className="flex-1 h-px bg-white/[0.06]" />
                 </div>
               )}
