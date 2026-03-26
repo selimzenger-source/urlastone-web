@@ -272,11 +272,15 @@ export default function AdminBlog() {
         },
         body: JSON.stringify({ blogId }),
       })
+      const data = await res.json()
       if (res.ok) {
-        showMsg('success', '7 dile çevrildi')
+        showMsg('success', '6 dile çevrildi')
+        fetchBlogs()
+      } else if (res.status === 207) {
+        // Partial success
+        showMsg('error', data.error || 'Bazı diller çevrilemedi')
         fetchBlogs()
       } else {
-        const data = await res.json()
         showMsg('error', data.error || 'Çeviri hatası')
       }
     } catch {
