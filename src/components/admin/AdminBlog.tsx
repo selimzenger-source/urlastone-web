@@ -429,7 +429,7 @@ export default function AdminBlog() {
             <label className="block text-white/50 text-xs mb-1.5">Konu Başlığı <span className="text-white/20">(opsiyonel - boş bırakırsan AI kendi seçer)</span></label>
             <input
               value={topicInput}
-              onChange={(e) => setTopicInput(e.target.value)}
+              onChange={(e) => { setTopicInput(e.target.value); if (!e.target.value.trim()) setTopicDesc('') }}
               placeholder="örn: Şömine taş kaplama trendleri"
               className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold-400/50"
             />
@@ -439,9 +439,10 @@ export default function AdminBlog() {
             <textarea
               value={topicDesc}
               onChange={(e) => setTopicDesc(e.target.value)}
+              disabled={!topicInput.trim()}
               rows={2}
-              placeholder="örn: 2026 yılında iç mekan şömine tasarımlarında doğal taş kullanımı, modern ve rustik tarzlar"
-              className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold-400/50 resize-none"
+              placeholder={topicInput.trim() ? "örn: 2026 yılında iç mekan şömine tasarımlarında doğal taş kullanımı, modern ve rustik tarzlar" : "Önce konu başlığı girin"}
+              className={`w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold-400/50 resize-none ${!topicInput.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
             />
           </div>
           <div className="flex gap-3">
