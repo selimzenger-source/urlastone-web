@@ -47,11 +47,11 @@ export default function BlogPage() {
       .then(data => {
         if (Array.isArray(data)) {
           setBlogs(data)
-          const uniqueYears = [...new Set(
+          const uniqueYears = Array.from(new Set(
             data
               .filter((b: BlogItem) => b.published_at)
               .map((b: BlogItem) => new Date(b.published_at).getFullYear().toString())
-          )].sort((a, b) => parseInt(b) - parseInt(a))
+          )).sort((a, b) => parseInt(b) - parseInt(a))
           setYears(uniqueYears)
         }
       })
