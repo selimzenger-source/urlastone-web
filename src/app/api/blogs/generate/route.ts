@@ -76,6 +76,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const body = await req.json().catch(() => ({}))
+  const userTopic = body.topic || ''
+  const userDescription = body.description || ''
+
   try {
     // Step 1: Get existing blog titles to avoid repetition
     const { data: existingBlogs } = await supabaseAdmin
@@ -116,7 +120,8 @@ ${trendData}
 MEVCUT BLOG BAŞLIKLARI (TEKRAR ETME):
 ${titlesList}
 
-GÖREV: Yukarıdaki başlıklardan TAMAMEN FARKLI, güncel trendlerden de ilham alarak yepyeni bir doğal taş blog yazısı üret.
+${userTopic ? `KULLANICININ İSTEDİĞİ KONU: "${userTopic}"${userDescription ? `\nEK AÇIKLAMA: "${userDescription}"` : ''}
+GÖREV: Kullanıcının verdiği konu ve açıklama doğrultusunda, mevcut başlıklardan farklı, doğal taş sektörüne uygun bir blog yazısı üret.` : `GÖREV: Yukarıdaki başlıklardan TAMAMEN FARKLI, güncel trendlerden de ilham alarak yepyeni bir doğal taş blog yazısı üret.`}
 
 KURALLAR:
 1. Konu doğal taş sektörüne, mimari trendlere, cephe kaplamasına, iç mekan tasarımına veya sürdürülebilir yapı malzemelerine dair olmalı

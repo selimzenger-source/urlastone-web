@@ -42,6 +42,9 @@ export default function AdminBlog() {
   // AI preview state
   const [showAiPreview, setShowAiPreview] = useState(false)
   const [translating, setTranslating] = useState<string | null>(null)
+  const [showTopicInput, setShowTopicInput] = useState(false)
+  const [topicInput, setTopicInput] = useState('')
+  const [topicDesc, setTopicDesc] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
@@ -263,13 +266,19 @@ export default function AdminBlog() {
 
   const handleGenerate = async () => {
     setGenerating(true)
+    setShowTopicInput(false)
     try {
+      const body: Record<string, string> = {}
+      if (topicInput.trim()) body.topic = topicInput.trim()
+      if (topicDesc.trim()) body.description = topicDesc.trim()
+
       const res = await fetch('/api/blogs/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-admin-password': password,
         },
+        body: JSON.stringify(body),
       })
 
       const data = await res.json()
@@ -351,7 +360,7 @@ export default function AdminBlog() {
               <Plus size={16} /> Manuel Ekle
             </button>
             <button
-              onClick={handleGenerate}
+              onClick={() => setShowTopicInput(!showTopicInput)}
               disabled={generating}
               className="flex items-center gap-2 px-4 py-2.5 bg-gold-400/10 border border-gold-400/30 text-gold-400 rounded-xl text-sm hover:bg-gold-400/20 transition-colors disabled:opacity-50"
             >
@@ -360,6 +369,47 @@ export default function AdminBlog() {
               ) : (
                 <><Sparkles size={16} /> Bu Ayın Blogunu Üret</>
               )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Topic Input for AI Generation */}
+      {showTopicInput && !showForm && (
+        <div className="bg-gold-400/[0.03] border border-gold-400/20 rounded-2xl p-5 space-y-4">
+          <h4 className="font-heading text-sm font-bold text-gold-400">AI Blog Üretimi</h4>
+          <div>
+            <label className="block text-white/50 text-xs mb-1.5">Konu Başlığı <span className="text-white/20">(opsiyonel - boş bırakırsan AI kendi seçer)</span></label>
+            <input
+              value={topicInput}
+              onChange={(e) => setTopicInput(e.target.value)}
+              placeholder="örn: Şömine taş kaplama trendleri"
+              className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold-400/50"
+            />
+          </div>
+          <div>
+            <label className="block text-white/50 text-xs mb-1.5">Kısa Açıklama <span className="text-white/20">(opsiyonel)</span></label>
+            <textarea
+              value={topicDesc}
+              onChange={(e) => setTopicDesc(e.target.value)}
+              rows={2}
+              placeholder="örn: 2026 yılında iç mekan şömine tasarımlarında doğal taş kullanımı, modern ve rustik tarzlar"
+              className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold-400/50 resize-none"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gold-400/20 text-gold-400 border border-gold-400/30 rounded-xl text-sm font-medium hover:bg-gold-400/30 transition-colors disabled:opacity-50"
+            >
+              {generating ? <><RefreshCw size={14} className="animate-spin" /> Üretiliyor...</> : <><Sparkles size={14} /> Üret</>}
+            </button>
+            <button
+              onClick={() => { setShowTopicInput(false); setTopicInput(''); setTopicDesc('') }}
+              className="px-4 py-2.5 text-white/30 text-sm hover:text-white/60 transition-colors"
+            >
+              İptal
             </button>
           </div>
         </div>
