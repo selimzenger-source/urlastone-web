@@ -69,54 +69,66 @@ export default function BlogPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#0a0a0a] pt-28 pb-20">
-        {/* Hero Header */}
-        <div className="max-w-7xl mx-auto px-6 md:px-12 mb-14">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-400/20 bg-gold-400/[0.05] mb-6">
+      <main className="min-h-screen bg-[#0a0a0a]">
+        {/* Hero Section with Background Image */}
+        <div className="relative min-h-[50vh] md:min-h-[55vh] flex items-center justify-center overflow-hidden">
+          {/* Background Image */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/blog-hero.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/50 to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/40 to-transparent" />
+
+          {/* Content */}
+          <div className="relative z-10 text-center px-6 md:px-12 pt-28 pb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-400/30 bg-gold-400/[0.08] backdrop-blur-sm mb-6">
               <div className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse" />
               <span className="text-gold-400 text-[11px] font-mono tracking-wider uppercase">Blog</span>
             </div>
             <h1 className="font-heading text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-5">
               Doğal Taş Dünyasından
             </h1>
-            <p className="text-white/40 text-sm md:text-base max-w-2xl mx-auto font-body leading-relaxed">
+            <p className="text-white/50 text-sm md:text-base max-w-2xl mx-auto font-body leading-relaxed">
               Mimari trendler, uygulama rehberleri ve doğal taş sektöründen güncel içerikler
             </p>
-          </div>
 
-          {/* Year Filter */}
-          {years.length > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <button
-                onClick={() => setSelectedYear('all')}
-                className={`px-5 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
-                  selectedYear === 'all'
-                    ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
-                    : 'bg-white/[0.04] text-white/40 border border-white/[0.08] hover:text-white/60'
-                }`}
-              >
-                Tümü
-              </button>
-              {years.map(year => (
+            {/* Year Filter */}
+            {years.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
                 <button
-                  key={year}
-                  onClick={() => setSelectedYear(year)}
-                  className={`px-5 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
-                    selectedYear === year
+                  onClick={() => setSelectedYear('all')}
+                  className={`px-5 py-2 rounded-full text-xs font-medium backdrop-blur-sm transition-all duration-300 ${
+                    selectedYear === 'all'
                       ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
-                      : 'bg-white/[0.04] text-white/40 border border-white/[0.08] hover:text-white/60'
+                      : 'bg-white/[0.06] text-white/50 border border-white/[0.1] hover:text-white/70'
                   }`}
                 >
-                  {year}
+                  Tümü
                 </button>
-              ))}
-            </div>
-          )}
+                {years.map(year => (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`px-5 py-2 rounded-full text-xs font-medium backdrop-blur-sm transition-all duration-300 ${
+                      selectedYear === year
+                        ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
+                        : 'bg-white/[0.06] text-white/50 border border-white/[0.1] hover:text-white/70'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-14">
           {loading ? (
             <div className="text-center py-20">
               <Loader2 size={32} className="mx-auto text-gold-400 animate-spin" />
