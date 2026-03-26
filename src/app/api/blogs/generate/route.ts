@@ -6,43 +6,100 @@ export const maxDuration = 120
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// Tavily web search for current trends
-async function searchTrends(): Promise<string> {
+// Check monthly AI blog limit (max 1 per month, starting from April 2026)
+async function checkMonthlyLimit(): Promise<{ allowed: boolean; message: string; currentMonth: string }> {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1 // 1-12
+  const currentMonth = `${year}-${String(month).padStart(2, '0')}`
+
+  // Get AI-generated blogs for current month
+  const startOfMonth = `${currentMonth}-01T00:00:00.000Z`
+  const endOfMonth = month === 12
+    ? `${year + 1}-01-01T00:00:00.000Z`
+    : `${year}-${String(month + 1).padStart(2, '0')}-01T00:00:00.000Z`
+
+  const { data: monthBlogs, error } = await supabaseAdmin
+    .from('blogs')
+    .select('id, created_at')
+    .eq('ai_generated', true)
+    .gte('created_at', startOfMonth)
+    .lt('created_at', endOfMonth)
+
+  if (error) {
+    console.error('Monthly limit check error:', error)
+    return { allowed: true, message: '', currentMonth }
+  }
+
+  const count = monthBlogs?.length || 0
+  const monthNames: Record<number, string> = {
+    1: 'Ocak', 2: 'Şubat', 3: 'Mart', 4: 'Nisan', 5: 'Mayıs', 6: 'Haziran',
+    7: 'Temmuz', 8: 'Ağustos', 9: 'Eylül', 10: 'Ekim', 11: 'Kasım', 12: 'Aralık'
+  }
+
+  if (count >= 1) {
+    return {
+      allowed: false,
+      message: `Bu ay (${monthNames[month]} ${year}) zaten 1 AI blog üretildi. Her ay en fazla 1 AI blog üretilebilir. Sonraki blog ${monthNames[month === 12 ? 1 : month + 1]} ayında üretilebilir.`,
+      currentMonth
+    }
+  }
+
+  return { allowed: true, message: '', currentMonth }
+}
+
+// Tavily web search for current trends — deep research mode
+async function searchTrends(topic?: string): Promise<string> {
   const tavilyKey = process.env.TAVILY_API_KEY
   if (!tavilyKey) return 'Güncel trend verisi bulunamadı.'
 
   try {
-    const queries = [
-      'doğal taş dış cephe trendleri 2026',
-      'natural stone facade architecture trends',
-      'sürdürülebilir mimari taş kullanımı',
-    ]
+    // Dynamic queries based on topic + generic sector queries
+    const queries: string[] = []
+
+    if (topic) {
+      queries.push(`${topic} doğal taş mimari 2026`)
+      queries.push(`${topic} natural stone architecture trends`)
+      queries.push(`${topic} sürdürülebilir yapı tasarım`)
+    } else {
+      queries.push('doğal taş dış cephe mimari trendleri 2026')
+      queries.push('natural stone facade architecture design trends 2026')
+      queries.push('sürdürülebilir mimari doğal taş kullanımı yeni projeler')
+    }
 
     const results: string[] = []
-    for (const query of queries) {
+    const searchPromises = queries.map(async (query) => {
       const res = await fetch('https://api.tavily.com/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           api_key: tavilyKey,
           query,
-          max_results: 3,
-          search_depth: 'basic',
+          max_results: 5,
+          search_depth: 'advanced',
+          include_raw_content: false,
         }),
       })
 
       if (res.ok) {
         const data = await res.json()
         const snippets = (data.results || [])
-          .slice(0, 2)
-          .map((r: { title: string; content: string }) => `- ${r.title}: ${r.content?.substring(0, 150)}`)
+          .slice(0, 4)
+          .map((r: { title: string; content: string; url: string }) =>
+            `- ${r.title}: ${r.content?.substring(0, 400)}`)
           .join('\n')
-        if (snippets) results.push(snippets)
+        return snippets || ''
       }
+      return ''
+    })
+
+    const searchResults = await Promise.all(searchPromises)
+    for (const s of searchResults) {
+      if (s) results.push(s)
     }
 
     return results.length > 0
-      ? results.join('\n')
+      ? results.join('\n\n')
       : 'Güncel trend verisi bulunamadı.'
   } catch {
     return 'Güncel trend verisi bulunamadı.'
@@ -80,7 +137,19 @@ export async function POST(req: NextRequest) {
   const userTopic = body.topic || ''
   const userDescription = body.description || ''
 
+  // Check if just querying limit status
+  if (body.checkLimit) {
+    const limitStatus = await checkMonthlyLimit()
+    return NextResponse.json(limitStatus)
+  }
+
   try {
+    // Step 0: Check monthly limit (max 1 AI blog per month)
+    const limitCheck = await checkMonthlyLimit()
+    if (!limitCheck.allowed) {
+      return NextResponse.json({ error: limitCheck.message }, { status: 429 })
+    }
+
     // Step 1: Get existing blog titles to avoid repetition
     const { data: existingBlogs } = await supabaseAdmin
       .from('blogs')
@@ -92,9 +161,9 @@ export async function POST(req: NextRequest) {
       ? existingTitles.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')
       : 'Henüz blog yazısı yok.'
 
-    // Step 2: Gather context - Tavily trends + DB products (parallel)
+    // Step 2: Gather context - Tavily deep research + DB products (parallel)
     const [trendData, productInfo] = await Promise.all([
-      searchTrends(),
+      searchTrends(userTopic || undefined),
       getProductInfo(),
     ])
 

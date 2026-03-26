@@ -46,6 +46,10 @@ export default function AdminBlog() {
   const [topicInput, setTopicInput] = useState('')
   const [topicDesc, setTopicDesc] = useState('')
 
+  // Monthly limit state
+  const [monthlyLimitReached, setMonthlyLimitReached] = useState(false)
+  const [limitMessage, setLimitMessage] = useState('')
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
@@ -79,7 +83,23 @@ export default function AdminBlog() {
     }
   }
 
-  useEffect(() => { fetchBlogs() }, [])
+  const checkMonthlyLimit = async () => {
+    try {
+      const res = await fetch('/api/blogs/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify({ checkLimit: true }),
+      })
+      const data = await res.json()
+      setMonthlyLimitReached(!data.allowed)
+      setLimitMessage(data.message || '')
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { fetchBlogs(); checkMonthlyLimit() }, [])
 
   const handleSetup = async () => {
     setSaving(true)
@@ -294,7 +314,12 @@ export default function AdminBlog() {
         setShowForm(true)
         setShowAiPreview(true)
         showMsg('success', 'AI blog üretildi! Önizleme yapın ve yayınlayın.')
+        checkMonthlyLimit() // Refresh limit status
       } else {
+        if (res.status === 429) {
+          setMonthlyLimitReached(true)
+          setLimitMessage(data.error || 'Aylık limit doldu')
+        }
         showMsg('error', data.error || 'AI üretim hatası')
       }
     } catch {
@@ -360,12 +385,19 @@ export default function AdminBlog() {
               <Plus size={16} /> Manuel Ekle
             </button>
             <button
-              onClick={() => setShowTopicInput(!showTopicInput)}
-              disabled={generating}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gold-400/10 border border-gold-400/30 text-gold-400 rounded-xl text-sm hover:bg-gold-400/20 transition-colors disabled:opacity-50"
+              onClick={() => !monthlyLimitReached && setShowTopicInput(!showTopicInput)}
+              disabled={generating || monthlyLimitReached}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 ${
+                monthlyLimitReached
+                  ? 'bg-white/[0.04] border border-white/[0.08] text-white/30 cursor-not-allowed'
+                  : 'bg-gold-400/10 border border-gold-400/30 text-gold-400 hover:bg-gold-400/20'
+              }`}
+              title={monthlyLimitReached ? limitMessage : ''}
             >
               {generating ? (
                 <><RefreshCw size={16} className="animate-spin" /> Üretiliyor...</>
+              ) : monthlyLimitReached ? (
+                <><AlertCircle size={16} /> Bu Ay Kullanıldı</>
               ) : (
                 <><Sparkles size={16} /> Bu Ayın Blogunu Üret</>
               )}
@@ -374,8 +406,16 @@ export default function AdminBlog() {
         </div>
       )}
 
+      {/* Monthly Limit Info */}
+      {!showForm && monthlyLimitReached && (
+        <div className="flex items-center gap-3 p-4 bg-white/[0.03] border border-white/[0.08] rounded-xl">
+          <AlertCircle size={18} className="text-white/30 flex-shrink-0" />
+          <p className="text-white/40 text-sm">{limitMessage}</p>
+        </div>
+      )}
+
       {/* Topic Input for AI Generation */}
-      {showTopicInput && !showForm && (
+      {showTopicInput && !showForm && !monthlyLimitReached && (
         <div className="bg-gold-400/[0.03] border border-gold-400/20 rounded-2xl p-5 space-y-4">
           <h4 className="font-heading text-sm font-bold text-gold-400">AI Blog Üretimi</h4>
           <div>
