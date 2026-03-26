@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     default: 'URLASTONE | Doğal Taş Üreticisi & İhracatçı - Traverten, Bazalt, Kalker, Mermer | Urla, Çeşme, İzmir',
     template: '%s | URLASTONE - Doğal Taş Üreticisi İzmir',
   },
-  description: 'Türkiye\'nin önde gelen doğal taş üreticisi URLASTONE. Traverten, bazalt, kalker ve mermer ile dış cephe kaplama, iç mekan duvar kaplama, şömine ve peyzaj taşı çözümleri. Rockshell teknolojisi ile ince taş kaplama panelleri. AI simülasyon ile taşınızı binanızda görün. 50+ ülkeye ihracat. Urla, Çeşme, İzmir.',
+  description: 'İzmir, Urla merkezli doğal taş üreticisi URLASTONE. Ege\'nin en kaliteli traverten, bazalt, kalker ve mermeriyle dış cephe kaplama, iç mekan duvar, şömine ve peyzaj çözümleri. Rockshell ince taş panelleri. AI simülasyon ile taşı binanızda görün. 50+ ülkeye ihracat, Türkiye geneli anahtar teslim uygulama.',
   keywords: [
     // TR
     'doğal taş', 'traverten', 'bazalt', 'kalker', 'mermer', 'taş kaplama', 'cephe kaplama', 'dış cephe taş kaplama', 'iç mekan taş', 'şömine taş kaplama', 'peyzaj taşı', 'doğal taş üretici', 'doğal taş fabrikası', 'doğal taş fiyat', 'taş duvar kaplama', 'villa taş', 'otel taş cephe', 'doğal taş ihracat', 'urlastone', 'rockshell', 'urla', 'izmir', 'çeşme', 'alaçatı',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   creator: 'URLASTONE',
   openGraph: {
     title: 'URLASTONE | Doğal Taş Üreticisi & İhracatçı - Urla, Çeşme, İzmir',
-    description: 'Traverten, bazalt, kalker, mermer doğal taş üretimi ve ihracatı. Dış cephe kaplama, iç mekan, şömine, peyzaj taşı. AI simülasyon. 50+ ülkeye ihracat.',
+    description: 'İzmir Ege bölgesinden traverten, bazalt, kalker, mermer doğal taş üretimi ve ihracatı. Dış cephe kaplama, iç mekan, şömine, peyzaj. AI simülasyon. 50+ ülkeye ihracat.',
     url: 'https://www.urlastone.com',
     siteName: 'URLASTONE',
     locale: 'tr_TR',
