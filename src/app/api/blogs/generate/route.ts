@@ -124,14 +124,24 @@ ${userTopic ? `KULLANICININ İSTEDİĞİ KONU: "${userTopic}"${userDescription ?
 GÖREV: Kullanıcının verdiği konu ve açıklama doğrultusunda, mevcut başlıklardan farklı, doğal taş sektörüne uygun bir blog yazısı üret.` : `GÖREV: Yukarıdaki başlıklardan TAMAMEN FARKLI, güncel trendlerden de ilham alarak yepyeni bir doğal taş blog yazısı üret.`}
 
 KURALLAR:
-1. Konu doğal taş sektörüne, mimari trendlere, cephe kaplamasına, iç mekan tasarımına veya sürdürülebilir yapı malzemelerine dair olmalı
-2. Başlık: 6-7 kelime, çarpıcı, SEO uyumlu, Türkçe
-3. İçerik: 500-600 kelime, HTML formatında (<h2>, <h3>, <p>, <strong> tagları)
+1. Konu SADECE doğal taş sektörüne, mimari trendlere, cephe kaplamasına, iç mekan tasarımına veya sürdürülebilir yapı malzemelerine dair olmalı. Alakasız konu ÜRETME.
+2. Başlık: 6-7 kelime, çarpıcı, SEO uyumlu, Türkçe. Mevcut başlıklarla benzer yapıda OLMAMALI.
+3. İçerik: 500-600 kelime, HTML formatında. SADECE bu tagleri kullan: <h2>, <h3>, <p>, <strong>
 4. Marka entegrasyonu: Rockshell teknolojisi, AI Simülasyon veya ürün çeşitliliğine konuyu bozmadan doğal referans
 5. CTA: Yazı sonunda okuyucuyu web sitesindeki AI Simülasyonu denemeye veya ürünleri keşfetmeye davet et
 6. Meta description: 150-160 karakter, SEO uyumlu
 7. Profesyonel ve bilgilendirici ton, reklam diline kaçma
 8. Kapak fotoğrafı için kısa bir İngilizce prompt üret (doğal taş mimarisi temalı, metin içermeyecek, konuyla bütünleşik özgün bir görsel)
+
+YAZI KALİTESİ VE FORMAT KURALLARI (ÇOK ÖNEMLİ):
+- Her paragraf 2-4 cümle olsun, okunaklı ve akıcı
+- H2 ile ana bölüm başlıkları, H3 ile alt başlıklar kullan
+- Önemli terimleri <strong> ile vurgula (her paragrafta 1-2 adet)
+- Anlatım zengin, bilgilendirici ve okuyucuyu çeken tarzda olsun
+- Klişe giriş cümleleri kullanma ("Günümüzde...", "Bilindiği gibi..." gibi)
+- Her blog birbirinden TAMAMEN farklı bir bakış açısı ve anlatım tarzı sunmalı
+- Bir blogun tonu bilimsel-teknik olabilir, diğeri hikaye anlatımı, diğeri rehber formatında olabilir — çeşitlilik sağla
+- Benzer kelime kalıpları ve cümle yapılarını tekrar etme, her seferinde taze ve özgün yaz
 
 ÇIKTI FORMATI (SADECE JSON, başka metin yok):
 {
