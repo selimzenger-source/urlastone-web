@@ -479,7 +479,7 @@ export default function AdminAnalytics() {
               title="Diller"
               icon="🗣️"
               data={activeLanguages}
-              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe', Other: '❓ Diğer', other: '❓ Diğer', 'Diğer': '❓ Diğer' }}
+              nameMap={{ tr: '🇹🇷 Türkçe', en: '🇬🇧 İngilizce', de: '🇩🇪 Almanca', es: '🇪🇸 İspanyolca', ar: '🇸🇦 Arapça', fr: '🇫🇷 Fransızca', ru: '🇷🇺 Rusça', el: '🇬🇷 Yunanca', zh: '🇨🇳 Çince', ja: '🇯🇵 Japonca', ko: '🇰🇷 Korece', pt: '🇧🇷 Portekizce', it: '🇮🇹 İtalyanca', nl: '🇳🇱 Felemenkçe', pl: '🇵🇱 Lehçe', sv: '🇸🇪 İsveççe', uk: '🇺🇦 Ukraynaca', hi: '🇮🇳 Hintçe', Other: '❓ Diğer', other: '❓ Diğer', 'Diğer': '❓ Diğer' }}
               barColor="bg-cyan-400/50"
             />
           )}
