@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Wand2, Square, Building2, Home, Camera } from 'lucide-react'
+import { ArrowLeft, Wand2, Square, Building2, Home } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import type { ApplyMode, SurfaceContext, GroutStyle } from '@/lib/simulation'
 
@@ -21,13 +21,6 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'AI yapıyı koruyarak taşı akıllıca tüm yüzeye uygular',
     brushTitle: 'Seçili Alana Uygula',
     brushDesc: 'Dikdörtgen çizerek taş uygulanacak alanı belirleyin',
-    fullExBefore: 'Önce',
-    fullExAfter: 'Sonra',
-    brushExBefore: 'Boyayın',
-    brushExAfter: 'Sonuç',
-    brushHint: 'Parmağınızla taş uygulamak istediğiniz alanı boyayın',
-    comingSoon: 'Yakında',
-    photoTip: 'En iyi sonuç için: Düz açıdan, iyi aydınlatılmış, net bir fotoğraf çekin',
     contextTitle: 'Yüzey Türü',
     contextDesc: 'AI doğru alanları tespit etsin — ne tür bir yüzey bu?',
     apply: 'AI ile Uygula',
@@ -55,13 +48,6 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'AI intelligently applies stone while preserving structure',
     brushTitle: 'Apply to Selected Area',
     brushDesc: 'Draw a rectangle to define the stone application area',
-    fullExBefore: 'Before',
-    fullExAfter: 'After',
-    brushExBefore: 'Paint',
-    brushExAfter: 'Result',
-    brushHint: 'Use your finger to paint the area where you want stone applied',
-    comingSoon: 'Coming Soon',
-    photoTip: 'For best results: Take a clear, well-lit photo from a straight angle',
     contextTitle: 'Surface Type',
     contextDesc: 'Help the AI detect the right areas — what type of surface is this?',
     apply: 'Apply with AI',
@@ -89,12 +75,6 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'La IA aplica la piedra de forma inteligente preservando la estructura',
     brushTitle: 'Aplicar al área seleccionada',
     brushDesc: 'Dibuje un rectángulo para definir el área de aplicación',
-    fullExBefore: 'Antes',
-    fullExAfter: 'Después',
-    brushExBefore: 'Pintar',
-    brushExAfter: 'Resultado',
-    brushHint: 'Use su dedo para pintar el área donde desea aplicar piedra',
-    photoTip: 'Para mejores resultados: Tome una foto clara, bien iluminada, desde un ángulo recto',
     contextTitle: 'Tipo de superficie',
     contextDesc: 'Ayude a la IA a detectar las áreas correctas — ¿qué tipo de superficie es?',
     apply: 'Aplicar con IA',
@@ -122,12 +102,6 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'الذكاء الاصطناعي يطبق الحجر بذكاء مع الحفاظ على البنية',
     brushTitle: 'تطبيق على المنطقة المحددة',
     brushDesc: 'ارسم مستطيلاً لتحديد منطقة تطبيق الحجر',
-    fullExBefore: 'قبل',
-    fullExAfter: 'بعد',
-    brushExBefore: 'ارسم',
-    brushExAfter: 'النتيجة',
-    brushHint: 'استخدم إصبعك لتلوين المنطقة التي تريد تطبيق الحجر عليها',
-    photoTip: 'للحصول على أفضل النتائج: التقط صورة واضحة وجيدة الإضاءة من زاوية مستقيمة',
     contextTitle: 'نوع السطح',
     contextDesc: 'ساعد الذكاء الاصطناعي في تحديد المناطق الصحيحة',
     apply: 'تطبيق بالذكاء الاصطناعي',
@@ -155,12 +129,6 @@ const MODE_TEXTS: Record<string, Record<string, string>> = {
     fullDesc: 'KI wendet Stein intelligent an und bewahrt die Struktur',
     brushTitle: 'Auf ausgewählten Bereich anwenden',
     brushDesc: 'Zeichnen Sie ein Rechteck für den Anwendungsbereich',
-    fullExBefore: 'Vorher',
-    fullExAfter: 'Nachher',
-    brushExBefore: 'Malen',
-    brushExAfter: 'Ergebnis',
-    brushHint: 'Malen Sie mit dem Finger den Bereich, auf den Stein aufgetragen werden soll',
-    photoTip: 'Für beste Ergebnisse: Machen Sie ein klares, gut beleuchtetes Foto aus geradem Winkel',
     contextTitle: 'Oberflächentyp',
     contextDesc: 'Helfen Sie der KI die richtigen Bereiche zu erkennen',
     apply: 'Mit KI anwenden',
@@ -234,39 +202,19 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
           {/* Full Apply Mode */}
           <button
             onClick={() => setShowContextPicker(true)}
-            className="group relative rounded-2xl border-2 border-white/[0.08] hover:border-gold-400/50 bg-white/[0.02] hover:bg-gold-400/[0.03] transition-all duration-300 text-left overflow-hidden"
+            className="group relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-gold-400/50 bg-white/[0.02] hover:bg-gold-400/[0.03] transition-all duration-300 text-left"
           >
-            {/* Before/After preview */}
-            <div className="relative h-36 md:h-44 overflow-hidden">
-              <div className="absolute inset-0 flex">
-                {/* Before half */}
-                <div className="w-1/2 relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/ex-original.jpg" alt="" className="w-full h-full object-cover" />
-                  <span className="absolute top-2 left-2 text-[9px] text-white/80 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.fullExBefore}</span>
-                </div>
-                {/* After half */}
-                <div className="w-1/2 relative border-l-2 border-gold-400/40">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/simulation-examples/ex-full-result.jpg" alt="" className="w-full h-full object-cover" />
-                  <span className="absolute top-2 right-2 text-[9px] text-gold-400 font-mono bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">{t.fullExAfter}</span>
-                </div>
-              </div>
+            <div className="w-14 h-14 rounded-2xl bg-gold-400/10 flex items-center justify-center mb-4 group-hover:bg-gold-400/20 transition-colors">
+              <Wand2 size={24} className="text-gold-400" />
             </div>
-            {/* Text content */}
-            <div className="p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gold-400/10 flex items-center justify-center group-hover:bg-gold-400/20 transition-colors flex-shrink-0">
-                  <Wand2 size={18} className="text-gold-400" />
-                </div>
-                <div>
-                  <h3 className="font-heading text-base font-bold text-white">{t.fullTitle}</h3>
-                  <p className="text-white/40 text-xs font-body">{t.fullDesc}</p>
-                </div>
-              </div>
-            </div>
+            <h3 className="font-heading text-lg font-bold text-white mb-2">
+              {t.fullTitle}
+            </h3>
+            <p className="text-white/40 text-sm font-body leading-relaxed">
+              {t.fullDesc}
+            </p>
             {/* AI badge */}
-            <div className="absolute top-2 right-2 bg-gold-400/20 text-gold-400 text-[9px] font-mono px-2.5 py-1 rounded-full border border-gold-400/30 backdrop-blur-sm z-10">
+            <div className="absolute top-4 right-4 bg-gold-400/20 text-gold-400 text-[9px] font-mono px-2.5 py-1 rounded-full border border-gold-400/30">
               AI
             </div>
           </button>
@@ -274,22 +222,18 @@ export default function StepApplyMode({ imagePreview, stoneName, onSelect, onBac
           {/* Select Area Mode */}
           <button
             onClick={() => onSelect('brush')}
-            className="group relative p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left"
+            className="group p-6 md:p-8 rounded-2xl border-2 border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 text-left"
           >
             <div className="w-14 h-14 rounded-2xl bg-white/[0.06] flex items-center justify-center mb-4 group-hover:bg-white/[0.1] transition-colors">
               <Square size={24} className="text-white/50" />
             </div>
-            <h3 className="font-heading text-lg font-bold text-white mb-2">{t.brushTitle}</h3>
-            <p className="text-white/40 text-sm font-body">{t.brushDesc}</p>
-          </button>
-
-          {/* Photo tip */}
-          <div className="md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-2.5">
-            <p className="text-white/30 text-[10px] font-body leading-relaxed text-center">
-              <Camera size={10} className="inline mr-1 opacity-60" />
-              {t.photoTip}
+            <h3 className="font-heading text-lg font-bold text-white mb-2">
+              {t.brushTitle}
+            </h3>
+            <p className="text-white/40 text-sm font-body leading-relaxed">
+              {t.brushDesc}
             </p>
-          </div>
+          </button>
         </div>
       ) : (
         /* Surface context picker */

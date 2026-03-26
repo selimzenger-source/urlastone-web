@@ -1,6 +1,30 @@
 import { MetadataRoute } from 'next'
 import { generateSlug } from '@/lib/slug'
 
+// Supabase REST API ile bloglari cek
+async function getBlogs(): Promise<Array<{ slug: string; updated_at: string }>> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseKey) return []
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/blogs?is_published=eq.true&select=slug,updated_at`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+        },
+        next: { revalidate: 3600 },
+      }
+    )
+    if (!res.ok) return []
+    return await res.json()
+  } catch {
+    return []
+  }
+}
+
 // Supabase REST API ile projeleri cek (build time'da calisir)
 async function getProjects(): Promise<Array<{ project_name: string; city: string; updated_at: string }>> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -68,5 +92,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }))
 
-  return [...staticPages, ...projectPages, ...cityPages]
+  // Blog sayfalari
+  const blogs = await getBlogs()
+  const blogPages: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8 },
+    ...blogs.map((b) => ({
+      url: `${baseUrl}/blog/${b.slug}`,
+      lastModified: new Date(b.updated_at),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+  ]
+
+  return [...staticPages, ...projectPages, ...cityPages, ...blogPages]
 }

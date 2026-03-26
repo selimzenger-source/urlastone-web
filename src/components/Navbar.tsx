@@ -17,6 +17,7 @@ export default function Navbar() {
     { href: '/projelerimiz', label: t.nav_uygulamalar },
     { href: '/hakkimizda', label: t.nav_hakkimizda },
     { href: '/iletisim', label: t.nav_iletisim },
+    { href: '/blog', label: t.nav_blog },
   ]
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import {
   Eye,
   Star,
   Image,
+  BookOpen,
 } from 'lucide-react'
 import AdminOverview from './AdminOverview'
 import AdminTeklifler from './AdminTeklifler'
@@ -24,6 +25,7 @@ import AdminReferanslar from './AdminReferanslar'
 import AdminAnalytics from './AdminAnalytics'
 import AdminKatalog from './AdminKatalog'
 import AdminHeroSlides from './AdminHeroSlides'
+import AdminBlog from './AdminBlog'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
@@ -34,6 +36,7 @@ const tabs = [
   { id: 'projeler', label: 'Proje Yönetimi', icon: MapPin },
   { id: 'referanslar', label: 'Referanslar', icon: Star },
   { id: 'katalog', label: 'Katalog', icon: FileText },
+  { id: 'blog', label: 'Blog Yönetimi', icon: BookOpen },
 ]
 
 export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: () => void; adminPassword: string }) {
@@ -133,6 +136,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
           {activeTab === 'projeler' && <AdminProjeler adminPassword={adminPassword} />}
           {activeTab === 'referanslar' && <AdminReferanslar />}
           {activeTab === 'katalog' && <AdminKatalog />}
+          {activeTab === 'blog' && <AdminBlog />}
         </div>
       </main>
     </div>
