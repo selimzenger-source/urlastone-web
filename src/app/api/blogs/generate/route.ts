@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
     // Step 3: Generate blog text with Claude
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{
         role: 'user',
         content: `Sen, uluslararası çapta faaliyet gösteren premium doğal taş üreticisi "Urla Stone" (www.urlastone.com) firmasının Baş SEO Stratejisti ve Mimari Metin Yazarısın.
@@ -195,9 +195,9 @@ GÖREV: Kullanıcının verdiği konu ve açıklama doğrultusunda, mevcut başl
 KURALLAR:
 1. Konu SADECE doğal taş sektörüne, mimari trendlere, cephe kaplamasına, iç mekan tasarımına veya sürdürülebilir yapı malzemelerine dair olmalı. Alakasız konu ÜRETME.
 2. Başlık: 6-7 kelime, çarpıcı, SEO uyumlu, Türkçe. Mevcut başlıklarla benzer yapıda OLMAMALI.
-3. İçerik: 500-600 kelime, HTML formatında. SADECE bu tagleri kullan: <h2>, <h3>, <p>, <strong>
-4. Marka entegrasyonu: Rockshell teknolojisi, AI Simülasyon veya ürün çeşitliliğine konuyu bozmadan doğal referans
-5. CTA: Yazı sonunda okuyucuyu web sitesindeki AI Simülasyonu denemeye veya ürünleri keşfetmeye davet et
+3. İçerik: EN AZ 1000 kelime, HTML formatında. SADECE bu tagleri kullan: <h2>, <h3>, <p>, <strong>
+4. Bilgilendirici ton: Reklam değil, okuyucuya gerçek bilgi ve değer sunan bir yazı olmalı. Marka referansı (Rockshell teknolojisi, AI Simülasyon) sadece doğal ve kısa olarak 1-2 yerde geçmeli, asıl odak bilgi ve eğitim olmalı
+5. CTA: Yazı sonunda okuyucuyu web sitesindeki AI Simülasyonu denemeye veya ürünleri keşfetmeye davet et (kısa ve doğal)
 6. Meta description: 150-160 karakter, SEO uyumlu
 7. Profesyonel ve bilgilendirici ton, reklam diline kaçma
 8. Kapak fotoğrafı için kısa bir İngilizce prompt üret (doğal taş mimarisi temalı, metin içermeyecek, konuyla bütünleşik özgün bir görsel)

@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { ArrowLeft, Calendar, User, Sparkles } from 'lucide-react'
+import { ArrowLeft, Calendar, User, Sparkles, ArrowRight } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { getTranslations } from '@/lib/i18n'
 
 interface Blog {
   id: string
@@ -30,6 +31,7 @@ function getLocalized(blog: Blog, field: 'title' | 'content', locale: string): s
 
 export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog | null; slug: string }) {
   const { locale } = useLanguage()
+  const t = getTranslations(locale)
   const [blog, setBlog] = useState<Blog | null>(initialBlog)
   const [loading, setLoading] = useState(!initialBlog)
 
@@ -64,9 +66,9 @@ export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog
         <Navbar />
         <main className="min-h-screen bg-[#0a0a0a] pt-28 pb-20">
           <div className="max-w-3xl mx-auto px-6 text-center py-20">
-            <h1 className="font-heading text-2xl text-white mb-4">Blog Yazısı Bulunamadı</h1>
+            <h1 className="font-heading text-2xl text-white mb-4">{t.blog_not_found}</h1>
             <Link href="/blog" className="text-gold-400 text-sm hover:underline">
-              Blog&apos;a Dön
+              {t.blog_back}
             </Link>
           </div>
         </main>
@@ -134,23 +136,29 @@ export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog
           {/* CTA */}
           <div className="rounded-2xl border border-gold-400/20 bg-gold-400/[0.03] p-6 md:p-8 mb-16">
             <h3 className="font-heading text-lg md:text-xl font-bold text-white mb-3">
-              Doğal Taşı Cephenizde Deneyin
+              {t.blog_cta_title}
             </h3>
             <p className="text-white/40 text-sm font-body mb-5 leading-relaxed">
-              AI Simülasyon aracımızla kendi binanızın fotoğrafını yükleyin, taşlarımızın cephenizde nasıl duracağını anında görün.
+              {t.blog_cta_desc}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/simulasyon"
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
               >
-                <Sparkles size={16} /> AI Simülasyonu Dene
+                <Sparkles size={16} /> {t.blog_cta_sim}
               </Link>
               <Link
                 href="/urunlerimiz"
                 className="inline-flex items-center gap-2 border border-white/[0.15] text-white/70 px-6 py-3 rounded-full text-sm font-medium hover:border-white/30 hover:text-white transition-colors"
               >
-                Ürünleri Keşfet
+                {t.blog_cta_products}
+              </Link>
+              <Link
+                href="/projelerimiz"
+                className="inline-flex items-center gap-2 border border-white/[0.15] text-white/70 px-6 py-3 rounded-full text-sm font-medium hover:border-white/30 hover:text-white transition-colors"
+              >
+                {t.blog_cta_projects} <ArrowRight size={14} />
               </Link>
             </div>
           </div>

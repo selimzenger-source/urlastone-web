@@ -49,6 +49,8 @@ export default function AdminBlog() {
   // Monthly limit state
   const [monthlyLimitReached, setMonthlyLimitReached] = useState(false)
   const [limitMessage, setLimitMessage] = useState('')
+  const [generateAttempts, setGenerateAttempts] = useState(0)
+  const MAX_GENERATE_ATTEMPTS = 3
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
@@ -285,6 +287,10 @@ export default function AdminBlog() {
   }
 
   const handleGenerate = async () => {
+    if (generateAttempts >= MAX_GENERATE_ATTEMPTS) {
+      showMsg('error', `Bu ay için maksimum ${MAX_GENERATE_ATTEMPTS} deneme hakkınız doldu. Mevcut önizlemeyi düzenleyip yayınlayabilirsiniz.`)
+      return
+    }
     setGenerating(true)
     setShowTopicInput(false)
     try {
@@ -313,7 +319,8 @@ export default function AdminBlog() {
         setEditId(null)
         setShowForm(true)
         setShowAiPreview(true)
-        showMsg('success', 'AI blog üretildi! Önizleme yapın ve yayınlayın.')
+        setGenerateAttempts(prev => prev + 1)
+        showMsg('success', `AI blog üretildi! (${generateAttempts + 1}/${MAX_GENERATE_ATTEMPTS} deneme) Önizleme yapın ve yayınlayın.`)
         checkMonthlyLimit() // Refresh limit status
       } else {
         if (res.status === 429) {
@@ -466,11 +473,12 @@ export default function AdminBlog() {
               {showAiPreview && (
                 <button
                   onClick={handleGenerate}
-                  disabled={generating}
+                  disabled={generating || generateAttempts >= MAX_GENERATE_ATTEMPTS}
                   className="flex items-center gap-1.5 px-3 py-2 text-gold-400 text-xs border border-gold-400/30 rounded-lg hover:bg-gold-400/10 transition-colors disabled:opacity-50"
+                  title={generateAttempts >= MAX_GENERATE_ATTEMPTS ? 'Deneme hakkı doldu' : ''}
                 >
                   {generating ? <RefreshCw size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-                  Başka Konu Dene
+                  Başka Konu Dene ({MAX_GENERATE_ATTEMPTS - generateAttempts} hak)
                 </button>
               )}
               <button onClick={resetForm} className="text-white/30 hover:text-white/60 transition-colors">

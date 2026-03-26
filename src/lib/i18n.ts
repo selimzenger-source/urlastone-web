@@ -464,6 +464,15 @@ type TranslationKeys = {
   refs_desc: string
   refs_project: string
   refs_no_refs: string
+
+  // Blog CTA
+  blog_cta_title: string
+  blog_cta_desc: string
+  blog_cta_sim: string
+  blog_cta_products: string
+  blog_cta_projects: string
+  blog_back: string
+  blog_not_found: string
 }
 
 const translations: Record<Locale, TranslationKeys> = {
@@ -862,6 +871,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'Koleksiyonumuzdan taş türünü seçin',
     sim_feature3_title: 'Sonucu Gör',
     sim_feature3_desc: 'AI ile gerçekçi simülasyonu anında görün',
+    blog_cta_title: 'Doğal Taşı Cephenizde Deneyin',
+    blog_cta_desc: 'AI Simülasyon aracımızla kendi binanızın fotoğrafını yükleyin, taşlarımızın cephenizde nasıl duracağını anında görün',
+    blog_cta_sim: 'AI Simülasyonu Dene',
+    blog_cta_products: 'Ürünleri Keşfet',
+    blog_cta_projects: 'Projeleri İncele',
+    blog_back: 'Blog\'a Dön',
+    blog_not_found: 'Blog Yazısı Bulunamadı',
   },
 
   en: {
@@ -1259,6 +1275,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'Choose a stone type from our collection',
     sim_feature3_title: 'See Result',
     sim_feature3_desc: 'View realistic AI simulation instantly',
+    blog_cta_title: 'Try Natural Stone on Your Facade',
+    blog_cta_desc: 'Upload a photo of your building with our AI Simulation tool and instantly see how our stones will look on your facade',
+    blog_cta_sim: 'Try AI Simulation',
+    blog_cta_products: 'Explore Products',
+    blog_cta_projects: 'View Projects',
+    blog_back: 'Back to Blog',
+    blog_not_found: 'Blog Post Not Found',
   },
 
   es: {
@@ -1656,6 +1679,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'Elija un tipo de piedra de nuestra colección',
     sim_feature3_title: 'Ver Resultado',
     sim_feature3_desc: 'Vea la simulación realista de IA al instante',
+    blog_cta_title: 'Pruebe la Piedra Natural en Su Fachada',
+    blog_cta_desc: 'Suba una foto de su edificio con nuestra herramienta de Simulación IA y vea al instante cómo lucirán nuestras piedras en su fachada',
+    blog_cta_sim: 'Probar Simulación IA',
+    blog_cta_products: 'Explorar Productos',
+    blog_cta_projects: 'Ver Proyectos',
+    blog_back: 'Volver al Blog',
+    blog_not_found: 'Entrada de Blog No Encontrada',
   },
 
   ar: {
@@ -2053,6 +2083,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'اختر نوع الحجر من مجموعتنا',
     sim_feature3_title: 'شاهد النتيجة',
     sim_feature3_desc: 'شاهد المحاكاة الواقعية بالذكاء الاصطناعي فوراً',
+    blog_cta_title: 'جرّب الحجر الطبيعي على واجهتك',
+    blog_cta_desc: 'ارفع صورة مبناك باستخدام أداة المحاكاة بالذكاء الاصطناعي وشاهد فوراً كيف ستبدو أحجارنا على واجهتك',
+    blog_cta_sim: 'جرّب محاكاة الذكاء الاصطناعي',
+    blog_cta_products: 'استكشف المنتجات',
+    blog_cta_projects: 'عرض المشاريع',
+    blog_back: 'العودة إلى المدونة',
+    blog_not_found: 'لم يتم العثور على المقال',
   },
 
   de: {
@@ -2450,6 +2487,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'Wählen Sie einen Steintyp aus unserer Kollektion',
     sim_feature3_title: 'Ergebnis Sehen',
     sim_feature3_desc: 'Sehen Sie die realistische KI-Simulation sofort',
+    blog_cta_title: 'Probieren Sie Naturstein an Ihrer Fassade',
+    blog_cta_desc: 'Laden Sie ein Foto Ihres Gebäudes mit unserem KI-Simulationstool hoch und sehen Sie sofort, wie unsere Steine an Ihrer Fassade aussehen',
+    blog_cta_sim: 'KI-Simulation Testen',
+    blog_cta_products: 'Produkte Entdecken',
+    blog_cta_projects: 'Projekte Ansehen',
+    blog_back: 'Zurück zum Blog',
+    blog_not_found: 'Blogbeitrag Nicht Gefunden',
   },
 
   fr: {
@@ -2847,6 +2891,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'Choisissez un type de pierre dans notre collection',
     sim_feature3_title: 'Voir le Résultat',
     sim_feature3_desc: 'Visualisez la simulation IA réaliste instantanément',
+    blog_cta_title: 'Essayez la Pierre Naturelle sur Votre Façade',
+    blog_cta_desc: 'Téléchargez une photo de votre bâtiment avec notre outil de Simulation IA et voyez instantanément le rendu de nos pierres sur votre façade',
+    blog_cta_sim: 'Essayer la Simulation IA',
+    blog_cta_products: 'Explorer les Produits',
+    blog_cta_projects: 'Découvrir les Projets',
+    blog_back: 'Retour au Blog',
+    blog_not_found: 'Article de Blog Non Trouvé',
   },
 
   ru: {
@@ -3244,6 +3295,13 @@ const translations: Record<Locale, TranslationKeys> = {
     sim_feature2_desc: 'Выберите тип камня из нашей коллекции',
     sim_feature3_title: 'Увидеть Результат',
     sim_feature3_desc: 'Мгновенно увидьте реалистичную ИИ-симуляцию',
+    blog_cta_title: 'Попробуйте Натуральный Камень на Вашем Фасаде',
+    blog_cta_desc: 'Загрузите фото вашего здания с помощью нашего инструмента ИИ-симуляции и мгновенно увидьте, как будут выглядеть наши камни на вашем фасаде',
+    blog_cta_sim: 'Попробовать ИИ-Симуляцию',
+    blog_cta_products: 'Изучить Продукцию',
+    blog_cta_projects: 'Посмотреть Проекты',
+    blog_back: 'Назад в Блог',
+    blog_not_found: 'Запись Блога Не Найдена',
   },
 }
 
