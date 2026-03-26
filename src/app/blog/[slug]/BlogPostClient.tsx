@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { ArrowLeft, Calendar, User, Sparkles } from 'lucide-react'
+import { ArrowLeft, Calendar, User } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Blog {
@@ -123,12 +123,6 @@ export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog
                 })}
               </span>
             </div>
-            {blog.ai_generated && (
-              <div className="flex items-center gap-1.5 text-gold-400/60 text-xs">
-                <Sparkles size={12} />
-                <span className="font-mono">AI Destekli</span>
-              </div>
-            )}
           </div>
 
           {/* Content */}
