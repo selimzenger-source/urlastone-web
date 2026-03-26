@@ -44,7 +44,7 @@ export default function AdminBlog() {
   const [translating, setTranslating] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const password = typeof window !== 'undefined' ? localStorage.getItem('admin_password') || '' : ''
+  const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
   const showMsg = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text })
