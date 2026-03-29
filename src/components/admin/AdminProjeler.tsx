@@ -95,6 +95,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const [productSearch, setProductSearch] = useState('')
   const [showProductDropdown, setShowProductDropdown] = useState(false)
   const [mapsUrl, setMapsUrl] = useState('')
+  const [generatingDesc, setGeneratingDesc] = useState(false)
   const productDropdownRef = useRef<HTMLDivElement>(null)
 
   const headers = {
@@ -1164,7 +1165,48 @@ export default function AdminProjeler({ adminPassword }: Props) {
 
               {/* Açıklama */}
               <div>
-                <label className="block text-white/40 text-xs font-mono mb-1.5">Açıklama</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-white/40 text-xs font-mono">Açıklama</label>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!editProject.project_name) return
+                      setGeneratingDesc(true)
+                      try {
+                        // Mevcut proje açıklamalarını örnek olarak topla
+                        const existingDescs = projects
+                          .filter(p => p.description && p.description.length > 20)
+                          .map(p => p.description!)
+                          .slice(0, 3)
+                        const res = await fetch('/api/projects/generate-description', {
+                          method: 'POST',
+                          headers,
+                          body: JSON.stringify({
+                            project_name: editProject.project_name,
+                            product: editProject.product,
+                            category: editProject.category,
+                            city: editProject.city,
+                            contractor: editProject.contractor,
+                            application_type: editProject.application_type,
+                            existingDescriptions: existingDescs,
+                          }),
+                        })
+                        if (res.ok) {
+                          const data = await res.json()
+                          if (data.description) {
+                            setEditProject({ ...editProject, description: data.description })
+                          }
+                        }
+                      } catch { /* skip */ }
+                      setGeneratingDesc(false)
+                    }}
+                    disabled={generatingDesc || !editProject.project_name}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gold-400/10 text-gold-400 text-[10px] font-medium hover:bg-gold-400/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    {generatingDesc ? <Loader2 size={10} className="animate-spin" /> : <Edit3 size={10} />}
+                    {generatingDesc ? 'Üretiliyor...' : 'AI ile Üret'}
+                  </button>
+                </div>
                 <textarea
                   value={editProject.description}
                   onChange={(e) => setEditProject({ ...editProject, description: e.target.value })}
