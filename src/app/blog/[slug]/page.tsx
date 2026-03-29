@@ -55,5 +55,40 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params
   const blog = await getBlog(slug)
 
-  return <BlogPostClient blog={blog} slug={slug} />
+  const jsonLd = blog ? {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: blog.title,
+    description: blog.meta_description || blog.title,
+    image: blog.cover_image_url || undefined,
+    datePublished: blog.published_at,
+    dateModified: blog.updated_at || blog.published_at,
+    author: {
+      '@type': 'Person',
+      name: blog.author_name || 'URLASTONE',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'URLASTONE',
+      logo: { '@type': 'ImageObject', url: 'https://www.urlastone.com/og-image.jpg' },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://www.urlastone.com/blog/${slug}`,
+    },
+    url: `https://www.urlastone.com/blog/${slug}`,
+    inLanguage: 'tr',
+  } : null
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <BlogPostClient blog={blog} slug={slug} />
+    </>
+  )
 }
