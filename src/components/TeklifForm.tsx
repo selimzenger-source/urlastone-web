@@ -424,7 +424,12 @@ export default function TeklifForm() {
                 type="text"
                 list="phone-codes"
                 value={phoneCode}
-                onChange={(e) => setPhoneCode(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value
+                  if (!val.startsWith('+')) val = '+' + val.replace(/[^0-9]/g, '')
+                  else val = '+' + val.slice(1).replace(/[^0-9]/g, '')
+                  if (val.length <= 5) setPhoneCode(val)
+                }}
                 className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-2 py-3 text-white/70 text-sm font-mono shrink-0 w-[90px] text-center focus:outline-none focus:border-gold-400/40"
                 placeholder="+90"
               />
