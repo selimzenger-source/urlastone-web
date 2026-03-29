@@ -11,12 +11,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { companyName } = await req.json()
+  const { companyName, city } = await req.json()
   if (!companyName?.trim()) {
     return NextResponse.json({ error: 'Firma adı gerekli' }, { status: 400 })
   }
 
   const name = companyName.trim()
+  const cityStr = city?.trim() || ''
   let description = ''
   let logoUrl: string | null = null
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             api_key: tavilyKey,
-            query: `${name} firma şirket hakkında kuruluş bilgi`,
+            query: `${name}${cityStr ? ' ' + cityStr : ''} firma şirket hakkında kuruluş bilgi`,
             max_results: 5,
             search_depth: 'advanced',
             include_raw_content: false,
@@ -107,9 +108,14 @@ export async function POST(req: NextRequest) {
         max_tokens: 200,
         messages: [{
           role: 'user',
-          content: `Aşağıdaki web arama sonuçlarına dayanarak "${name}" firması hakkında kısa bir açıklama yaz.
-1-2 cümle olsun. Kuruluş yılı, faaliyet alanı, konum gibi bilgiler ekle (bulabildiğin kadar).
-Türkçe yaz. Sadece açıklama metnini döndür, başka bir şey yazma.
+          content: `Aşağıdaki web arama sonuçlarına dayanarak "${name}"${cityStr ? ` (${cityStr} bölgesinde)` : ''} firması hakkında kısa bir açıklama yaz.
+
+KURALLAR:
+- 1-2 cümle olsun. Kuruluş yılı, faaliyet alanı, konum gibi bilgiler ekle.
+- Türkçe yaz. Sadece açıklama metnini döndür.
+- SADECE arama sonuçlarında kesin olarak bulunan bilgileri yaz.
+- Eğer arama sonuçlarında bu firma hakkında güvenilir bilgi YOKSA, sadece "Bilgi bulunamadı" yaz. Asla uydurma bilgi yazma.
+- Farklı şehirdeki veya farklı sektördeki benzer isimli firmalarla KARIŞTIRMA.${cityStr ? `\n- Firma ${cityStr} bölgesinde olmalı, başka şehirdeki benzer isimli firmalar değil.` : ''}
 
 Arama sonuçları:
 ${searchResults}`

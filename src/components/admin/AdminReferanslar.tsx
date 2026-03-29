@@ -8,6 +8,7 @@ interface Project {
   id: string
   project_name: string
   contractor?: string | null
+  city?: string | null
 }
 
 interface Referans {
@@ -157,8 +158,10 @@ export default function AdminReferanslar() {
     setNewProjectId(projectId)
     if (projectId) {
       const project = projects.find(p => p.id === projectId)
-      if (project?.contractor && !newName.trim()) {
+      if (project?.contractor) {
         setNewName(project.contractor)
+        setNewDescription('')
+        setResearchLogo(null)
       }
     }
   }
@@ -174,14 +177,20 @@ export default function AdminReferanslar() {
     setError('')
     setResearchLogo(null)
     try {
+      // Seçili projenin şehrini bul
+      const selectedProject = projects.find(p => p.id === newProjectId)
       const res = await fetch('/api/referanslar/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ companyName: name }),
+        body: JSON.stringify({ companyName: name, city: selectedProject?.city || '' }),
       })
       if (!res.ok) throw new Error('Araştırma başarısız')
       const data = await res.json()
-      if (data.description) setNewDescription(data.description)
+      if (data.description && !data.description.toLowerCase().includes('bulunamadı')) {
+        setNewDescription(data.description)
+      } else if (data.description?.toLowerCase().includes('bulunamadı')) {
+        setError('Firma hakkında bilgi bulunamadı')
+      }
       if (data.logo_url) setResearchLogo(data.logo_url)
     } catch {
       setError('Araştırma sırasında hata oluştu')
