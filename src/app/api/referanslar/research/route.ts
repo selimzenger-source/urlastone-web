@@ -151,7 +151,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Claude ile açıklama üret
+    // 4. Website URL verilmişse ve hala sonuç yoksa, direkt siteyi çek
+    if (!searchResults && websiteUrl?.trim()) {
+      try {
+        const urlStr = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
+        const siteRes = await fetch(urlStr, {
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+          signal: AbortSignal.timeout(8000),
+        })
+        if (siteRes.ok) {
+          const html = await siteRes.text()
+          // Title ve meta description'ı çek
+          const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+          const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
+          const parts = []
+          if (titleMatch?.[1]) parts.push(`Site başlığı: ${titleMatch[1].trim()}`)
+          if (descMatch?.[1]) parts.push(`Site açıklaması: ${descMatch[1].trim()}`)
+          // İlk 500 karakter metin
+          const textContent = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500)
+          if (textContent) parts.push(`Site içeriği: ${textContent}`)
+          if (parts.length > 0) searchResults = parts.join('\n')
+        }
+      } catch { /* timeout or fetch error, skip */ }
+    }
+
+    // 5. Claude ile açıklama üret
     if (searchResults) {
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
