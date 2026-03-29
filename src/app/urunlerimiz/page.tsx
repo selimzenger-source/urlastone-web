@@ -94,12 +94,17 @@ export default function TaslarPage() {
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return
-        const code = selectedProduct.code.toLowerCase()
-        const name = selectedProduct.name.toLowerCase()
+        // Kod: "RKS 2" → normalize "rks-2" ve "rks2"
+        const rawCode = selectedProduct.code.toLowerCase().trim()
+        const normCode = rawCode.replace(/\s+/g, '-') // "rks-2"
+        const compactCode = rawCode.replace(/\s+/g, '') // "rks2"
         const matched = data.filter((p: { product: string | null }) => {
           if (!p.product) return false
-          const prod = p.product.toLowerCase()
-          return prod.includes(code) || prod.includes(name)
+          const prod = p.product.toLowerCase().trim()
+          // Projenin product alanı "EBT-2 Scabas Mix Rockshell" gibi
+          // Sadece kod kısmı ile eşleştir (ilk kelime)
+          const prodCode = prod.split(/\s+/)[0] // "ebt-2"
+          return prodCode === normCode || prodCode === compactCode || prodCode === rawCode
         })
         setRelatedProjects(matched)
       })
@@ -583,9 +588,9 @@ export default function TaslarPage() {
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] transition-colors"
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 transition-colors"
             >
-              <X size={16} className="text-white/60" />
+              <X size={20} className="text-white" />
             </button>
 
             {/* Product Image */}
