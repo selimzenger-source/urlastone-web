@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { name, description, project_id, sort_order } = body
+  const { name, description, project_id, website_url, sort_order } = body
 
   if (!name) {
     return NextResponse.json({ error: 'İsim zorunludur' }, { status: 400 })
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabaseAdmin
     .from('referanslar')
-    .insert({ name, description: description || null, project_id: project_id || null, sort_order: sort_order || 0 })
+    .insert({ name, description: description || null, project_id: project_id || null, website_url: website_url || null, sort_order: sort_order || 0 })
     .select()
     .single()
 

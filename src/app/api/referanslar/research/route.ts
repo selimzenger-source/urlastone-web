@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { companyName, city } = await req.json()
+  const { companyName, city, websiteUrl } = await req.json()
   if (!companyName?.trim()) {
     return NextResponse.json({ error: 'Firma adı gerekli' }, { status: 400 })
   }
@@ -22,11 +22,46 @@ export async function POST(req: NextRequest) {
   let logoUrl: string | null = null
 
   try {
-    // 1. Tavily ile firma hakkında web araması
     const tavilyKey = process.env.TAVILY_API_KEY
     let searchResults = ''
 
-    if (tavilyKey) {
+    // 1. Eğer website URL verilmişse, önce onu Tavily ile çek
+    if (tavilyKey && websiteUrl?.trim()) {
+      try {
+        const siteRes = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            api_key: tavilyKey,
+            query: `${name} site:${websiteUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')}`,
+            max_results: 3,
+            search_depth: 'advanced',
+            include_raw_content: false,
+          }),
+        })
+        if (siteRes.ok) {
+          const siteData = await siteRes.json()
+          const results = siteData.results || []
+          searchResults = results
+            .map((r: { title: string; content: string }) => `${r.title}: ${r.content}`)
+            .join('\n\n')
+
+          // Verilen URL'den logo çek
+          try {
+            const urlObj = new URL(websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`)
+            const domain = urlObj.hostname.replace('www.', '')
+            const clearbitUrl = `https://logo.clearbit.com/${domain}`
+            const logoTest = await fetch(clearbitUrl, { method: 'HEAD' })
+            if (logoTest.ok) logoUrl = clearbitUrl
+          } catch { /* skip */ }
+        }
+      } catch (e) {
+        console.error('Site search error:', e)
+      }
+    }
+
+    // 2. Genel Tavily araması (site URL yoksa veya sonuç bulamadıysa)
+    if (tavilyKey && !searchResults) {
       try {
         const tavilyRes = await fetch('https://api.tavily.com/search', {
           method: 'POST',
@@ -50,23 +85,22 @@ export async function POST(req: NextRequest) {
             .join('\n\n')
 
           // Logo için domain bulmaya çalış
-          for (const r of results) {
-            try {
-              const url = new URL(r.url)
-              // Firma kendi sitesiyse domain'den logo çek
-              const domain = url.hostname.replace('www.', '')
-              // Genel haber/dizin siteleri hariç tut
-              const skipDomains = ['linkedin.com', 'facebook.com', 'instagram.com', 'twitter.com', 'wikipedia.org', 'youtube.com', 'tripadvisor.com', 'google.com', 'sikayetvar.com']
-              if (!skipDomains.some(s => domain.includes(s))) {
-                // Clearbit logo API ile dene
-                const testUrl = `https://logo.clearbit.com/${domain}`
-                const logoTest = await fetch(testUrl, { method: 'HEAD' })
-                if (logoTest.ok) {
-                  logoUrl = testUrl
-                  break
+          if (!logoUrl) {
+            for (const r of results) {
+              try {
+                const url = new URL(r.url)
+                const domain = url.hostname.replace('www.', '')
+                const skipDomains = ['linkedin.com', 'facebook.com', 'instagram.com', 'twitter.com', 'wikipedia.org', 'youtube.com', 'tripadvisor.com', 'google.com', 'sikayetvar.com']
+                if (!skipDomains.some(s => domain.includes(s))) {
+                  const testUrl = `https://logo.clearbit.com/${domain}`
+                  const logoTest = await fetch(testUrl, { method: 'HEAD' })
+                  if (logoTest.ok) {
+                    logoUrl = testUrl
+                    break
+                  }
                 }
-              }
-            } catch { /* skip invalid urls */ }
+              } catch { /* skip */ }
+            }
           }
         }
       } catch (e) {
@@ -74,34 +108,50 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Google favicon fallback
+    // 3. Google favicon fallback
     if (!logoUrl) {
-      // Basit bir domain tahmin et
-      const simpleName = name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .split(/\s+/)
-        .filter((w: string) => !['ve', 'and', 'the', 'co', 'ltd', 'llc', 'inc'].includes(w))
-        .slice(0, 2)
-        .join('')
-
-      if (simpleName.length > 2) {
-        // .com.tr ve .com dene
-        for (const ext of ['.com.tr', '.com']) {
-          try {
-            const testDomain = `${simpleName}${ext}`
-            const clearbitUrl = `https://logo.clearbit.com/${testDomain}`
+      // Verilen URL'den dene
+      if (websiteUrl?.trim()) {
+        try {
+          const urlStr = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
+          const urlObj = new URL(urlStr)
+          const domain = urlObj.hostname.replace('www.', '')
+          // Instagram ise profil resmi yok, skip
+          if (!domain.includes('instagram.com')) {
+            const clearbitUrl = `https://logo.clearbit.com/${domain}`
             const test = await fetch(clearbitUrl, { method: 'HEAD' })
-            if (test.ok) {
-              logoUrl = clearbitUrl
-              break
-            }
-          } catch { /* skip */ }
+            if (test.ok) logoUrl = clearbitUrl
+          }
+        } catch { /* skip */ }
+      }
+
+      // İsimden domain tahmin et
+      if (!logoUrl) {
+        const simpleName = name
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .split(/\s+/)
+          .filter((w: string) => !['ve', 'and', 'the', 'co', 'ltd', 'llc', 'inc'].includes(w))
+          .slice(0, 2)
+          .join('')
+
+        if (simpleName.length > 2) {
+          for (const ext of ['.com.tr', '.com']) {
+            try {
+              const testDomain = `${simpleName}${ext}`
+              const clearbitUrl = `https://logo.clearbit.com/${testDomain}`
+              const test = await fetch(clearbitUrl, { method: 'HEAD' })
+              if (test.ok) {
+                logoUrl = clearbitUrl
+                break
+              }
+            } catch { /* skip */ }
+          }
         }
       }
     }
 
-    // 3. Claude ile 1-2 cümle açıklama üret
+    // 4. Claude ile açıklama üret
     if (searchResults) {
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
@@ -126,14 +176,9 @@ ${searchResults}`
       if (textBlock && textBlock.type === 'text') {
         description = textBlock.text.trim()
       }
-    } else {
-      description = ''
     }
 
-    return NextResponse.json({
-      description,
-      logo_url: logoUrl,
-    })
+    return NextResponse.json({ description, logo_url: logoUrl })
   } catch (error) {
     console.error('Research error:', error)
     return NextResponse.json({ error: 'Araştırma sırasında hata oluştu' }, { status: 500 })

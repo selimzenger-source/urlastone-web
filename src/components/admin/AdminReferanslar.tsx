@@ -16,6 +16,7 @@ interface Referans {
   name: string
   description: string | null
   logo_url: string | null
+  website_url: string | null
   project_id: string | null
   sort_order: number
   is_active: boolean
@@ -29,11 +30,13 @@ export default function AdminReferanslar() {
   const [newName, setNewName] = useState('')
   const [newDescription, setNewDescription] = useState('')
   const [newProjectId, setNewProjectId] = useState('')
+  const [newWebsiteUrl, setNewWebsiteUrl] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editProjectId, setEditProjectId] = useState('')
+  const [editWebsiteUrl, setEditWebsiteUrl] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState<string | null>(null)
@@ -72,6 +75,7 @@ export default function AdminReferanslar() {
         name: newName.trim(),
         description: newDescription.trim() || null,
         project_id: newProjectId || null,
+        website_url: newWebsiteUrl.trim() || null,
         sort_order: referanslar.length + 1,
       }),
     })
@@ -94,6 +98,7 @@ export default function AdminReferanslar() {
     setNewName('')
     setNewDescription('')
     setNewProjectId('')
+    setNewWebsiteUrl('')
     setResearchLogo(null)
     setShowForm(false)
     fetchData()
@@ -108,6 +113,7 @@ export default function AdminReferanslar() {
         name: editName.trim(),
         description: editDescription.trim() || null,
         project_id: editProjectId || null,
+        website_url: editWebsiteUrl.trim() || null,
       }),
     })
     setEditingId(null)
@@ -182,7 +188,7 @@ export default function AdminReferanslar() {
       const res = await fetch('/api/referanslar/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ companyName: name, city: selectedProject?.city || '' }),
+        body: JSON.stringify({ companyName: name, city: selectedProject?.city || '', websiteUrl: newWebsiteUrl.trim() || '' }),
       })
       if (!res.ok) throw new Error('Araştırma başarısız')
       const data = await res.json()
@@ -204,6 +210,7 @@ export default function AdminReferanslar() {
     setEditName(ref.name)
     setEditDescription(ref.description || '')
     setEditProjectId(ref.project_id || '')
+    setEditWebsiteUrl(ref.website_url || '')
   }
 
   if (loading) {
@@ -281,6 +288,13 @@ export default function AdminReferanslar() {
                 ))}
               </select>
             </div>
+            <input
+              type="text"
+              value={newWebsiteUrl}
+              onChange={(e) => setNewWebsiteUrl(e.target.value)}
+              placeholder="Web sitesi veya Instagram (opsiyonel) — ör: eryyapi.com veya instagram.com/eryyapi"
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+            />
             <textarea
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
@@ -351,6 +365,13 @@ export default function AdminReferanslar() {
                       ))}
                     </select>
                   </div>
+                  <input
+                    type="text"
+                    value={editWebsiteUrl}
+                    onChange={(e) => setEditWebsiteUrl(e.target.value)}
+                    placeholder="Web sitesi veya Instagram (opsiyonel)"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-gold-400/40"
+                  />
                   <textarea
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
@@ -409,6 +430,11 @@ export default function AdminReferanslar() {
                         </span>
                       )}
                     </div>
+                    {ref.website_url && (
+                      <a href={ref.website_url.startsWith('http') ? ref.website_url : `https://${ref.website_url}`} target="_blank" rel="noopener noreferrer" className="text-gold-400/50 text-[10px] font-mono hover:text-gold-400 transition-colors">
+                        {ref.website_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      </a>
+                    )}
                     {ref.description && (
                       <p className="text-white/30 text-xs line-clamp-1">{ref.description}</p>
                     )}
