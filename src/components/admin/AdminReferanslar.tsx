@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Save, X, ExternalLink, Link2, Upload, Image } from 'lucide-react'
+import { Plus, Trash2, Save, X, ExternalLink, Link2, Upload, Image, Search, Loader2 } from 'lucide-react'
 import { generateSlug } from '@/lib/slug'
 
 interface Project {
   id: string
   project_name: string
+  contractor?: string | null
 }
 
 interface Referans {
@@ -35,6 +36,8 @@ export default function AdminReferanslar() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState<string | null>(null)
+  const [researching, setResearching] = useState(false)
+  const [researchLogo, setResearchLogo] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadTargetId, setUploadTargetId] = useState<string | null>(null)
 
@@ -71,14 +74,26 @@ export default function AdminReferanslar() {
         sort_order: referanslar.length + 1,
       }),
     })
+    const resData = await res.json()
     if (!res.ok) {
-      const data = await res.json()
-      setError(data.error || 'Hata oluştu')
+      setError(resData.error || 'Hata oluştu')
       return
+    }
+    // AI logosu bulunduysa otomatik yükle
+    if (researchLogo && resData?.id) {
+      try {
+        const logoRes = await fetch(researchLogo)
+        if (logoRes.ok) {
+          const blob = await logoRes.blob()
+          const file = new File([blob], 'logo.png', { type: blob.type || 'image/png' })
+          await handleLogoUpload(resData.id, file)
+        }
+      } catch { /* logo upload opsiyonel */ }
     }
     setNewName('')
     setNewDescription('')
     setNewProjectId('')
+    setResearchLogo(null)
     setShowForm(false)
     fetchData()
   }
@@ -137,6 +152,44 @@ export default function AdminReferanslar() {
     fetchData()
   }
 
+  // Proje seçilince firma adını otomatik doldur
+  const handleProjectSelect = (projectId: string) => {
+    setNewProjectId(projectId)
+    if (projectId) {
+      const project = projects.find(p => p.id === projectId)
+      if (project?.contractor && !newName.trim()) {
+        setNewName(project.contractor)
+      }
+    }
+  }
+
+  // AI ile firma araştır
+  const handleResearch = async () => {
+    const name = newName.trim()
+    if (!name) {
+      setError('Önce firma adını girin')
+      return
+    }
+    setResearching(true)
+    setError('')
+    setResearchLogo(null)
+    try {
+      const res = await fetch('/api/referanslar/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ companyName: name }),
+      })
+      if (!res.ok) throw new Error('Araştırma başarısız')
+      const data = await res.json()
+      if (data.description) setNewDescription(data.description)
+      if (data.logo_url) setResearchLogo(data.logo_url)
+    } catch {
+      setError('Araştırma sırasında hata oluştu')
+    } finally {
+      setResearching(false)
+    }
+  }
+
   const startEdit = (ref: Referans) => {
     setEditingId(ref.id)
     setEditName(ref.name)
@@ -190,16 +243,27 @@ export default function AdminReferanslar() {
           </div>
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Firma / Referans Adı"
-                className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Firma / Referans Adı"
+                  className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40"
+                />
+                <button
+                  onClick={handleResearch}
+                  disabled={researching || !newName.trim()}
+                  className="px-3 py-2.5 rounded-xl bg-gold-400/10 text-gold-400 text-xs font-medium hover:bg-gold-400/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
+                  title="AI ile firma bilgisi araştır"
+                >
+                  {researching ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                  {researching ? 'Araştırılıyor...' : 'AI Araştır'}
+                </button>
+              </div>
               <select
                 value={newProjectId}
-                onChange={(e) => setNewProjectId(e.target.value)}
+                onChange={(e) => handleProjectSelect(e.target.value)}
                 className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none appearance-none"
               >
                 <option value="" className="bg-[#111]">Proje Bağla (opsiyonel)</option>
@@ -215,8 +279,27 @@ export default function AdminReferanslar() {
               rows={2}
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-gold-400/40 resize-none"
             />
+            {/* AI bulunan logo preview */}
+            {researchLogo && (
+              <div className="flex items-center gap-3 p-3 bg-white/[0.04] border border-gold-400/20 rounded-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={researchLogo} alt="Logo" className="w-12 h-12 object-contain bg-white rounded-lg p-1" />
+                <div className="flex-1">
+                  <p className="text-white/50 text-[10px] font-mono">AI tarafından bulunan logo</p>
+                  <p className="text-white/30 text-[9px] font-mono truncate">{researchLogo}</p>
+                </div>
+                <button
+                  onClick={() => setResearchLogo(null)}
+                  className="p-1 text-white/30 hover:text-white"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
           </div>
-          <p className="text-white/20 text-[10px] font-mono mt-2">Logo, referans oluşturulduktan sonra yüklenebilir</p>
+          <p className="text-white/20 text-[10px] font-mono mt-2">
+            {researchLogo ? 'Logo kayıt sonrası otomatik yüklenecek' : 'Logo, referans oluşturulduktan sonra yüklenebilir'}
+          </p>
           {error && <p className="mt-3 text-red-400 text-xs">{error}</p>}
           <button
             onClick={handleCreate}
