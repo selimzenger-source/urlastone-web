@@ -72,6 +72,15 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.urlastone.com',
+    languages: {
+      'en': 'https://www.urlastone.com?lang=en',
+      'es': 'https://www.urlastone.com?lang=es',
+      'de': 'https://www.urlastone.com?lang=de',
+      'fr': 'https://www.urlastone.com?lang=fr',
+      'ru': 'https://www.urlastone.com?lang=ru',
+      'ar': 'https://www.urlastone.com?lang=ar',
+      'x-default': 'https://www.urlastone.com',
+    },
   },
   verification: {
     google: 'google3f6fffccc6484188',
