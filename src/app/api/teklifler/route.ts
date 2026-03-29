@@ -67,7 +67,13 @@ export async function POST(req: Request) {
     Promise.allSettled([
       sendCustomerConfirmation(emailData),
       sendAdminNotification(emailData),
-    ]).catch(() => {})
+    ]).then(results => {
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          console.error(`Email ${i === 0 ? 'customer' : 'admin'} failed:`, r.reason?.message || r.reason)
+        }
+      })
+    }).catch((e) => console.error('Email send error:', e))
   }
 
   return NextResponse.json(data)
