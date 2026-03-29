@@ -181,12 +181,6 @@ const jsonLd = {
         seller: { '@id': 'https://www.urlastone.com/#business' },
         url: 'https://www.urlastone.com/teklif',
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        reviewCount: '47',
-        bestRating: '5',
-      },
     },
     {
       '@type': 'Product',
@@ -206,12 +200,6 @@ const jsonLd = {
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://www.urlastone.com/#business' },
         url: 'https://www.urlastone.com/teklif',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        reviewCount: '35',
-        bestRating: '5',
       },
     },
     {
@@ -233,12 +221,6 @@ const jsonLd = {
         seller: { '@id': 'https://www.urlastone.com/#business' },
         url: 'https://www.urlastone.com/teklif',
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.7',
-        reviewCount: '29',
-        bestRating: '5',
-      },
     },
     {
       '@type': 'Product',
@@ -258,12 +240,6 @@ const jsonLd = {
         availability: 'https://schema.org/InStock',
         seller: { '@id': 'https://www.urlastone.com/#business' },
         url: 'https://www.urlastone.com/teklif',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        reviewCount: '22',
-        bestRating: '5',
       },
     },
     // ══ BreadcrumbList ══
