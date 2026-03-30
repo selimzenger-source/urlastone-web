@@ -50,8 +50,8 @@ export default function AdminReferanslar() {
   const fetchData = async () => {
     setLoading(true)
     const [refsRes, projsRes] = await Promise.all([
-      fetch('/api/referanslar'),
-      fetch('/api/projects'),
+      fetch('/api/referanslar?include_hidden=true&_t=' + Date.now(), { cache: 'no-store' }),
+      fetch('/api/projects?_t=' + Date.now(), { cache: 'no-store' }),
     ])
     const refs = await refsRes.json()
     const projs = await projsRes.json()
@@ -106,25 +106,43 @@ export default function AdminReferanslar() {
 
   const handleUpdate = async (id: string) => {
     if (!editName.trim()) return
-    await fetch(`/api/referanslar/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-      body: JSON.stringify({
-        name: editName.trim(),
-        description: editDescription.trim() || null,
-        project_id: editProjectId || null,
-        website_url: editWebsiteUrl.trim() || null,
-      }),
-    })
-    setEditingId(null)
-    fetchData()
+    setError('')
+    try {
+      const res = await fetch(`/api/referanslar/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({
+          name: editName.trim(),
+          description: editDescription.trim() || null,
+          project_id: editProjectId || null,
+          website_url: editWebsiteUrl.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || 'Kaydetme hatası: ' + res.status)
+        return
+      }
+      setEditingId(null)
+      fetchData()
+    } catch (err) {
+      setError('Bağlantı hatası: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'))
+    }
   }
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/referanslar/${id}`, {
-      method: 'DELETE',
-      headers: { 'x-admin-password': password },
-    })
+    try {
+      const res = await fetch(`/api/referanslar/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password },
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || 'Silme hatası: ' + res.status)
+      }
+    } catch (err) {
+      setError('Bağlantı hatası: ' + (err instanceof Error ? err.message : 'Bilinmeyen hata'))
+    }
     setDeleteConfirm(null)
     fetchData()
   }
