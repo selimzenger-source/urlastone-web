@@ -38,7 +38,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data || [])
+  return NextResponse.json(data || [], {
+    headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
+  })
 }
 
 // POST /api/blogs - Create new blog (admin only)

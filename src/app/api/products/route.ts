@@ -45,7 +45,10 @@ export async function GET(req: NextRequest) {
   const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  // Cache public product list for 1 hour on Vercel CDN (reduces Supabase egress)
+  return NextResponse.json(data, {
+    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+  })
 }
 
 // POST /api/products - Create product (admin only)

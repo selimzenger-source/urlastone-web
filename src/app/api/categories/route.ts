@@ -9,7 +9,9 @@ export async function GET() {
     .order('sort_order')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  return NextResponse.json(data, {
+    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+  })
 }
 
 // POST /api/categories - Create new category (admin only)

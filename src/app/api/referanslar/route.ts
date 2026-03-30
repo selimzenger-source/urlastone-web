@@ -17,7 +17,12 @@ export async function GET(req: NextRequest) {
   const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  const cacheHeader = includeHidden
+    ? 'no-store'
+    : 'public, s-maxage=3600, stale-while-revalidate=86400'
+  return NextResponse.json(data, {
+    headers: { 'Cache-Control': cacheHeader },
+  })
 }
 
 // POST /api/referanslar

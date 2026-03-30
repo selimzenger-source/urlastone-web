@@ -28,7 +28,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  // Cache public project list; admin requests (all=true) bypass cache via no-store
+  const cacheHeader = all
+    ? 'no-store'
+    : 'public, s-maxage=1800, stale-while-revalidate=3600'
+  return NextResponse.json(data, {
+    headers: { 'Cache-Control': cacheHeader },
+  })
 }
 
 // POST — admin: yeni proje ekle
