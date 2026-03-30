@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, Users, Eye, MessageSquare, Gem, Loader2, Star, FolderOpen } from 'lucide-react'
+import { TrendingUp, Eye, MessageSquare, Loader2, Star, FolderOpen, ExternalLink, BarChart2 } from 'lucide-react'
 
 interface Teklif {
   id: string
@@ -38,37 +38,16 @@ export default function AdminOverview() {
   const [loading, setLoading] = useState(true)
   const [referansCount, setReferansCount] = useState(0)
   const [projectCount, setProjectCount] = useState(0)
-  const [todayStats, setTodayStats] = useState<{
-    views: number; visitors: number; topPage: string; topPageViews: number;
-    topCountry: string; topDevice: string; topBrowser: string
-  } | null>(null)
-
   useEffect(() => {
     const pw = localStorage.getItem('admin_pw') || ''
     Promise.all([
       fetch('/api/teklifler', { headers: { 'x-admin-password': pw } }).then(r => r.json()),
       fetch('/api/referanslar').then(r => r.json()),
       fetch('/api/projects').then(r => r.json()),
-      fetch('/api/analytics?period=today', { headers: { 'x-admin-password': pw } }).then(r => r.json()).catch(() => null),
-    ]).then(([tData, rData, pData, aData]) => {
+    ]).then(([tData, rData, pData]) => {
       if (Array.isArray(tData)) setTeklifler(tData)
       if (Array.isArray(rData)) setReferansCount(rData.length)
       if (Array.isArray(pData)) setProjectCount(pData.length)
-      if (aData && aData.today) {
-        const topPage = aData.topPages?.[0]
-        const topCountry = aData.topCountries?.[0]
-        const deviceEntries = Object.entries(aData.devices || {}).sort((a, b) => (b[1] as number) - (a[1] as number))
-        const browserEntries = Object.entries(aData.browsers || {}).sort((a, b) => (b[1] as number) - (a[1] as number))
-        setTodayStats({
-          views: aData.today.views,
-          visitors: aData.today.visitors,
-          topPage: topPage?.page || '-',
-          topPageViews: topPage?.count || 0,
-          topCountry: topCountry?.country || '-',
-          topDevice: deviceEntries[0]?.[0] || '-',
-          topBrowser: browserEntries[0]?.[0] || '-',
-        })
-      }
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -175,45 +154,35 @@ export default function AdminOverview() {
 
         {/* Sidebar Stats */}
         <div className="space-y-6">
-          {/* Bugünün Özeti */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+          {/* Vercel Analytics Kartı */}
+          <a
+            href="https://vercel.com/selimzenger-sources-projects/urlastone-web/analytics"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-gold-400/30 hover:bg-white/[0.05] transition-all group"
+          >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-heading text-base font-semibold text-white">Bugünün Özeti</h3>
-              <Eye size={16} className="text-gold-400" />
+              <h3 className="font-heading text-base font-semibold text-white">Site İstatistikleri</h3>
+              <BarChart2 size={16} className="text-gold-400" />
             </div>
-
-            {!todayStats ? (
-              <p className="text-white/20 text-sm font-mono text-center py-4">Veri yok</p>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-white/40 text-xs">Görüntülenme</span>
-                  <span className="text-white font-mono text-sm font-semibold">{todayStats.views}</span>
+            <div className="space-y-3 mb-5">
+              {[
+                { label: 'Ziyaretçi & Sayfa Görüntüleme' },
+                { label: 'Ülke & Cihaz Dağılımı' },
+                { label: 'Trafik Kaynakları' },
+                { label: 'En Çok Ziyaret Edilen Sayfalar' },
+              ].map(item => (
+                <div key={item.label} className="flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-gold-400/50" />
+                  <span className="text-white/50 text-xs font-mono">{item.label}</span>
                 </div>
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-white/40 text-xs">Tekil Ziyaretçi</span>
-                  <span className="text-gold-400 font-mono text-sm font-semibold">{todayStats.visitors}</span>
-                </div>
-                <div className="border-t border-white/[0.04] my-1" />
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-white/40 text-xs">En Çok Ziyaret</span>
-                  <span className="text-white/70 font-mono text-xs">{PAGE_NAMES[todayStats.topPage] || todayStats.topPage} ({todayStats.topPageViews})</span>
-                </div>
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-white/40 text-xs">Ülke</span>
-                  <span className="text-white/70 font-mono text-xs">{COUNTRY_NAMES[todayStats.topCountry] || todayStats.topCountry}</span>
-                </div>
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-white/40 text-xs">Cihaz</span>
-                  <span className="text-white/70 font-mono text-xs">{todayStats.topDevice === 'mobile' ? 'Mobil' : todayStats.topDevice === 'desktop' ? 'Masaüstü' : todayStats.topDevice}</span>
-                </div>
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-white/40 text-xs">Tarayıcı</span>
-                  <span className="text-white/70 font-mono text-xs">{todayStats.topBrowser}</span>
-                </div>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 text-gold-400 text-xs font-mono group-hover:gap-3 transition-all">
+              <span>Vercel Analytics&apos;i Aç</span>
+              <ExternalLink size={12} />
+            </div>
+          </a>
 
           {/* Kaynak Dağılımı */}
           {Object.keys(kaynakCounts).length > 0 && (
