@@ -39,7 +39,7 @@ async function getProjects(): Promise<Array<{ project_name: string; city: string
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
         },
-        next: { revalidate: 3600 }, // 1 saat cache
+        next: { revalidate: 3600 },
       }
     )
     if (!res.ok) return []
@@ -78,16 +78,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/taslar`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.75, alternates: langAlternates('/taslar') },
   ]
 
-  // Dinamik proje sayfalari
+  // Dinamik proje sayfalari — artık dil alternatifleri ile
   const projects = await getProjects()
-  const projectPages: MetadataRoute.Sitemap = projects.map((p) => ({
-    url: `${baseUrl}/projelerimiz/${generateSlug(p.project_name)}`,
-    lastModified: new Date(p.updated_at),
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }))
+  const projectPages: MetadataRoute.Sitemap = projects.map((p) => {
+    const projectPath = `/projelerimiz/${generateSlug(p.project_name)}`
+    return {
+      url: `${baseUrl}${projectPath}`,
+      lastModified: new Date(p.updated_at),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+      alternates: langAlternates(projectPath),
+    }
+  })
 
-  // Sehir bazli SEO sayfalari
+  // Sehir bazli SEO sayfalari — artık dil alternatifleri ile
   const cityMap = new Map<string, string>()
   for (const p of projects) {
     if (!p.city) continue
@@ -99,23 +103,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const cityPages: MetadataRoute.Sitemap = Array.from(cityMap.keys()).map((citySlug) => ({
-    url: `${baseUrl}/projelerimiz/${citySlug}-dogal-tas`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.85,
-  }))
+  const cityPages: MetadataRoute.Sitemap = Array.from(cityMap.keys()).map((citySlug) => {
+    const cityPath = `/projelerimiz/${citySlug}-dogal-tas`
+    return {
+      url: `${baseUrl}${cityPath}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+      alternates: langAlternates(cityPath),
+    }
+  })
 
   // Blog sayfalari
   const blogs = await getBlogs()
   const blogPages: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8 },
-    ...blogs.map((b) => ({
-      url: `${baseUrl}/blog/${b.slug}`,
-      lastModified: new Date(b.updated_at),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    })),
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8, alternates: langAlternates('/blog') },
+    ...blogs.map((b) => {
+      const blogPath = `/blog/${b.slug}`
+      return {
+        url: `${baseUrl}${blogPath}`,
+        lastModified: new Date(b.updated_at),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+        alternates: langAlternates(blogPath),
+      }
+    }),
   ]
 
   return [...staticPages, ...projectPages, ...cityPages, ...blogPages]

@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Doğal Taş Uygulamalarımız - Cephe Kaplama, Zemin Döşeme',
-  description: 'URLASTONE doğal taş uygulama projeleri. Dış cephe taş kaplama, zemin döşeme, havuz kenarı, bahçe peyzaj taşı, merdiven basamak uygulamaları. Rockshell, traverten, bazalt projeler. Urla, İzmir.',
+  title: 'Projelerimiz - Doğal Taş Cephe Kaplama Referansları',
+  description: 'URLASTONE tamamlanmış doğal taş projeleri. Villa, otel, rezidans dış cephe kaplama, iç mekan duvar ve peyzaj uygulamaları. İzmir, İstanbul, Ankara, Bodrum, Çeşme ve yurt dışı referanslar. Harita üzerinde 500+ proje.',
   openGraph: {
-    title: 'Doğal Taş Uygulamalarımız | URLASTONE',
-    description: 'Cephe kaplama, zemin döşeme, peyzaj doğal taş projeleri. Urla, İzmir.',
+    title: 'Projelerimiz - Doğal Taş Referansları | URLASTONE',
+    description: 'Villa, otel, rezidans doğal taş cephe kaplama projeleri. 500+ tamamlanmış proje.',
     url: 'https://www.urlastone.com/projelerimiz',
   },
   alternates: {
@@ -13,6 +13,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function UygulamalarimizLayout({ children }: { children: React.ReactNode }) {
+export default function ProjelerimizLayout({ children }: { children: React.ReactNode }) {
   return children
 }

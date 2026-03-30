@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Doğal Taş Çeşitleri - Rockshell, Traverten, Bazalt, Kalker',
-  description: 'URLASTONE doğal taş ürünleri: Rockshell, traverten, bazalt, kalker, mermer. Nature, Line, Mix, Classic, Crazy ebat seçenekleri. Cephe kaplama ve zemin döşeme taşları. Scabas, Silver, Noche, Toros, Carbon modelleri. Urla, İzmir.',
+  title: 'Taş Kataloğu - Traverten, Bazalt, Kalker, Mermer Detayları',
+  description: 'URLASTONE taş kataloğu. Her taş türünün teknik özellikleri, renk seçenekleri ve uygulama fotoğrafları. Scabas, Silver, Noche, Toros, Antico, Carbon renkleri. Nature, Line, Mix, Crazy kesim modelleri detaylı inceleme.',
   openGraph: {
-    title: 'Doğal Taş Çeşitleri - Rockshell, Traverten, Bazalt, Kalker | URLASTONE',
-    description: 'Rockshell, traverten, bazalt, kalker doğal taş ürünleri. Nature, Line, Mix, Classic ebatlar. Urla, İzmir.',
+    title: 'Taş Kataloğu - Detaylı İnceleme | URLASTONE',
+    description: 'Traverten, bazalt, kalker, mermer teknik detaylar ve renk seçenekleri. Urla, İzmir.',
     url: 'https://www.urlastone.com/taslar',
   },
   alternates: {

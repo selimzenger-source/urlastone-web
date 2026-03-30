@@ -11,21 +11,27 @@ function HreflangTagsInner() {
   const searchParams = useSearchParams()
   const lang = searchParams.get('lang')
 
+  // Admin sayfalarında hreflang gereksiz
+  if (pathname.startsWith('/admin')) return null
+
+  // Canonical URL'yi hesapla (layout metadata'da da var ama dynamic sayfalar için fallback)
+  const cleanPath = pathname === '/' ? '' : pathname
   const canonicalUrl = lang && locales.includes(lang as typeof locales[number])
-    ? `${baseUrl}${pathname}?lang=${lang}`
-    : `${baseUrl}${pathname}`
+    ? `${baseUrl}${cleanPath}?lang=${lang}`
+    : `${baseUrl}${cleanPath}`
 
   return (
     <>
+      {/* Canonical - sadece layout'ta metadata.alternates.canonical yoksa devreye girer */}
       <link rel="canonical" href={canonicalUrl} />
-      <link rel="alternate" hrefLang="x-default" href={`${baseUrl}${pathname}`} />
-      <link rel="alternate" hrefLang="tr" href={`${baseUrl}${pathname}`} />
-      {locales.filter(l => l !== 'tr').map(lang => (
+      <link rel="alternate" hrefLang="x-default" href={`${baseUrl}${cleanPath}`} />
+      <link rel="alternate" hrefLang="tr" href={`${baseUrl}${cleanPath}`} />
+      {locales.filter(l => l !== 'tr').map(loc => (
         <link
-          key={lang}
+          key={loc}
           rel="alternate"
-          hrefLang={lang}
-          href={`${baseUrl}${pathname}?lang=${lang}`}
+          hrefLang={loc}
+          href={`${baseUrl}${cleanPath}?lang=${loc}`}
         />
       ))}
     </>

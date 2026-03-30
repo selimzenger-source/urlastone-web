@@ -4,7 +4,7 @@ import { LanguageProvider } from '@/context/LanguageContext'
 // PWA Install Prompt kaldirildi - mobilde gereksiz cikiyordu
 // import PWAInstallPrompt from '@/components/PWAInstallPrompt'
 import HreflangTags from '@/components/HreflangTags'
-import Script from 'next/script'
+// Script import removed — using plain <script> for JSON-LD (afterInteractive delays structured data for bots)
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
@@ -305,11 +305,9 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <Script
-          id="json-ld"
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          strategy="afterInteractive"
         />
       </head>
       <body>
