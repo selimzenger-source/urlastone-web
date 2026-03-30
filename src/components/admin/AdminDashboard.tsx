@@ -14,7 +14,6 @@ import {
   Image,
   BookOpen,
   TrendingUp,
-  ExternalLink,
 } from 'lucide-react'
 import AdminOverview from './AdminOverview'
 import AdminTeklifler from './AdminTeklifler'
@@ -24,6 +23,7 @@ import AdminReferanslar from './AdminReferanslar'
 import AdminKatalog from './AdminKatalog'
 import AdminHeroSlides from './AdminHeroSlides'
 import AdminBlog from './AdminBlog'
+import AdminAnalytics from './AdminAnalytics'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
@@ -34,6 +34,7 @@ const tabs = [
   { id: 'referanslar', label: 'Referanslar', icon: Star },
   { id: 'katalog', label: 'Katalog', icon: FileText },
   { id: 'blog', label: 'Blog Yönetimi', icon: BookOpen },
+  { id: 'analytics', label: 'İstatistikler', icon: TrendingUp },
 ]
 
 export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: () => void; adminPassword: string }) {
@@ -88,17 +89,6 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
               </button>
             )
           })}
-          {/* Vercel Analytics - dış link */}
-          <a
-            href="https://vercel.com/selimzenger-sources-projects/urlastone-web/analytics"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-200 text-white/40 hover:text-white/70 hover:bg-white/[0.03]"
-          >
-            <TrendingUp size={18} />
-            İstatistikler
-            <ExternalLink size={12} className="ml-auto opacity-40" />
-          </a>
         </nav>
 
         {/* Logout */}
@@ -144,6 +134,7 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
           {activeTab === 'referanslar' && <AdminReferanslar />}
           {activeTab === 'katalog' && <AdminKatalog />}
           {activeTab === 'blog' && <AdminBlog />}
+          {activeTab === 'analytics' && <AdminAnalytics />}
         </div>
       </main>
     </div>
