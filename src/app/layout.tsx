@@ -5,6 +5,7 @@ import { LanguageProvider } from '@/context/LanguageContext'
 // import PWAInstallPrompt from '@/components/PWAInstallPrompt'
 import HreflangTags from '@/components/HreflangTags'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.urlastone.com'),
@@ -320,6 +321,7 @@ export default function RootLayout({
         <LanguageProvider>
           <HreflangTags />
           {children}
+          <Analytics />
         </LanguageProvider>
       </body>
     </html>
