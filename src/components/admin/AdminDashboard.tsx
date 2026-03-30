@@ -9,10 +9,7 @@ import {
   LogOut,
   Menu,
   X,
-  TrendingUp,
-  Users,
   FileText,
-  Eye,
   Star,
   Image,
   BookOpen,
@@ -22,14 +19,12 @@ import AdminTeklifler from './AdminTeklifler'
 import AdminTaslar from './AdminTaslar'
 import AdminProjeler from './AdminProjeler'
 import AdminReferanslar from './AdminReferanslar'
-import AdminAnalytics from './AdminAnalytics'
 import AdminKatalog from './AdminKatalog'
 import AdminHeroSlides from './AdminHeroSlides'
 import AdminBlog from './AdminBlog'
 
 const tabs = [
   { id: 'overview', label: 'Genel Bakış', icon: LayoutDashboard },
-  { id: 'analytics', label: 'İstatistikler', icon: TrendingUp },
   { id: 'hero', label: 'Hero Slaytları', icon: Image },
   { id: 'teklifler', label: 'Teklif Talepleri', icon: MessageSquare },
   { id: 'taslar', label: 'Taş Yönetimi', icon: Gem },
@@ -129,7 +124,6 @@ export default function AdminDashboard({ onLogout, adminPassword }: { onLogout: 
         {/* Content */}
         <div className="p-4 md:p-8">
           {activeTab === 'overview' && <AdminOverview />}
-          {activeTab === 'analytics' && <AdminAnalytics />}
           {activeTab === 'hero' && <AdminHeroSlides />}
           {activeTab === 'teklifler' && <AdminTeklifler />}
           {activeTab === 'taslar' && <AdminTaslar />}

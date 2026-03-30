@@ -3,7 +3,6 @@ import './globals.css'
 import { LanguageProvider } from '@/context/LanguageContext'
 // PWA Install Prompt kaldirildi - mobilde gereksiz cikiyordu
 // import PWAInstallPrompt from '@/components/PWAInstallPrompt'
-import PageTracker from '@/components/PageTracker'
 import HreflangTags from '@/components/HreflangTags'
 import Script from 'next/script'
 
@@ -321,7 +320,6 @@ export default function RootLayout({
         <LanguageProvider>
           <HreflangTags />
           {children}
-          <PageTracker />
         </LanguageProvider>
       </body>
     </html>
