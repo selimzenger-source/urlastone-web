@@ -50,11 +50,23 @@ export default function TeklifForm() {
   const searchParams = useSearchParams()
   const preselectedCode = searchParams.get('product')
 
+  // Turkish values are always stored in DB; labels are translated for display
   const projeTipleri = [
-    t.form_opt_cephe, t.form_opt_zemin, t.form_opt_ic_mekan,
-    t.form_opt_bahce, t.form_opt_havuz, t.form_opt_merdiven, t.form_opt_diger,
+    { value: 'Cephe Kaplama', label: t.form_opt_cephe },
+    { value: 'Zemin Döşeme', label: t.form_opt_zemin },
+    { value: 'İç Mekan', label: t.form_opt_ic_mekan },
+    { value: 'Bahçe & Peyzaj', label: t.form_opt_bahce },
+    { value: 'Havuz Kenarı', label: t.form_opt_havuz },
+    { value: 'Merdiven & Basamak', label: t.form_opt_merdiven },
+    { value: 'Diğer', label: t.form_opt_diger },
   ]
-  const kaynakSecenekleri = [t.form_source_google, t.form_source_instagram, t.form_source_referral, t.form_source_ai || 'Yapay Zeka Önerisi', t.form_source_other]
+  const kaynakSecenekleri = [
+    { value: 'Google', label: t.form_source_google },
+    { value: 'Instagram', label: t.form_source_instagram },
+    { value: 'Tavsiye', label: t.form_source_referral },
+    { value: 'Yapay Zeka Önerisi', label: t.form_source_ai || 'Yapay Zeka Önerisi' },
+    { value: 'Diğer', label: t.form_source_other },
+  ]
 
   const [form, setForm] = useState<FormData>({
     adSoyad: '', telefon: '', email: '', ulke: 'Türkiye',
@@ -614,7 +626,7 @@ export default function TeklifForm() {
             <select name="projeTipi" required value={form.projeTipi} onChange={handleChange}
               className={`${inputClass} appearance-none cursor-pointer`}>
               <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
-              {projeTipleri.map(tip => <option key={tip} value={tip} className="bg-[#1a1a1a]">{tip}</option>)}
+              {projeTipleri.map(tip => <option key={tip.value} value={tip.value} className="bg-[#1a1a1a]">{tip.label}</option>)}
             </select>
           </div>
           <div>
@@ -856,7 +868,7 @@ export default function TeklifForm() {
           <select name="kaynak" value={form.kaynak} onChange={handleChange}
             className={`${inputClass} appearance-none cursor-pointer ${errors.kaynak ? 'border-red-500/50' : ''}`}>
             <option value="" className="bg-[#1a1a1a]">{t.form_select_placeholder}</option>
-            {kaynakSecenekleri.map(k => <option key={k} value={k} className="bg-[#1a1a1a]">{k}</option>)}
+            {kaynakSecenekleri.map(k => <option key={k.value} value={k.value} className="bg-[#1a1a1a]">{k.label}</option>)}
           </select>
           {errors.kaynak && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.kaynak}</p>}
         </div>

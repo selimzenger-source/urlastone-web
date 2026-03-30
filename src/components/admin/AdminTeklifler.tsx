@@ -373,6 +373,21 @@ export default function AdminTeklifler() {
                 )}
               </div>
 
+              {/* İletişim Dil Tercihi */}
+              {selectedTeklif.tercih_dil && (
+                <div className="bg-white/[0.03] rounded-xl p-3 flex items-center gap-3">
+                  <span className="text-lg">
+                    {{ tr: '🇹🇷', en: '🇬🇧', es: '🇪🇸', de: '🇩🇪', fr: '🇫🇷', ru: '🇷🇺', ar: '🇸🇦' }[selectedTeklif.tercih_dil] || '🌐'}
+                  </span>
+                  <div>
+                    <p className="text-white/30 text-[10px] font-mono">İletişim Dili</p>
+                    <p className="text-white text-sm mt-0.5">
+                      {{ tr: 'Türkçe', en: 'İngilizce', es: 'İspanyolca', de: 'Almanca', fr: 'Fransızca', ru: 'Rusça', ar: 'Arapça' }[selectedTeklif.tercih_dil] || selectedTeklif.tercih_dil.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Taş Tercihleri */}
               {selectedTeklif.tas_tercihi.length > 0 && (
                 <div className="space-y-2">
