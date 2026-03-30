@@ -135,6 +135,42 @@ const emailTranslations: Record<string, {
     footer: 'Diese E-Mail wurde automatisch gesendet',
     contactTypes: { phone: 'Telefon', email: 'E-Mail', whatsapp: 'WhatsApp' },
   },
+  fr: {
+    subject: 'Votre Demande de Devis a ete Recue',
+    subtitle: 'PIERRE NATURELLE',
+    heading: 'Demande Recue',
+    greeting: (name) => `Cher/Chere <strong style="color:#d2b96e;">${name}</strong>, votre demande de devis a ete recue avec succes. Nous vous contacterons dans les plus brefs delais.`,
+    body: 'Nous reviendrons vers vous dans les plus brefs delais.',
+    summaryTitle: 'Resume de la Demande',
+    projectType: 'Type de Projet',
+    location: 'Localisation',
+    area: 'Surface',
+    stonePreference: 'Preference de Pierre',
+    contactPreference: 'Preference de Contact',
+    responseTime: 'Nous repondons generalement sous <strong style="color:#999;">24 heures</strong>. Pour les urgences, vous pouvez nous appeler directement.',
+    responseNote: '',
+    contactTitle: 'Contact',
+    footer: 'Cet e-mail a ete envoye automatiquement',
+    contactTypes: { phone: 'Telephone', email: 'E-mail', whatsapp: 'WhatsApp' },
+  },
+  ru: {
+    subject: 'Vash zapros na kommercheское predlozhenie poluchen',
+    subtitle: 'NATURALNYJ KAMEN',
+    heading: 'Zapros Poluchen',
+    greeting: (name) => `Uvazhaemyj/aya <strong style="color:#d2b96e;">${name}</strong>, vash zapros na kommercheское predlozhenie uspeshno poluchen. My svyazhemsya s vami v blizhajshee vremya.`,
+    body: 'My svyazhemsya s vami v samoe blizhajshee vremya.',
+    summaryTitle: 'Rezume Zaprosa',
+    projectType: 'Tip Proekta',
+    location: 'Mestopolozhenie',
+    area: 'Ploshchad',
+    stonePreference: 'Predpochtenie Kamnya',
+    contactPreference: 'Predpochtenie Kontakta',
+    responseTime: 'Obychno my otvechaem v techenie <strong style="color:#999;">24 chasov</strong>. Po srochnym voprosam vy mozhete pozvonit nam napryamuyu.',
+    responseNote: '',
+    contactTitle: 'Kontakt',
+    footer: 'Eto pismo bylo otpravleno avtomaticheski',
+    contactTypes: { phone: 'Telefon', email: 'E-pochta', whatsapp: 'WhatsApp' },
+  },
 }
 
 // Musteriye giden onay maili
@@ -242,7 +278,7 @@ export async function sendCustomerConfirmation(data: TeklifData) {
 
 // Admin'e giden bildirim maili (her zaman Turkce)
 export async function sendAdminNotification(data: TeklifData) {
-  const langLabels: Record<string, string> = { tr: 'Turkce', en: 'English', es: 'Espanol', ar: 'Arabic', de: 'Deutsch' }
+  const langLabels: Record<string, string> = { tr: 'Turkce', en: 'English', es: 'Espanol', ar: 'Arabic', de: 'Deutsch', fr: 'Francais', ru: 'Russian' }
   const contactLabels: Record<string, string> = { phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' }
 
   const html = `
