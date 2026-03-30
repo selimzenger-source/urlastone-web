@@ -61,19 +61,24 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Send emails (don't block response on email failures)
+  // Send emails — MUST await, otherwise Vercel kills the function before emails are sent
   if (process.env.RESEND_API_KEY) {
     const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], cephe_metre, dis_kose_uzunluk, fiyat_tipi, aciklama, kaynak, iletisim_turu, tercih_dil: tercih_dil || 'tr' }
-    Promise.allSettled([
-      sendCustomerConfirmation(emailData),
-      sendAdminNotification(emailData),
-    ]).then(results => {
+    try {
+      const results = await Promise.allSettled([
+        sendCustomerConfirmation(emailData),
+        sendAdminNotification(emailData),
+      ])
       results.forEach((r, i) => {
         if (r.status === 'rejected') {
           console.error(`Email ${i === 0 ? 'customer' : 'admin'} failed:`, r.reason?.message || r.reason)
+        } else {
+          console.log(`Email ${i === 0 ? 'customer' : 'admin'} sent successfully`)
         }
       })
-    }).catch((e) => console.error('Email send error:', e))
+    } catch (e) {
+      console.error('Email send error:', e)
+    }
   }
 
   return NextResponse.json(data)
