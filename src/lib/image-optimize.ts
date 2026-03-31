@@ -28,18 +28,17 @@ export async function optimizeImage(
 /**
  * URLASTONE watermark badge — sağ alt köşeye yarı saydam pill logo
  */
-function createWatermarkSvg(imgWidth: number): Buffer {
+function createWatermarkSvg(imgWidth: number, iconSize: number): Buffer {
   // Responsive boyut: resim genişliğine göre scale
-  const badgeW = Math.max(180, Math.round(imgWidth * 0.18))
-  const badgeH = Math.round(badgeW * 0.22)
-  const fontSize = Math.round(badgeH * 0.52)
-  const iconSize = Math.round(badgeH * 0.6)
+  const badgeH = iconSize + 8
+  const fontSize = Math.round(iconSize * 0.45)
+  const textWidth = Math.round(fontSize * 7) // "URLASTONE" width with letter-spacing
+  const badgeW = iconSize + textWidth + 24
   const rx = Math.round(badgeH / 2)
-  const padding = Math.round(badgeH * 0.25)
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${badgeW}" height="${badgeH}">
     <rect x="0" y="0" width="${badgeW}" height="${badgeH}" rx="${rx}" ry="${rx}" fill="rgba(0,0,0,0.55)"/>
-    <text x="${padding + iconSize + 6}" y="${badgeH * 0.66}" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700" fill="white" letter-spacing="1">
+    <text x="${iconSize + 10}" y="${badgeH * 0.66}" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700" fill="white" letter-spacing="1">
       <tspan fill="#b39345">URLA</tspan><tspan fill="white">STONE</tspan>
     </text>
   </svg>`
@@ -55,18 +54,19 @@ export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
   const imgW = metadata.width || 1600
   const imgH = metadata.height || 1200
 
-  const watermarkSvg = createWatermarkSvg(imgW)
+  // Logo boyutu: resim genişliğine göre responsive (min 36px, max 64px)
+  const iconSize = Math.max(36, Math.min(64, Math.round(imgW * 0.04)))
+  const watermarkSvg = createWatermarkSvg(imgW, iconSize)
 
-  // Logo icon — logo-outline.png'yi oku (beyaz ev ikonu transparent bg)
+  const badgeH = iconSize + 8
+  const fontSize = Math.round(iconSize * 0.45)
+  const textWidth = Math.round(fontSize * 7)
+  const badgeW = iconSize + textWidth + 24
+  const margin = Math.round(Math.min(imgW, imgH) * 0.025)
+
+  // Logo icon — logo-outline.png'yi oku
   let logoComposites: sharp.OverlayOptions[] = []
 
-  const badgeW = Math.max(180, Math.round(imgW * 0.18))
-  const badgeH = Math.round(badgeW * 0.22)
-  const margin = Math.round(Math.min(imgW, imgH) * 0.025)
-  const iconSize = Math.round(badgeH * 0.6)
-  const iconPadding = Math.round(badgeH * 0.25)
-
-  // Logo dosyasını oku
   try {
     const logoPath = path.join(process.cwd(), 'public', 'logo-outline.png')
     if (fs.existsSync(logoPath)) {
@@ -76,8 +76,8 @@ export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
 
       logoComposites.push({
         input: logoBuffer,
-        top: margin + Math.round((badgeH - iconSize) / 2),
-        left: imgW - margin - badgeW + iconPadding,
+        top: margin + 4,
+        left: imgW - margin - badgeW + 4,
       })
     }
   } catch {
