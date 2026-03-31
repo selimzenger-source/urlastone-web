@@ -4,7 +4,7 @@ import { LanguageProvider } from '@/context/LanguageContext'
 // PWA Install Prompt kaldirildi - mobilde gereksiz cikiyordu
 // import PWAInstallPrompt from '@/components/PWAInstallPrompt'
 import HreflangTags from '@/components/HreflangTags'
-import ElfsightChat from '@/components/ElfsightChat'
+import ChatWidget from '@/components/ChatWidget'
 // Script import removed — using plain <script> for JSON-LD (afterInteractive delays structured data for bots)
 import { Analytics } from '@vercel/analytics/next'
 
@@ -315,7 +315,7 @@ export default function RootLayout({
         <LanguageProvider>
           <HreflangTags />
           {children}
-          <ElfsightChat />
+          <ChatWidget />
           <Analytics />
         </LanguageProvider>
       </body>
