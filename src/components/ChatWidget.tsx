@@ -1,8 +1,17 @@
 'use client'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare global {
+  interface Window {
+    SpeechRecognition: any
+    webkitSpeechRecognition: any
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
-import { MessageCircle, X, Send, Loader2, ChevronDown, Paperclip, Image as ImageIcon } from 'lucide-react'
+import { MessageCircle, X, Send, Loader2, ChevronDown, Paperclip, Mic, MicOff } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -209,16 +218,55 @@ export default function ChatWidget() {
   const [error, setError] = useState('')
   const [showContactForm, setShowContactForm] = useState(false)
   const [pendingFile, setPendingFile] = useState<{ file: File; previewUrl?: string } | null>(null)
+  const [isListening, setIsListening] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
   useEffect(() => { scrollToBottom() }, [messages, scrollToBottom])
+
+  // Ses tanıma (dikte) - dil eşleştirme
+  const speechLangs: Record<string, string> = {
+    tr: 'tr-TR', en: 'en-US', es: 'es-ES', de: 'de-DE', fr: 'fr-FR', ru: 'ru-RU', ar: 'ar-SA',
+  }
+
+  const toggleListening = useCallback(() => {
+    const SpeechRec = typeof window !== 'undefined'
+      ? (window.SpeechRecognition || window.webkitSpeechRecognition)
+      : null
+    if (!SpeechRec) return
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+      return
+    }
+
+    const recognition = new SpeechRec()
+    recognition.lang = speechLangs[locale] || 'tr-TR'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInput(prev => prev ? `${prev} ${transcript}` : transcript)
+      setIsListening(false)
+    }
+    recognition.onerror = () => setIsListening(false)
+    recognition.onend = () => setIsListening(false)
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsListening(true)
+  }, [isListening, locale]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Spam kontrolü
   const spamData = getSpamData()
@@ -701,6 +749,15 @@ export default function ChatWidget() {
                     disabled={loading}
                     dir={locale === 'ar' ? 'rtl' : 'ltr'}
                   />
+                  <button
+                    onClick={toggleListening}
+                    disabled={loading}
+                    className={`p-1 rounded-lg transition-all hover:bg-white/[0.06] disabled:opacity-30 ${isListening ? 'bg-red-500/20' : ''}`}
+                    style={{ color: isListening ? '#ef4444' : '#888' }}
+                    title={locale === 'tr' ? 'Sesle yaz' : 'Voice input'}
+                  >
+                    {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
                   <button
                     onClick={sendMessage}
                     disabled={loading || !input.trim()}
