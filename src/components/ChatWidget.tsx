@@ -367,33 +367,40 @@ export default function ChatWidget() {
     setError('')
   }
 
-  // 30 saniye sonra otomatik tanıtım baloncuğu
+  // 15 saniyede bir otomatik tanıtım baloncuğu (döngüsel)
   const [showGreeting, setShowGreeting] = useState(false)
-  const [greetingDismissed, setGreetingDismissed] = useState(false)
 
   useEffect(() => {
-    if (isOpen || greetingDismissed) return
-    const timer = setTimeout(() => setShowGreeting(true), 20000)
-    return () => clearTimeout(timer)
-  }, [isOpen, greetingDismissed])
+    if (isOpen) { setShowGreeting(false); return }
 
-  // Greeting açıldığında 8 saniye sonra kapat
-  useEffect(() => {
-    if (!showGreeting) return
-    const timer = setTimeout(() => { setShowGreeting(false); setGreetingDismissed(true) }, 6000)
-    return () => clearTimeout(timer)
-  }, [showGreeting])
+    const show = () => setShowGreeting(true)
+    const hide = () => setShowGreeting(false)
+
+    // İlk giriş: 4 saniye sonra göster
+    const firstTimer = setTimeout(() => {
+      show()
+      setTimeout(hide, 6000)
+    }, 4000)
+
+    // Sonra her 15 saniyede tekrarla (4sn ilk + 6sn gösterim + 15sn bekleme = 25sn sonra ikinci)
+    const interval = setInterval(() => {
+      show()
+      setTimeout(hide, 6000)
+    }, 21000)
+
+    return () => { clearTimeout(firstTimer); clearInterval(interval) }
+  }, [isOpen])
 
   if (isBlocked) return null
 
   const greetingTexts: Record<string, string> = {
-    tr: 'Merhaba! Ben Uri, URLASTONE yapay zeka asistaniyim. Size nasil yardimci olabilirim?',
-    en: 'Hello! I\'m Uri, URLASTONE AI assistant. How can I help you?',
-    es: 'Hola! Soy Uri, asistente IA de URLASTONE. ¿Como puedo ayudarle?',
-    de: 'Hallo! Ich bin Uri, URLASTONE KI-Assistent. Wie kann ich Ihnen helfen?',
-    fr: 'Bonjour! Je suis Uri, assistant IA URLASTONE. Comment puis-je vous aider?',
-    ru: 'Здравствуйте! Я Ури, ИИ-ассистент URLASTONE. Чем могу помочь?',
-    ar: 'مرحبا! أنا أوري، مساعد URLASTONE الذكي. كيف يمكنني مساعدتك؟',
+    tr: 'Yardimci olabilir miyim?',
+    en: 'Can I help you?',
+    es: '¿Puedo ayudarle?',
+    de: 'Kann ich helfen?',
+    fr: 'Puis-je vous aider?',
+    ru: 'Могу помочь?',
+    ar: 'هل يمكنني مساعدتك؟',
   }
 
   return (
@@ -404,18 +411,17 @@ export default function ChatWidget() {
           {/* Auto greeting bubble */}
           {showGreeting && (
             <div
-              className="bg-[#111] border border-white/[0.1] rounded-2xl rounded-br-md px-4 py-3 max-w-[280px] shadow-2xl animate-fade-in-up cursor-pointer"
-              onClick={() => { setShowGreeting(false); setGreetingDismissed(true); setIsOpen(true) }}
+              className="bg-[#111] border border-white/[0.1] rounded-2xl rounded-br-md px-4 py-2.5 max-w-[260px] shadow-2xl animate-fade-in-up cursor-pointer"
+              onClick={() => { setShowGreeting(false); setIsOpen(true) }}
             >
-              <p className="text-white/80 text-[13px] font-body leading-relaxed">{greetingTexts[locale] || greetingTexts.en}</p>
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                <span className="text-[10px] text-white/40 font-body">Uri - AI Assistant</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg animate-wave">👋</span>
+                <p className="text-white/80 text-[13px] font-body leading-snug">{greetingTexts[locale] || greetingTexts.en}</p>
               </div>
             </div>
           )}
           <button
-            onClick={() => { setShowGreeting(false); setGreetingDismissed(true); setIsOpen(true) }}
+            onClick={() => { setShowGreeting(false); setIsOpen(true) }}
             className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 animate-chat-pulse"
             style={{ background: 'linear-gradient(135deg, #b39345, #d2b96e)' }}
             aria-label="Chat"
