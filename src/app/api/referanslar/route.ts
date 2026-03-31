@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   const cacheHeader = includeHidden
     ? 'no-store'
-    : 'public, s-maxage=3600, stale-while-revalidate=86400'
+    : 'public, s-maxage=60, stale-while-revalidate=300'
   return NextResponse.json(data, {
     headers: { 'Cache-Control': cacheHeader },
   })
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabaseAdmin
     .from('referanslar')
-    .insert({ name, description: description || null, project_id: project_id || null, website_url: website_url || null, sort_order: sort_order || 0 })
+    .insert({ name, description: description || null, project_id: project_id || null, website_url: website_url || null, sort_order: sort_order || 0, is_active: true })
     .select()
     .single()
 

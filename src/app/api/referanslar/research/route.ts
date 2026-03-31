@@ -153,26 +153,49 @@ export async function POST(req: NextRequest) {
 
     // 4. Website URL verilmişse ve hala sonuç yoksa, direkt siteyi çek
     if (!searchResults && websiteUrl?.trim()) {
-      try {
-        const urlStr = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
-        const siteRes = await fetch(urlStr, {
-          headers: { 'User-Agent': 'Mozilla/5.0' },
-          signal: AbortSignal.timeout(8000),
-        })
-        if (siteRes.ok) {
-          const html = await siteRes.text()
-          // Title ve meta description'ı çek
-          const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
-          const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
-          const parts = []
-          if (titleMatch?.[1]) parts.push(`Site başlığı: ${titleMatch[1].trim()}`)
-          if (descMatch?.[1]) parts.push(`Site açıklaması: ${descMatch[1].trim()}`)
-          // İlk 500 karakter metin
-          const textContent = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500)
-          if (textContent) parts.push(`Site içeriği: ${textContent}`)
-          if (parts.length > 0) searchResults = parts.join('\n')
-        }
-      } catch { /* timeout or fetch error, skip */ }
+      const urlBase = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
+      // Birden fazla URL varyasyonu dene (www / www olmadan, http / https)
+      const urlsToTry = [urlBase]
+      if (!urlBase.includes('www.')) {
+        urlsToTry.push(urlBase.replace('://', '://www.'))
+      } else {
+        urlsToTry.push(urlBase.replace('://www.', '://'))
+      }
+      if (urlBase.startsWith('https://')) {
+        urlsToTry.push(urlBase.replace('https://', 'http://'))
+      }
+
+      for (const tryUrl of urlsToTry) {
+        try {
+          const siteRes = await fetch(tryUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml',
+              'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+            },
+            redirect: 'follow',
+            signal: AbortSignal.timeout(12000),
+          })
+          if (siteRes.ok) {
+            const html = await siteRes.text()
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+            const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
+            const ogDescMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i)
+            const parts = []
+            if (titleMatch?.[1]) parts.push(`Site başlığı: ${titleMatch[1].trim()}`)
+            if (descMatch?.[1]) parts.push(`Site açıklaması: ${descMatch[1].trim()}`)
+            if (ogDescMatch?.[1] && ogDescMatch[1] !== descMatch?.[1]) parts.push(`OG açıklaması: ${ogDescMatch[1].trim()}`)
+            // İlk 800 karakter metin (script/style hariç)
+            const cleanHtml = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')
+            const textContent = cleanHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 800)
+            if (textContent) parts.push(`Site içeriği: ${textContent}`)
+            if (parts.length > 0) {
+              searchResults = parts.join('\n')
+              break
+            }
+          }
+        } catch { /* try next URL */ }
+      }
     }
 
     // 5. Claude ile açıklama üret
