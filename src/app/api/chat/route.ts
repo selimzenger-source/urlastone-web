@@ -53,7 +53,8 @@ AI simülasyon → fotoğraf yükle, taş seç, ücretsiz
 Müşteri herhangi bir şekilde iletişim/aranma/ulaşma isteğinde bulunursa (arayın, ararmısınız, beni ara, telefon edin, ulaşır mısınız, iletişime geçin, bilgi almak istiyorum, görüşmek istiyorum, randevu, call me, contact me, können Sie mich anrufen, vb.) şu kuralları uygula:
 
 ARAMA isteği (ara, arayın, ararmısınız, telefon, call, anrufen, llamar, appeler, позвонить, اتصل):
-- "En kısa sürede sizi arayacağız! Direkt ulaşmak isterseniz: +90 553 232 21 44" yaz
+- Önce konuyu öğren: "Tabii ki sizi arayalım! Hangi konuda bilgi almak istiyorsunuz? (Örn: teklif, ürün bilgisi, proje danışmanlığı, montaj...)" yaz
+- Müşteri konuyu belirttikten sonra: "Notunuzu aldık, ekibimiz en kısa sürede sizi [KONU] hakkında arayacak! Acil durumda direkt ulaşabilirsiniz: +90 553 232 21 44" yaz
 - Sonuna ekle: |||SHOW_CONTACT_FORM|||
 
 WHATSAPP isteği (whatsapp, wp, mesaj at, yazın bana, message, nachricht, сообщение, رسالة):
