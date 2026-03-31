@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Cache public project list; admin requests (all=true) bypass cache via no-store
+  // Cache: kısa CDN cache — proje güncellenince hızlı yansısın
   const cacheHeader = all
     ? 'no-store'
-    : 'public, s-maxage=1800, stale-while-revalidate=3600'
+    : 'public, s-maxage=60, stale-while-revalidate=120'
   return NextResponse.json(data, {
     headers: { 'Cache-Control': cacheHeader },
   })

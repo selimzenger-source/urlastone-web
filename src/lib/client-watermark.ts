@@ -71,10 +71,14 @@ export async function addClientWatermark(file: File): Promise<File> {
     const img = new Image()
     const logoImg = new Image()
     logoImg.crossOrigin = 'anonymous'
-    logoImg.src = '/ur2-dark.png'
 
-    img.onload = () => {
-      // Max 1920px resize
+    let imgLoaded = false
+    let logoLoaded = false
+
+    const tryDraw = () => {
+      if (!imgLoaded) return
+      if (!logoLoaded) return // logo da yüklenmeden çizme
+
       const maxW = 1920
       const scale = img.naturalWidth > maxW ? maxW / img.naturalWidth : 1
       const w = Math.round(img.naturalWidth * scale)
@@ -86,8 +90,7 @@ export async function addClientWatermark(file: File): Promise<File> {
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0, w, h)
 
-      // Draw watermark
-      const logo = logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null
+      const logo = logoImg.naturalWidth > 0 ? logoImg : null
       drawWatermark(ctx, w, h, logo)
 
       canvas.toBlob((blob) => {
@@ -99,7 +102,14 @@ export async function addClientWatermark(file: File): Promise<File> {
       }, 'image/jpeg', 0.85)
     }
 
+    img.onload = () => { imgLoaded = true; tryDraw() }
     img.onerror = () => resolve(file)
+
+    logoImg.onload = () => { logoLoaded = true; tryDraw() }
+    logoImg.onerror = () => { logoLoaded = true; tryDraw() } // logo yüklenemezse de devam et
+
+    // Önce logo'yu başlat, sonra ana resmi
+    logoImg.src = '/ur2-dark.png'
     img.src = URL.createObjectURL(file)
   })
 }
