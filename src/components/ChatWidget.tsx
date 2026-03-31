@@ -208,6 +208,7 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showContactForm, setShowContactForm] = useState(false)
+  const [pendingFile, setPendingFile] = useState<{ file: File; previewUrl?: string } | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -259,6 +260,13 @@ export default function ChatWidget() {
   const sendMessage = async () => {
     if (!input.trim() || loading) return
 
+    // Bekleyen dosya varsa, not olarak gönder
+    if (pendingFile) {
+      await sendFileWithNote(input.trim())
+      setInput('')
+      return
+    }
+
     // Rate limit kontrolü
     const sd = getSpamData()
     const now = Date.now()
@@ -306,7 +314,7 @@ export default function ChatWidget() {
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || loading) return
     e.target.value = '' // reset input
@@ -318,17 +326,31 @@ export default function ChatWidget() {
     }
 
     const isImage = file.type.startsWith('image/')
-    const label = isImage
-      ? (locale === 'tr' ? '📷 Resim gönderildi' : '📷 Image sent')
-      : (locale === 'tr' ? '📎 Dosya gönderildi' : '📎 File sent')
+    const previewUrl = isImage ? URL.createObjectURL(file) : undefined
+    setPendingFile({ file, previewUrl })
+
+    // Not iste
+    const notePrompt = locale === 'tr'
+      ? `Dosya secildi: ${file.name}. Bu dosya hakkinda notunuzu yazin ve gonderin.`
+      : `File selected: ${file.name}. Please write a note about this file and send.`
+    setMessages(prev => [...prev, { role: 'assistant', content: notePrompt }])
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
+
+  const sendFileWithNote = async (note: string) => {
+    if (!pendingFile) return
+    const { file, previewUrl } = pendingFile
+
+    const isImage = file.type.startsWith('image/')
+    const label = isImage ? '📷' : '📎'
 
     // Mesaj olarak göster
-    const previewUrl = isImage ? URL.createObjectURL(file) : undefined
     setMessages(prev => [...prev, {
       role: 'user',
-      content: `${label}: ${file.name}`,
+      content: `${label} ${file.name}\n${note}`,
       attachment: { name: file.name, type: file.type, url: previewUrl },
     }])
+    setPendingFile(null)
     setLoading(true)
 
     try {
@@ -337,16 +359,25 @@ export default function ChatWidget() {
       formData.append('name', lead.name)
       formData.append('phone', lead.phone)
       formData.append('locale', locale)
+      formData.append('note', note)
 
       const res = await fetch('/api/chat/file', { method: 'POST', body: formData })
       const data = await res.json()
 
-      if (data.ok) {
+      if (data.rejected) {
+        // Uygunsuz/konu dışı resim reddedildi
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.message || (locale === 'tr'
+            ? 'Bu resim konumuzla ilgili gorunmuyor. Lutfen dogal tas, yapi veya proje ile ilgili resimler gonderin.'
+            : 'This image doesn\'t seem related to our business.'),
+        }])
+      } else if (data.ok) {
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: locale === 'tr'
-            ? 'Dosyaniz alindi, ekibimiz inceleyecek. Baska bir sorunuz var mi?'
-            : 'File received, our team will review it. Any other questions?',
+            ? 'Dosyaniz ve notunuz alindi, ekibimiz inceleyecek. Baska bir sorunuz var mi?'
+            : 'Your file and note have been received. Our team will review it. Any other questions?',
         }])
       }
     } catch {
@@ -598,6 +629,20 @@ export default function ChatWidget() {
               {/* Input */}
               <div className="px-3 pb-3 pt-1">
                 {error && <p className="text-red-400 text-[10px] text-center mb-1">{error}</p>}
+                {/* Bekleyen dosya önizleme */}
+                {pendingFile && (
+                  <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-[#b39345]/10 rounded-lg border border-[#b39345]/20">
+                    {pendingFile.previewUrl && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={pendingFile.previewUrl} alt="" className="w-10 h-10 rounded object-cover" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/70 text-[11px] truncate">{pendingFile.file.name}</p>
+                      <p className="text-[#d2b96e] text-[10px]">{locale === 'tr' ? 'Notunuzu yazin ve gonderin' : 'Write your note and send'}</p>
+                    </div>
+                    <button onClick={() => setPendingFile(null)} className="text-white/30 hover:text-white/60 p-1"><X size={14} /></button>
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-xl border border-white/[0.08] px-2.5 py-2">
                   <input
                     ref={fileInputRef}
