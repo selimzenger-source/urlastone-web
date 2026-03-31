@@ -211,7 +211,7 @@ export async function getProductProjectPrompt(): Promise<string> {
 
   try {
     // Paralel fetch
-    const [productsRes, projectsRes] = await Promise.all([
+    const [productsRes, projectsRes, referansRes] = await Promise.all([
       supabase
         .from('products')
         .select('name, code, image_url, category:categories(name, slug), stone_type:stone_types(name, code)')
@@ -222,6 +222,11 @@ export async function getProductProjectPrompt(): Promise<string> {
         .select('project_name, city, product, project_date, photos, category, active')
         .eq('active', true)
         .order('project_date', { ascending: true }),
+      supabase
+        .from('referanslar')
+        .select('name, description, website_url, project:projects(id, project_name, city)')
+        .eq('is_active', true)
+        .order('sort_order'),
     ])
 
     const products = (productsRes.data || []) as unknown as ProductRow[]
@@ -346,8 +351,26 @@ export async function getProductProjectPrompt(): Promise<string> {
       prompt += '\n'
     }
 
-    // Prompt'u max 12000 karakter ile sınırla (~3000 token, Haiku 200K destekler)
-    const finalPrompt = prompt.length > 12000 ? prompt.slice(0, 12000) + '\n...(kısaltıldı)\n' : prompt
+    // Referanslar veritabanı
+    const referanslar = (referansRes.data || []) as unknown as { name: string; description: string | null; website_url: string | null; project: { id: string; project_name: string; city: string } | null }[]
+    if (referanslar.length > 0) {
+      prompt += `## Referans Firmalar (${referanslar.length} referans)\n`
+      prompt += `Müşteri bir referans firma hakkında sorduğunda bu listeden bilgi ver ve varsa proje linkini paylaş:\n`
+      for (const ref of referanslar) {
+        prompt += `- **${ref.name}**`
+        if (ref.description) prompt += `: ${ref.description}`
+        if (ref.website_url) prompt += ` (${ref.website_url})`
+        if (ref.project) {
+          const projSlug = slugifyCity(ref.project.project_name)
+          prompt += ` → Proje: [${ref.project.project_name}](https://www.urlastone.com/projelerimiz/${projSlug})`
+        }
+        prompt += '\n'
+      }
+      prompt += `Referanslar sayfası: https://www.urlastone.com/referanslarimiz\n\n`
+    }
+
+    // Prompt'u max 14000 karakter ile sınırla
+    const finalPrompt = prompt.length > 14000 ? prompt.slice(0, 14000) + '\n...(kısaltıldı)\n' : prompt
     productProjectCache = { data: finalPrompt, timestamp: Date.now() }
     return finalPrompt
   } catch (error) {
