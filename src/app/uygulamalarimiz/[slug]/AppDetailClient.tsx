@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight, X, ZoomIn, Play } from 'lucide-react'
 import Link from 'next/link'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
@@ -93,7 +94,7 @@ export default function AppDetailClient() {
     )
   }
 
-  const photos = project.photos || []
+  const photos = (project.photos || []).map(cdnImg)
   const prevPhoto = () => setCurrentPhoto((c) => (c - 1 + photos.length) % photos.length)
   const nextPhoto = () => setCurrentPhoto((c) => (c + 1) % photos.length)
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Send, Upload, X, CheckCircle, Loader2, ChevronDown, Check, Phone, Mail, MessageCircle } from 'lucide-react'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import { languages } from '@/lib/i18n'
 import { turkishCities, cityDistricts } from '@/lib/turkey-cities'
@@ -803,7 +804,7 @@ export default function TeklifForm() {
                             <div className="aspect-square rounded-lg bg-white/[0.04] mb-1.5 overflow-hidden flex items-center justify-center">
                               {product.image_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                <img src={cdnImg(product.image_url)} alt={product.name} className="w-full h-full object-cover" />
                               ) : (
                                 <span className="text-white/10 font-heading text-lg font-bold">{product.name.charAt(0)}</span>
                               )}

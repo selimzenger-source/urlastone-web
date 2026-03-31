@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, Building2, Globe, ArrowRight, Clock, Loader2, Filter, Play, X, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -162,7 +163,7 @@ export default function UygulamalarimPage() {
     address: p.address,
     description: getTranslated(p, 'description', locale),
     category: p.category,
-    photos: p.photos || [],
+    photos: (p.photos || []).map(cdnImg),
   }))
 
   // Şehir sayısını doğru hesapla - "Çeşme, İzmir" ve "İzmir" aynı şehir olmalı
@@ -209,7 +210,7 @@ export default function UygulamalarimPage() {
     address: p.address,
     description: getTranslated(p, 'description', locale),
     category: p.category,
-    photos: p.photos || [],
+    photos: (p.photos || []).map(cdnImg),
   }))
 
   return (
@@ -359,7 +360,7 @@ export default function UygulamalarimPage() {
                     {project.photos?.[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={project.photos[0]}
+                        src={cdnImg(project.photos[0])}
                         alt={getTranslated(project, 'project_name', locale)}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { Calendar, User, ArrowRight, Loader2 } from 'lucide-react'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import { getTranslations } from '@/lib/i18n'
 
@@ -151,7 +152,7 @@ export default function BlogPage() {
                         {featuredBlog.cover_image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={featuredBlog.cover_image_url}
+                            src={cdnImg(featuredBlog.cover_image_url)}
                             alt={getLocalized(featuredBlog, 'title', locale)}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           />
@@ -227,7 +228,7 @@ export default function BlogPage() {
                           {blog.cover_image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={blog.cover_image_url}
+                              src={cdnImg(blog.cover_image_url)}
                               alt={getLocalized(blog, 'title', locale)}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                             />

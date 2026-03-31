@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { cdnImg } from '@/lib/cdn'
 import {
   ArrowRight,
   Layers,
@@ -188,7 +189,7 @@ export default function TaslarPage() {
 
   // Use DB image_url if available, fallback to hardcoded
   const getStoneTypeImage = (st: StoneType) => {
-    if (st.image_url) return st.image_url
+    if (st.image_url) return cdnImg(st.image_url)
     return stoneTypeInfo[st.code]?.foto || '/featured-traverten.jpg'
   }
 
@@ -267,7 +268,7 @@ export default function TaslarPage() {
                   {cat.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={cat.image_url}
+                      src={cdnImg(cat.image_url)}
                       alt={cat.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -337,7 +338,7 @@ export default function TaslarPage() {
                         {product.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={product.image_url}
+                            src={cdnImg(product.image_url)}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
@@ -439,7 +440,7 @@ export default function TaslarPage() {
                         {product.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={product.image_url}
+                            src={cdnImg(product.image_url)}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
@@ -598,7 +599,7 @@ export default function TaslarPage() {
               {selectedProduct.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={selectedProduct.image_url}
+                  src={cdnImg(selectedProduct.image_url)}
                   alt={selectedProduct.name}
                   className="w-full h-full object-cover"
                 />
@@ -666,7 +667,7 @@ export default function TaslarPage() {
                       >
                         {proj.photos?.[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={proj.photos[0]} alt={proj.project_name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                          <img src={cdnImg(proj.photos[0])} alt={proj.project_name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                         ) : (
                           <div className="w-12 h-12 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                             <Building2 size={16} className="text-white/20" />

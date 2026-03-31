@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface SlideData {
@@ -50,7 +51,7 @@ export default function HeroSection() {
         if (!Array.isArray(data) || data.length === 0 || cancelled) return
 
         const mapped: SlideData[] = data.map((s: any) => ({
-          image: s.image_url,
+          image: cdnImg(s.image_url),
           tag: s[`tag_${locale}`] || s.tag_tr || '',
           subtitle: s[`subtitle_${locale}`] || s.subtitle_tr || '',
           gold: s[`gold_${locale}`] || s.gold_tr || '',

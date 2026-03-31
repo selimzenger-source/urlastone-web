@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Loader2 } from 'lucide-react'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import type { StoneOption } from '@/lib/simulation'
 
@@ -137,7 +138,7 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
                 {product.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={product.image_url}
+                    src={cdnImg(product.image_url)}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

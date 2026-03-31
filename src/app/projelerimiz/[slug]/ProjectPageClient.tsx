@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { MapPin, ArrowLeft, ArrowRight, Building2, Calendar, Hammer, Layers, ChevronLeft, ChevronRight, X, ZoomIn, Play } from 'lucide-react'
 import Link from 'next/link'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import type { Project } from '@/types/project'
 import type { Locale } from '@/lib/i18n'
@@ -199,7 +200,7 @@ export default function ProjectPageClient() {
                     {proj.photos?.[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={proj.photos[0]}
+                        src={cdnImg(proj.photos[0])}
                         alt={getTranslated(proj, 'project_name', locale)}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
@@ -293,7 +294,7 @@ export default function ProjectPageClient() {
     )
   }
 
-  const photos = project.photos || []
+  const photos = (project.photos || []).map(cdnImg)
   const prevPhoto = () => setCurrentPhoto((c) => (c - 1 + photos.length) % photos.length)
   const nextPhoto = () => setCurrentPhoto((c) => (c + 1) % photos.length)
 

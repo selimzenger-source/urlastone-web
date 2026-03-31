@@ -12,6 +12,7 @@ declare global {
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
 import { MessageCircle, X, Send, Loader2, ChevronDown, Paperclip, Mic, MicOff } from 'lucide-react'
+import { cdnImg } from '@/lib/cdn'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -968,7 +969,7 @@ export default function ChatWidget() {
                               >
                                 {p.image_url ? (
                                   /* eslint-disable-next-line @next/next/no-img-element */
-                                  <img src={p.image_url} alt={p.name} className="w-full h-14 object-cover group-hover:scale-105 transition-transform" />
+                                  <img src={cdnImg(p.image_url)} alt={p.name} className="w-full h-14 object-cover group-hover:scale-105 transition-transform" />
                                 ) : (
                                   <div className="w-full h-14 bg-white/[0.04] flex items-center justify-center text-white/10 text-lg font-heading">{p.name.charAt(0)}</div>
                                 )}

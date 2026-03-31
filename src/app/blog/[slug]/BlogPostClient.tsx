@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ArrowLeft, Calendar, User, Sparkles, ArrowRight } from 'lucide-react'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import { getTranslations } from '@/lib/i18n'
 
@@ -86,7 +87,7 @@ export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog
           <div className="relative w-full h-[40vh] md:h-[50vh]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={blog.cover_image_url}
+              src={cdnImg(blog.cover_image_url)}
               alt={blog.title}
               className="w-full h-full object-cover"
             />
