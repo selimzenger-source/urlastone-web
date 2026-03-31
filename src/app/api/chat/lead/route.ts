@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { isIPBlocked } from '@/lib/bot-knowledge'
 
 // Lead bilgilerini email + Telegram ile bildir
 export async function POST(req: NextRequest) {
@@ -11,6 +12,11 @@ export async function POST(req: NextRequest) {
     }
 
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '-'
+
+    // IP engelleme kontrolü
+    if (await isIPBlocked(ip)) {
+      return NextResponse.json({ error: 'Erişiminiz kısıtlanmıştır.' }, { status: 403 })
+    }
     const tarih = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
 
     // 1) Email bildirim (Resend)

@@ -141,15 +141,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
-    // /engelle [IP] - IP engelle
+    // /engelle [IP] - IP kalıcı engelle
     if (text.startsWith('/engelle ')) {
       const ip = text.slice(9).trim()
       if (!ip) {
         await sendMessage(chatId, '❌ Kullanım: `/engelle [IP adresi]`\n\nÖrnek: `/engelle 192.168.1.1`')
         return NextResponse.json({ ok: true })
       }
-      await blockIP(ip)
-      await sendMessage(chatId, `🚫 *IP Engellendi:* \`${ip}\`\n\nBu IP'den gelen chatbot mesajları artık engellenecek.\n\nKaldırmak için: \`/engelkaldir ${ip}\``)
+      await blockIP(ip, 'Manuel engel (Telegram)')
+      await sendMessage(chatId, `🚫 *IP Engellendi (kalıcı):* \`${ip}\`\n\nBu IP'den gelen chatbot mesajları artık engellenecek.\n\nKaldırmak için: \`/engelkaldir ${ip}\``)
       return NextResponse.json({ ok: true })
     }
 

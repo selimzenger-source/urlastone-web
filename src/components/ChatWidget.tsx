@@ -200,6 +200,10 @@ function formatMessage(text: string): string {
   formatted = formatted.replace(/\|\|\|SHOW_PRODUCT_PICKER\|\|\|/g, '')
   formatted = formatted.replace(/\|\|\|OPTIONS_\w+\|\|\|/g, '')
   formatted = formatted.replace(/\|\|\|TEKLIF_DATA\|\|\|[\s\S]*?\|\|\|END_TEKLIF\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|CHAT_ENDED\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|AUTO_BLOCK\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|BLOCK_REASON\|\|\|[\s\S]*?\|\|\|END_REASON\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|REPORT_IRRELEVANT\|\|\|/g, '')
   // [text](url) → <a> linkleri (yeni sekmede aç)
   formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
   // Düz URL'leri de linkle (markdown linki olmayanlar) - yeni sekmede aç
@@ -281,6 +285,7 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showContactForm, setShowContactForm] = useState(savedSession?.showContactForm || false)
+  const [chatEnded, setChatEnded] = useState(false)
   const [pendingFile, setPendingFile] = useState<{ file: File; previewUrl?: string } | null>(null)
   const [isListening, setIsListening] = useState(false)
   const [showProductPicker, setShowProductPicker] = useState(false)
@@ -561,7 +566,17 @@ export default function ChatWidget() {
             }).catch(() => {})
           }
         }
+        // Sohbet sonlandırma / otomatik engelleme kontrolü
+        if (data.message.includes('|||CHAT_ENDED|||') || data.message.includes('|||AUTO_BLOCK|||')) {
+          setChatEnded(true)
+        }
+
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+      }
+
+      // 403 = IP engellenmiş
+      if (res.status === 403) {
+        setChatEnded(true)
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Bir hata oluştu. Lütfen tekrar deneyin.' }])
@@ -1028,6 +1043,11 @@ export default function ChatWidget() {
                     <button onClick={() => setPendingFile(null)} className="text-white/30 hover:text-white/60 p-1"><X size={14} /></button>
                   </div>
                 )}
+                {chatEnded ? (
+                  <div className="text-center py-2 text-white/40 text-xs font-body">
+                    {locale === 'tr' ? 'Sohbet sonlandirildi' : 'Chat ended'}
+                  </div>
+                ) : (
                 <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-xl border border-white/[0.08] px-2.5 py-2">
                   <input
                     ref={fileInputRef}
@@ -1074,6 +1094,7 @@ export default function ChatWidget() {
                     {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                   </button>
                 </div>
+                )}
               </div>
             </>
           )}

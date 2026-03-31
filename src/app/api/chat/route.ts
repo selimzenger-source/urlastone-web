@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { getDynamicPrompt, isIPBlocked, getProductProjectPrompt } from '@/lib/bot-knowledge'
+import { getDynamicPrompt, isIPBlocked, blockIP, getProductProjectPrompt } from '@/lib/bot-knowledge'
 import { sendTelegramNotification } from '@/lib/telegram'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -216,6 +216,19 @@ Müşteri fiyat/teklif sorunca veya teklif formu hakkında soru sorunca:
 Referans firma sorulduğunda (Arkas Holding, Ery Yapı, AYOS İnşaat vb.) aşağıdaki Referans Firmalar veritabanından bilgi ver. Projeyle ilişkili referansta proje linkini MUTLAKA paylaş.
 Genel referans sorusu için: [Referanslarımız](https://www.urlastone.com/referanslarimiz)
 
+## ALAKASIZ MESAJ VE KÜFÜR KURALI
+Sen bir İŞLETME YARDIM ASİSTANISIN. Sadece URLASTONE, doğal taş sektörü, ürünler, projeler, teklifler ve ticari konularda yardım edebilirsin.
+
+ALAKASIZ MESAJ:
+- Müşteri sektör dışı soru sorarsa (sağlık, kişisel, siyaset, eğlence vb.), nazikçe yönlendir: "Bu bir işletme yardım asistanıdır. Doğal taş ürünleri, projeler, fiyat teklifi ve teknik konularda size yardımcı olabilirim." (Kullanıcının dilinde söyle)
+- Sohbet içinde peş peşe 3 kez %100 alakasız mesaj gelirse (sektör, ticaret ve doğal taş ile kesinlikle ilgisi yoksa) sohbeti sonlandır: "Bu konularda yardımcı olamıyorum. Doğal taş ve projelerimiz hakkında bilgi almak isterseniz her zaman buradayım. İyi günler!" yaz ve mesajın sonuna |||CHAT_ENDED||| ve |||REPORT_IRRELEVANT||| ekle.
+- %100 emin olmalısın — birisi "banyoya taş olur mu?" soruyor olabilir, bu ALAKALI. Sadece tamamen alakasız mesajlarda (hamilelik, astroloji, oyun, dedikodu vb.) sayaç tut.
+
+KÜFÜR ve AĞIR HAKARET (DİREKT ENGEL):
+- Küfür, ağır hakaret, cinsel içerik veya tehdit tespit edersen (fuck, siktir, orospu, amk, ananı, sikerim, puta, mierda, Scheiße, блядь, كس أمك, piç, göt, yarrak, amcık, sikik vb. — TÜM DİLLERDE):
+  - DİREKT sohbeti bitir ve engelle. Uyarı VERME, DİREKT engelle: "Uygunsuz dil kullanımı nedeniyle sohbet sonlandırılmış ve erişiminiz kısıtlanmıştır." yaz ve mesajın sonuna |||AUTO_BLOCK||| ve ardından küfür kelimesini sansürlü yaz: |||BLOCK_REASON|||f**k kelimesi|||END_REASON||| ekle.
+- %100 emin olmalısın — "taşa bak" gibi argo ama küfür olmayan ifadeler KÜFÜR DEĞİL. Sadece bariz, ağır, kesin küfür ve hakaretlerde işlem yap.
+
 ## KURALLAR
 - KISA ve NET cevaplar ver, uzun paragraflar yazma
 - Her mesajda EN FAZLA 3-4 cümle yaz (teknik soru hariç — teknik sorularda detaylı açıkla)
@@ -398,6 +411,47 @@ Engellemek icin: /engelle ${ip}`
 
       // Teklif marker'ını kullanıcıya gösterme
       text = text.replace(/\|\|\|TEKLIF_DATA\|\|\|[\s\S]*?\|\|\|END_TEKLIF\|\|\|/, '').trim()
+    }
+
+    // Otomatik küfür engelleme
+    const autoBlockMatch = text.match(/\|\|\|AUTO_BLOCK\|\|\|/)
+    if (autoBlockMatch) {
+      const reasonMatch = text.match(/\|\|\|BLOCK_REASON\|\|\|([\s\S]*?)\|\|\|END_REASON\|\|\|/)
+      const reason = reasonMatch ? reasonMatch[1].trim() : 'Uygunsuz dil'
+
+      // IP'yi kalıcı engelle
+      await blockIP(ip, reason)
+
+      // Telegram'a bildir
+      const tarih = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
+      sendTelegramNotification(
+        `🚫 *OTOMATİK ENGELLEME*\n\n` +
+        `🔒 *IP:* \`${ip}\`\n` +
+        `⚠️ *Sebep:* ${reason}\n` +
+        `👤 *Müşteri:* ${lead?.name || 'Bilinmiyor'}\n` +
+        `📞 *Telefon:* ${lead?.phone || '-'}\n` +
+        `🕐 *Tarih:* ${tarih}\n\n` +
+        `Uri otomatik olarak bu IP'yi engelledi.\n` +
+        `Kaldırmak için: \`/engelkaldir ${ip}\``
+      ).catch(() => {})
+
+      // Marker'ları temizle
+      text = text.replace(/\|\|\|AUTO_BLOCK\|\|\|/, '').replace(/\|\|\|BLOCK_REASON\|\|\|[\s\S]*?\|\|\|END_REASON\|\|\|/, '').trim()
+    }
+
+    // Alakasız mesaj raporu — admin'e bildir, engel sorsun
+    if (text.includes('|||REPORT_IRRELEVANT|||')) {
+      const tarih = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
+      sendTelegramNotification(
+        `⚠️ *ALAKASIZ SOHBET SONLANDIRILDI*\n\n` +
+        `🔒 *IP:* \`${ip}\`\n` +
+        `👤 *Müşteri:* ${lead?.name || 'Bilinmiyor'}\n` +
+        `📞 *Telefon:* ${lead?.phone || '-'}\n` +
+        `🕐 *Tarih:* ${tarih}\n\n` +
+        `Müşteri 3 kez alakasız mesaj gönderdi, sohbet sonlandırıldı.\n` +
+        `Engellemek icin: \`/engelle ${ip}\``
+      ).catch(() => {})
+      text = text.replace(/\|\|\|REPORT_IRRELEVANT\|\|\|/g, '')
     }
 
     return NextResponse.json({ message: text })

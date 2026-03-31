@@ -113,55 +113,57 @@ ${Object.entries(CATEGORIES).map(([k, v]) => `• \`${k}\` - ${v}`).join('\n')}
 \`/sil kampanya\``
 }
 
-// IP Engelleme sistemi
+// IP Engelleme sistemi — Supabase kalıcı depolama
 export async function getBlockedIPs(): Promise<string[]> {
   try {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-      const { kv } = await import('@vercel/kv')
-      const data = await kv.get<string[]>('blocked_ips')
-      return data || []
-    }
-  } catch {}
-  return blockedIPsStore
+    const { data } = await supabase.from('blocked_ips').select('ip, expires_at')
+    if (!data) return []
+    const now = new Date().toISOString()
+    return data
+      .filter(row => !row.expires_at || row.expires_at > now)
+      .map(row => row.ip)
+  } catch {
+    return []
+  }
 }
 
-export async function blockIP(ip: string): Promise<void> {
-  const ips = await getBlockedIPs()
-  if (!ips.includes(ip)) {
-    ips.push(ip)
-    try {
-      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        const { kv } = await import('@vercel/kv')
-        await kv.set('blocked_ips', ips)
-        return
-      }
-    } catch {}
-    blockedIPsStore = ips
+export async function blockIP(ip: string, reason?: string, expiresInMinutes?: number): Promise<void> {
+  try {
+    const expires_at = expiresInMinutes
+      ? new Date(Date.now() + expiresInMinutes * 60 * 1000).toISOString()
+      : null
+    await supabase.from('blocked_ips').upsert(
+      { ip, reason: reason || null, blocked_at: new Date().toISOString(), expires_at },
+      { onConflict: 'ip' }
+    )
+  } catch (err) {
+    console.error('[BlockIP] Error:', err)
   }
 }
 
 export async function unblockIP(ip: string): Promise<boolean> {
-  const ips = await getBlockedIPs()
-  const idx = ips.indexOf(ip)
-  if (idx === -1) return false
-  ips.splice(idx, 1)
   try {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-      const { kv } = await import('@vercel/kv')
-      await kv.set('blocked_ips', ips)
-      return true
-    }
-  } catch {}
-  blockedIPsStore = ips
-  return true
+    const { error } = await supabase.from('blocked_ips').delete().eq('ip', ip)
+    return !error
+  } catch {
+    return false
+  }
 }
 
 export async function isIPBlocked(ip: string): Promise<boolean> {
-  const ips = await getBlockedIPs()
-  return ips.includes(ip)
+  try {
+    const { data } = await supabase.from('blocked_ips').select('ip, expires_at').eq('ip', ip).single()
+    if (!data) return false
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      // Süresi dolmuş — sil
+      await supabase.from('blocked_ips').delete().eq('ip', ip)
+      return false
+    }
+    return true
+  } catch {
+    return false
+  }
 }
-
-let blockedIPsStore: string[] = []
 
 export { CATEGORIES }
 
