@@ -394,13 +394,13 @@ export default function ChatWidget() {
   if (isBlocked) return null
 
   const greetingTexts: Record<string, string> = {
-    tr: 'Yardimci olabilir miyim?',
-    en: 'Can I help you?',
-    es: '¿Puedo ayudarle?',
-    de: 'Kann ich helfen?',
-    fr: 'Puis-je vous aider?',
-    ru: 'Могу помочь?',
-    ar: 'هل يمكنني مساعدتك؟',
+    tr: 'Merhaba! Ben Uri, AI asistanınız. Yardıma ihtiyacınız olursa buradayım',
+    en: 'Hi! I\'m Uri, your AI assistant. I\'m here if you need help',
+    es: 'Hola! Soy Uri, su asistente IA. Estoy aqui si necesita ayuda',
+    de: 'Hallo! Ich bin Uri, Ihr KI-Assistent. Ich bin hier, wenn Sie Hilfe brauchen',
+    fr: 'Bonjour! Je suis Uri, votre assistant IA. Je suis la si vous avez besoin',
+    ru: 'Привет! Я Ури, ваш ИИ-ассистент. Я здесь, если нужна помощь',
+    ar: 'مرحبا! أنا أوري، مساعدك الذكي. أنا هنا إذا احتجت مساعدة',
   }
 
   return (
