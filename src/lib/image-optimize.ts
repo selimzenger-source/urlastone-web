@@ -76,7 +76,7 @@ export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
 
       logoComposites.push({
         input: logoBuffer,
-        top: imgH - margin - badgeH + Math.round((badgeH - iconSize) / 2),
+        top: margin + Math.round((badgeH - iconSize) / 2),
         left: imgW - margin - badgeW + iconPadding,
       })
     }
@@ -88,7 +88,7 @@ export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
     .composite([
       {
         input: watermarkSvg,
-        top: imgH - margin - badgeH,
+        top: margin,
         left: imgW - margin - badgeW,
       },
       ...logoComposites,
