@@ -382,11 +382,11 @@ export default function ChatWidget() {
       setTimeout(hide, 6000)
     }, 4000)
 
-    // Sonra her 15 saniyede tekrarla (4sn ilk + 6sn gösterim + 15sn bekleme = 25sn sonra ikinci)
+    // Sonra her 20 saniyede tekrarla
     const interval = setInterval(() => {
       show()
       setTimeout(hide, 6000)
-    }, 21000)
+    }, 26000)
 
     return () => { clearTimeout(firstTimer); clearInterval(interval) }
   }, [isOpen])

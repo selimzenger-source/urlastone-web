@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { getDynamicPrompt } from '@/lib/bot-knowledge'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -75,10 +76,56 @@ Derzli/derzsiz uygulama mümkün
 Don-çözülme, UV dayanıklı
 %100 Türk doğal taşı (Denizli traverten, Afyon/Muğla mermer, Anadolu bazalt/kalker)
 
-## Karşılaştırmalar
-Doğal taş > suni taş (daha dayanıklı, solmaz)
-Rockshell > geleneksel taş (daha hafif, kolay uygulama, aynı görünüm)
-Taş kaplama > boya/sıva (bir kere yatırım, onlarca yıl dayanır)
+## Sık Sorulan Sorular (FAQ)
+
+### Teslimat
+- Yurt içi teslimat: ortalama 7-10 iş günü (sipariş onayından sonra)
+- Yurt dışı teslimat: 15-25 iş günü (ülkeye göre değişir)
+- Kargo/nakliye: Türkiye geneli nakliye düzenlenir, yurt dışı FOB/CIF seçenekleri mevcut
+- Minimum sipariş: yurt içi minimum yok, yurt dışı min. 1 palet (~30m²)
+
+### Ödeme
+- Banka havalesi/EFT (TL, USD, EUR)
+- Kredi kartı ile ödeme mümkün
+- Yurt dışı: L/C (akreditif), T/T (banka transferi)
+- Taksit seçenekleri için iletişime geçin
+
+### Garanti ve Dayanıklılık
+- Doğal taş ömür boyu dayanıklıdır, solmaz, renk değiştirmez
+- Don-çözülme testi geçmiş ürünler (-20°C dayanıklı)
+- UV dayanıklı, güneşte solmaz
+- Doğru uygulamada 50+ yıl ömür
+
+### Uygulama / Montaj
+- Türkiye geneli anahtar teslim uygulama hizmeti
+- Uygulama süresi: ortalama 15-25 m²/gün (ekibe göre)
+- Yapıştırıcı: flex yapıştırıcı + 10mm dişli mala
+- Yüzey hazırlığı: düzgün, temiz, nemli yüzey gerekli
+- Mantolama üzerine uygulama: file+sıva sonrası mümkün
+- Derz: derzli (1-2cm) veya derzsiz uygulama seçeneği
+- Epoksi derz dış mekan için önerilir
+
+### Numune
+- Ücretsiz numune gönderimi mümkün (kargo alıcıya ait)
+- Numune talebi: teklif formu veya WhatsApp ile
+- Her taş türünden ve kesim modelinden numune mevcut
+
+### Fiyatlandırma
+- Fiyat m² bazında değişir (taş türü, kesim modeli, miktar)
+- Kesin fiyat için teklif formu doldurun
+- Toptan alımlarda özel fiyat
+- Uygulama dahil veya sadece taş olarak fiyat alınabilir
+
+### Stok ve Üretim
+- Standart ürünlerde hazır stok mevcut
+- Özel sipariş üretim süresi: 10-15 iş günü
+- Büyük projeler için özel üretim planlaması yapılır
+
+### Karşılaştırmalar
+- Doğal taş > suni taş (daha dayanıklı, solmaz, doğal görünüm)
+- Rockshell > geleneksel taş (daha hafif, kolay uygulama, aynı görünüm)
+- Taş kaplama > boya/sıva (bir kere yatırım, onlarca yıl dayanır)
+- Rockshell > seramik (doğal doku, her parça benzersiz)
 
 ## Teknik Bilgi ve Sektör Uzmanlığı
 Müşteri teknik soru sorduğunda detaylı ve uzman seviyesinde cevap ver:
@@ -160,10 +207,14 @@ export async function POST(req: NextRequest) {
       content: m.content.slice(0, 1000), // max 1000 karakter/mesaj
     }))
 
+    // Dinamik bilgileri ekle (Telegram'dan yönetilen)
+    const dynamicKnowledge = await getDynamicPrompt()
+    const fullPrompt = SYSTEM_PROMPT + dynamicKnowledge
+
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 500,
-      system: SYSTEM_PROMPT,
+      system: fullPrompt,
       messages: trimmedMessages,
     })
 
