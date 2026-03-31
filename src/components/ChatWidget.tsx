@@ -51,7 +51,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Size daha iyi yardımcı olabilmemiz için bilgilerinizi doldurun',
     formDesc: '',
     namePlaceholder: 'Adınız',
-    emailPlaceholder: 'E-posta (opsiyonel)',
+    emailPlaceholder: 'E-posta',
     phonePlaceholder: '5XX XXX XX XX',
     send: 'Gönder',
     submit: 'Sohbete Başla',
@@ -69,7 +69,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Please fill in your details so we can assist you better',
     formDesc: '',
     namePlaceholder: 'Your name',
-    emailPlaceholder: 'Email (optional)',
+    emailPlaceholder: 'Email',
     phonePlaceholder: 'Phone number',
     send: 'Send',
     submit: 'Start Chat',
@@ -87,7 +87,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Rellene sus datos para poder ayudarle mejor',
     formDesc: '',
     namePlaceholder: 'Su nombre',
-    emailPlaceholder: 'Email (opcional)',
+    emailPlaceholder: 'Email',
     phonePlaceholder: 'Teléfono',
     send: 'Enviar',
     submit: 'Iniciar Chat',
@@ -105,7 +105,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Bitte füllen Sie Ihre Daten aus, damit wir Ihnen besser helfen können',
     formDesc: '',
     namePlaceholder: 'Ihr Name',
-    emailPlaceholder: 'E-Mail (optional)',
+    emailPlaceholder: 'E-Mail',
     phonePlaceholder: 'Telefonnummer',
     send: 'Senden',
     submit: 'Chat starten',
@@ -123,7 +123,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Veuillez remplir vos coordonnées pour que nous puissions mieux vous aider',
     formDesc: '',
     namePlaceholder: 'Votre nom',
-    emailPlaceholder: 'Email (facultatif)',
+    emailPlaceholder: 'Email',
     phonePlaceholder: 'Téléphone',
     send: 'Envoyer',
     submit: 'Démarrer le chat',
@@ -141,7 +141,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Пожалуйста, заполните ваши данные, чтобы мы могли лучше вам помочь',
     formDesc: '',
     namePlaceholder: 'Ваше имя',
-    emailPlaceholder: 'Email (необязательно)',
+    emailPlaceholder: 'Email',
     phonePlaceholder: 'Телефон',
     send: 'Отправить',
     submit: 'Начать чат',
@@ -159,7 +159,7 @@ const chatTranslations: Record<string, {
     formTitle: 'يرجى ملء بياناتك حتى نتمكن من مساعدتك بشكل أفضل',
     formDesc: '',
     namePlaceholder: 'اسمك',
-    emailPlaceholder: 'البريد الإلكتروني (اختياري)',
+    emailPlaceholder: 'البريد الإلكتروني',
     phonePlaceholder: 'رقم الهاتف',
     send: 'إرسال',
     submit: 'ابدأ المحادثة',
@@ -385,6 +385,35 @@ export default function ChatWidget() {
 
     if (!lead.phone.trim()) { setError(t.phoneRequired); return }
 
+    // Email zorunlu
+    if (!lead.email.trim()) {
+      const emailRequired: Record<string, string> = {
+        tr: 'Lütfen e-posta adresinizi girin',
+        en: 'Please enter your email address',
+        es: 'Por favor ingrese su correo electrónico',
+        de: 'Bitte geben Sie Ihre E-Mail-Adresse ein',
+        fr: 'Veuillez entrer votre adresse e-mail',
+        ru: 'Пожалуйста, введите ваш email',
+        ar: 'يرجى إدخال بريدك الإلكتروني',
+      }
+      setError(emailRequired[locale] || emailRequired.en)
+      return
+    }
+    // Basit email format kontrolü
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email.trim())) {
+      const emailInvalid: Record<string, string> = {
+        tr: 'Lütfen geçerli bir e-posta adresi girin',
+        en: 'Please enter a valid email address',
+        es: 'Por favor ingrese un correo electrónico válido',
+        de: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+        fr: 'Veuillez entrer une adresse e-mail valide',
+        ru: 'Пожалуйста, введите действительный email',
+        ar: 'يرجى إدخال بريد إلكتروني صالح',
+      }
+      setError(emailInvalid[locale] || emailInvalid.en)
+      return
+    }
+
     // Lead'i kaydet
     try {
       await fetch('/api/chat/lead', {
@@ -574,12 +603,43 @@ export default function ChatWidget() {
             : 'This image doesn\'t seem related to our business.'),
         }])
       } else if (data.ok) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: locale === 'tr'
-            ? 'Dosyaniz ve notunuz alindi, ekibimiz inceleyecek. Baska bir sorunuz var mi?'
-            : 'Your file and note have been received. Our team will review it. Any other questions?',
-        }])
+        // Dosya alındı mesajını ekle
+        const fileMsg = locale === 'tr'
+          ? 'Fotograf alindi, tesekkurler.'
+          : 'Photo received, thank you.'
+        const updatedMessages = [...messages, {
+          role: 'user' as const,
+          content: `${label} ${file.name}\n${note}`,
+          attachment: { name: file.name, type: file.type, url: previewUrl },
+        }]
+        // Dosya alındıktan sonra teklif sürecindeyse devam ettir (chat API'ye gönder)
+        try {
+          const chatRes = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: [...updatedMessages, { role: 'assistant', content: fileMsg }, { role: 'user', content: locale === 'tr' ? 'Fotografi gonderdim, devam edelim' : 'I sent the photo, let\'s continue' }],
+              lead: { name: lead.name, phone: lead.phone, email: lead.email },
+            }),
+          })
+          const chatData = await chatRes.json()
+          if (chatData.message) {
+            // Quick options kontrolü
+            const optionMarkers = ['OPTIONS_CONTACT', 'OPTIONS_LANG', 'OPTIONS_PROJECT', 'OPTIONS_PRICE', 'OPTIONS_SOURCE']
+            for (const marker of optionMarkers) {
+              if (chatData.message.includes(`|||${marker}|||`)) {
+                setQuickOptions(marker)
+                break
+              }
+            }
+            if (chatData.message.includes('|||SHOW_CONTACT_FORM|||')) setShowContactForm(true)
+            setMessages(prev => [...prev, { role: 'assistant', content: chatData.message }])
+          } else {
+            setMessages(prev => [...prev, { role: 'assistant', content: fileMsg }])
+          }
+        } catch {
+          setMessages(prev => [...prev, { role: 'assistant', content: fileMsg }])
+        }
       }
     } catch {
       setMessages(prev => [...prev, {
