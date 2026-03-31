@@ -15,7 +15,7 @@ function validateAdmin(request: NextRequest): boolean {
  * Claude Haiku ile watermark bölgelerini tespit et
  * Returns: array of {x, y, w, h} normalized (0-1) coordinates
  */
-async function detectWatermarkRegions(imageUrl: string): Promise<Array<{ x: number; y: number; w: number; h: number }>> {
+async function detectWatermarkRegions(imageUrl: string): Promise<{ type: 'diagonal_full' | 'local' | 'none'; regions: Array<{ x: number; y: number; w: number; h: number }> }> {
   const anthropic = new Anthropic()
 
   // Resmi base64 olarak çek
@@ -25,8 +25,8 @@ async function detectWatermarkRegions(imageUrl: string): Promise<Array<{ x: numb
   const mediaType = (imgRes.headers.get('content-type') || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
 
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 500,
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 800,
     messages: [{
       role: 'user',
       content: [
@@ -36,55 +36,59 @@ async function detectWatermarkRegions(imageUrl: string): Promise<Array<{ x: numb
         },
         {
           type: 'text',
-          text: `Analyze this image for watermarks, logos from other companies, or semi-transparent text overlays (NOT the building/architecture content itself).
+          text: `Look VERY carefully at this image for watermarks. Types to detect:
 
-If watermarks exist, return their bounding boxes as JSON array: [{"x": 0.1, "y": 0.05, "w": 0.8, "h": 0.1}]
-Coordinates are normalized 0-1 (x=left fraction, y=top fraction, w=width fraction, h=height fraction).
+1. DIAGONAL TEXT: Semi-transparent repeating diagonal text across image (e.g. "sahibinden.com", "hepsiemlak", "emlakjet"). These are VERY faint.
+2. CORNER WATERMARKS: Logos, badges, or text in corners
+3. BANNER WATERMARKS: Horizontal strips with text/logos at top or bottom
+4. STAMP WATERMARKS: Circular or rectangular stamps overlaid on image
 
-Be generous with the bounding box - include extra padding around the watermark.
+DO NOT detect: building signs, construction banners (physical objects IN the scene), architectural elements.
 
-If NO watermarks found, return: []
+Return JSON with type and bounding boxes:
+{"type": "diagonal_full", "regions": [{"x":0,"y":0,"w":1,"h":1}]}
+{"type": "local", "regions": [{"x":0.8,"y":0,"w":0.2,"h":0.1}]}
+{"type": "none", "regions": []}
 
-IMPORTANT: Only detect watermarks/overlays, NOT architectural elements, signs on buildings, or actual content in the photo. Common watermarks: diagonal text, corner logos, repeating text patterns across the image.
+- "diagonal_full" = repeating text covering most of image (needs external tool)
+- "local" = specific corner/banner watermarks (can be inpainted)
+- "none" = no watermarks found
 
-Return ONLY the JSON array, nothing else.`,
+Return ONLY the JSON object.`,
         },
       ],
     }],
   })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '[]'
+  const text = response.content[0].type === 'text' ? response.content[0].text : '{}'
+  console.log('[WatermarkRemoval] Claude response:', text)
 
   try {
-    // Extract JSON from response
-    const match = text.match(/\[[\s\S]*\]/)
-    if (!match) return []
-    const regions = JSON.parse(match[0])
-    if (!Array.isArray(regions)) return []
-    return regions.filter((r: { x: number; y: number; w: number; h: number }) =>
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return { type: 'none' as const, regions: [] }
+    const parsed = JSON.parse(match[0])
+    const wmType = parsed.type || 'none'
+    const regions = Array.isArray(parsed.regions) ? parsed.regions.filter((r: { x: number; y: number; w: number; h: number }) =>
       typeof r.x === 'number' && typeof r.y === 'number' &&
       typeof r.w === 'number' && typeof r.h === 'number' &&
       r.w > 0 && r.h > 0
-    )
+    ) : []
+    return { type: wmType as 'diagonal_full' | 'local' | 'none', regions }
   } catch {
-    return []
+    return { type: 'none' as const, regions: [] }
   }
 }
 
 /**
  * Sharp ile mask oluştur — watermark bölgeleri beyaz, geri kalan siyah
+ * Full-image watermark (diagonal text) için diagonal stripe pattern mask oluşturur
  */
 async function createMask(
   width: number,
   height: number,
   regions: Array<{ x: number; y: number; w: number; h: number }>
 ): Promise<Buffer> {
-  // Siyah background
-  let mask = sharp({
-    create: { width, height, channels: 3, background: { r: 0, g: 0, b: 0 } },
-  }).png()
-
-  // Her bölge için beyaz dikdörtgen overlay
+  // Spesifik bölgeler için dikdörtgen mask
   const overlays = regions.map((r) => {
     const rx = Math.max(0, Math.floor(r.x * width))
     const ry = Math.max(0, Math.floor(r.y * height))
@@ -100,7 +104,10 @@ async function createMask(
     }
   })
 
-  const maskBuffer = await mask.composite(overlays).toBuffer()
+  const maskBuffer = await sharp({
+    create: { width, height, channels: 3, background: { r: 0, g: 0, b: 0 } },
+  }).png().composite(overlays).toBuffer()
+
   return maskBuffer
 }
 
@@ -155,16 +162,28 @@ export async function POST(request: NextRequest) {
 
     console.log('[WatermarkRemoval] Starting for:', imageUrl.substring(0, 80))
 
-    // 1. Claude Haiku ile watermark tespiti
-    console.log('[WatermarkRemoval] Step 1: Detecting watermarks with Claude Haiku...')
-    const regions = await detectWatermarkRegions(imageUrl)
+    // 1. Claude Sonnet ile watermark tespiti
+    console.log('[WatermarkRemoval] Step 1: Detecting watermarks with Claude Sonnet...')
+    const detection = await detectWatermarkRegions(imageUrl)
 
-    if (regions.length === 0) {
+    if (detection.type === 'none' || detection.regions.length === 0) {
       console.log('[WatermarkRemoval] No watermarks detected')
       return NextResponse.json({ url: imageUrl, watermarkFound: false })
     }
 
-    console.log('[WatermarkRemoval] Found', regions.length, 'watermark regions:', regions)
+    // Diagonal full-image watermark — LaMa ile silinemez, kullanıcıya bildir
+    if (detection.type === 'diagonal_full') {
+      console.log('[WatermarkRemoval] Diagonal full-image watermark detected — needs external tool')
+      return NextResponse.json({
+        url: imageUrl,
+        watermarkFound: true,
+        watermarkType: 'diagonal_full',
+        message: 'Resimde tüm yüzeyi kaplayan diagonal watermark tespit edildi. Bu tip watermark için watermarkremover.io kullanın.',
+      })
+    }
+
+    const regions = detection.regions
+    console.log('[WatermarkRemoval] Found', regions.length, 'local watermark regions:', regions)
 
     // 2. Resim boyutlarını al
     const imgRes = await fetch(imageUrl)

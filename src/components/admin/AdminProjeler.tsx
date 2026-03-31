@@ -117,6 +117,12 @@ export default function AdminProjeler({ adminPassword }: Props) {
         alert('Watermark tespit edilmedi')
         return
       }
+      if (data.watermarkType === 'diagonal_full') {
+        if (confirm('Diagonal watermark tespit edildi. Bu tip watermark AI ile silinemez.\n\nwatermarkremover.io açılsın mı?')) {
+          window.open('https://www.watermarkremover.io/tr', '_blank')
+        }
+        return
+      }
       if (data.url && data.url !== url) {
         // Temizlenmiş resmi Supabase'e yükle
         const cleanedRes = await fetch(data.url)
