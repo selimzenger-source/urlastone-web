@@ -161,35 +161,67 @@ Müşteri fiyat/teklif sorunca veya teklif formu hakkında soru sorunca:
 - Link verirken markdown formatı kullan: [Teklif Al](https://www.urlastone.com/teklif)
 - "Siz" hitabı kullan`
 
-// Rate limit: IP başına dakikada max 5 mesaj
+// Rate limit: IP başına dakika/saat/gün kotaları
 const rateLimitMap = new Map<string, number[]>()
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const timestamps = rateLimitMap.get(ip) || []
-  const recent = timestamps.filter(t => t > now - 60000)
-  if (recent.length >= 5) return false
-  recent.push(now)
-  rateLimitMap.set(ip, recent)
-  return true
+const LIMITS = {
+  perMinute: 10,   // dakikada max 10 mesaj
+  perHour: 50,     // saatte max 50 mesaj
+  perDay: 100,     // günde max 100 mesaj
 }
 
-// Her 10 dakikada rate limit map'i temizle
-setInterval(() => {
+function checkRateLimit(ip: string): { allowed: boolean; reason?: string } {
   const now = Date.now()
+  const timestamps = rateLimitMap.get(ip) || []
+
+  // Eski kayıtları temizle (24 saatten eski)
+  const dayAgo = now - 86400000
+  const cleaned = timestamps.filter(t => t > dayAgo)
+
+  // Dakikalık kontrol
+  const lastMinute = cleaned.filter(t => t > now - 60000)
+  if (lastMinute.length >= LIMITS.perMinute) {
+    return { allowed: false, reason: 'minute' }
+  }
+
+  // Saatlik kontrol
+  const lastHour = cleaned.filter(t => t > now - 3600000)
+  if (lastHour.length >= LIMITS.perHour) {
+    return { allowed: false, reason: 'hour' }
+  }
+
+  // Günlük kontrol
+  if (cleaned.length >= LIMITS.perDay) {
+    return { allowed: false, reason: 'day' }
+  }
+
+  cleaned.push(now)
+  rateLimitMap.set(ip, cleaned)
+  return { allowed: true }
+}
+
+// Her 30 dakikada rate limit map'i temizle
+setInterval(() => {
+  const dayAgo = Date.now() - 86400000
   Array.from(rateLimitMap.entries()).forEach(([ip, timestamps]) => {
-    const recent = timestamps.filter(t => t > now - 60000)
+    const recent = timestamps.filter(t => t > dayAgo)
     if (recent.length === 0) rateLimitMap.delete(ip)
     else rateLimitMap.set(ip, recent)
   })
-}, 600000)
+}, 1800000)
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
 
-  if (!checkRateLimit(ip)) {
+  const rateCheck = checkRateLimit(ip)
+  if (!rateCheck.allowed) {
+    const errorMessages: Record<string, string> = {
+      minute: 'Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.',
+      hour: 'Saatlik mesaj limitine ulaştınız. Lütfen daha sonra tekrar deneyin.',
+      day: 'Günlük mesaj limitine ulaştınız. Yarın tekrar deneyebilirsiniz.',
+    }
     return NextResponse.json(
-      { error: 'Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.' },
+      { error: errorMessages[rateCheck.reason || 'minute'] },
       { status: 429 }
     )
   }
