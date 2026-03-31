@@ -196,8 +196,10 @@ function saveSpamData(data: Record<string, unknown>) {
 function formatMessage(text: string): string {
   // |||SHOW_CONTACT_FORM||| kaldır
   let formatted = text.replace(/\|\|\|SHOW_CONTACT_FORM\|\|\|/g, '')
-  // [text](url) → <a> linkleri
-  formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
+  // [text](url) → <a> linkleri (yeni sekmede aç)
+  formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
+  // Düz URL'leri de linkle (markdown linki olmayanlar) - yeni sekmede aç
+  formatted = formatted.replace(/(?<!")(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
   // **bold** → <strong>
   formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   // Satır sonları
@@ -205,18 +207,50 @@ function formatMessage(text: string): string {
   return formatted
 }
 
+// Chat oturumu localStorage yönetimi (5 dk geçerlilik)
+const CHAT_SESSION_KEY = 'urlastone_chat_session'
+const SESSION_TTL = 5 * 60 * 1000 // 5 dakika
+
+function saveChatSession(data: { lead: LeadInfo; messages: Message[]; phase: string; showContactForm: boolean }) {
+  try {
+    localStorage.setItem(CHAT_SESSION_KEY, JSON.stringify({ ...data, timestamp: Date.now() }))
+  } catch {}
+}
+
+function loadChatSession(): { lead: LeadInfo; messages: Message[]; phase: string; showContactForm: boolean } | null {
+  try {
+    const raw = localStorage.getItem(CHAT_SESSION_KEY)
+    if (!raw) return null
+    const data = JSON.parse(raw)
+    // 5 dk'dan eski ise sil
+    if (Date.now() - data.timestamp > SESSION_TTL) {
+      localStorage.removeItem(CHAT_SESSION_KEY)
+      return null
+    }
+    return data
+  } catch {}
+  return null
+}
+
+function clearChatSession() {
+  try { localStorage.removeItem(CHAT_SESSION_KEY) } catch {}
+}
+
 export default function ChatWidget() {
   const { locale } = useLanguage()
   const t = chatTranslations[locale] || chatTranslations.en
 
-  const [isOpen, setIsOpen] = useState(false)
-  const [phase, setPhase] = useState<'form' | 'chat'>('form')
-  const [lead, setLead] = useState<LeadInfo>({ name: '', email: '', phone: '' })
-  const [messages, setMessages] = useState<Message[]>([])
+  // Önceki oturumu yükle (5 dk içinde dönmüşse)
+  const savedSession = typeof window !== 'undefined' ? loadChatSession() : null
+
+  const [isOpen, setIsOpen] = useState(!!savedSession)
+  const [phase, setPhase] = useState<'form' | 'chat'>(savedSession?.phase === 'chat' ? 'chat' : 'form')
+  const [lead, setLead] = useState<LeadInfo>(savedSession?.lead || { name: '', email: '', phone: '' })
+  const [messages, setMessages] = useState<Message[]>(savedSession?.messages || [])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [showContactForm, setShowContactForm] = useState(false)
+  const [showContactForm, setShowContactForm] = useState(savedSession?.showContactForm || false)
   const [pendingFile, setPendingFile] = useState<{ file: File; previewUrl?: string } | null>(null)
   const [isListening, setIsListening] = useState(false)
 
@@ -231,6 +265,13 @@ export default function ChatWidget() {
   }, [])
 
   useEffect(() => { scrollToBottom() }, [messages, scrollToBottom])
+
+  // Chat oturumunu localStorage'a kaydet (her mesaj/phase değişiminde)
+  useEffect(() => {
+    if (phase === 'chat' && messages.length > 0) {
+      saveChatSession({ lead, messages, phase, showContactForm })
+    }
+  }, [messages, phase, lead, showContactForm])
 
   // Ses tanıma (dikte) - dil eşleştirme
   const speechLangs: Record<string, string> = {
@@ -508,6 +549,7 @@ export default function ChatWidget() {
     setShowContactForm(false)
     setError('')
     summarySentRef.current = false
+    clearChatSession()
   }
 
   // 15 saniyede bir otomatik tanıtım baloncuğu (döngüsel)
