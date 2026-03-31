@@ -9,7 +9,8 @@ import {
 } from '@/lib/bot-knowledge'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const ADMIN_CHAT_ID = process.env.TELEGRAM_CHAT_ID
+// Birden fazla admin destekle (virgülle ayrılmış)
+const ADMIN_IDS = (process.env.TELEGRAM_CHAT_ID || '').split(',').map(id => id.trim())
 
 async function sendMessage(chatId: string | number, text: string) {
   if (!BOT_TOKEN) return
@@ -34,9 +35,11 @@ export async function POST(req: NextRequest) {
     const chatId = message.chat.id
     const text = message.text.trim()
 
-    // Sadece admin komut kullanabilir
-    if (String(chatId) !== ADMIN_CHAT_ID) {
-      await sendMessage(chatId, 'Bu bot sadece yöneticiler tarafından kullanılabilir.')
+    // Sadece admin komut kullanabilir (birden fazla admin desteği)
+    const isAdmin = ADMIN_IDS.includes(String(chatId))
+    console.log(`[Telegram] chatId: ${chatId}, ADMIN_IDS: ${JSON.stringify(ADMIN_IDS)}, isAdmin: ${isAdmin}`)
+    if (!isAdmin) {
+      await sendMessage(chatId, `Bu bot sadece yöneticiler tarafından kullanılabilir. (ID: ${chatId})`)
       return NextResponse.json({ ok: true })
     }
 
