@@ -15,16 +15,52 @@ const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false
 
 /** Video modal with URLASTONE intro */
 function VideoModal({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
-  const [phase, setPhase] = useState<'intro' | 'fade' | 'playing'>('intro')
+  const [phase, setPhase] = useState<'intro' | 'fade' | 'buffering' | 'playing'>('intro')
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('fade'), 1500)
-    const t2 = setTimeout(() => {
-      setPhase('playing')
-      videoRef.current?.play().catch(() => {})
-    }, 2000)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    const video = videoRef.current
+    if (!video) return
+
+    let introTimer: NodeJS.Timeout
+    let fallbackTimer: NodeJS.Timeout
+    let introComplete = false
+    let videoReady = false
+
+    const tryPlay = () => {
+      if (introComplete && videoReady) {
+        setPhase('fade')
+        setTimeout(() => {
+          setPhase('playing')
+          video.play().catch(() => {})
+        }, 500)
+      }
+    }
+
+    const onCanPlay = () => {
+      videoReady = true
+      tryPlay()
+    }
+
+    introTimer = setTimeout(() => {
+      introComplete = true
+      if (!videoReady) setPhase('buffering')
+      tryPlay()
+    }, 1500)
+
+    video.addEventListener('canplaythrough', onCanPlay, { once: true })
+    fallbackTimer = setTimeout(() => {
+      if (!videoReady && video.readyState >= 3) {
+        videoReady = true
+        tryPlay()
+      }
+    }, 4000)
+
+    return () => {
+      clearTimeout(introTimer)
+      clearTimeout(fallbackTimer)
+      video.removeEventListener('canplaythrough', onCanPlay)
+    }
   }, [])
 
   return (
@@ -35,7 +71,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
         </button>
         <p className="absolute -top-12 left-0 text-white/80 text-sm font-heading font-semibold">{name}</p>
         <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl relative" style={{ minHeight: '40vh' }}>
-          {/* Intro overlay */}
+          {/* Intro / buffering overlay */}
           {phase !== 'playing' && (
             <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-black gap-4 transition-opacity duration-500 ${phase === 'fade' ? 'opacity-0' : 'opacity-100'}`}>
               <div className="flex items-center gap-3 animate-[fadeInScale_1.2s_ease-out_forwards]">
@@ -45,6 +81,9 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
                   <span className="text-gold-400">URLA</span><span className="text-white">STONE</span>
                 </span>
               </div>
+              {phase === 'buffering' && (
+                <div className="w-6 h-6 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mt-2" />
+              )}
               <style>{`
                 @keyframes fadeInScale {
                   0% { opacity: 0; transform: scale(0.8); }
@@ -54,7 +93,17 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
               `}</style>
             </div>
           )}
-          <video ref={videoRef} src={url} controls playsInline loop className="w-full" style={{ maxHeight: '80vh' }} />
+          <video ref={videoRef} src={url} controls playsInline preload="auto" className="w-full" style={{ maxHeight: '80vh' }} />
+          {/* Sağ üst URLASTONE logosu — video oynarken */}
+          {phase === 'playing' && (
+            <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1.5 pointer-events-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ur2-dark.png" alt="" className="w-5 h-5 object-contain" />
+              <span className="font-heading text-[11px] font-bold tracking-wider">
+                <span className="text-gold-400">URLA</span><span className="text-white/80">STONE</span>
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

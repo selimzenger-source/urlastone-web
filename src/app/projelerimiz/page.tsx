@@ -16,39 +16,53 @@ const ProjectMap = dynamic(() => import('@/components/ProjectMap'), { ssr: false
 
 /** Video modal with URLASTONE intro */
 function VideoModal({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
-  const [phase, setPhase] = useState<'intro' | 'fade' | 'playing'>('intro')
+  const [phase, setPhase] = useState<'intro' | 'fade' | 'buffering' | 'playing'>('intro')
   const videoRef = useRef<HTMLVideoElement>(null)
-  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     const video = videoRef.current
-    let t1: NodeJS.Timeout, t2: NodeJS.Timeout
+    if (!video) return
 
-    // Intro animasyonu bitince video'yu başlat — ama video hazır değilse bekle
-    const startVideo = () => {
-      setPhase('playing')
-      video?.play().catch(() => {})
-      // Arka plan müziği başlat
-      if (audioRef.current) {
-        audioRef.current.volume = 0.3
-        audioRef.current.play().catch(() => {})
+    let introTimer: NodeJS.Timeout
+    let fadeTimer: NodeJS.Timeout
+    let introComplete = false
+    let videoReady = false
+
+    const tryPlay = () => {
+      if (introComplete && videoReady) {
+        setPhase('fade')
+        setTimeout(() => {
+          setPhase('playing')
+          video.play().catch(() => {})
+        }, 500)
       }
     }
 
-    t1 = setTimeout(() => setPhase('fade'), 1500)
-    t2 = setTimeout(() => {
-      // Video yüklendiyse hemen başlat, yoksa canplay event'i bekle
-      if (video && video.readyState >= 3) {
-        startVideo()
-      } else {
-        video?.addEventListener('canplay', startVideo, { once: true })
+    const onCanPlay = () => {
+      videoReady = true
+      tryPlay()
+    }
+
+    // Intro 1.5s göster
+    introTimer = setTimeout(() => {
+      introComplete = true
+      if (!videoReady) setPhase('buffering')
+      tryPlay()
+    }, 1500)
+
+    video.addEventListener('canplaythrough', onCanPlay, { once: true })
+    // Fallback: canplay da yeterli (bazı tarayıcılarda canplaythrough geç gelir)
+    fadeTimer = setTimeout(() => {
+      if (!videoReady && video.readyState >= 3) {
+        videoReady = true
+        tryPlay()
       }
-    }, 2000)
+    }, 4000)
 
     return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      video?.removeEventListener('canplay', startVideo)
+      clearTimeout(introTimer)
+      clearTimeout(fadeTimer)
+      video.removeEventListener('canplaythrough', onCanPlay)
     }
   }, [])
 
@@ -60,7 +74,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
         </button>
         <p className="absolute -top-12 left-0 text-white/80 text-sm font-heading font-semibold">{name}</p>
         <div className="rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-2xl relative" style={{ minHeight: '40vh' }}>
-          {/* Intro overlay */}
+          {/* Intro / buffering overlay */}
           {phase !== 'playing' && (
             <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center bg-black gap-4 transition-opacity duration-500 ${phase === 'fade' ? 'opacity-0' : 'opacity-100'}`}>
               <div className="flex items-center gap-3 animate-[fadeInScale_1.2s_ease-out_forwards]">
@@ -70,6 +84,9 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
                   <span className="text-gold-400">URLA</span><span className="text-white">STONE</span>
                 </span>
               </div>
+              {phase === 'buffering' && (
+                <div className="w-6 h-6 border-2 border-gold-400/30 border-t-gold-400 rounded-full animate-spin mt-2" />
+              )}
               <style>{`
                 @keyframes fadeInScale {
                   0% { opacity: 0; transform: scale(0.8); }
@@ -79,9 +96,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
               `}</style>
             </div>
           )}
-          <video ref={videoRef} src={url} controls playsInline loop preload="auto" className="w-full" style={{ maxHeight: '80vh' }} />
-          {/* Arka plan müziği */}
-          <audio ref={audioRef} src="/audio/project-ambient.mp3" loop preload="auto" />
+          <video ref={videoRef} src={url} controls playsInline preload="auto" className="w-full" style={{ maxHeight: '80vh' }} />
           {/* Sağ üst URLASTONE logosu — video oynarken */}
           {phase === 'playing' && (
             <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1.5 pointer-events-none">
