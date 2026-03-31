@@ -52,7 +52,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'Adınız',
     emailPlaceholder: 'E-posta',
-    phonePlaceholder: '5XX XXX XX XX',
+    phonePlaceholder: '+90 5XX XXX XX XX',
     send: 'Gönder',
     submit: 'Sohbete Başla',
     placeholder: 'Mesajınızı yazın...',
@@ -70,7 +70,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'Your name',
     emailPlaceholder: 'Email',
-    phonePlaceholder: 'Phone number',
+    phonePlaceholder: '+1 (555) 123-4567',
     send: 'Send',
     submit: 'Start Chat',
     placeholder: 'Type your message...',
@@ -88,7 +88,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'Su nombre',
     emailPlaceholder: 'Email',
-    phonePlaceholder: 'Teléfono',
+    phonePlaceholder: '+34 612 345 678',
     send: 'Enviar',
     submit: 'Iniciar Chat',
     placeholder: 'Escriba su mensaje...',
@@ -106,7 +106,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'Ihr Name',
     emailPlaceholder: 'E-Mail',
-    phonePlaceholder: 'Telefonnummer',
+    phonePlaceholder: '+49 170 1234567',
     send: 'Senden',
     submit: 'Chat starten',
     placeholder: 'Nachricht eingeben...',
@@ -124,7 +124,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'Votre nom',
     emailPlaceholder: 'Email',
-    phonePlaceholder: 'Téléphone',
+    phonePlaceholder: '+33 6 12 34 56 78',
     send: 'Envoyer',
     submit: 'Démarrer le chat',
     placeholder: 'Écrivez votre message...',
@@ -142,7 +142,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'Ваше имя',
     emailPlaceholder: 'Email',
-    phonePlaceholder: 'Телефон',
+    phonePlaceholder: '+7 912 345 67 89',
     send: 'Отправить',
     submit: 'Начать чат',
     placeholder: 'Напишите сообщение...',
@@ -160,7 +160,7 @@ const chatTranslations: Record<string, {
     formDesc: '',
     namePlaceholder: 'اسمك',
     emailPlaceholder: 'البريد الإلكتروني',
-    phonePlaceholder: 'رقم الهاتف',
+    phonePlaceholder: '+966 50 123 4567',
     send: 'إرسال',
     submit: 'ابدأ المحادثة',
     placeholder: '...اكتب رسالتك',
@@ -802,17 +802,13 @@ export default function ChatWidget() {
                 placeholder={t.emailPlaceholder}
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
               />
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1]">
-                <span className="text-white/50 text-sm">🇹🇷</span>
-                <span className="text-white/40 text-sm">+90</span>
-                <input
-                  type="tel"
-                  value={lead.phone}
-                  onChange={e => setLead({ ...lead, phone: e.target.value.replace(/[^0-9]/g, '') })}
-                  placeholder={t.phonePlaceholder}
-                  className="flex-1 bg-transparent text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none"
-                />
-              </div>
+              <input
+                type="tel"
+                value={lead.phone}
+                onChange={e => setLead({ ...lead, phone: e.target.value.replace(/[^0-9+\s()-]/g, '') })}
+                placeholder={t.phonePlaceholder}
+                className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
+              />
 
               {error && <p className="text-red-400 text-xs text-center">{error}</p>}
 
