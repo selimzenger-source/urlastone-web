@@ -20,6 +20,7 @@ import {
   Film,
   CheckCircle,
   RotateCw,
+  Sparkles,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -94,6 +95,49 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const [products, setProducts] = useState<{ id: string; name: string; code: string }[]>([])
   const [productSearch, setProductSearch] = useState('')
   const [showProductDropdown, setShowProductDropdown] = useState(false)
+  const [upscalingIndex, setUpscalingIndex] = useState<number | null>(null)
+
+  // Fotoğraf kalitesini artır (Replicate Real-ESRGAN)
+  const handleUpscale = async (photoIndex: number) => {
+    if (!editProject) return
+    const url = editProject.photos[photoIndex]
+    if (!url) return
+    setUpscalingIndex(photoIndex)
+    try {
+      const res = await fetch('/api/simulation/upscale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: url, scale: 2 }),
+      })
+      if (!res.ok) throw new Error('Upscale failed')
+      const data = await res.json()
+      if (data.url) {
+        // Upscale edilmiş resmi Supabase'e yükle
+        const upscaledRes = await fetch(data.url)
+        const blob = await upscaledRes.blob()
+        const file = new File([blob], `upscaled-${Date.now()}.jpg`, { type: 'image/jpeg' })
+        const formData = new FormData()
+        formData.append('projectId', editProject.id || 'upscale-temp')
+        formData.append('files', file)
+        const uploadRes = await fetch('/api/projects/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${adminPassword}` },
+          body: formData,
+        })
+        const uploadData = await uploadRes.json()
+        if (uploadData.urls?.[0]) {
+          const newPhotos = [...editProject.photos]
+          newPhotos[photoIndex] = uploadData.urls[0]
+          setEditProject({ ...editProject, photos: newPhotos })
+        }
+      }
+    } catch (err) {
+      console.error('Upscale error:', err)
+      alert('Kalite artırma başarısız oldu')
+    } finally {
+      setUpscalingIndex(null)
+    }
+  }
   const [mapsUrl, setMapsUrl] = useState('')
   const [generatingDesc, setGeneratingDesc] = useState(false)
   const productDropdownRef = useRef<HTMLDivElement>(null)
@@ -1267,6 +1311,19 @@ export default function AdminProjeler({ adminPassword }: Props) {
                           title="90° Döndür"
                         >
                           <RotateCw size={10} className="text-white" />
+                        </button>
+                        {/* Kalite Artır butonu */}
+                        <button
+                          onClick={() => handleUpscale(i)}
+                          disabled={upscalingIndex !== null}
+                          className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gold-400/90 flex items-center justify-center hover:bg-gold-400 transition-colors cursor-pointer disabled:opacity-40"
+                          title="Kalite Artır (AI)"
+                        >
+                          {upscalingIndex === i ? (
+                            <Loader2 size={10} className="text-black animate-spin" />
+                          ) : (
+                            <Sparkles size={10} className="text-black" />
+                          )}
                         </button>
                         <button
                           onClick={() => removePhoto(i)}
