@@ -124,6 +124,24 @@ Don-çözülme, UV dayanıklı
 - Özel sipariş üretim süresi: 10-15 iş günü
 - Büyük projeler için özel üretim planlaması yapılır
 
+### İhracat / Export
+- 50+ ülkeye ihracat (Avrupa, Ortadoğu, Kuzey Afrika, Asya)
+- FOB (fabrika teslim) ve CIF (kapıya teslim) seçenekleri
+- Minimum yurt dışı sipariş: 1 palet (~30m²)
+- Ödeme: L/C (akreditif), T/T (banka transferi), USD/EUR
+- Gümrük ve lojistik desteği sağlanır
+- Sertifikalar: CE, test raporları mevcut
+- İhracat teklifi için: [İletişim](https://www.urlastone.com/iletisim) veya WhatsApp
+
+### Proje Danışmanlığı
+- Türkiye geneli anahtar teslim uygulama hizmeti (taş + montaj + ekip)
+- Profesyonel uygulama ekibi yönlendirmesi yapılır
+- Metrekare hesabı: Genişlik x Yükseklik = m² (pencere/kapı boşlukları çıkarılır, %10 fire eklenir)
+- Dış köşe hesabı: Kat yüksekliği x köşe sayısı = metre tül
+- Renk ve model önerisi: proje tipine göre (modern→Line+Bazalt, klasik→Nature+Traverten)
+- AI simülasyon ile taşı duvarınızda görün: [Simülasyon](https://www.urlastone.com/simulasyon) (ücretsiz, günde 10 kullanım)
+- Proje fotoğrafı gönderin, ücretsiz danışmanlık alın
+
 ### Karşılaştırmalar
 - Doğal taş > suni taş (daha dayanıklı, solmaz, doğal görünüm)
 - Rockshell > geleneksel taş (daha hafif, kolay uygulama, aynı görünüm)

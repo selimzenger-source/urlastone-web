@@ -42,6 +42,9 @@ const CATEGORIES: Record<string, string> = {
   fiyat: 'Fiyatlandırma',
   stok: 'Stok ve Üretim',
   kampanya: 'Kampanya / İndirim',
+  ihracat: 'İhracat / Export',
+  teknik: 'Teknik Özellikler',
+  proje: 'Proje Danışmanlığı',
   genel: 'Genel Bilgi',
 }
 
