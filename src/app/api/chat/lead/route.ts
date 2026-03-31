@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 // Lead bilgilerini email + Telegram ile bildir
 export async function POST(req: NextRequest) {
@@ -46,33 +47,17 @@ export async function POST(req: NextRequest) {
     }
 
     // 2) Telegram bildirim
-    const tgToken = process.env.TELEGRAM_BOT_TOKEN
-    const tgChatId = process.env.TELEGRAM_CHAT_ID
-    if (tgToken && tgChatId) {
-      try {
-        const message = [
-          '🔔 *Yeni Chatbot Müşterisi*',
-          '',
-          `👤 *Ad:* ${name}`,
-          `📞 *Telefon:* ${phone}`,
-          email ? `📧 *Email:* ${email}` : '',
-          `🌍 *Dil:* ${locale || 'tr'}`,
-          `🕐 *Tarih:* ${tarih}`,
-        ].filter(Boolean).join('\n')
-
-        await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: tgChatId,
-            text: message,
-            parse_mode: 'Markdown',
-          }),
-        })
-      } catch (tgErr) {
-        console.error('[ChatLead] Telegram error:', tgErr)
-      }
-    }
+    await sendTelegramNotification(
+      [
+        '💬 *Yeni Chatbot Müşterisi*',
+        '',
+        `👤 *Ad:* ${name}`,
+        `📞 *Telefon:* ${phone}`,
+        email ? `📧 *Email:* ${email}` : '',
+        `🌍 *Dil:* ${locale || 'tr'}`,
+        `🕐 *Tarih:* ${tarih}`,
+      ].filter(Boolean).join('\n')
+    )
 
     return NextResponse.json({ ok: true })
   } catch (error) {

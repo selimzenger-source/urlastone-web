@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendCustomerConfirmation, sendAdminNotification } from '@/lib/email'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 // GET /api/teklifler — admin only
 export async function GET(req: Request) {
@@ -80,6 +81,23 @@ export async function POST(req: Request) {
       console.error('Email send error:', e)
     }
   }
+
+  // Telegram bildirim
+  await sendTelegramNotification(
+    [
+      '📋 *Yeni Teklif Talebi*',
+      '',
+      `👤 *Ad:* ${ad_soyad}`,
+      `📞 *Telefon:* ${telefon}`,
+      email ? `📧 *Email:* ${email}` : '',
+      `📍 *Konum:* ${il}${ilce ? ', ' + ilce : ''}, ${ulke || 'Türkiye'}`,
+      `🏗 *Proje:* ${proje_tipi}`,
+      `🪨 *Taş:* ${(tas_tercihi || []).join(', ') || '-'}`,
+      `📐 *m²:* ${cephe_metre || '-'}`,
+      `💰 *Fiyat Tipi:* ${fiyat_tipi || '-'}`,
+      aciklama ? `📝 *Not:* ${aciklama.substring(0, 100)}` : '',
+    ].filter(Boolean).join('\n')
+  )
 
   return NextResponse.json(data)
 }
