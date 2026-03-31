@@ -385,6 +385,39 @@ export default function ChatWidget() {
 
     if (!lead.phone.trim()) { setError(t.phoneRequired); return }
 
+    // Telefon validasyonu: TR ise 10 hane (5XX), diğer ülkeler min 7 hane
+    const cleanPhone = lead.phone.replace(/[\s\-\(\)+]/g, '')
+    const isTR = lead.phone.includes('+90') || (locale === 'tr' && !lead.phone.includes('+'))
+    if (isTR) {
+      // +90 varsa kaldır, kalan 10 hane 5 ile başlamalı
+      const trDigits = cleanPhone.replace(/^90/, '')
+      if (!/^5\d{9}$/.test(trDigits)) {
+        const phoneErr: Record<string, string> = {
+          tr: 'Telefon numaranızı +90 5XX XXX XX XX formatında girin',
+          en: 'Please enter a valid Turkish phone number (+90 5XX...)',
+          es: 'Ingrese un número de teléfono válido',
+          de: 'Bitte geben Sie eine gültige Telefonnummer ein',
+          fr: 'Veuillez entrer un numéro de téléphone valide',
+          ru: 'Введите действительный номер телефона',
+          ar: 'يرجى إدخال رقم هاتف صالح',
+        }
+        setError(phoneErr[locale] || phoneErr.en)
+        return
+      }
+    } else if (cleanPhone.length < 7) {
+      const phoneErr: Record<string, string> = {
+        tr: 'Geçerli bir telefon numarası girin (ülke kodu dahil)',
+        en: 'Please enter a valid phone number (include country code)',
+        es: 'Ingrese un número válido (incluya código de país)',
+        de: 'Gültige Telefonnummer eingeben (mit Ländervorwahl)',
+        fr: 'Entrez un numéro valide (avec indicatif pays)',
+        ru: 'Введите действительный номер (с кодом страны)',
+        ar: 'أدخل رقم هاتف صالح (مع رمز الدولة)',
+      }
+      setError(phoneErr[locale] || phoneErr.en)
+      return
+    }
+
     // Email zorunlu
     if (!lead.email.trim()) {
       const emailRequired: Record<string, string> = {
