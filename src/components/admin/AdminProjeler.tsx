@@ -1373,6 +1373,17 @@ export default function AdminProjeler({ adminPassword }: Props) {
                   <p className="text-white/30 text-xs font-mono">Fotoğraf eklemek için tıklayın</p>
                   <p className="text-white/15 text-[10px] font-mono mt-1">JPG, PNG, WebP · Max 5MB</p>
                 </button>
+                <div className="flex items-center gap-2 mt-2">
+                  <p className="text-white/20 text-[10px] font-mono">Fotoğrafta hologram/yazı var mı?</p>
+                  <a
+                    href="https://www.watermarkremover.io/tr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold-400/60 text-[10px] font-mono hover:text-gold-400 transition-colors underline"
+                  >
+                    Watermark Sil →
+                  </a>
+                </div>
               </div>
 
               {/* Aktif */}
