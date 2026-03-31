@@ -229,6 +229,28 @@ export default function ChatWidget() {
     setError('')
 
     if (!lead.name.trim()) { setError(t.nameRequired); return }
+
+    // İsim doğrulama: en az 2 kelime, sadece harf ve boşluk, anlamsız tekrar yok
+    const nameVal = lead.name.trim()
+    const nameRegex = /^[a-zA-ZçÇğĞıİöÖşŞüÜáéíóúàèìòùâêîôûäëïöüñÑ\s'-]{2,50}$/
+    const hasVowel = /[aeıioöuüAEIİOÖUÜáéíóúàèìòù]/i.test(nameVal)
+    const repeatingChars = /(.)\1{2,}/.test(nameVal.replace(/\s/g, ''))
+    const tooManyConsonants = /[^aeıioöuüAEIİOÖUÜáéíóúàèìòù\s'-]{5,}/i.test(nameVal)
+
+    if (!nameRegex.test(nameVal) || !hasVowel || repeatingChars || tooManyConsonants) {
+      const invalidName: Record<string, string> = {
+        tr: 'Lütfen gerçek adınızı ve soyadınızı girin.',
+        en: 'Please enter your real name.',
+        es: 'Por favor ingrese su nombre real.',
+        de: 'Bitte geben Sie Ihren echten Namen ein.',
+        fr: 'Veuillez entrer votre vrai nom.',
+        ru: 'Пожалуйста, введите ваше настоящее имя.',
+        ar: 'يرجى إدخال اسمك الحقيقي.',
+      }
+      setError(invalidName[locale] || invalidName.en)
+      return
+    }
+
     if (!lead.phone.trim()) { setError(t.phoneRequired); return }
 
     // Lead'i kaydet
