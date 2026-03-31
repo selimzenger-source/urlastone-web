@@ -50,19 +50,19 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
       tryPlay()
     }, 1500)
 
-    video.addEventListener('canplaythrough', onCanPlay, { once: true })
-    // Fallback: canplay da yeterli (bazı tarayıcılarda canplaythrough geç gelir)
+    // canplay yeterli — canplaythrough tüm videoyu bekliyor, büyük dosyalarda donuyor
+    video.addEventListener('canplay', onCanPlay, { once: true })
     fadeTimer = setTimeout(() => {
-      if (!videoReady && video.readyState >= 3) {
+      if (!videoReady && video.readyState >= 2) {
         videoReady = true
         tryPlay()
       }
-    }, 4000)
+    }, 3000)
 
     return () => {
       clearTimeout(introTimer)
       clearTimeout(fadeTimer)
-      video.removeEventListener('canplaythrough', onCanPlay)
+      video.removeEventListener('canplay', onCanPlay)
     }
   }, [])
 
@@ -96,7 +96,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
               `}</style>
             </div>
           )}
-          <video ref={videoRef} src={url} controls playsInline preload="auto" className="w-full" style={{ maxHeight: '80vh' }} />
+          <video ref={videoRef} src={url} controls playsInline preload="metadata" className="w-full" style={{ maxHeight: '80vh' }} />
           {/* Sağ üst URLASTONE logosu — video oynarken */}
           {phase === 'playing' && (
             <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1.5 pointer-events-none">
