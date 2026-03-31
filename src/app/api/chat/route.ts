@@ -314,8 +314,14 @@ export async function POST(req: NextRequest) {
     ])
     const fullPrompt = SYSTEM_PROMPT + dynamicKnowledge + productProjectKnowledge
 
+    // Teklif süreci tespiti: mesajlarda teklif/fiyat/m²/proje tipi konuşuluyorsa Sonnet kullan
+    const allText = trimmedMessages.map((m: { content: string }) => m.content).join(' ').toLowerCase()
+    const teklifKeywords = ['teklif', 'fiyat', 'metrekare', 'm²', 'cephe kaplama', 'proje tipi', 'dış köşe', 'metre tül', 'yapıştırıcı', 'derz', 'kaplanacak', 'adım adım', 'birlikte yapalım', 'birlikte yönet']
+    const isTeklifFlow = teklifKeywords.some(kw => allText.includes(kw))
+    const model = isTeklifFlow ? 'claude-sonnet-4-20250514' : 'claude-haiku-4-5-20251001'
+
     const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model,
       max_tokens: 1000,
       system: fullPrompt,
       messages: trimmedMessages,
