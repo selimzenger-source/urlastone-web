@@ -175,6 +175,23 @@
   animation-play-state: paused;
 }
 
+/* Chat button modern animation */
+@keyframes chatPulse {
+  0% { box-shadow: 0 4px 20px rgba(179, 147, 69, 0.3), 0 0 0 0 rgba(179, 147, 69, 0.3); }
+  50% { box-shadow: 0 4px 30px rgba(179, 147, 69, 0.5), 0 0 0 10px rgba(179, 147, 69, 0); }
+  100% { box-shadow: 0 4px 20px rgba(179, 147, 69, 0.3), 0 0 0 0 rgba(179, 147, 69, 0.3); }
+}
+@keyframes chatShine {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-chat-pulse {
+  animation: chatPulse 3s ease-in-out infinite;
+  background: linear-gradient(135deg, #b39345 0%, #d2b96e 25%, #e8d598 50%, #d2b96e 75%, #b39345 100%);
+  background-size: 200% auto;
+  animation: chatPulse 3s ease-in-out infinite, chatShine 4s linear infinite;
+}
+
 /* Leaflet popup overrides for dark theme + mobile */
 .leaflet-popup-content-wrapper {
   background: transparent !important;

@@ -367,25 +367,67 @@ export default function ChatWidget() {
     setError('')
   }
 
+  // 30 saniye sonra otomatik tanıtım baloncuğu
+  const [showGreeting, setShowGreeting] = useState(false)
+  const [greetingDismissed, setGreetingDismissed] = useState(false)
+
+  useEffect(() => {
+    if (isOpen || greetingDismissed) return
+    const timer = setTimeout(() => setShowGreeting(true), 20000)
+    return () => clearTimeout(timer)
+  }, [isOpen, greetingDismissed])
+
+  // Greeting açıldığında 8 saniye sonra kapat
+  useEffect(() => {
+    if (!showGreeting) return
+    const timer = setTimeout(() => { setShowGreeting(false); setGreetingDismissed(true) }, 6000)
+    return () => clearTimeout(timer)
+  }, [showGreeting])
+
   if (isBlocked) return null
+
+  const greetingTexts: Record<string, string> = {
+    tr: 'Merhaba! Ben Uri, URLASTONE yapay zeka asistaniyim. Size nasil yardimci olabilirim?',
+    en: 'Hello! I\'m Uri, URLASTONE AI assistant. How can I help you?',
+    es: 'Hola! Soy Uri, asistente IA de URLASTONE. ¿Como puedo ayudarle?',
+    de: 'Hallo! Ich bin Uri, URLASTONE KI-Assistent. Wie kann ich Ihnen helfen?',
+    fr: 'Bonjour! Je suis Uri, assistant IA URLASTONE. Comment puis-je vous aider?',
+    ru: 'Здравствуйте! Я Ури, ИИ-ассистент URLASTONE. Чем могу помочь?',
+    ar: 'مرحبا! أنا أوري، مساعد URLASTONE الذكي. كيف يمكنني مساعدتك؟',
+  }
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button + Greeting */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
-          style={{ background: 'linear-gradient(135deg, #b39345, #d2b96e)' }}
-          aria-label="Chat"
-        >
-          <MessageCircle size={26} className="text-black" />
-        </button>
+        <div className="fixed bottom-8 right-6 z-50 flex flex-col items-end gap-3">
+          {/* Auto greeting bubble */}
+          {showGreeting && (
+            <div
+              className="bg-[#111] border border-white/[0.1] rounded-2xl rounded-br-md px-4 py-3 max-w-[280px] shadow-2xl animate-fade-in-up cursor-pointer"
+              onClick={() => { setShowGreeting(false); setGreetingDismissed(true); setIsOpen(true) }}
+            >
+              <p className="text-white/80 text-[13px] font-body leading-relaxed">{greetingTexts[locale] || greetingTexts.en}</p>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                <span className="text-[10px] text-white/40 font-body">Uri - AI Assistant</span>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => { setShowGreeting(false); setGreetingDismissed(true); setIsOpen(true) }}
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 animate-chat-pulse"
+            style={{ background: 'linear-gradient(135deg, #b39345, #d2b96e)' }}
+            aria-label="Chat"
+          >
+            <MessageCircle size={26} className="text-black" />
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08]"
+        <div className="fixed bottom-8 right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up"
           style={{ height: 'min(580px, calc(100vh - 100px))', background: '#111111' }}>
 
           {/* Header */}
@@ -398,7 +440,10 @@ export default function ChatWidget() {
                 <div className="font-heading text-sm font-bold tracking-wider">
                   <span className="text-[#b39345]">URLA</span><span className="text-white">STONE</span>
                 </div>
-                <div className="text-[10px] text-white/40 font-body">AI Assistant</div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                  <span className="text-[10px] text-white/40 font-body">Uri - AI Assistant</span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1">
