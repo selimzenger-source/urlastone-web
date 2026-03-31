@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
-import { MessageCircle, X, Send, Loader2, ChevronDown } from 'lucide-react'
+import { MessageCircle, X, Send, Loader2, ChevronDown, Paperclip, Image as ImageIcon } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  attachment?: { name: string; type: string; url?: string }
 }
 
 interface LeadInfo {
@@ -210,6 +211,7 @@ export default function ChatWidget() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -299,6 +301,59 @@ export default function ChatWidget() {
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Bir hata oluştu. Lütfen tekrar deneyin.' }])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || loading) return
+    e.target.value = '' // reset input
+
+    // Max 10MB
+    if (file.size > 10 * 1024 * 1024) {
+      setError(locale === 'tr' ? 'Dosya en fazla 10MB olabilir.' : 'File size max 10MB.')
+      return
+    }
+
+    const isImage = file.type.startsWith('image/')
+    const label = isImage
+      ? (locale === 'tr' ? '📷 Resim gönderildi' : '📷 Image sent')
+      : (locale === 'tr' ? '📎 Dosya gönderildi' : '📎 File sent')
+
+    // Mesaj olarak göster
+    const previewUrl = isImage ? URL.createObjectURL(file) : undefined
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: `${label}: ${file.name}`,
+      attachment: { name: file.name, type: file.type, url: previewUrl },
+    }])
+    setLoading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('name', lead.name)
+      formData.append('phone', lead.phone)
+      formData.append('locale', locale)
+
+      const res = await fetch('/api/chat/file', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (data.ok) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: locale === 'tr'
+            ? 'Dosyaniz alindi, ekibimiz inceleyecek. Baska bir sorunuz var mi?'
+            : 'File received, our team will review it. Any other questions?',
+        }])
+      }
+    } catch {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: locale === 'tr' ? 'Dosya gonderilemedi.' : 'File could not be sent.',
+      }])
     } finally {
       setLoading(false)
     }
@@ -417,8 +472,13 @@ export default function ChatWidget() {
                           ? 'bg-[#b39345]/20 text-white rounded-br-md'
                           : 'bg-white/[0.06] text-white/90 rounded-bl-md'
                       }`}
-                      dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-                    />
+                    >
+                      {msg.attachment?.url && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={msg.attachment.url} alt={msg.attachment.name} className="max-w-full max-h-40 rounded-lg mb-1.5 object-cover" />
+                      )}
+                      <div dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                    </div>
                   </div>
                 ))}
                 {loading && (
@@ -462,7 +522,23 @@ export default function ChatWidget() {
               {/* Input */}
               <div className="px-3 pb-3 pt-1">
                 {error && <p className="text-red-400 text-[10px] text-center mb-1">{error}</p>}
-                <div className="flex items-center gap-2 bg-white/[0.06] rounded-xl border border-white/[0.08] px-3 py-2">
+                <div className="flex items-center gap-1.5 bg-white/[0.06] rounded-xl border border-white/[0.08] px-2.5 py-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,.pdf,.doc,.docx,.dwg"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={loading}
+                    className="p-1 rounded-lg transition-all hover:bg-white/[0.06] disabled:opacity-30"
+                    style={{ color: '#888' }}
+                    title={locale === 'tr' ? 'Dosya ekle' : 'Attach file'}
+                  >
+                    <Paperclip size={16} />
+                  </button>
                   <input
                     ref={inputRef}
                     type="text"
