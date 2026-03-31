@@ -194,8 +194,10 @@ function saveSpamData(data: Record<string, unknown>) {
 
 // Markdown linklerini HTML'e çevir
 function formatMessage(text: string): string {
-  // |||SHOW_CONTACT_FORM||| kaldır
+  // Tüm marker'ları kaldır
   let formatted = text.replace(/\|\|\|SHOW_CONTACT_FORM\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|SHOW_PRODUCT_PICKER\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|TEKLIF_DATA\|\|\|[\s\S]*?\|\|\|END_TEKLIF\|\|\|/g, '')
   // [text](url) → <a> linkleri (yeni sekmede aç)
   formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
   // Düz URL'leri de linkle (markdown linki olmayanlar) - yeni sekmede aç
@@ -205,6 +207,23 @@ function formatMessage(text: string): string {
   // Satır sonları
   formatted = formatted.replace(/\n/g, '<br/>')
   return formatted
+}
+
+// Ürün seçici için tipler
+interface PickerProduct {
+  name: string
+  code: string
+  image_url: string | null
+  stone_type_code: string
+  category_slug: string
+}
+
+// Taş türü görselleri (sabit)
+const STONE_TYPE_IMAGES: Record<string, { name: string; image: string }> = {
+  TRV: { name: 'Traverten', image: '/featured-traverten.jpg' },
+  MRMR: { name: 'Mermer', image: '/featured-mermer.jpg' },
+  BZLT: { name: 'Bazalt', image: '/featured-bazalt.jpg' },
+  KLKR: { name: 'Kalker', image: '/featured-kalker.jpg' },
 }
 
 // Chat oturumu localStorage yönetimi (5 dk geçerlilik)
@@ -253,6 +272,10 @@ export default function ChatWidget() {
   const [showContactForm, setShowContactForm] = useState(savedSession?.showContactForm || false)
   const [pendingFile, setPendingFile] = useState<{ file: File; previewUrl?: string } | null>(null)
   const [isListening, setIsListening] = useState(false)
+  const [showProductPicker, setShowProductPicker] = useState(false)
+  const [pickerProducts, setPickerProducts] = useState<PickerProduct[]>([])
+  const [pickerStep, setPickerStep] = useState<'type' | 'product'>('type')
+  const [pickerStoneType, setPickerStoneType] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -410,6 +433,7 @@ export default function ChatWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [...messages, { role: 'user', content: userMsg }],
+          lead: { name: lead.name, phone: lead.phone, email: lead.email },
         }),
       })
 
@@ -424,6 +448,26 @@ export default function ChatWidget() {
         // İletişim formu tetikleyicisi kontrolü
         if (data.message.includes('|||SHOW_CONTACT_FORM|||')) {
           setShowContactForm(true)
+        }
+        // Ürün seçici tetikleyicisi
+        if (data.message.includes('|||SHOW_PRODUCT_PICKER|||')) {
+          setShowProductPicker(true)
+          setPickerStep('type')
+          setPickerStoneType(null)
+          // Ürünleri fetch et (bir kere)
+          if (pickerProducts.length === 0) {
+            fetch('/api/products').then(r => r.json()).then(prods => {
+              if (Array.isArray(prods)) {
+                setPickerProducts(prods.map((p: { name: string; code: string; image_url: string | null; stone_type: { code: string } | null; category: { slug: string } | null }) => ({
+                  name: p.name,
+                  code: p.code,
+                  image_url: p.image_url,
+                  stone_type_code: p.stone_type?.code || '',
+                  category_slug: p.category?.slug || '',
+                })))
+              }
+            }).catch(() => {})
+          }
         }
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
       }
@@ -726,6 +770,81 @@ export default function ChatWidget() {
                         <div className="w-2 h-2 bg-[#b39345]/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Ürün seçici (teklif sürecinde) */}
+                {showProductPicker && (
+                  <div className="bg-white/[0.06] rounded-2xl p-3 border border-[#b39345]/20">
+                    {pickerStep === 'type' ? (
+                      <>
+                        <p className="text-white/60 text-[11px] mb-2 font-mono uppercase tracking-wider">
+                          {locale === 'tr' ? 'Taş Türü Seçin' : 'Select Stone Type'}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(STONE_TYPE_IMAGES).map(([code, info]) => (
+                            <button
+                              key={code}
+                              onClick={() => {
+                                setPickerStoneType(code)
+                                setPickerStep('product')
+                              }}
+                              className="group rounded-xl overflow-hidden border border-white/[0.08] hover:border-[#b39345]/40 transition-all"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={info.image} alt={info.name} className="w-full h-16 object-cover group-hover:scale-105 transition-transform" />
+                              <p className="text-white text-[11px] font-semibold py-1.5 text-center font-heading">{info.name}</p>
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => {
+                              setShowProductPicker(false)
+                              setInput(locale === 'tr' ? 'Bilmiyorum, önerinizi isterim' : "I don't know, I'd like your suggestion")
+                            }}
+                            className="col-span-2 rounded-xl border border-white/[0.08] hover:border-[#b39345]/40 py-2.5 text-white/50 text-[11px] font-mono transition-all hover:text-white/80"
+                          >
+                            {locale === 'tr' ? 'Bilmiyorum, önerinizi isterim' : "I don't know, suggest for me"}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-white/60 text-[11px] font-mono uppercase tracking-wider">
+                            {STONE_TYPE_IMAGES[pickerStoneType || '']?.name || ''} {locale === 'tr' ? 'Ürünleri' : 'Products'}
+                          </p>
+                          <button onClick={() => setPickerStep('type')} className="text-white/30 hover:text-white/60 text-[10px] font-mono">
+                            {locale === 'tr' ? 'Geri' : 'Back'}
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5 max-h-[200px] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
+                          {pickerProducts
+                            .filter(p => p.stone_type_code === pickerStoneType)
+                            .map(p => (
+                              <button
+                                key={p.code}
+                                onClick={() => {
+                                  setShowProductPicker(false)
+                                  setInput(`${p.name} (${p.code})`)
+                                  setTimeout(() => inputRef.current?.focus(), 50)
+                                }}
+                                className="group rounded-lg overflow-hidden border border-white/[0.06] hover:border-[#b39345]/40 transition-all"
+                              >
+                                {p.image_url ? (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
+                                  <img src={p.image_url} alt={p.name} className="w-full h-14 object-cover group-hover:scale-105 transition-transform" />
+                                ) : (
+                                  <div className="w-full h-14 bg-white/[0.04] flex items-center justify-center text-white/10 text-lg font-heading">{p.name.charAt(0)}</div>
+                                )}
+                                <div className="px-1 py-1 text-center">
+                                  <p className="text-white text-[9px] font-medium leading-tight truncate">{p.name}</p>
+                                  <p className="text-white/30 text-[8px] font-mono">{p.code}</p>
+                                </div>
+                              </button>
+                            ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 

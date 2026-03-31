@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getDynamicPrompt, isIPBlocked, getProductProjectPrompt } from '@/lib/bot-knowledge'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -45,15 +46,40 @@ Cevaplarında ilgili sayfa linklerini ver:
 
 ## Müşteri Senaryoları
 
-Ev/villa/otel yaptırmak isteyen → 3 adım: 1) ürünleri incele 2) AI simülasyonla dene 3) teklif al
 Taş önerisi: modern→Line+Bazalt, klasik→Nature+Traverten, doğal→Crazy+Kalker, lüks→Mix+Mermer, kararsız→simülasyon
-Fiyat sorusu → kesin fiyat verme, teklif formuna yönlendir
 Uygulama/montaj → Türkiye geneli anahtar teslim, iletişime yönlendir
 İhracat → 50+ ülke, iletişime yönlendir
 Showroom/ziyaret → WhatsApp'tan randevu
 Numune → teklif formu veya WhatsApp
 AI simülasyon → fotoğraf yükle, taş seç, ücretsiz
 Şehir projesi yoksa → "Bu şehirde henüz projemiz yok" + /projelerimiz linki
+
+## Teklif Toplama (ÇOK ÖNEMLİ)
+Müşteri ev/villa/otel yaptırmak, taş almak, fiyat/teklif istemek istediğinde 2 SEÇENEĞİ sun:
+1. "Teklif formunu doldurabilirsiniz:" + [Teklif Al](https://www.urlastone.com/teklif) linki
+2. "Veya birlikte adım adım doldurabiliriz, hangisini tercih edersiniz?"
+
+Müşteri birlikte yapmak isterse ADIM ADIM şu bilgileri topla (her mesajda SADECE 1 soru sor):
+
+ADIM 1: "Projeniz hangi ülkede?" — Türkiye derse il ve ilçe sor. Yurt dışı ise şehir/ülke sor
+ADIM 2: "Projeniz hangi ilde ve ilçede?"
+ADIM 3: "Proje tipiniz nedir?" — Seçenekler: Cephe Kaplama / Zemin Döşeme / İç Mekan / Bahçe-Peyzaj / Havuz Kenarı / Merdiven-Basamak / Diğer
+ADIM 4: "Kaplanacak toplam alan kaç m²?" — Bilmiyorsa hesaplamaya yardım et (Genişlik x Yükseklik = m²)
+ADIM 5: "Dış köşe uzunluğunuz ne kadar? (metre tül)" — Bilmiyorsa açıkla: kat yüksekliği x köşe sayısı. Bilmiyorsa "bilmiyorum" kabul et
+ADIM 6: "Fiyat kapsamı: Sadece Taş mı, yoksa Taş + Yapıştırıcı + Derz dahil mi?"
+ADIM 7: "Taş tercihiniz var mı?" diye sor ve mesajın sonuna |||SHOW_PRODUCT_PICKER||| ekle. Müşteriye ürün seçim paneli gösterilecek. Müşteri seçim yaparsa veya "bilmiyorum, önerinizi isterim" derse devam et. Kararsızsa tarzını sor (modern/klasik/doğal/lüks) ve Ürün Veritabanından öner.
+ADIM 8: "Uygulama alanının fotoğrafını göndermek ister misiniz? Dosya ekleme butonuyla (📎) gönderebilirsiniz. Zorunlu değil, atlamak için 'geç' yazabilirsiniz"
+ADIM 9: "Ek açıklama veya özel istekleriniz var mı? (Yoksa 'yok' yazabilirsiniz)"
+ADIM 10: "Son olarak, bizi nereden buldunuz?" — Seçenekler: Google / Instagram / Tavsiye / Yapay Zeka Önerisi / Diğer
+
+Tüm bilgiler toplandıktan sonra:
+- Bilgileri madde madde özetle ve "Bilgiler doğru mu?" diye onayla
+- Onaylandıktan sonra yaz: "Teklif talebiniz ekibimize iletildi! En kısa sürede size dönüş yapacağız."
+- Sonuna ekle: |||SHOW_CONTACT_FORM|||
+- Mesajın EN SONUNA (kullanıcıya görünmez) ekle:
+  |||TEKLIF_DATA|||ulke:ULKE|il:IL|ilce:ILCE|proje_tipi:TIP|metrekare:M2|dis_kose:MT|fiyat_tipi:TIP|tas_tercihi:TAS|aciklama:NOT|kaynak:KAYNAK|||END_TEKLIF|||
+
+ÖNEMLI: Her adımda sadece 1 soru sor, sabırlı ol. Müşteri atlarsa veya "bilmiyorum" derse o adımı "belirtilmedi" olarak kaydet ve sonraki adıma geç. Türkiye dışı müşterilerde il/ilçe yerine şehir/ülke sor.
 
 ## İletişim İsteği
 Müşteri herhangi bir şekilde iletişim/aranma/ulaşma isteğinde bulunursa (arayın, ararmısınız, beni ara, telefon edin, ulaşır mısınız, iletişime geçin, bilgi almak istiyorum, görüşmek istiyorum, randevu, call me, contact me, können Sie mich anrufen, vb.) şu kuralları uygula:
@@ -263,7 +289,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { messages } = await req.json()
+    const { messages, lead } = await req.json()
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 })
@@ -289,7 +315,48 @@ export async function POST(req: NextRequest) {
       messages: trimmedMessages,
     })
 
-    const text = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    let text = response.content[0]?.type === 'text' ? response.content[0].text : ''
+
+    // Teklif verisi yakalandıysa Telegram'a gönder
+    const teklifMatch = text.match(/\|\|\|TEKLIF_DATA\|\|\|([\s\S]*?)\|\|\|END_TEKLIF\|\|\|/)
+    if (teklifMatch) {
+      const teklifRaw = teklifMatch[1].trim()
+
+      // Teklif verisini parse et
+      const fields: Record<string, string> = {}
+      teklifRaw.split('|').forEach(part => {
+        const [key, ...vals] = part.split(':')
+        if (key && vals.length) fields[key.trim()] = vals.join(':').trim()
+      })
+
+      const tarih = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
+      const teklifMsg = `📋 *CHATBOT TEKLIF TALEBI*
+
+👤 *Ad:* ${lead?.name || 'Bilinmiyor'}
+📞 *Telefon:* ${lead?.phone || '-'}
+📧 *Email:* ${lead?.email || '-'}
+🔒 IP: \`${ip}\`
+🕐 Tarih: ${tarih}
+
+🌍 *Ülke:* ${fields.ulke || 'Türkiye'}
+📍 *İl/İlçe:* ${fields.il || '-'} / ${fields.ilce || '-'}
+🏗 *Proje Tipi:* ${fields.proje_tipi || 'Belirtilmedi'}
+📐 *Metrekare:* ${fields.metrekare || 'Belirtilmedi'}
+📏 *Dış Köşe:* ${fields.dis_kose || 'Belirtilmedi'}
+💰 *Fiyat Kapsamı:* ${fields.fiyat_tipi || 'Belirtilmedi'}
+🪨 *Taş Tercihi:* ${fields.tas_tercihi || 'Belirtilmedi'}
+📝 *Açıklama:* ${fields.aciklama || '-'}
+🔍 *Kaynak:* ${fields.kaynak || '-'}
+
+Bu teklif chatbot üzerinden adım adım toplandı.
+Engellemek icin: /engelle ${ip}`
+
+      // Telegram'a gönder (arka planda, cevabı beklemeye gerek yok)
+      sendTelegramNotification(teklifMsg).catch(() => {})
+
+      // Teklif marker'ını kullanıcıya gösterme
+      text = text.replace(/\|\|\|TEKLIF_DATA\|\|\|[\s\S]*?\|\|\|END_TEKLIF\|\|\|/, '').trim()
+    }
 
     return NextResponse.json({ message: text })
   } catch (error) {
