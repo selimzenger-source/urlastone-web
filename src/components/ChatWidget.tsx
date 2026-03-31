@@ -359,12 +359,37 @@ export default function ChatWidget() {
     }
   }
 
+  // Sohbet özeti gönder (2 dk inaktivite veya chat kapanınca)
+  const summarySentRef = useRef(false)
+  const summaryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const sendSummary = useCallback(() => {
+    if (summarySentRef.current || messages.length <= 1) return
+    summarySentRef.current = true
+    fetch('/api/chat/summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: lead.name, phone: lead.phone, email: lead.email, messages, locale }),
+    }).catch(() => {})
+  }, [messages, lead, locale])
+
+  // Her mesajda 2 dk timer'ı sıfırla
+  useEffect(() => {
+    if (phase !== 'chat' || messages.length <= 1) return
+    summarySentRef.current = false
+    if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current)
+    summaryTimerRef.current = setTimeout(sendSummary, 120000) // 2 dk
+    return () => { if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current) }
+  }, [messages, phase, sendSummary])
+
   const handleNewChat = () => {
+    if (messages.length > 1) sendSummary() // kapanırken özet gönder
     setPhase('form')
     setMessages([])
     setLead({ name: '', email: '', phone: '' })
     setShowContactForm(false)
     setError('')
+    summarySentRef.current = false
   }
 
   // 15 saniyede bir otomatik tanıtım baloncuğu (döngüsel)
@@ -458,7 +483,7 @@ export default function ChatWidget() {
                   <ChevronDown size={16} />
                 </button>
               )}
-              <button onClick={() => setIsOpen(false)} className="text-white/40 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/5">
+              <button onClick={() => { if (phase === 'chat' && messages.length > 1) sendSummary(); setIsOpen(false) }} className="text-white/40 hover:text-white/80 transition-colors p-1.5 rounded-lg hover:bg-white/5">
                 <X size={18} />
               </button>
             </div>
