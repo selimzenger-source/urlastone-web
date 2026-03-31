@@ -278,22 +278,25 @@ export default function ChatWidget() {
 
     if (!lead.name.trim()) { setError(t.nameRequired); return }
 
-    // İsim doğrulama: en az 2 kelime, sadece harf ve boşluk, anlamsız tekrar yok
+    // İsim doğrulama: ad + soyad zorunlu, sadece harf, anlamsız girişler engellenir
     const nameVal = lead.name.trim()
+    const nameWords = nameVal.split(/\s+/).filter(w => w.length >= 2)
     const nameRegex = /^[a-zA-ZçÇğĞıİöÖşŞüÜáéíóúàèìòùâêîôûäëïöüñÑ\s'-]{2,50}$/
-    const hasVowel = /[aeıioöuüAEIİOÖUÜáéíóúàèìòù]/i.test(nameVal)
     const repeatingChars = /(.)\1{2,}/.test(nameVal.replace(/\s/g, ''))
-    const tooManyConsonants = /[^aeıioöuüAEIİOÖUÜáéíóúàèìòù\s'-]{5,}/i.test(nameVal)
+    const tooManyConsonants = /[^aeıioöuüAEIİOÖUÜáéíóúàèìòù\s'-]{4,}/i.test(nameVal)
 
-    if (!nameRegex.test(nameVal) || !hasVowel || repeatingChars || tooManyConsonants) {
+    // Her kelimede en az 1 sesli harf olmalı
+    const allWordsHaveVowel = nameWords.every(w => /[aeıioöuüáéíóúàèìòù]/i.test(w))
+
+    if (!nameRegex.test(nameVal) || nameWords.length < 2 || repeatingChars || tooManyConsonants || !allWordsHaveVowel) {
       const invalidName: Record<string, string> = {
-        tr: 'Lütfen gerçek adınızı ve soyadınızı girin.',
-        en: 'Please enter your real name.',
-        es: 'Por favor ingrese su nombre real.',
-        de: 'Bitte geben Sie Ihren echten Namen ein.',
-        fr: 'Veuillez entrer votre vrai nom.',
-        ru: 'Пожалуйста, введите ваше настоящее имя.',
-        ar: 'يرجى إدخال اسمك الحقيقي.',
+        tr: 'Lütfen adınızı ve soyadınızı girin (ör: Ali Yılmaz)',
+        en: 'Please enter your first and last name (e.g. John Smith)',
+        es: 'Ingrese nombre y apellido (ej: Juan García)',
+        de: 'Bitte Vor- und Nachname eingeben (z.B. Hans Müller)',
+        fr: 'Veuillez entrer prénom et nom (ex: Jean Dupont)',
+        ru: 'Введите имя и фамилию (напр: Иван Петров)',
+        ar: 'يرجى إدخال الاسم واللقب (مثال: محمد أحمد)',
       }
       setError(invalidName[locale] || invalidName.en)
       return
