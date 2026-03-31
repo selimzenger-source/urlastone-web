@@ -197,6 +197,7 @@ function formatMessage(text: string): string {
   // Tüm marker'ları kaldır
   let formatted = text.replace(/\|\|\|SHOW_CONTACT_FORM\|\|\|/g, '')
   formatted = formatted.replace(/\|\|\|SHOW_PRODUCT_PICKER\|\|\|/g, '')
+  formatted = formatted.replace(/\|\|\|OPTIONS_\w+\|\|\|/g, '')
   formatted = formatted.replace(/\|\|\|TEKLIF_DATA\|\|\|[\s\S]*?\|\|\|END_TEKLIF\|\|\|/g, '')
   // [text](url) → <a> linkleri (yeni sekmede aç)
   formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
@@ -224,6 +225,15 @@ const STONE_TYPE_IMAGES: Record<string, { name: string; image: string }> = {
   MRMR: { name: 'Mermer', image: '/featured-mermer.jpg' },
   BZLT: { name: 'Bazalt', image: '/featured-bazalt.jpg' },
   KLKR: { name: 'Kalker', image: '/featured-kalker.jpg' },
+}
+
+// Teklif adımları için hızlı seçim butonları
+const QUICK_OPTIONS: Record<string, string[]> = {
+  OPTIONS_CONTACT: ['Telefon', 'E-posta', 'WhatsApp'],
+  OPTIONS_LANG: ['TR Turkce', 'EN English', 'ES Espanol', 'DE Deutsch', 'FR Francais', 'RU Russkij', 'AR العربية'],
+  OPTIONS_PROJECT: ['Cephe Kaplama', 'Zemin Doseme', 'Ic Mekan', 'Bahce-Peyzaj', 'Havuz Kenari', 'Merdiven-Basamak', 'Diger'],
+  OPTIONS_PRICE: ['Sadece Tas', 'Tas + Yapistirici + Derz'],
+  OPTIONS_SOURCE: ['Google', 'Instagram', 'Tavsiye', 'Yapay Zeka', 'Diger'],
 }
 
 // Chat oturumu localStorage yönetimi (5 dk geçerlilik)
@@ -276,6 +286,7 @@ export default function ChatWidget() {
   const [pickerProducts, setPickerProducts] = useState<PickerProduct[]>([])
   const [pickerStep, setPickerStep] = useState<'type' | 'product'>('type')
   const [pickerStoneType, setPickerStoneType] = useState<string | null>(null)
+  const [quickOptions, setQuickOptions] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -400,12 +411,18 @@ export default function ChatWidget() {
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return
+  const sendMessage = async (quickText?: string) => {
+    const msgText = quickText || input.trim()
+    if (!msgText || loading) return
+
+    // Quick option'dan geliyorsa temizle
+    if (quickText) {
+      setQuickOptions(null)
+    }
 
     // Bekleyen dosya varsa, not olarak gönder
-    if (pendingFile) {
-      await sendFileWithNote(input.trim())
+    if (!quickText && pendingFile) {
+      await sendFileWithNote(msgText)
       setInput('')
       return
     }
@@ -414,17 +431,16 @@ export default function ChatWidget() {
     const sd = getSpamData()
     const now = Date.now()
     sd.msgs = (sd.msgs || []).filter((t: number) => t > now - 60000)
-    if (sd.msgs.length >= 5) {
+    if (sd.msgs.length >= 8) {
       setError(t.tooManyMessages)
       return
     }
     sd.msgs.push(now)
     saveSpamData(sd)
 
-    const userMsg = input.trim()
-    setInput('')
+    if (!quickText) setInput('')
     setError('')
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
+    setMessages(prev => [...prev, { role: 'user', content: msgText }])
     setLoading(true)
 
     try {
@@ -432,7 +448,7 @@ export default function ChatWidget() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, { role: 'user', content: userMsg }],
+          messages: [...messages, { role: 'user', content: msgText }],
           lead: { name: lead.name, phone: lead.phone, email: lead.email },
         }),
       })
@@ -448,6 +464,19 @@ export default function ChatWidget() {
         // İletişim formu tetikleyicisi kontrolü
         if (data.message.includes('|||SHOW_CONTACT_FORM|||')) {
           setShowContactForm(true)
+        }
+        // Quick options butonları kontrolü
+        const optionMarkers = ['OPTIONS_CONTACT', 'OPTIONS_LANG', 'OPTIONS_PROJECT', 'OPTIONS_PRICE', 'OPTIONS_SOURCE']
+        let foundOption = false
+        for (const marker of optionMarkers) {
+          if (data.message.includes(`|||${marker}|||`)) {
+            setQuickOptions(marker)
+            foundOption = true
+            break
+          }
+        }
+        if (!foundOption) {
+          setQuickOptions(null)
         }
         // Ürün seçici tetikleyicisi
         if (data.message.includes('|||SHOW_PRODUCT_PICKER|||')) {
@@ -773,6 +802,24 @@ export default function ChatWidget() {
                   </div>
                 )}
 
+                {/* Quick options butonları (teklif adımları) */}
+                {quickOptions && QUICK_OPTIONS[quickOptions] && (
+                  <div className="bg-white/[0.06] rounded-2xl p-3 border border-[#b39345]/20">
+                    <div className="flex flex-wrap gap-1.5">
+                      {QUICK_OPTIONS[quickOptions].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => sendMessage(opt)}
+                          disabled={loading}
+                          className="px-3 py-2 rounded-xl border border-white/[0.08] hover:border-[#b39345]/40 text-white/80 text-[12px] font-body transition-all hover:bg-[#b39345]/10 disabled:opacity-30"
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Ürün seçici (teklif sürecinde) */}
                 {showProductPicker && (
                   <div className="bg-white/[0.06] rounded-2xl p-3 border border-[#b39345]/20">
@@ -929,7 +976,7 @@ export default function ChatWidget() {
                     {isListening ? <MicOff size={16} /> : <Mic size={16} />}
                   </button>
                   <button
-                    onClick={sendMessage}
+                    onClick={() => sendMessage()}
                     disabled={loading || !input.trim()}
                     className="p-1.5 rounded-lg transition-all disabled:opacity-30"
                     style={{ color: '#d2b96e' }}

@@ -55,31 +55,33 @@ AI simülasyon → fotoğraf yükle, taş seç, ücretsiz
 Şehir projesi yoksa → "Bu şehirde henüz projemiz yok" + /projelerimiz linki
 
 ## Teklif Toplama (ÇOK ÖNEMLİ)
-Müşteri ev/villa/otel yaptırmak, taş almak, fiyat/teklif istemek istediğinde 2 SEÇENEĞİ sun:
-1. "Teklif formunu doldurabilirsiniz:" + [Teklif Al](https://www.urlastone.com/teklif) linki
-2. "Veya birlikte adım adım doldurabiliriz, hangisini tercih edersiniz?"
+Müşteri ev/villa/otel yaptırmak, taş almak, fiyat/teklif istemek istediğinde:
+1. Önce teklif sayfasına yönlendir: "Teklif formunu buradan doldurabilirsiniz:" + [Teklif Al](https://www.urlastone.com/teklif) linki
+2. Hemen ardından ekle: "Dilerseniz bu süreci birlikte buradan da yönetebiliriz, hangisini tercih edersiniz?"
 
 Müşteri birlikte yapmak isterse ADIM ADIM şu bilgileri topla (her mesajda SADECE 1 soru sor):
 
-ADIM 1: "Projeniz hangi ülkede?" — Türkiye derse il ve ilçe sor. Yurt dışı ise şehir/ülke sor
-ADIM 2: "Projeniz hangi ilde ve ilçede?"
-ADIM 3: "Proje tipiniz nedir?" — Seçenekler: Cephe Kaplama / Zemin Döşeme / İç Mekan / Bahçe-Peyzaj / Havuz Kenarı / Merdiven-Basamak / Diğer
-ADIM 4: "Kaplanacak toplam alan kaç m²?" — Bilmiyorsa hesaplamaya yardım et (Genişlik x Yükseklik = m²)
-ADIM 5: "Dış köşe uzunluğunuz ne kadar? (metre tül)" — Bilmiyorsa açıkla: kat yüksekliği x köşe sayısı. Bilmiyorsa "bilmiyorum" kabul et
-ADIM 6: "Fiyat kapsamı: Sadece Taş mı, yoksa Taş + Yapıştırıcı + Derz dahil mi?"
-ADIM 7: "Taş tercihiniz var mı?" diye sor ve mesajın sonuna |||SHOW_PRODUCT_PICKER||| ekle. Müşteriye ürün seçim paneli gösterilecek. Müşteri seçim yaparsa veya "bilmiyorum, önerinizi isterim" derse devam et. Kararsızsa tarzını sor (modern/klasik/doğal/lüks) ve Ürün Veritabanından öner.
-ADIM 8: "Uygulama alanının fotoğrafını göndermek ister misiniz? Dosya ekleme butonuyla (📎) gönderebilirsiniz. Zorunlu değil, atlamak için 'geç' yazabilirsiniz"
-ADIM 9: "Ek açıklama veya özel istekleriniz var mı? (Yoksa 'yok' yazabilirsiniz)"
-ADIM 10: "Son olarak, bizi nereden buldunuz?" — Seçenekler: Google / Instagram / Tavsiye / Yapay Zeka Önerisi / Diğer
+ADIM 1: "Sizinle nasıl iletişim kurmamızı tercih edersiniz?" sor ve mesajın sonuna |||OPTIONS_CONTACT||| ekle. Müşteriye butonlar gösterilecek.
+ADIM 2: "Hangi dilde iletişim kurmak istersiniz?" sor ve mesajın sonuna |||OPTIONS_LANG||| ekle. Müşteriye dil butonları gösterilecek.
+ADIM 3: "Projeniz hangi ülkede?" — Türkiye derse il ve ilçe sor. Yurt dışı ise şehir/ülke sor.
+ADIM 4: "Projeniz hangi ilde ve ilçede?"
+ADIM 5: "Proje tipiniz nedir?" sor ve mesajın sonuna |||OPTIONS_PROJECT||| ekle. Müşteriye butonlar gösterilecek.
+ADIM 6: "Kaplanacak toplam alan kaç m²?" — Bilmiyorsa hesaplamaya yardım et (Genişlik x Yükseklik = m²)
+ADIM 7: "Dış köşe uzunluğunuz ne kadar? (metre tül)" — Müşteri "metretül nedir?" veya "bu ne ki?" derse Teknik Sözlükten açıkla ve tekrar sor. Bilmiyorsa hesaplamaya yardım et: kat yüksekliği x köşe sayısı. Hiç bilmiyorsa "bilmiyorum" kabul et ve devam et.
+ADIM 8: "Fiyat kapsamı ne olsun?" sor ve mesajın sonuna |||OPTIONS_PRICE||| ekle. Müşteriye butonlar gösterilecek.
+ADIM 9: "Taş tercihiniz var mı?" diye sor ve mesajın sonuna |||SHOW_PRODUCT_PICKER||| ekle. Müşteriye ürün seçim paneli gösterilecek. Müşteri seçim yaparsa veya "bilmiyorum, önerinizi isterim" derse devam et. Kararsızsa tarzını sor (modern/klasik/doğal/lüks) ve Ürün Veritabanından öner.
+ADIM 10: "Uygulama alanının fotoğrafını göndermek ister misiniz? Dosya ekleme butonuyla gönderebilirsiniz. Zorunlu değil, atlamak için 'geç' yazabilirsiniz"
+ADIM 11: "Ek açıklama veya özel istekleriniz var mı? (Yoksa 'yok' yazabilirsiniz)"
+ADIM 12: "Son olarak, bizi nereden buldunuz?" sor ve mesajın sonuna |||OPTIONS_SOURCE||| ekle. Müşteriye butonlar gösterilecek.
 
 Tüm bilgiler toplandıktan sonra:
 - Bilgileri madde madde özetle ve "Bilgiler doğru mu?" diye onayla
 - Onaylandıktan sonra yaz: "Teklif talebiniz ekibimize iletildi! En kısa sürede size dönüş yapacağız."
 - Sonuna ekle: |||SHOW_CONTACT_FORM|||
 - Mesajın EN SONUNA (kullanıcıya görünmez) ekle:
-  |||TEKLIF_DATA|||ulke:ULKE|il:IL|ilce:ILCE|proje_tipi:TIP|metrekare:M2|dis_kose:MT|fiyat_tipi:TIP|tas_tercihi:TAS|aciklama:NOT|kaynak:KAYNAK|||END_TEKLIF|||
+  |||TEKLIF_DATA|||iletisim:TERCIH|dil:DIL|ulke:ULKE|il:IL|ilce:ILCE|proje_tipi:TIP|metrekare:M2|dis_kose:MT|fiyat_tipi:TIP|tas_tercihi:TAS|aciklama:NOT|kaynak:KAYNAK|||END_TEKLIF|||
 
-ÖNEMLI: Her adımda sadece 1 soru sor, sabırlı ol. Müşteri atlarsa veya "bilmiyorum" derse o adımı "belirtilmedi" olarak kaydet ve sonraki adıma geç. Türkiye dışı müşterilerde il/ilçe yerine şehir/ülke sor.
+ÖNEMLI: Her adımda sadece 1 soru sor, sabırlı ol. Müşteri atlarsa veya "bilmiyorum" derse o adımı "belirtilmedi" olarak kaydet ve sonraki adıma geç. Türkiye dışı müşterilerde il/ilçe yerine şehir/ülke sor. Seçmeli adımlarda (|||OPTIONS_xxx|||) müşteriye butonlar gösterilecek, metin yazmasına gerek yok.
 
 ## İletişim İsteği
 Müşteri herhangi bir şekilde iletişim/aranma/ulaşma isteğinde bulunursa (arayın, ararmısınız, beni ara, telefon edin, ulaşır mısınız, iletişime geçin, bilgi almak istiyorum, görüşmek istiyorum, randevu, call me, contact me, können Sie mich anrufen, vb.) şu kuralları uygula:
@@ -219,9 +221,9 @@ Müşteri fiyat/teklif sorunca veya teklif formu hakkında soru sorunca:
 const rateLimitMap = new Map<string, number[]>()
 
 const LIMITS = {
-  perMinute: 10,   // dakikada max 10 mesaj
-  perHour: 50,     // saatte max 50 mesaj
-  perDay: 100,     // günde max 100 mesaj
+  perMinute: 20,   // dakikada max 20 mesaj (teklif adımları hızlı olabilir)
+  perHour: 80,     // saatte max 80 mesaj
+  perDay: 200,     // günde max 200 mesaj
 }
 
 function checkRateLimit(ip: string): { allowed: boolean; reason?: string } {
@@ -295,8 +297,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 })
     }
 
-    // Max 15 mesaj geçmişi gönder (token tasarrufu — Haiku input $0.80/M token)
-    const trimmedMessages = messages.slice(-15).map((m: { role: string; content: string }) => ({
+    // Max 25 mesaj geçmişi gönder (teklif süreci 12 adım — Haiku input $0.80/M token)
+    const trimmedMessages = messages.slice(-25).map((m: { role: string; content: string }) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content.slice(0, 800), // max 800 karakter/mesaj
     }))
@@ -310,7 +312,7 @@ export async function POST(req: NextRequest) {
 
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 700,
+      max_tokens: 1000,
       system: fullPrompt,
       messages: trimmedMessages,
     })
@@ -335,6 +337,8 @@ export async function POST(req: NextRequest) {
 👤 *Ad:* ${lead?.name || 'Bilinmiyor'}
 📞 *Telefon:* ${lead?.phone || '-'}
 📧 *Email:* ${lead?.email || '-'}
+📱 *İletişim Tercihi:* ${fields.iletisim || 'Belirtilmedi'}
+🌐 *Dil Tercihi:* ${fields.dil || 'Belirtilmedi'}
 🔒 IP: \`${ip}\`
 🕐 Tarih: ${tarih}
 
@@ -351,8 +355,25 @@ export async function POST(req: NextRequest) {
 Bu teklif chatbot üzerinden adım adım toplandı.
 Engellemek icin: /engelle ${ip}`
 
-      // Telegram'a gönder (arka planda, cevabı beklemeye gerek yok)
+      // Telegram'a gönder
       sendTelegramNotification(teklifMsg).catch(() => {})
+
+      // E-posta gönder (müşteriye + ekibe)
+      const emailLocale = fields.dil?.toLowerCase().slice(0, 2) || 'tr'
+      try {
+        await fetch(new URL('/api/chat/teklif-email', req.url).toString(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lead: { name: lead?.name, phone: lead?.phone, email: lead?.email },
+            fields,
+            locale: emailLocale,
+            ip,
+          }),
+        })
+      } catch (emailErr) {
+        console.error('[Teklif Email] Error:', emailErr)
+      }
 
       // Teklif marker'ını kullanıcıya gösterme
       text = text.replace(/\|\|\|TEKLIF_DATA\|\|\|[\s\S]*?\|\|\|END_TEKLIF\|\|\|/, '').trim()
