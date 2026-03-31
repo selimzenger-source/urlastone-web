@@ -1,6 +1,4 @@
 import sharp from 'sharp'
-import path from 'path'
-import fs from 'fs'
 
 /**
  * Optimize uploaded image: resize + compress as JPEG
@@ -28,22 +26,35 @@ export async function optimizeImage(
 /**
  * URLASTONE watermark badge — sağ alt köşeye yarı saydam pill logo
  */
-function createWatermarkSvg(imgWidth: number, iconSize: number): Buffer {
-  // Responsive boyut: resim genişliğine göre scale
-  const badgeH = iconSize + 8
-  const fontSize = Math.round(iconSize * 0.45)
-  const textWidth = Math.round(fontSize * 7) // "URLASTONE" width with letter-spacing
-  const badgeW = iconSize + textWidth + 24
-  const rx = Math.round(badgeH / 2)
+function createWatermarkSvg(imgWidth: number): { svg: Buffer; badgeW: number; badgeH: number } {
+  // Responsive boyut — video overlay'dekiyle aynı görünüm
+  const iconS = Math.max(14, Math.min(28, Math.round(imgWidth * 0.018)))
+  const fontSize = Math.round(iconS * 0.85)
+  const gap = Math.round(iconS * 0.35)
+  const padX = Math.round(iconS * 0.5)
+  const padY = Math.round(iconS * 0.35)
+  const textW = Math.round(fontSize * 6.2)
+  const badgeW = padX + iconS + gap + textW + padX
+  const badgeH = iconS + padY * 2
+  const rx = Math.round(badgeH * 0.3)
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${badgeW}" height="${badgeH}">
-    <rect x="0" y="0" width="${badgeW}" height="${badgeH}" rx="${rx}" ry="${rx}" fill="rgba(0,0,0,0.55)"/>
-    <text x="${iconSize + 10}" y="${badgeH * 0.66}" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700" fill="white" letter-spacing="1">
+  // Basit ev ikonu SVG path (video'daki gibi)
+  const iX = padX
+  const iY = padY
+  const houseIcon = `<g transform="translate(${iX},${iY}) scale(${iconS / 24})" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 9.5L12 3l9 6.5V20a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 20V9.5z"/>
+    <polyline points="9 21.5 9 12 15 12 15 21.5"/>
+  </g>`
+
+  const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${badgeW}" height="${badgeH}">
+    <rect x="0" y="0" width="${badgeW}" height="${badgeH}" rx="${rx}" ry="${rx}" fill="rgba(0,0,0,0.5)"/>
+    ${houseIcon}
+    <text x="${padX + iconS + gap}" y="${badgeH * 0.67}" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700" fill="white" letter-spacing="1">
       <tspan fill="#b39345">URLA</tspan><tspan fill="white">STONE</tspan>
     </text>
-  </svg>`
+  </svg>`)
 
-  return Buffer.from(svg)
+  return { svg, badgeW, badgeH }
 }
 
 /**
@@ -54,35 +65,8 @@ export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
   const imgW = metadata.width || 1600
   const imgH = metadata.height || 1200
 
-  // Logo boyutu: resim genişliğine göre responsive (min 36px, max 64px)
-  const iconSize = Math.max(36, Math.min(64, Math.round(imgW * 0.04)))
-  const watermarkSvg = createWatermarkSvg(imgW, iconSize)
-
-  const badgeH = iconSize + 8
-  const fontSize = Math.round(iconSize * 0.45)
-  const textWidth = Math.round(fontSize * 7)
-  const badgeW = iconSize + textWidth + 24
+  const { svg: watermarkSvg, badgeW, badgeH } = createWatermarkSvg(imgW)
   const margin = Math.round(Math.min(imgW, imgH) * 0.025)
-
-  // Logo icon — logo-outline.png'yi oku
-  let logoComposites: sharp.OverlayOptions[] = []
-
-  try {
-    const logoPath = path.join(process.cwd(), 'public', 'logo-outline.png')
-    if (fs.existsSync(logoPath)) {
-      const logoBuffer = await sharp(logoPath)
-        .resize(iconSize, iconSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .toBuffer()
-
-      logoComposites.push({
-        input: logoBuffer,
-        top: margin + 4,
-        left: imgW - margin - badgeW + 4,
-      })
-    }
-  } catch {
-    // Logo yoksa sadece text badge göster
-  }
 
   const result = await sharp(imageBuffer)
     .composite([
@@ -91,7 +75,6 @@ export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
         top: margin,
         left: imgW - margin - badgeW,
       },
-      ...logoComposites,
     ])
     .toBuffer()
 

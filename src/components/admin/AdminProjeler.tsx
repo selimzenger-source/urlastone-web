@@ -96,6 +96,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const [productSearch, setProductSearch] = useState('')
   const [showProductDropdown, setShowProductDropdown] = useState(false)
   const [upscalingIndex, setUpscalingIndex] = useState<number | null>(null)
+  const [upscaledPhotos, setUpscaledPhotos] = useState<Set<string>>(new Set())
   // Fotoğraf kalitesini artır (Replicate Real-ESRGAN)
   const handleUpscale = async (photoIndex: number) => {
     if (!editProject) return
@@ -117,6 +118,7 @@ export default function AdminProjeler({ adminPassword }: Props) {
         const newPhotos = [...editProject.photos]
         newPhotos[photoIndex] = data.url
         setEditProject({ ...editProject, photos: newPhotos })
+        setUpscaledPhotos(prev => new Set(prev).add(data.url))
       }
     } catch (err) {
       console.error('Upscale error:', err)
@@ -1299,19 +1301,26 @@ export default function AdminProjeler({ adminPassword }: Props) {
                         >
                           <RotateCw size={10} className="text-white" />
                         </button>
-                        {/* Kalite Artır butonu */}
-                        <button
-                          onClick={() => handleUpscale(i)}
-                          disabled={upscalingIndex !== null}
-                          className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gold-400/90 flex items-center justify-center hover:bg-gold-400 transition-colors cursor-pointer disabled:opacity-40"
-                          title="Kalite Artır (AI)"
-                        >
-                          {upscalingIndex === i ? (
-                            <Loader2 size={10} className="text-black animate-spin" />
-                          ) : (
-                            <Sparkles size={10} className="text-black" />
-                          )}
-                        </button>
+                        {/* Kalite Artır butonu — 1 kez kullanılınca pasif olur */}
+                        {!upscaledPhotos.has(url) && (
+                          <button
+                            onClick={() => handleUpscale(i)}
+                            disabled={upscalingIndex !== null}
+                            className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gold-400/90 flex items-center justify-center hover:bg-gold-400 transition-colors cursor-pointer disabled:opacity-40"
+                            title="Kalite Artır (AI)"
+                          >
+                            {upscalingIndex === i ? (
+                              <Loader2 size={10} className="text-black animate-spin" />
+                            ) : (
+                              <Sparkles size={10} className="text-black" />
+                            )}
+                          </button>
+                        )}
+                        {upscaledPhotos.has(url) && (
+                          <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center" title="Kalite artırıldı ✓">
+                            <CheckCircle size={10} className="text-white" />
+                          </div>
+                        )}
                         <button
                           onClick={() => removePhoto(i)}
                           className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/90 flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
