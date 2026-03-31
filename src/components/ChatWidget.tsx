@@ -278,28 +278,34 @@ export default function ChatWidget() {
 
     if (!lead.name.trim()) { setError(t.nameRequired); return }
 
-    // İsim doğrulama: ad + soyad zorunlu, sadece harf, anlamsız girişler engellenir
+    // İsim doğrulama: AI ile gerçek isim kontrolü
     const nameVal = lead.name.trim()
-    const nameWords = nameVal.split(/\s+/).filter(w => w.length >= 2)
-    const nameRegex = /^[a-zA-ZçÇğĞıİöÖşŞüÜáéíóúàèìòùâêîôûäëïöüñÑ\s'-]{2,50}$/
-    const repeatingChars = /(.)\1{2,}/.test(nameVal.replace(/\s/g, ''))
-    const tooManyConsonants = /[^aeıioöuüAEIİOÖUÜáéíóúàèìòù\s'-]{4,}/i.test(nameVal)
-
-    // Her kelimede en az 1 sesli harf olmalı
-    const allWordsHaveVowel = nameWords.every(w => /[aeıioöuüáéíóúàèìòù]/i.test(w))
-
-    if (!nameRegex.test(nameVal) || nameWords.length < 2 || repeatingChars || tooManyConsonants || !allWordsHaveVowel) {
-      const invalidName: Record<string, string> = {
-        tr: 'Lütfen adınızı ve soyadınızı girin (ör: Ali Yılmaz)',
-        en: 'Please enter your first and last name (e.g. John Smith)',
-        es: 'Ingrese nombre y apellido (ej: Juan García)',
-        de: 'Bitte Vor- und Nachname eingeben (z.B. Hans Müller)',
-        fr: 'Veuillez entrer prénom et nom (ex: Jean Dupont)',
-        ru: 'Введите имя и фамилию (напр: Иван Петров)',
-        ar: 'يرجى إدخال الاسم واللقب (مثال: محمد أحمد)',
-      }
-      setError(invalidName[locale] || invalidName.en)
+    if (nameVal.length < 3 || nameVal.length > 50) {
+      setError(locale === 'tr' ? 'Lütfen adınızı ve soyadınızı girin.' : 'Please enter your full name.')
       return
+    }
+    try {
+      const nameCheck = await fetch('/api/chat/validate-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nameVal }),
+      })
+      const nameResult = await nameCheck.json()
+      if (!nameResult.valid) {
+        const invalidName: Record<string, string> = {
+          tr: 'Lütfen gerçek adınızı ve soyadınızı girin (ör: Ali Yılmaz)',
+          en: 'Please enter your real first and last name (e.g. John Smith)',
+          es: 'Ingrese su nombre y apellido real (ej: Juan García)',
+          de: 'Bitte echten Vor- und Nachname eingeben (z.B. Hans Müller)',
+          fr: 'Veuillez entrer vos vrais prénom et nom (ex: Jean Dupont)',
+          ru: 'Введите настоящие имя и фамилию (напр: Иван Петров)',
+          ar: 'يرجى إدخال اسمك الحقيقي واللقب (مثال: محمد أحمد)',
+        }
+        setError(invalidName[locale] || invalidName.en)
+        return
+      }
+    } catch {
+      // AI kontrol başarısız olursa geçir
     }
 
     if (!lead.phone.trim()) { setError(t.phoneRequired); return }
