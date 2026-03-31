@@ -51,7 +51,7 @@ const chatTranslations: Record<string, {
     formTitle: 'Size daha iyi yardımcı olabilmemiz için bilgilerinizi doldurun',
     formDesc: '',
     namePlaceholder: 'Adınız',
-    emailPlaceholder: 'E-posta (isteğe bağlı)',
+    emailPlaceholder: 'E-posta (opsiyonel)',
     phonePlaceholder: '5XX XXX XX XX',
     send: 'Gönder',
     submit: 'Sohbete Başla',
