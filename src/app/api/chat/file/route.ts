@@ -148,32 +148,8 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Ayrıca email ile de bildir
-    const resendKey = process.env.RESEND_API_KEY
-    if (resendKey) {
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'URLASTONE Bot <bot@urlastone.com>',
-            to: ['info@urlastone.com', 'cihanzenger@gmail.com'],
-            subject: `Chatbot Dosya: ${name} - ${file.name}`,
-            html: `
-              <h2>Chatbot'tan Dosya Gönderildi</h2>
-              <p><b>Ad:</b> ${name}</p>
-              <p><b>Telefon:</b> ${phone}</p>
-              <p><b>Dosya:</b> ${file.name} (${(file.size / 1024).toFixed(0)}KB)</p>
-              <p><b>Tarih:</b> ${tarih}</p>
-              <p style="color:#666;font-size:13px;">Dosya Telegram botuna gönderilmiştir.</p>
-            `,
-          }),
-        })
-      } catch {}
-    }
+    // Dosya bildirimi sadece Telegram'a gider
+    // Teklif süreci sonunda asıl detaylı mail (müşteri + admin) gönderilir
 
     return NextResponse.json({ ok: true })
   } catch (error) {
