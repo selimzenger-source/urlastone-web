@@ -751,8 +751,8 @@ export default function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-20 md:bottom-8 right-4 md:right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up"
-          style={{ height: 'min(580px, calc(100vh - 100px))', background: '#111111' }}>
+        <div className="fixed z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up inset-x-3 bottom-16 md:inset-x-auto md:bottom-8 md:right-6 md:w-[380px]"
+          style={{ height: 'min(520px, calc(100vh - 140px))', maxHeight: 'calc(100vh - 140px)', background: '#111111' }}>
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08]"
@@ -792,7 +792,7 @@ export default function ChatWidget() {
                 value={lead.name}
                 onChange={e => setLead({ ...lead, name: e.target.value })}
                 placeholder={t.namePlaceholder}
-                className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
                 autoFocus
               />
               <input
@@ -800,7 +800,7 @@ export default function ChatWidget() {
                 value={lead.email}
                 onChange={e => setLead({ ...lead, email: e.target.value })}
                 placeholder={t.emailPlaceholder}
-                className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
               />
               <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1]">
                 <span className="text-white/50 text-sm">🇹🇷</span>
@@ -810,7 +810,7 @@ export default function ChatWidget() {
                   value={lead.phone}
                   onChange={e => setLead({ ...lead, phone: e.target.value.replace(/[^0-9]/g, '') })}
                   placeholder={t.phonePlaceholder}
-                  className="flex-1 bg-transparent text-white placeholder-white/30 text-sm font-body outline-none"
+                  className="flex-1 bg-transparent text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none"
                 />
               </div>
 
@@ -1022,7 +1022,7 @@ export default function ChatWidget() {
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                     placeholder={t.placeholder}
-                    className="flex-1 bg-transparent text-white placeholder-white/30 text-sm font-body outline-none"
+                    className="flex-1 bg-transparent text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none"
                     disabled={loading}
                     dir={locale === 'ar' ? 'rtl' : 'ltr'}
                   />
