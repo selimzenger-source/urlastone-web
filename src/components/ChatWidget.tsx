@@ -725,7 +725,7 @@ export default function ChatWidget() {
     <>
       {/* Floating Button + Greeting */}
       {!isOpen && (
-        <div className="fixed bottom-8 right-6 z-50 flex flex-col items-end gap-3">
+        <div className="fixed bottom-20 md:bottom-8 right-4 md:right-6 z-50 flex flex-col items-end gap-3">
           {/* Auto greeting bubble */}
           {showGreeting && (
             <div
@@ -751,7 +751,7 @@ export default function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-8 right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up"
+        <div className="fixed bottom-20 md:bottom-8 right-4 md:right-6 z-50 w-[380px] max-w-[calc(100vw-32px)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up"
           style={{ height: 'min(580px, calc(100vh - 100px))', background: '#111111' }}>
 
           {/* Header */}
