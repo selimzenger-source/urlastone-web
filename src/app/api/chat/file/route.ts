@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { blockIP } from '@/lib/bot-knowledge'
+import { sendTelegramNotification } from '@/lib/telegram'
 
 const moderationClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -21,15 +23,18 @@ async function checkImageContent(buffer: Buffer, mimeType: string): Promise<{ ok
           },
           {
             type: 'text',
-            text: 'Bu resim dogal tas, yapi, insaat, ev, villa, otel, cephe, duvar, peyzaj, mimari, proje veya inşaat malzemesi ile ilgili mi? Yoksa müstehcen, uygunsuz veya konu disi mi? Sadece "UYGUN" veya "UYGUNSUZ" yaz, baska bir sey yazma.',
+            text: 'Bu resmi analiz et. 3 kategoriden birini yaz:\n1. "UYGUN" - dogal tas, yapi, insaat, ev, villa, otel, cephe, duvar, peyzaj, mimari, proje, insaat malzemesi, bina, dis mekan ile ilgili\n2. "KONU_DISI" - konu ile alakasiz ama zararsiz (selfie, yemek, hayvan, manzara vs)\n3. "MUSTEHCEN" - cinsel icerik,ciplak vucut, genital organ, orta parmak (middle finger), nah isareti (fig sign/fist with thumb), hakaret el isareti, kufur/hakaret iceren yazi, siddet, kan, silah, ofansif sembol veya herhangi bir saldirgan/kaba icerik\nSadece bu 3 kelimeden birini yaz.',
           },
         ],
       }],
     })
 
     const text = response.content[0]?.type === 'text' ? response.content[0].text : ''
-    if (text.includes('UYGUNSUZ')) {
-      return { ok: false, reason: 'inappropriate' }
+    if (text.includes('MUSTEHCEN')) {
+      return { ok: false, reason: 'obscene' }
+    }
+    if (text.includes('KONU_DISI')) {
+      return { ok: false, reason: 'off_topic' }
     }
     return { ok: true }
   } catch {
@@ -82,9 +87,27 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer())
 
     // Resim ise içerik kontrolü yap (AI ile)
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
     if (isImage) {
       const check = await checkImageContent(buffer, file.type)
       if (!check.ok) {
+        // Müstehcen ise: otomatik IP engelle + Telegram'a bildir
+        if (check.reason === 'obscene') {
+          await blockIP(ip)
+          await sendTelegramNotification(
+            `🚨 *UYGUNSUZ ICERIK TESPIT EDILDI*\n\n👤 ${name}\n📞 ${phone}\n🔒 IP: \`${ip}\`\n📄 Dosya: ${file.name}\n\n⛔ IP otomatik engellendi.\nKaldirmak icin: /engelkaldir ${ip}`
+          )
+          return NextResponse.json({
+            ok: false,
+            rejected: true,
+            blocked: true,
+            message: locale === 'tr'
+              ? 'Uygunsuz icerik tespit edildi. Erisiminiz kisitlanmistir.'
+              : 'Inappropriate content detected. Your access has been restricted.',
+          })
+        }
+
+        // Konu dışı ise: sadece reddet, engelleme
         const rejectMsg: Record<string, string> = {
           tr: 'Bu resim konumuzla ilgili gorunmuyor. Lutfen dogal tas, yapi, cephe, proje veya insaat ile ilgili resimler gonderin.',
           en: 'This image doesn\'t seem related to our business. Please send images related to natural stone, construction, facade or projects.',

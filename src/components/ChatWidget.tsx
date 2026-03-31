@@ -364,8 +364,16 @@ export default function ChatWidget() {
       const res = await fetch('/api/chat/file', { method: 'POST', body: formData })
       const data = await res.json()
 
-      if (data.rejected) {
-        // Uygunsuz/konu dışı resim reddedildi
+      if (data.blocked) {
+        // Müstehcen - engellendi
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.message,
+        }])
+        // Chat'i kapat
+        setTimeout(() => { setPhase('form'); setMessages([]) }, 3000)
+      } else if (data.rejected) {
+        // Konu dışı resim reddedildi
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: data.message || (locale === 'tr'
