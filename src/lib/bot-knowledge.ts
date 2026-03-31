@@ -343,8 +343,10 @@ export async function getProductProjectPrompt(): Promise<string> {
       prompt += '\n'
     }
 
-    productProjectCache = { data: prompt, timestamp: Date.now() }
-    return prompt
+    // Prompt'u max 4000 karakter ile sınırla (token tasarrufu)
+    const finalPrompt = prompt.length > 4000 ? prompt.slice(0, 4000) + '\n...(kısaltıldı)\n' : prompt
+    productProjectCache = { data: finalPrompt, timestamp: Date.now() }
+    return finalPrompt
   } catch (error) {
     console.error('[ProductProjectPrompt] Error:', error)
     return ''

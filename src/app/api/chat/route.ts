@@ -251,10 +251,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 })
     }
 
-    // Max 20 mesaj geçmişi gönder (token tasarrufu)
-    const trimmedMessages = messages.slice(-20).map((m: { role: string; content: string }) => ({
+    // Max 15 mesaj geçmişi gönder (token tasarrufu — Haiku input $0.80/M token)
+    const trimmedMessages = messages.slice(-15).map((m: { role: string; content: string }) => ({
       role: m.role as 'user' | 'assistant',
-      content: m.content.slice(0, 1000), // max 1000 karakter/mesaj
+      content: m.content.slice(0, 800), // max 800 karakter/mesaj
     }))
 
     // Dinamik bilgileri ekle (Telegram'dan yönetilen + veritabanı ürün/proje)
