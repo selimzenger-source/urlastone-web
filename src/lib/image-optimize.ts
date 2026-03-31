@@ -1,6 +1,4 @@
 import sharp from 'sharp'
-import path from 'path'
-import fs from 'fs'
 
 /**
  * Optimize uploaded image: resize + compress as JPEG
@@ -26,34 +24,14 @@ export async function optimizeImage(
 }
 
 /**
- * Add URLASTONE watermark to image buffer
- * Hazır watermark-badge.png'yi resize edip sağ üst köşeye yapıştırır
+ * Add URLASTONE watermark — server-side disabled, use client-side Canvas instead
  */
 export async function addWatermark(imageBuffer: Buffer): Promise<Buffer> {
-  const metadata = await sharp(imageBuffer).metadata()
-  const imgW = metadata.width || 1600
-  const imgH = metadata.height || 1200
-
-  const badgePath = path.join(process.cwd(), 'public', 'watermark-badge.png')
-  if (!fs.existsSync(badgePath)) return imageBuffer
-
-  // Badge genişliği: resim genişliğinin %20'si (min 150, max 350)
-  const badgeW = Math.max(150, Math.min(350, Math.round(imgW * 0.2)))
-  const badgeBuffer = await sharp(badgePath)
-    .resize(badgeW, null, { withoutEnlargement: false, kernel: 'lanczos3' })
-    .toBuffer()
-
-  const margin = Math.round(Math.min(imgW, imgH) * 0.02)
-
-  const result = await sharp(imageBuffer)
-    .composite([{ input: badgeBuffer, top: margin, left: imgW - margin - badgeW }])
-    .toBuffer()
-
-  return result
+  return imageBuffer
 }
 
 /**
- * Convert File to Buffer, optimize, add watermark, and return
+ * Convert File to Buffer, optimize (no watermark on server), and return
  */
 export async function optimizeUploadedFile(
   file: File,
@@ -65,26 +43,11 @@ export async function optimizeUploadedFile(
 
   const result = await optimizeImage(originalBuffer, options)
 
-  // Watermark ekle (varsayılan: true)
-  let finalBuffer = result.buffer
-  if (options?.watermark !== false) {
-    try {
-      finalBuffer = await addWatermark(result.buffer)
-      finalBuffer = await sharp(finalBuffer)
-        .jpeg({ quality: options?.quality || 82, progressive: true, mozjpeg: true })
-        .toBuffer()
-    } catch (err) {
-      console.error('[ImageOptimize] Watermark error:', err)
-      finalBuffer = result.buffer
-    }
-  }
-
-  console.log(`[ImageOptimize] ${file.name}: ${Math.round(originalSize/1024)}KB -> ${Math.round(finalBuffer.length/1024)}KB (${Math.round((1 - finalBuffer.length/originalSize) * 100)}% smaller)${options?.watermark !== false ? ' +watermark' : ''}`)
+  console.log(`[ImageOptimize] ${file.name}: ${Math.round(originalSize/1024)}KB -> ${Math.round(result.buffer.length/1024)}KB (${Math.round((1 - result.buffer.length/originalSize) * 100)}% smaller)`)
 
   return {
     ...result,
-    buffer: finalBuffer,
-    optimizedSize: finalBuffer.length,
+    optimizedSize: result.buffer.length,
     originalSize,
   }
 }

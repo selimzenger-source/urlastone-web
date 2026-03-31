@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { addClientWatermark } from '@/lib/client-watermark'
 import {
   Plus,
   Search,
@@ -359,8 +360,9 @@ export default function AdminProjeler({ adminPassword }: Props) {
     const urls: string[] = []
 
     try {
-      // Upload one by one to avoid body size limits
-      for (const file of files) {
+      // Upload one by one — client-side watermark ekle, sonra upload et
+      for (const rawFile of files) {
+        const file = await addClientWatermark(rawFile)
         const formData = new FormData()
         formData.append('projectId', projectId)
         formData.append('files', file)

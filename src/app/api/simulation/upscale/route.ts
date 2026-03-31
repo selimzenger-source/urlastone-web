@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
-import { addWatermark } from '@/lib/image-optimize'
 import sharp from 'sharp'
 
 const REPLICATE_API = 'https://api.replicate.com/v1/predictions'
@@ -81,11 +80,8 @@ export async function POST(req: NextRequest) {
     }
     const upscaledBuffer = Buffer.from(await upscaledRes.arrayBuffer())
 
-    // Watermark ekle
-    console.log('[Upscale] Adding watermark...')
-    let finalBuffer = await addWatermark(upscaledBuffer)
-    // JPEG olarak sıkıştır
-    finalBuffer = await sharp(finalBuffer)
+    // JPEG olarak sıkıştır (watermark client-side eklenir)
+    const finalBuffer = await sharp(upscaledBuffer)
       .jpeg({ quality: 82, progressive: true, mozjpeg: true })
       .toBuffer()
 
