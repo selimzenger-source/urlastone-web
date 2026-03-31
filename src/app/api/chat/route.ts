@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { getDynamicPrompt } from '@/lib/bot-knowledge'
+import { getDynamicPrompt, isIPBlocked } from '@/lib/bot-knowledge'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -191,6 +191,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin.' },
       { status: 429 }
+    )
+  }
+
+  // IP engelleme kontrolü
+  if (await isIPBlocked(ip)) {
+    return NextResponse.json(
+      { error: 'Erişiminiz kısıtlanmıştır.' },
+      { status: 403 }
     )
   }
 

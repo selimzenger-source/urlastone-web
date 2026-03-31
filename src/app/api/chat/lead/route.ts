@@ -55,7 +55,10 @@ export async function POST(req: NextRequest) {
         `📞 *Telefon:* ${phone}`,
         email ? `📧 *Email:* ${email}` : '',
         `🌍 *Dil:* ${locale || 'tr'}`,
+        `🔒 *IP:* \`${ip}\``,
         `🕐 *Tarih:* ${tarih}`,
+        '',
+        `Engellemek icin: \`/engelle ${ip}\``,
       ].filter(Boolean).join('\n')
     )
 

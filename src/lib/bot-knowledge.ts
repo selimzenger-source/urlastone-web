@@ -95,6 +95,9 @@ ${Object.entries(CATEGORIES).map(([k, v]) => `• \`${k}\` - ${v}`).join('\n')}
 /ekle [kategori] [bilgi] - Bilgi ekle
 /duzenle [kategori] [bilgi] - Bilgiyi güncelle
 /sil [kategori] - Kategoriyi sil
+/engelle [IP] - IP adresini engelle
+/engelkaldir [IP] - IP engelini kaldır
+/engelliler - Engelli IP listesi
 /yardim - Bu mesajı göster
 
 📌 *Örnek:*
@@ -104,5 +107,55 @@ ${Object.entries(CATEGORIES).map(([k, v]) => `• \`${k}\` - ${v}`).join('\n')}
 \`/gor teslimat\`
 \`/sil kampanya\``
 }
+
+// IP Engelleme sistemi
+export async function getBlockedIPs(): Promise<string[]> {
+  try {
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      const { kv } = await import('@vercel/kv')
+      const data = await kv.get<string[]>('blocked_ips')
+      return data || []
+    }
+  } catch {}
+  return blockedIPsStore
+}
+
+export async function blockIP(ip: string): Promise<void> {
+  const ips = await getBlockedIPs()
+  if (!ips.includes(ip)) {
+    ips.push(ip)
+    try {
+      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        const { kv } = await import('@vercel/kv')
+        await kv.set('blocked_ips', ips)
+        return
+      }
+    } catch {}
+    blockedIPsStore = ips
+  }
+}
+
+export async function unblockIP(ip: string): Promise<boolean> {
+  const ips = await getBlockedIPs()
+  const idx = ips.indexOf(ip)
+  if (idx === -1) return false
+  ips.splice(idx, 1)
+  try {
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+      const { kv } = await import('@vercel/kv')
+      await kv.set('blocked_ips', ips)
+      return true
+    }
+  } catch {}
+  blockedIPsStore = ips
+  return true
+}
+
+export async function isIPBlocked(ip: string): Promise<boolean> {
+  const ips = await getBlockedIPs()
+  return ips.includes(ip)
+}
+
+let blockedIPsStore: string[] = []
 
 export { CATEGORIES }

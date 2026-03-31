@@ -6,6 +6,9 @@ import {
   deleteKnowledge,
   getHelpText,
   CATEGORIES,
+  blockIP,
+  unblockIP,
+  getBlockedIPs,
 } from '@/lib/bot-knowledge'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -134,6 +137,41 @@ export async function POST(req: NextRequest) {
         await deleteKnowledge(category)
         const title = CATEGORIES[category] || category
         await sendMessage(chatId, `🗑 *${title}* kategorisi silindi.`)
+      }
+      return NextResponse.json({ ok: true })
+    }
+
+    // /engelle [IP] - IP engelle
+    if (text.startsWith('/engelle ')) {
+      const ip = text.slice(9).trim()
+      if (!ip) {
+        await sendMessage(chatId, '❌ Kullanım: `/engelle [IP adresi]`\n\nÖrnek: `/engelle 192.168.1.1`')
+        return NextResponse.json({ ok: true })
+      }
+      await blockIP(ip)
+      await sendMessage(chatId, `🚫 *IP Engellendi:* \`${ip}\`\n\nBu IP'den gelen chatbot mesajları artık engellenecek.\n\nKaldırmak için: \`/engelkaldir ${ip}\``)
+      return NextResponse.json({ ok: true })
+    }
+
+    // /engelkaldir [IP] - IP engelini kaldır
+    if (text.startsWith('/engelkaldir ')) {
+      const ip = text.slice(13).trim()
+      const removed = await unblockIP(ip)
+      if (removed) {
+        await sendMessage(chatId, `✅ *IP Engeli Kaldırıldı:* \`${ip}\``)
+      } else {
+        await sendMessage(chatId, `❌ \`${ip}\` zaten engelli değil.`)
+      }
+      return NextResponse.json({ ok: true })
+    }
+
+    // /engelliler - Engelli IP listesi
+    if (text === '/engelliler') {
+      const ips = await getBlockedIPs()
+      if (ips.length === 0) {
+        await sendMessage(chatId, '✅ Engelli IP yok.')
+      } else {
+        await sendMessage(chatId, `🚫 *Engelli IP'ler:*\n\n${ips.map(ip => `• \`${ip}\` → /engelkaldir ${ip}`).join('\n')}`)
       }
       return NextResponse.json({ ok: true })
     }
