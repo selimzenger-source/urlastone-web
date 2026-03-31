@@ -21,7 +21,6 @@ import {
   CheckCircle,
   RotateCw,
   Sparkles,
-  Eraser,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Project } from '@/types/project'
@@ -97,60 +96,6 @@ export default function AdminProjeler({ adminPassword }: Props) {
   const [productSearch, setProductSearch] = useState('')
   const [showProductDropdown, setShowProductDropdown] = useState(false)
   const [upscalingIndex, setUpscalingIndex] = useState<number | null>(null)
-  const [removingWmIndex, setRemovingWmIndex] = useState<number | null>(null)
-
-  // Watermark sil (Claude Haiku detect + Replicate LaMa inpaint)
-  const handleRemoveWatermark = async (photoIndex: number) => {
-    if (!editProject) return
-    const url = editProject.photos[photoIndex]
-    if (!url) return
-    setRemovingWmIndex(photoIndex)
-    try {
-      const res = await fetch('/api/projects/remove-watermark', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-        body: JSON.stringify({ imageUrl: url }),
-      })
-      if (!res.ok) throw new Error('Watermark silme başarısız')
-      const data = await res.json()
-      if (!data.watermarkFound) {
-        alert('Watermark tespit edilmedi')
-        return
-      }
-      if (data.watermarkType === 'diagonal_full') {
-        if (confirm('Diagonal watermark tespit edildi. Bu tip watermark AI ile silinemez.\n\nwatermarkremover.io açılsın mı?')) {
-          window.open('https://www.watermarkremover.io/tr', '_blank')
-        }
-        return
-      }
-      if (data.url && data.url !== url) {
-        // Temizlenmiş resmi Supabase'e yükle
-        const cleanedRes = await fetch(data.url)
-        const blob = await cleanedRes.blob()
-        const file = new File([blob], `cleaned-${Date.now()}.jpg`, { type: 'image/jpeg' })
-        const formData = new FormData()
-        formData.append('projectId', editProject.id || 'wm-temp')
-        formData.append('files', file)
-        const uploadRes = await fetch('/api/projects/upload', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${adminPassword}` },
-          body: formData,
-        })
-        const uploadData = await uploadRes.json()
-        if (uploadData.urls?.[0]) {
-          const newPhotos = [...editProject.photos]
-          newPhotos[photoIndex] = uploadData.urls[0]
-          setEditProject({ ...editProject, photos: newPhotos })
-        }
-      }
-    } catch (err) {
-      console.error('Watermark removal error:', err)
-      alert('Watermark silme başarısız oldu')
-    } finally {
-      setRemovingWmIndex(null)
-    }
-  }
-
   // Fotoğraf kalitesini artır (Replicate Real-ESRGAN)
   const handleUpscale = async (photoIndex: number) => {
     if (!editProject) return
@@ -160,30 +105,18 @@ export default function AdminProjeler({ adminPassword }: Props) {
     try {
       const res = await fetch('/api/simulation/upscale', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: url, scale: 2 }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminPassword}`,
+        },
+        body: JSON.stringify({ imageUrl: url, scale: 2, projectId: editProject.id }),
       })
       if (!res.ok) throw new Error('Upscale failed')
       const data = await res.json()
       if (data.url) {
-        // Upscale edilmiş resmi Supabase'e yükle
-        const upscaledRes = await fetch(data.url)
-        const blob = await upscaledRes.blob()
-        const file = new File([blob], `upscaled-${Date.now()}.jpg`, { type: 'image/jpeg' })
-        const formData = new FormData()
-        formData.append('projectId', editProject.id || 'upscale-temp')
-        formData.append('files', file)
-        const uploadRes = await fetch('/api/projects/upload', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${adminPassword}` },
-          body: formData,
-        })
-        const uploadData = await uploadRes.json()
-        if (uploadData.urls?.[0]) {
-          const newPhotos = [...editProject.photos]
-          newPhotos[photoIndex] = uploadData.urls[0]
-          setEditProject({ ...editProject, photos: newPhotos })
-        }
+        const newPhotos = [...editProject.photos]
+        newPhotos[photoIndex] = data.url
+        setEditProject({ ...editProject, photos: newPhotos })
       }
     } catch (err) {
       console.error('Upscale error:', err)
@@ -1366,23 +1299,10 @@ export default function AdminProjeler({ adminPassword }: Props) {
                         >
                           <RotateCw size={10} className="text-white" />
                         </button>
-                        {/* Watermark Sil butonu */}
-                        <button
-                          onClick={() => handleRemoveWatermark(i)}
-                          disabled={removingWmIndex !== null || upscalingIndex !== null}
-                          className="absolute bottom-1 left-1 w-6 h-6 rounded-full bg-red-400/90 flex items-center justify-center hover:bg-red-400 transition-colors cursor-pointer disabled:opacity-40"
-                          title="Watermark Sil (AI)"
-                        >
-                          {removingWmIndex === i ? (
-                            <Loader2 size={10} className="text-white animate-spin" />
-                          ) : (
-                            <Eraser size={10} className="text-white" />
-                          )}
-                        </button>
                         {/* Kalite Artır butonu */}
                         <button
                           onClick={() => handleUpscale(i)}
-                          disabled={upscalingIndex !== null || removingWmIndex !== null}
+                          disabled={upscalingIndex !== null}
                           className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-gold-400/90 flex items-center justify-center hover:bg-gold-400 transition-colors cursor-pointer disabled:opacity-40"
                           title="Kalite Artır (AI)"
                         >
