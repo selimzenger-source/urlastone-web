@@ -77,23 +77,13 @@ export default function AdminReferanslar() {
         project_id: newProjectId || null,
         website_url: newWebsiteUrl.trim() || null,
         sort_order: referanslar.length + 1,
+        logo_url: researchLogo || null,
       }),
     })
     const resData = await res.json()
     if (!res.ok) {
       setError(resData.error || 'Hata oluştu')
       return
-    }
-    // AI logosu bulunduysa otomatik yükle
-    if (researchLogo && resData?.id) {
-      try {
-        const logoRes = await fetch(researchLogo)
-        if (logoRes.ok) {
-          const blob = await logoRes.blob()
-          const file = new File([blob], 'logo.png', { type: blob.type || 'image/png' })
-          await handleLogoUpload(resData.id, file)
-        }
-      } catch { /* logo upload opsiyonel */ }
     }
     setNewName('')
     setNewDescription('')

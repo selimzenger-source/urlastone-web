@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { name, description, project_id, website_url, sort_order } = body
+  const { name, description, project_id, website_url, sort_order, logo_url } = body
 
   if (!name) {
     return NextResponse.json({ error: 'İsim zorunludur' }, { status: 400 })
@@ -46,5 +46,32 @@ export async function POST(req: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // AI logosu varsa server-side çekip Supabase'e yükle
+  if (logo_url && data?.id) {
+    try {
+      const logoRes = await fetch(logo_url, {
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'image/*' },
+        signal: AbortSignal.timeout(10000),
+      })
+      if (logoRes.ok) {
+        const buffer = Buffer.from(await logoRes.arrayBuffer())
+        const contentType = logoRes.headers.get('content-type') || 'image/png'
+        const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : 'png'
+        const filePath = `referanslar/${data.id}/logo.${ext}`
+        const { error: uploadErr } = await supabaseAdmin.storage
+          .from('images')
+          .upload(filePath, buffer, { contentType, upsert: true })
+        if (!uploadErr) {
+          const { data: urlData } = supabaseAdmin.storage.from('images').getPublicUrl(filePath)
+          if (urlData?.publicUrl) {
+            await supabaseAdmin.from('referanslar').update({ logo_url: urlData.publicUrl }).eq('id', data.id)
+            data.logo_url = urlData.publicUrl
+          }
+        }
+      }
+    } catch { /* logo opsiyonel */ }
+  }
+
   return NextResponse.json(data)
 }
