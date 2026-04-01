@@ -47,13 +47,6 @@ export default function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-8">
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2-dark.png" alt="Urlastone Doğal Taş" className="w-7 h-7 object-contain" />
-          </Link>
           {navLinks.map((link) => (
             <Link
               key={link.href}
