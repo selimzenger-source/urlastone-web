@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Edit3, Eye, EyeOff, Sparkles, RefreshCw, Save, X, Upload, AlertCircle, CheckCircle, Languages } from 'lucide-react'
+import { Plus, Trash2, Edit3, Eye, EyeOff, Sparkles, RefreshCw, Save, X, Upload, AlertCircle, CheckCircle, Languages, FileText, Image } from 'lucide-react'
 
 interface Blog {
   id: string
@@ -52,7 +52,14 @@ export default function AdminBlog() {
   const [generateAttempts, setGenerateAttempts] = useState(0)
   const MAX_GENERATE_ATTEMPTS = 3
 
+  // Source-based generation state
+  const [showSourceInput, setShowSourceInput] = useState(false)
+  const [sourceText, setSourceText] = useState('')
+  const [sourceImages, setSourceImages] = useState<{ base64: string; type: string }[]>([])
+  const [generatingFromSource, setGeneratingFromSource] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const sourceImageInputRef = useRef<HTMLInputElement>(null)
   const password = typeof window !== 'undefined' ? localStorage.getItem('admin_pw') || '' : ''
 
   const showMsg = (type: 'success' | 'error', text: string) => {
@@ -340,6 +347,101 @@ export default function AdminBlog() {
     }
   }
 
+  const handleSourceImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    Array.from(files).forEach(file => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = reader.result as string
+        const base64 = result.split(',')[1]
+        setSourceImages(prev => [...prev, { base64, type: file.type }])
+      }
+      reader.readAsDataURL(file)
+    })
+    e.target.value = ''
+  }
+
+  const handleGenerateFromSource = async () => {
+    if (!sourceText.trim() && sourceImages.length === 0) {
+      showMsg('error', 'Metin yapıştırın veya screenshot yükleyin')
+      return
+    }
+    setGeneratingFromSource(true)
+    setShowSourceInput(false)
+    try {
+      // If multiple images, send them one by one and combine text
+      let combinedSourceText = sourceText.trim()
+
+      // If images exist, first extract text from all images
+      if (sourceImages.length > 0) {
+        // Send first image + any text
+        const res = await fetch('/api/blogs/generate-from-source', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-password': password,
+          },
+          body: JSON.stringify({
+            sourceText: combinedSourceText || undefined,
+            sourceImage: sourceImages[0].base64,
+            sourceImageType: sourceImages[0].type,
+          }),
+        })
+
+        const data = await res.json()
+        if (res.ok) {
+          setFormTitle(data.title || '')
+          setFormContent(data.content || '')
+          setFormMeta(data.meta_description || '')
+          setFormCover(data.cover_image_url || '')
+          setFormAuthor(AUTHORS[0])
+          setFormPublished(false)
+          setFormAiGenerated(true)
+          setEditId(null)
+          setShowForm(true)
+          setShowAiPreview(true)
+          showMsg('success', 'Kaynaktan blog üretildi! Önizleme yapın ve yayınlayın.')
+        } else {
+          showMsg('error', data.error || 'Blog üretim hatası')
+        }
+      } else {
+        // Only text, no images
+        const res = await fetch('/api/blogs/generate-from-source', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-password': password,
+          },
+          body: JSON.stringify({ sourceText: combinedSourceText }),
+        })
+
+        const data = await res.json()
+        if (res.ok) {
+          setFormTitle(data.title || '')
+          setFormContent(data.content || '')
+          setFormMeta(data.meta_description || '')
+          setFormCover(data.cover_image_url || '')
+          setFormAuthor(AUTHORS[0])
+          setFormPublished(false)
+          setFormAiGenerated(true)
+          setEditId(null)
+          setShowForm(true)
+          setShowAiPreview(true)
+          showMsg('success', 'Kaynaktan blog üretildi! Önizleme yapın ve yayınlayın.')
+        } else {
+          showMsg('error', data.error || 'Blog üretim hatası')
+        }
+      }
+    } catch {
+      showMsg('error', 'Blog üretim başarısız')
+    } finally {
+      setGeneratingFromSource(false)
+      setSourceText('')
+      setSourceImages([])
+    }
+  }
+
   // Setup screen
   if (needsSetup) {
     return (
@@ -388,7 +490,7 @@ export default function AdminBlog() {
             <h3 className="font-heading text-xl font-bold text-white">Blog Yazıları</h3>
             <p className="text-white/40 text-sm">{blogs.length} blog yazısı</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={() => { resetForm(); setShowForm(true) }}
               className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.06] border border-white/[0.1] text-white rounded-xl text-sm hover:bg-white/[0.1] transition-colors"
@@ -396,7 +498,18 @@ export default function AdminBlog() {
               <Plus size={16} /> Manuel Ekle
             </button>
             <button
-              onClick={() => !monthlyLimitReached && setShowTopicInput(!showTopicInput)}
+              onClick={() => { setShowSourceInput(!showSourceInput); setShowTopicInput(false) }}
+              disabled={generatingFromSource}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-sm hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+            >
+              {generatingFromSource ? (
+                <><RefreshCw size={16} className="animate-spin" /> Üretiliyor...</>
+              ) : (
+                <><FileText size={16} /> Kaynaktan Üret</>
+              )}
+            </button>
+            <button
+              onClick={() => { !monthlyLimitReached && setShowTopicInput(!showTopicInput); setShowSourceInput(false) }}
               disabled={generating || monthlyLimitReached}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 ${
                 monthlyLimitReached
@@ -459,6 +572,81 @@ export default function AdminBlog() {
             </button>
             <button
               onClick={() => { setShowTopicInput(false); setTopicInput(''); setTopicDesc('') }}
+              className="px-4 py-2.5 text-white/30 text-sm hover:text-white/60 transition-colors"
+            >
+              İptal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Source-based Generation Input */}
+      {showSourceInput && !showForm && (
+        <div className="bg-emerald-500/[0.03] border border-emerald-500/20 rounded-2xl p-5 space-y-4">
+          <h4 className="font-heading text-sm font-bold text-emerald-400">Kaynaktan Blog Üret</h4>
+          <p className="text-white/40 text-xs">Screenshot yükle veya kaynak metni yapıştır. AI içeriği Urlastone&apos;a uyarlayarak orijinal bir blog üretecek.</p>
+
+          {/* Screenshot upload */}
+          <div>
+            <label className="block text-white/50 text-xs mb-1.5">Screenshot Yükle <span className="text-white/20">(birden fazla olabilir)</span></label>
+            <input
+              ref={sourceImageInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleSourceImageAdd}
+              className="hidden"
+            />
+            <button
+              onClick={() => sourceImageInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/[0.1] border-dashed text-white/40 rounded-xl text-sm hover:bg-white/[0.08] hover:text-white/60 transition-colors"
+            >
+              <Image size={16} /> Görsel Seç
+            </button>
+            {sourceImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {sourceImages.map((img, i) => (
+                  <div key={i} className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`data:${img.type};base64,${img.base64}`}
+                      alt={`Kaynak ${i + 1}`}
+                      className="h-20 rounded-lg border border-white/10 object-cover"
+                    />
+                    <button
+                      onClick={() => setSourceImages(prev => prev.filter((_, idx) => idx !== i))}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Text input */}
+          <div>
+            <label className="block text-white/50 text-xs mb-1.5">Kaynak Metin <span className="text-white/20">(opsiyonel — screenshot varsa boş bırakabilirsiniz)</span></label>
+            <textarea
+              value={sourceText}
+              onChange={(e) => setSourceText(e.target.value)}
+              rows={6}
+              placeholder="Kaynak makale/blog metnini buraya yapıştırın..."
+              className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500/50 resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleGenerateFromSource}
+              disabled={generatingFromSource || (!sourceText.trim() && sourceImages.length === 0)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-sm font-medium hover:bg-emerald-500/30 transition-colors disabled:opacity-50"
+            >
+              {generatingFromSource ? <><RefreshCw size={14} className="animate-spin" /> Üretiliyor...</> : <><Sparkles size={14} /> Blog Üret</>}
+            </button>
+            <button
+              onClick={() => { setShowSourceInput(false); setSourceText(''); setSourceImages([]) }}
               className="px-4 py-2.5 text-white/30 text-sm hover:text-white/60 transition-colors"
             >
               İptal
