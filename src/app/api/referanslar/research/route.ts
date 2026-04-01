@@ -195,6 +195,21 @@ export async function POST(req: NextRequest) {
             if (parts.length > 0) {
               searchResults += (searchResults ? '\n\n' : '') + parts.join('\n')
             }
+            // Siteden logo çek (og:image veya favicon)
+            if (!logoUrl) {
+              const ogImg = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+              const appleIcon = html.match(/<link[^>]*rel=["']apple-touch-icon["'][^>]*href=["']([^"']+)["']/i)
+              const favicon = html.match(/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']/i)
+              const found = ogImg?.[1] || appleIcon?.[1] || favicon?.[1]
+              if (found) {
+                if (found.startsWith('http')) {
+                  logoUrl = found
+                } else if (found.startsWith('/')) {
+                  const urlObj = new URL(tryUrl)
+                  logoUrl = `${urlObj.protocol}//${urlObj.host}${found}`
+                }
+              }
+            }
             // Ana sayfadan hakkımızda linkini bul
             if (!aboutPageUrl) {
               const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([^<]*(?:hakk|about|biz\s*kimiz|kurumsal|corporate|who\s*we)[^<]*)<\/a>/gi
