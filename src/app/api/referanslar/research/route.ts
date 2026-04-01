@@ -151,9 +151,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Website URL verilmişse ve hala sonuç yoksa, direkt siteyi çek
+    // 4. Website URL verilmişse, HER ZAMAN direkt siteyi de çek (Tavily yetersiz olabilir)
     let aboutPageUrl = ''
-    if (!searchResults && websiteUrl?.trim()) {
+    if (websiteUrl?.trim()) {
       const rawUrl = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
       // Tüm varyasyonları dene: www/www yok, https/http
       const urlSet: string[] = []
