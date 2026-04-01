@@ -24,10 +24,21 @@ interface Blog {
   published_at: string
 }
 
+function cleanMarkdown(text: string): string {
+  return text
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+}
+
 function getLocalized(blog: Blog, field: 'title' | 'content', locale: string): string {
-  if (locale === 'tr') return blog[field]
-  const key = `${field}_${locale}` as keyof Blog
-  return (blog[key] as string) || blog[field]
+  let text: string
+  if (locale === 'tr') {
+    text = blog[field]
+  } else {
+    const key = `${field}_${locale}` as keyof Blog
+    text = (blog[key] as string) || blog[field]
+  }
+  return field === 'content' ? cleanMarkdown(text) : text
 }
 
 export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog | null; slug: string }) {

@@ -230,6 +230,13 @@ YAZI KALİTESİ VE FORMAT KURALLARI (ÇOK ÖNEMLİ):
 
     const generated = JSON.parse(jsonMatch[0])
 
+    // Markdown kalıntılarını temizle: **text** → <strong>text</strong>
+    if (generated.content) {
+      generated.content = generated.content
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    }
+
     // Step 4: Generate cover image with Gemini
     let coverImageUrl = ''
     try {

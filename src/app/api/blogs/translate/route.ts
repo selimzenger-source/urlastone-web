@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from '@/lib/supabase'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -61,8 +61,12 @@ Return ONLY the translated HTML (no JSON, no code blocks, just the HTML):`
       })
 
       const text = msg.content[0].type === 'text' ? msg.content[0].text : ''
-      // Clean up: remove markdown code blocks if AI wrapped it
-      const cleaned = text.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim()
+      // Clean up: remove markdown code blocks + convert markdown bold/italic to HTML
+      const cleaned = text
+        .replace(/^```html?\n?/i, '').replace(/\n?```$/i, '')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .trim()
       if (cleaned.length > 50) return cleaned
     } catch {
       // retry
@@ -93,28 +97,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Blog bulunamadı' }, { status: 404 })
   }
 
+  // Türkçe content'teki markdown kalıntılarını temizle
+  let cleanContent = blog.content
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+
+  // Türkçe content farklıysa güncelle
+  if (cleanContent !== blog.content) {
+    console.log('[Translate] Cleaning Turkish content markdown artifacts')
+    await supabaseAdmin.from('blogs').update({ content: cleanContent }).eq('id', blogId)
+    blog.content = cleanContent
+  }
+
   const updateData: Record<string, string> = {}
   const results: { lang: string; success: boolean }[] = []
 
-  // Translate each language separately (more reliable than all-at-once)
-  // Run in pairs for speed but not all at once to avoid rate limits
-  for (let i = 0; i < LANGS.length; i += 2) {
-    const batch = LANGS.slice(i, i + 2)
+  // Translate each language - 3 parallel at a time for speed
+  for (let i = 0; i < LANGS.length; i += 3) {
+    const batch = LANGS.slice(i, i + 3)
+    console.log(`[Translate] Batch ${i/3 + 1}: ${batch.join(', ')}`)
     const promises = batch.map(async (lang) => {
-      const [titleMeta, content] = await Promise.all([
-        translateTitleMeta(blog.title, blog.meta_description, lang),
-        translateContent(blog.content, lang),
-      ])
+      try {
+        const [titleMeta, content] = await Promise.all([
+          translateTitleMeta(blog.title, blog.meta_description, lang),
+          translateContent(blog.content, lang),
+        ])
 
-      if (titleMeta) {
-        updateData[`title_${lang}`] = titleMeta.title
-        updateData[`meta_description_${lang}`] = titleMeta.meta_description
-      }
-      if (content) {
-        updateData[`content_${lang}`] = content
-      }
+        if (titleMeta) {
+          updateData[`title_${lang}`] = titleMeta.title
+          updateData[`meta_description_${lang}`] = titleMeta.meta_description
+        }
+        if (content) {
+          updateData[`content_${lang}`] = content
+        }
 
-      results.push({ lang, success: !!(titleMeta && content) })
+        const success = !!(titleMeta && content)
+        console.log(`[Translate] ${lang}: ${success ? 'OK' : 'FAILED'} (title: ${!!titleMeta}, content: ${!!content})`)
+        results.push({ lang, success })
+      } catch (err) {
+        console.error(`[Translate] ${lang} error:`, err)
+        results.push({ lang, success: false })
+      }
     })
 
     await Promise.all(promises)
