@@ -152,32 +152,36 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Website URL verilmişse ve hala sonuç yoksa, direkt siteyi çek
+    let aboutPageUrl = ''
     if (!searchResults && websiteUrl?.trim()) {
-      const urlBase = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
-      // Birden fazla URL varyasyonu dene (www / www olmadan, http / https)
-      const urlsToTry = [urlBase]
-      if (!urlBase.includes('www.')) {
-        urlsToTry.push(urlBase.replace('://', '://www.'))
-      } else {
-        urlsToTry.push(urlBase.replace('://www.', '://'))
-      }
-      if (urlBase.startsWith('https://')) {
-        urlsToTry.push(urlBase.replace('https://', 'http://'))
+      const rawUrl = websiteUrl.trim().startsWith('http') ? websiteUrl.trim() : `https://${websiteUrl.trim()}`
+      // Tüm varyasyonları dene: www/www yok, https/http
+      const urlSet: string[] = []
+      for (const proto of ['https://', 'http://']) {
+        const host = rawUrl.replace(/^https?:\/\//, '')
+        if (!urlSet.includes(`${proto}${host}`)) urlSet.push(`${proto}${host}`)
+        const alt = host.startsWith('www.') ? host.replace('www.', '') : `www.${host}`
+        if (!urlSet.includes(`${proto}${alt}`)) urlSet.push(`${proto}${alt}`)
       }
 
-      for (const tryUrl of urlsToTry) {
+      // Önce ana sayfayı çek, sonra nav linklerinden hakkımızda sayfasını bul
+      for (const tryUrl of urlSet) {
         try {
           const siteRes = await fetch(tryUrl, {
             headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'text/html,application/xhtml+xml',
-              'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+              'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+              'Accept-Encoding': 'identity',
+              'Cache-Control': 'no-cache',
             },
             redirect: 'follow',
-            signal: AbortSignal.timeout(12000),
+            signal: AbortSignal.timeout(15000),
           })
           if (siteRes.ok) {
             const html = await siteRes.text()
+            // Cloudflare challenge sayfası kontrolü
+            if (html.includes('challenge-platform') || html.includes('Just a moment')) continue
             const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
             const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
             const ogDescMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i)
@@ -185,17 +189,58 @@ export async function POST(req: NextRequest) {
             if (titleMatch?.[1]) parts.push(`Site başlığı: ${titleMatch[1].trim()}`)
             if (descMatch?.[1]) parts.push(`Site açıklaması: ${descMatch[1].trim()}`)
             if (ogDescMatch?.[1] && ogDescMatch[1] !== descMatch?.[1]) parts.push(`OG açıklaması: ${ogDescMatch[1].trim()}`)
-            // İlk 800 karakter metin (script/style hariç)
             const cleanHtml = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')
-            const textContent = cleanHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 800)
+            const textContent = cleanHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 1000)
             if (textContent) parts.push(`Site içeriği: ${textContent}`)
             if (parts.length > 0) {
-              searchResults = parts.join('\n')
-              break
+              searchResults += (searchResults ? '\n\n' : '') + parts.join('\n')
             }
+            // Ana sayfadan hakkımızda linkini bul
+            if (!aboutPageUrl) {
+              const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([^<]*(?:hakk|about|biz\s*kimiz|kurumsal|corporate|who\s*we)[^<]*)<\/a>/gi
+              let linkMatch
+              while ((linkMatch = linkRegex.exec(html)) !== null) {
+                let href = linkMatch[1]
+                if (href.startsWith('/')) {
+                  const urlObj = new URL(tryUrl)
+                  href = `${urlObj.protocol}//${urlObj.host}${href}`
+                } else if (!href.startsWith('http')) {
+                  href = `${tryUrl.replace(/\/$/, '')}/${href}`
+                }
+                aboutPageUrl = href
+                break
+              }
+            }
+            // Ana sayfa yeterli bilgi verdiyse dur
+            if (searchResults.length > 800) break
           }
         } catch { /* try next URL */ }
       }
+    }
+
+    // 4b. Hakkımızda sayfası bulunduysa onu da çek
+    if (aboutPageUrl && searchResults.length < 800) {
+      try {
+        const aboutRes = await fetch(aboutPageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+          },
+          redirect: 'follow',
+          signal: AbortSignal.timeout(12000),
+        })
+        if (aboutRes.ok) {
+          const html = await aboutRes.text()
+          if (!html.includes('challenge-platform') && !html.includes('Just a moment')) {
+            const cleanHtml = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<nav[\s\S]*?<\/nav>/gi, '').replace(/<footer[\s\S]*?<\/footer>/gi, '')
+            const textContent = cleanHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 1500)
+            if (textContent.length > 50) {
+              searchResults += '\n\nHakkımızda sayfası:\n' + textContent
+            }
+          }
+        }
+      } catch { /* skip */ }
     }
 
     // 5. Claude ile açıklama üret
