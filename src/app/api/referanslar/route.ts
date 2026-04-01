@@ -50,27 +50,37 @@ export async function POST(req: Request) {
   // AI logosu varsa server-side çekip Supabase'e yükle
   if (logo_url && data?.id) {
     try {
+      console.log('[Referans Logo] Fetching:', logo_url)
       const logoRes = await fetch(logo_url, {
-        headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'image/*' },
-        signal: AbortSignal.timeout(10000),
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept': 'image/*,*/*' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(15000),
       })
+      console.log('[Referans Logo] Fetch status:', logoRes.status, logoRes.headers.get('content-type'))
       if (logoRes.ok) {
         const buffer = Buffer.from(await logoRes.arrayBuffer())
+        console.log('[Referans Logo] Buffer size:', buffer.length)
         const contentType = logoRes.headers.get('content-type') || 'image/png'
         const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : 'png'
         const filePath = `referanslar/${data.id}/logo.${ext}`
         const { error: uploadErr } = await supabaseAdmin.storage
           .from('images')
           .upload(filePath, buffer, { contentType, upsert: true })
+        console.log('[Referans Logo] Upload result:', uploadErr ? uploadErr.message : 'OK')
         if (!uploadErr) {
           const { data: urlData } = supabaseAdmin.storage.from('images').getPublicUrl(filePath)
+          console.log('[Referans Logo] Public URL:', urlData?.publicUrl)
           if (urlData?.publicUrl) {
             await supabaseAdmin.from('referanslar').update({ logo_url: urlData.publicUrl }).eq('id', data.id)
             data.logo_url = urlData.publicUrl
           }
         }
+      } else {
+        console.log('[Referans Logo] Fetch failed:', logoRes.status)
       }
-    } catch { /* logo opsiyonel */ }
+    } catch (err) {
+      console.error('[Referans Logo] Error:', err)
+    }
   }
 
   return NextResponse.json(data)
