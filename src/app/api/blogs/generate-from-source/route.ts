@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from '@/lib/supabase'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -15,9 +15,12 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}))
-  const { sourceText, sourceImage, sourceImageType } = body
+  const { sourceText, sourceImages } = body
+  // Backward compat: single image
+  const { sourceImage, sourceImageType } = body
+  const images: { base64: string; type: string }[] = sourceImages || (sourceImage ? [{ base64: sourceImage, type: sourceImageType || 'image/png' }] : [])
 
-  if (!sourceText && !sourceImage) {
+  if (!sourceText && images.length === 0) {
     return NextResponse.json({ error: 'Kaynak metin veya görsel gerekli' }, { status: 400 })
   }
 
@@ -47,15 +50,15 @@ export async function POST(req: NextRequest) {
     // Build Claude message content
     const contentParts: Anthropic.Messages.ContentBlockParam[] = []
 
-    // If screenshot provided, add as image
-    if (sourceImage) {
-      const mediaType = (sourceImageType || 'image/png') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+    // Add all images
+    for (const img of images) {
+      const mediaType = (img.type || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
       contentParts.push({
         type: 'image',
         source: {
           type: 'base64',
           media_type: mediaType,
-          data: sourceImage,
+          data: img.base64,
         },
       })
     }
@@ -67,7 +70,7 @@ export async function POST(req: NextRequest) {
 
 GÖREV: Aşağıdaki kaynak içeriği referans alarak, TAMAMEN YENİ ve ORİJİNAL bir Türkçe blog yazısı üret. Bu bir çeviri DEĞİL — kaynaktaki bilgiyi temel al ama farklı bir bakış açısı, anlatım tarzı ve yapıyla sun.
 
-${sourceImage ? 'Yukarıdaki görseldeki metni oku ve referans al.' : ''}
+${images.length > 0 ? `Yukarıdaki ${images.length} görseldeki tüm metinleri oku ve birleştirerek referans al. Bu tek bir makalenin parçalarıdır.` : ''}
 ${sourceText ? `KAYNAK METİN:\n${sourceText}` : ''}
 
 ADAPTASYON KURALLARI (ÇOK ÖNEMLİ):

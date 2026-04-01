@@ -347,18 +347,34 @@ export default function AdminBlog() {
     }
   }
 
-  const handleSourceImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-    Array.from(files).forEach(file => {
+  const resizeImage = (file: File, maxWidth = 1600): Promise<{ base64: string; type: string }> => {
+    return new Promise((resolve) => {
       const reader = new FileReader()
       reader.onload = () => {
-        const result = reader.result as string
-        const base64 = result.split(',')[1]
-        setSourceImages(prev => [...prev, { base64, type: file.type }])
+        const img = document.createElement('img')
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let w = img.width, h = img.height
+          if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth }
+          canvas.width = w; canvas.height = h
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, w, h)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+          resolve({ base64: dataUrl.split(',')[1], type: 'image/jpeg' })
+        }
+        img.src = reader.result as string
       }
       reader.readAsDataURL(file)
     })
+  }
+
+  const handleSourceImageAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    for (const file of Array.from(files)) {
+      const resized = await resizeImage(file)
+      setSourceImages(prev => [...prev, resized])
+    }
     e.target.value = ''
   }
 
@@ -370,68 +386,36 @@ export default function AdminBlog() {
     setGeneratingFromSource(true)
     setShowSourceInput(false)
     try {
-      // If multiple images, send them one by one and combine text
-      let combinedSourceText = sourceText.trim()
-
-      // If images exist, first extract text from all images
+      const bodyPayload: Record<string, unknown> = {}
+      if (sourceText.trim()) bodyPayload.sourceText = sourceText.trim()
       if (sourceImages.length > 0) {
-        // Send first image + any text
-        const res = await fetch('/api/blogs/generate-from-source', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-password': password,
-          },
-          body: JSON.stringify({
-            sourceText: combinedSourceText || undefined,
-            sourceImage: sourceImages[0].base64,
-            sourceImageType: sourceImages[0].type,
-          }),
-        })
+        bodyPayload.sourceImages = sourceImages.map(img => ({ base64: img.base64, type: img.type }))
+      }
 
-        const data = await res.json()
-        if (res.ok) {
-          setFormTitle(data.title || '')
-          setFormContent(data.content || '')
-          setFormMeta(data.meta_description || '')
-          setFormCover(data.cover_image_url || '')
-          setFormAuthor(AUTHORS[0])
-          setFormPublished(false)
-          setFormAiGenerated(true)
-          setEditId(null)
-          setShowForm(true)
-          setShowAiPreview(true)
-          showMsg('success', 'Kaynaktan blog üretildi! Önizleme yapın ve yayınlayın.')
-        } else {
-          showMsg('error', data.error || 'Blog üretim hatası')
-        }
+      const res = await fetch('/api/blogs/generate-from-source', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password,
+        },
+        body: JSON.stringify(bodyPayload),
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        setFormTitle(data.title || '')
+        setFormContent(data.content || '')
+        setFormMeta(data.meta_description || '')
+        setFormCover(data.cover_image_url || '')
+        setFormAuthor(AUTHORS[0])
+        setFormPublished(false)
+        setFormAiGenerated(true)
+        setEditId(null)
+        setShowForm(true)
+        setShowAiPreview(true)
+        showMsg('success', 'Kaynaktan blog üretildi! Önizleme yapın ve yayınlayın.')
       } else {
-        // Only text, no images
-        const res = await fetch('/api/blogs/generate-from-source', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-password': password,
-          },
-          body: JSON.stringify({ sourceText: combinedSourceText }),
-        })
-
-        const data = await res.json()
-        if (res.ok) {
-          setFormTitle(data.title || '')
-          setFormContent(data.content || '')
-          setFormMeta(data.meta_description || '')
-          setFormCover(data.cover_image_url || '')
-          setFormAuthor(AUTHORS[0])
-          setFormPublished(false)
-          setFormAiGenerated(true)
-          setEditId(null)
-          setShowForm(true)
-          setShowAiPreview(true)
-          showMsg('success', 'Kaynaktan blog üretildi! Önizleme yapın ve yayınlayın.')
-        } else {
-          showMsg('error', data.error || 'Blog üretim hatası')
-        }
+        showMsg('error', data.error || 'Blog üretim hatası')
       }
     } catch {
       showMsg('error', 'Blog üretim başarısız')
