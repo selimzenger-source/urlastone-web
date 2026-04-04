@@ -7,9 +7,26 @@ export const metadata: Metadata = {
     title: 'Doğal Taş Çeşitleri - Rockshell, Traverten, Bazalt, Kalker | URLASTONE',
     description: 'Rockshell, traverten, bazalt, kalker doğal taş ürünleri. Nature, Line, Mix, Classic ebatlar. Urla, İzmir.',
     url: 'https://www.urlastone.com/urunlerimiz',
+    images: [
+      {
+        url: 'https://www.urlastone.com/featured-traverten.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Urlastone Doğal Taş Ürünleri',
+      },
+    ],
   },
   alternates: {
     canonical: 'https://www.urlastone.com/urunlerimiz',
+    languages: {
+      'en': 'https://www.urlastone.com/urunlerimiz?lang=en',
+      'es': 'https://www.urlastone.com/urunlerimiz?lang=es',
+      'de': 'https://www.urlastone.com/urunlerimiz?lang=de',
+      'fr': 'https://www.urlastone.com/urunlerimiz?lang=fr',
+      'ru': 'https://www.urlastone.com/urunlerimiz?lang=ru',
+      'ar': 'https://www.urlastone.com/urunlerimiz?lang=ar',
+      'x-default': 'https://www.urlastone.com/urunlerimiz',
+    },
   },
 }
 

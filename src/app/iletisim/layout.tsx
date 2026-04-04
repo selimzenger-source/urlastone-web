@@ -7,9 +7,26 @@ export const metadata: Metadata = {
     title: 'İletişim | URLASTONE - Doğal Taş',
     description: 'Doğal taş projeniz için bize ulaşın. Urla, İzmir.',
     url: 'https://www.urlastone.com/iletisim',
+    images: [
+      {
+        url: 'https://www.urlastone.com/contact-hero.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Urlastone İletişim',
+      },
+    ],
   },
   alternates: {
     canonical: 'https://www.urlastone.com/iletisim',
+    languages: {
+      'en': 'https://www.urlastone.com/iletisim?lang=en',
+      'es': 'https://www.urlastone.com/iletisim?lang=es',
+      'de': 'https://www.urlastone.com/iletisim?lang=de',
+      'fr': 'https://www.urlastone.com/iletisim?lang=fr',
+      'ru': 'https://www.urlastone.com/iletisim?lang=ru',
+      'ar': 'https://www.urlastone.com/iletisim?lang=ar',
+      'x-default': 'https://www.urlastone.com/iletisim',
+    },
   },
 }
 
