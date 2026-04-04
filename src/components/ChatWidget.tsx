@@ -719,7 +719,7 @@ export default function ChatWidget() {
     if (phase !== 'chat' || messages.length <= 1) return
     if (summarySentRef.current) return
     if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current)
-    summaryTimerRef.current = setTimeout(sendSummary, 120000) // 2 dk
+    summaryTimerRef.current = setTimeout(sendSummary, 600000) // 10 dk
     return () => { if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current) }
   }, [messages, phase, sendSummary])
 
