@@ -177,9 +177,17 @@ const emailTranslations: Record<string, {
 const projectTypeTranslations: Record<string, Record<string, string>> = {
   'Cephe Kaplama': { tr: 'Cephe Kaplama', en: 'Facade Cladding', es: 'Revestimiento de Fachada', ar: 'تكسية واجهات', de: 'Fassadenverkleidung', fr: 'Revêtement de Façade', ru: 'Облицовка Фасадов' },
   'Zemin Döşeme':  { tr: 'Zemin Döşeme',  en: 'Flooring',         es: 'Suelos',                  ar: 'أرضيات',          de: 'Bodenbelag',          fr: 'Revêtement de Sol',  ru: 'Напольное Покрытие' },
+  'Zemin Doseme':  { tr: 'Zemin Döşeme',  en: 'Flooring',         es: 'Suelos',                  ar: 'أرضيات',          de: 'Bodenbelag',          fr: 'Revêtement de Sol',  ru: 'Напольное Покрытие' },
   'İç Mekan':      { tr: 'İç Mekan',      en: 'Interior',          es: 'Interior',                ar: 'ديكور داخلي',     de: 'Innenraum',            fr: 'Intérieur',          ru: 'Интерьер' },
+  'Ic Mekan':      { tr: 'İç Mekan',      en: 'Interior',          es: 'Interior',                ar: 'ديكور داخلي',     de: 'Innenraum',            fr: 'Intérieur',          ru: 'Интерьер' },
   'Bahçe & Peyzaj':{ tr: 'Bahçe & Peyzaj',en: 'Garden & Landscape',es: 'Jardín y Paisajismo',    ar: 'حدائق وتنسيق',    de: 'Garten & Landschaft',  fr: 'Jardin & Paysage',   ru: 'Сад & Ландшафт' },
+  'Bahce-Peyzaj':  { tr: 'Bahçe & Peyzaj',en: 'Garden & Landscape',es: 'Jardín y Paisajismo',    ar: 'حدائق وتنسيق',    de: 'Garten & Landschaft',  fr: 'Jardin & Paysage',   ru: 'Сад & Ландшафт' },
   'Havuz Kenarı':  { tr: 'Havuz Kenarı',  en: 'Pool Surround',     es: 'Borde de Piscina',       ar: 'حافة مسبح',       de: 'Poolumrandung',         fr: 'Bord de Piscine',    ru: 'Зона Бассейна' },
+  'Havuz Kenari':  { tr: 'Havuz Kenarı',  en: 'Pool Surround',     es: 'Borde de Piscina',       ar: 'حافة مسبح',       de: 'Poolumrandung',         fr: 'Bord de Piscine',    ru: 'Зона Бассейна' },
+  'Merdiven & Basamak': { tr: 'Merdiven & Basamak', en: 'Stairs & Steps', es: 'Escaleras y Peldaños', ar: 'درج وسلالم', de: 'Treppen & Stufen', fr: 'Escaliers & Marches', ru: 'Ступени & Лестницы' },
+  'Merdiven-Basamak':   { tr: 'Merdiven & Basamak', en: 'Stairs & Steps', es: 'Escaleras y Peldaños', ar: 'درج وسلالم', de: 'Treppen & Stufen', fr: 'Escaliers & Marches', ru: 'Ступени & Лестницы' },
+  'Diğer':         { tr: 'Diğer',         en: 'Other',             es: 'Otro',                    ar: 'أخرى',            de: 'Sonstiges',            fr: 'Autre',              ru: 'Другое' },
+  'Diger':         { tr: 'Diğer',         en: 'Other',             es: 'Otro',                    ar: 'أخرى',            de: 'Sonstiges',            fr: 'Autre',              ru: 'Другое' },
 }
 
 function translateProjectType(projeTipi: string, lang: string): string {
