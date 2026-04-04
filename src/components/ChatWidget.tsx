@@ -714,10 +714,10 @@ export default function ChatWidget() {
     }).catch(() => {})
   }, [messages, lead, locale])
 
-  // Her mesajda 2 dk timer'ı sıfırla
+  // Her mesajda 2 dk timer'ı sıfırla (ama özet bir kez gönderilince tekrar gönderme)
   useEffect(() => {
     if (phase !== 'chat' || messages.length <= 1) return
-    summarySentRef.current = false
+    if (summarySentRef.current) return
     if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current)
     summaryTimerRef.current = setTimeout(sendSummary, 120000) // 2 dk
     return () => { if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current) }
