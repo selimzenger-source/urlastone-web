@@ -173,6 +173,21 @@ const emailTranslations: Record<string, {
   },
 }
 
+// Proje tipi çevirileri (DB'de Türkçe saklanır, emailde müşteri diline çevrilir)
+const projectTypeTranslations: Record<string, Record<string, string>> = {
+  'Cephe Kaplama': { tr: 'Cephe Kaplama', en: 'Facade Cladding', es: 'Revestimiento de Fachada', ar: 'تكسية واجهات', de: 'Fassadenverkleidung', fr: 'Revêtement de Façade', ru: 'Облицовка Фасадов' },
+  'Zemin Döşeme':  { tr: 'Zemin Döşeme',  en: 'Flooring',         es: 'Suelos',                  ar: 'أرضيات',          de: 'Bodenbelag',          fr: 'Revêtement de Sol',  ru: 'Напольное Покрытие' },
+  'İç Mekan':      { tr: 'İç Mekan',      en: 'Interior',          es: 'Interior',                ar: 'ديكور داخلي',     de: 'Innenraum',            fr: 'Intérieur',          ru: 'Интерьер' },
+  'Bahçe & Peyzaj':{ tr: 'Bahçe & Peyzaj',en: 'Garden & Landscape',es: 'Jardín y Paisajismo',    ar: 'حدائق وتنسيق',    de: 'Garten & Landschaft',  fr: 'Jardin & Paysage',   ru: 'Сад & Ландшафт' },
+  'Havuz Kenarı':  { tr: 'Havuz Kenarı',  en: 'Pool Surround',     es: 'Borde de Piscina',       ar: 'حافة مسبح',       de: 'Poolumrandung',         fr: 'Bord de Piscine',    ru: 'Зона Бассейна' },
+}
+
+function translateProjectType(projeTipi: string, lang: string): string {
+  const translations = projectTypeTranslations[projeTipi]
+  if (!translations) return projeTipi
+  return translations[lang] || projeTipi
+}
+
 // Musteriye giden onay maili
 export async function sendCustomerConfirmation(data: TeklifData) {
   if (!data.email) return
@@ -216,7 +231,7 @@ export async function sendCustomerConfirmation(data: TeklifData) {
         <table style="width:100%;border-collapse:collapse;">
           <tr>
             <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;width:150px;">${t.projectType}</td>
-            <td style="color:#ddd;font-size:13px;padding:8px 0;font-weight:500;">${data.proje_tipi}</td>
+            <td style="color:#ddd;font-size:13px;padding:8px 0;font-weight:500;">${translateProjectType(data.proje_tipi, lang)}</td>
           </tr>
           <tr style="border-top:1px solid #1a1a1a;">
             <td style="color:#666;font-size:12px;padding:8px 0;vertical-align:top;">${t.location}</td>
