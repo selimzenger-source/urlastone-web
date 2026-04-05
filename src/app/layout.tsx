@@ -77,6 +77,9 @@ export const metadata: Metadata = {
   verification: {
     google: 'google3f6fffccc6484188',
   },
+  other: {
+    'msvalidate.01': 'BBF3A8F51F0E48A60E4666D80C0D4603',
+  },
 }
 
 const jsonLd = {
