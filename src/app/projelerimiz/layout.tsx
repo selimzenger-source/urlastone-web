@@ -18,15 +18,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.urlastone.com/projelerimiz',
-    languages: {
-      'en': 'https://www.urlastone.com/projelerimiz?lang=en',
-      'es': 'https://www.urlastone.com/projelerimiz?lang=es',
-      'de': 'https://www.urlastone.com/projelerimiz?lang=de',
-      'fr': 'https://www.urlastone.com/projelerimiz?lang=fr',
-      'ru': 'https://www.urlastone.com/projelerimiz?lang=ru',
-      'ar': 'https://www.urlastone.com/projelerimiz?lang=ar',
-      'x-default': 'https://www.urlastone.com/projelerimiz',
-    },
   },
 }
 

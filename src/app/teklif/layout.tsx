@@ -18,15 +18,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.urlastone.com/teklif',
-    languages: {
-      'en': 'https://www.urlastone.com/teklif?lang=en',
-      'es': 'https://www.urlastone.com/teklif?lang=es',
-      'de': 'https://www.urlastone.com/teklif?lang=de',
-      'fr': 'https://www.urlastone.com/teklif?lang=fr',
-      'ru': 'https://www.urlastone.com/teklif?lang=ru',
-      'ar': 'https://www.urlastone.com/teklif?lang=ar',
-      'x-default': 'https://www.urlastone.com/teklif',
-    },
   },
 }
 

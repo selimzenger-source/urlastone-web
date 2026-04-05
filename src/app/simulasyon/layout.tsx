@@ -18,15 +18,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.urlastone.com/simulasyon',
-    languages: {
-      'en': 'https://www.urlastone.com/simulasyon?lang=en',
-      'es': 'https://www.urlastone.com/simulasyon?lang=es',
-      'de': 'https://www.urlastone.com/simulasyon?lang=de',
-      'fr': 'https://www.urlastone.com/simulasyon?lang=fr',
-      'ru': 'https://www.urlastone.com/simulasyon?lang=ru',
-      'ar': 'https://www.urlastone.com/simulasyon?lang=ar',
-      'x-default': 'https://www.urlastone.com/simulasyon',
-    },
   },
 }
 

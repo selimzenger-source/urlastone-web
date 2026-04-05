@@ -6,18 +6,10 @@ import { usePathname } from 'next/navigation'
 const locales = ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'] as const
 const baseUrl = 'https://www.urlastone.com'
 
-// Statik sayfalar (layout metadata'da alternates.languages var — duplicate olmasın)
-const staticPages = new Set([
-  '/', '/urunlerimiz', '/projelerimiz', '/referanslarimiz', '/blog',
-  '/hakkimizda', '/iletisim', '/simulasyon', '/teklif', '/uygulamalarimiz', '/taslar',
-])
-
 function HreflangTagsInner() {
   const pathname = usePathname()
   // Admin sayfalarında hreflang gereksiz
   if (pathname.startsWith('/admin')) return null
-  // Statik sayfalarda layout metadata zaten hreflang veriyor
-  if (staticPages.has(pathname)) return null
 
   const cleanPath = pathname === '/' ? '' : pathname
 

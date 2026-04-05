@@ -3,6 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 Disallow: /teklif-basarili
+Disallow: /*?lang=
 
 # AI Crawlers
 User-agent: GPTBot

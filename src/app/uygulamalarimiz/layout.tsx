@@ -18,15 +18,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: 'https://www.urlastone.com/uygulamalarimiz',
-    languages: {
-      'en': 'https://www.urlastone.com/uygulamalarimiz?lang=en',
-      'es': 'https://www.urlastone.com/uygulamalarimiz?lang=es',
-      'de': 'https://www.urlastone.com/uygulamalarimiz?lang=de',
-      'fr': 'https://www.urlastone.com/uygulamalarimiz?lang=fr',
-      'ru': 'https://www.urlastone.com/uygulamalarimiz?lang=ru',
-      'ar': 'https://www.urlastone.com/uygulamalarimiz?lang=ar',
-      'x-default': 'https://www.urlastone.com/uygulamalarimiz',
-    },
   },
 }
 

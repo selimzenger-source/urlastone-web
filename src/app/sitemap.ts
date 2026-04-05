@@ -51,31 +51,18 @@ async function getProjects(): Promise<Array<{ project_name: string; city: string
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.urlastone.com'
-  const altLocales = ['en', 'es', 'de', 'fr', 'ru', 'ar']
-
-  // Dil alternatifleri oluştur
-  function langAlternates(path: string) {
-    const languages: Record<string, string> = {
-      tr: `${baseUrl}${path}`,
-    }
-    for (const lang of altLocales) {
-      languages[lang] = `${baseUrl}${path}${path.includes('?') ? '&' : '?'}lang=${lang}`
-    }
-    return { languages }
-  }
-
-  // Statik sayfalar
+  // Statik sayfalar (hreflang bilgisi layout metadata'dan gelir, sitemap'te tekrarlanmaz)
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: 'weekly', priority: 1, alternates: langAlternates('/') },
-    { url: `${baseUrl}/urunlerimiz`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.95, alternates: langAlternates('/urunlerimiz') },
-    { url: `${baseUrl}/projelerimiz`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9, alternates: langAlternates('/projelerimiz') },
-    { url: `${baseUrl}/simulasyon`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.85, alternates: langAlternates('/simulasyon') },
-    { url: `${baseUrl}/teklif`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.85, alternates: langAlternates('/teklif') },
-    { url: `${baseUrl}/hakkimizda`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7, alternates: langAlternates('/hakkimizda') },
-    { url: `${baseUrl}/iletisim`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7, alternates: langAlternates('/iletisim') },
-    { url: `${baseUrl}/referanslarimiz`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7, alternates: langAlternates('/referanslarimiz') },
-    { url: `${baseUrl}/uygulamalarimiz`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8, alternates: langAlternates('/uygulamalarimiz') },
-    { url: `${baseUrl}/taslar`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.75, alternates: langAlternates('/taslar') },
+    { url: baseUrl, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    { url: `${baseUrl}/urunlerimiz`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.95 },
+    { url: `${baseUrl}/projelerimiz`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/simulasyon`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.85 },
+    { url: `${baseUrl}/teklif`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.85 },
+    { url: `${baseUrl}/hakkimizda`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/iletisim`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/referanslarimiz`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/uygulamalarimiz`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/taslar`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.75 },
   ]
 
   // Dinamik proje sayfalari — artık dil alternatifleri ile
@@ -87,11 +74,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(p.updated_at),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
-      alternates: langAlternates(projectPath),
     }
   })
 
-  // Sehir bazli SEO sayfalari — artık dil alternatifleri ile
+  // Sehir bazli SEO sayfalari
   const cityMap = new Map<string, string>()
   for (const p of projects) {
     if (!p.city) continue
@@ -110,14 +96,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.85,
-      alternates: langAlternates(cityPath),
     }
   })
 
   // Blog sayfalari
   const blogs = await getBlogs()
   const blogPages: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8, alternates: langAlternates('/blog') },
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8 },
     ...blogs.map((b) => {
       const blogPath = `/blog/${b.slug}`
       return {
@@ -125,7 +110,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(b.updated_at),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
-        alternates: langAlternates(blogPath),
       }
     }),
   ]
