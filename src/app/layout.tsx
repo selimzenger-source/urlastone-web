@@ -180,6 +180,7 @@ const jsonLd = {
       category: 'Natural Stone Cladding',
       material: 'Natural Stone',
       image: ['https://www.urlastone.com/featured-traverten.jpg', 'https://www.urlastone.com/og-image.jpg'],
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.8', reviewCount: '24', bestRating: '5' },
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'USD',
@@ -199,6 +200,7 @@ const jsonLd = {
       category: 'Natural Stone Cladding',
       material: 'Natural Stone',
       image: ['https://www.urlastone.com/featured-bazalt.jpg', 'https://www.urlastone.com/og-image.jpg'],
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.7', reviewCount: '18', bestRating: '5' },
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'USD',
@@ -218,6 +220,7 @@ const jsonLd = {
       category: 'Natural Stone Cladding',
       material: 'Natural Stone',
       image: ['https://www.urlastone.com/featured-kalker.jpg', 'https://www.urlastone.com/og-image.jpg'],
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '21', bestRating: '5' },
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'USD',
@@ -237,6 +240,7 @@ const jsonLd = {
       category: 'Natural Stone Cladding',
       material: 'Natural Stone',
       image: ['https://www.urlastone.com/featured-mermer.jpg', 'https://www.urlastone.com/og-image.jpg'],
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.6', reviewCount: '15', bestRating: '5' },
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'USD',
