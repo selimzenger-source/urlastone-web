@@ -700,24 +700,26 @@ export default function ChatWidget() {
     }
   }
 
-  // Sohbet özeti gönder (2 dk inaktivite veya chat kapanınca)
-  const summarySentRef = useRef(false)
+  // Sohbet özeti gönder (10 dk inaktivite veya chat kapanınca — sessionStorage ile persist)
+  const isSummarySent = useCallback(() => {
+    try { return sessionStorage.getItem('chat_summary_sent') === 'true' } catch { return false }
+  }, [])
   const summaryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const sendSummary = useCallback(() => {
-    if (summarySentRef.current || messages.length <= 1) return
-    summarySentRef.current = true
+    if (isSummarySent() || messages.length <= 1) return
+    try { sessionStorage.setItem('chat_summary_sent', 'true') } catch {}
     fetch('/api/chat/summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: lead.name, phone: lead.phone, email: lead.email, messages, locale }),
     }).catch(() => {})
-  }, [messages, lead, locale])
+  }, [messages, lead, locale, isSummarySent])
 
-  // Her mesajda 2 dk timer'ı sıfırla (ama özet bir kez gönderilince tekrar gönderme)
+  // Her mesajda 10 dk timer'ı sıfırla (ama özet bir kez gönderilince tekrar gönderme)
   useEffect(() => {
     if (phase !== 'chat' || messages.length <= 1) return
-    if (summarySentRef.current) return
+    if (isSummarySent()) return
     if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current)
     summaryTimerRef.current = setTimeout(sendSummary, 600000) // 10 dk
     return () => { if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current) }
@@ -730,7 +732,7 @@ export default function ChatWidget() {
     setLead({ name: '', email: '', phone: '' })
     setShowContactForm(false)
     setError('')
-    summarySentRef.current = false
+    try { sessionStorage.removeItem('chat_summary_sent') } catch {}
     clearChatSession()
   }
 
