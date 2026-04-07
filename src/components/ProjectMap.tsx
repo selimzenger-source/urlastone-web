@@ -6,6 +6,7 @@ import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { generateSlug } from '@/lib/slug'
+import { cdnImg } from '@/lib/cdn'
 
 // Mobilde Leaflet tap handler sorun çıkarıyor — devre dışı bırak
 function MobileTapFix() {
@@ -41,7 +42,7 @@ const createPhotoIcon = (photoUrl?: string) => {
         overflow: hidden;
         background: #1a1a1a;
         pointer-events: none;
-      "><img src="${photoUrl}" style="
+      "><img src="${cdnImg(photoUrl)}" style="
         width: 100%; height: 100%;
         object-fit: cover;
         display: block;
@@ -95,7 +96,7 @@ const createClusterCustomIcon = (cluster: any) => {
           overflow: hidden; transform: rotate(-8deg);
           box-shadow: 0 1px 4px rgba(0,0,0,0.3);
           pointer-events: none;
-        "><img src="${photos[1]}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>`
+        "><img src="${cdnImg(photos[1])}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>`
       : ''
 
     return new L.DivIcon({
@@ -108,7 +109,7 @@ const createClusterCustomIcon = (cluster: any) => {
           overflow: hidden; z-index: 2;
           box-shadow: 0 2px 10px rgba(0,0,0,0.5), 0 0 12px rgba(179, 147, 69, 0.3);
           pointer-events: none;
-        "><img src="${photos[0]}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>
+        "><img src="${cdnImg(photos[0])}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>
         <div style="
           position: absolute; bottom: -6px; right: -6px; z-index: 3;
           min-width: 22px; height: 22px; padding: 0 6px;
@@ -167,7 +168,7 @@ function PhotoSlider({ photos, alt }: { photos: string[]; alt: string }) {
     <div style={{ width: '100%', height: '180px', position: 'relative', overflow: 'hidden' }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={photos[current]}
+        src={cdnImg(photos[current])}
         alt={alt}
         style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s' }}
       />

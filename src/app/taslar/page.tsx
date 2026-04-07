@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import Link from 'next/link'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface StoneType {
@@ -109,7 +110,7 @@ export default function TaslarPage() {
 
   // Use DB image_url if available, fallback to hardcoded
   const getStoneTypeImage = (st: StoneType) => {
-    if (st.image_url) return st.image_url
+    if (st.image_url) return cdnImg(st.image_url)
     return stoneTypeInfo[st.code]?.foto || '/featured-traverten.jpg'
   }
 
@@ -188,7 +189,7 @@ export default function TaslarPage() {
                   {cat.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={cat.image_url}
+                      src={cdnImg(cat.image_url)}
                       alt={cat.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -258,7 +259,7 @@ export default function TaslarPage() {
                         {product.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={product.image_url}
+                            src={cdnImg(product.image_url)}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
@@ -360,7 +361,7 @@ export default function TaslarPage() {
                         {product.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={product.image_url}
+                            src={cdnImg(product.image_url)}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
@@ -519,7 +520,7 @@ export default function TaslarPage() {
               {selectedProduct.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={selectedProduct.image_url}
+                  src={cdnImg(selectedProduct.image_url)}
                   alt={selectedProduct.name}
                   className="w-full h-full object-cover"
                 />
