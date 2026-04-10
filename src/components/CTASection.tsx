@@ -105,56 +105,59 @@ export default function CTASection() {
           </Link>
 
           {/* Card 2: Teklif Al + WhatsApp */}
-          <div className="relative overflow-hidden rounded-2xl p-8 md:p-10 h-full border border-white/[0.08] bg-white/[0.02] flex flex-col justify-between">
-            <div className="absolute bottom-0 left-0 w-60 h-60 bg-gold-400/[0.04] rounded-full blur-[80px]" />
-
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.08] flex items-center justify-center">
-                  <MessageCircle size={18} className="text-white/60" />
-                </div>
-                <span className="font-mono text-[11px] text-white/40 tracking-wider uppercase">
-                  {t.cta_teklif_title}
-                </span>
-              </div>
-
-              <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-3">
-                {t.cta_teklif_title}
-              </h3>
-
-              <p className="text-white/50 text-sm font-mono leading-relaxed mb-8 max-w-md">
-                {t.cta_fiyat}
-              </p>
-
-              <ul className="space-y-3 mb-10">
-                {[
-                  t.cta_kesif,
-                  t.cta_fiyat,
-                  t.cta_danismanlik,
-                  t.cta_nakliye,
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gold-400/60" />
-                    <span className="text-white/50 text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="relative overflow-hidden rounded-2xl h-full min-h-[380px] border border-white/[0.08]">
+            {/* Background image */}
+            <div className="absolute inset-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/slide-4.jpg" alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
             </div>
 
-            <div className="relative z-10 flex flex-col sm:flex-row gap-3">
-              <Link href="/teklif" className="btn-primary text-sm px-8 py-3.5 justify-center">
-                {t.cta_teklif_btn}
-                <ArrowRight size={16} />
-              </Link>
-              <a
-                href="https://wa.me/905532322144?text=Merhaba%2C%20do%C4%9Fal%20ta%C5%9F%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-outline text-sm px-8 py-3.5 justify-center"
-              >
-                <MessageCircle size={16} />
-                {t.cta_whatsapp}
-              </a>
+            <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <MessageCircle size={18} className="text-gold-400" />
+                  </div>
+                  <span className="font-mono text-[11px] text-gold-400 tracking-wider uppercase">
+                    {t.cta_teklif_title}
+                  </span>
+                </div>
+
+                <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-3">
+                  {t.cta_teklif_title}
+                </h3>
+
+                <ul className="space-y-3 mb-10">
+                  {[
+                    t.cta_kesif,
+                    t.cta_fiyat,
+                    t.cta_danismanlik,
+                    t.cta_nakliye,
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gold-400/60" />
+                      <span className="text-white/70 text-sm">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/teklif" className="btn-primary text-sm px-8 py-3.5 justify-center">
+                  {t.cta_teklif_btn}
+                  <ArrowRight size={16} />
+                </Link>
+                <a
+                  href="https://wa.me/905532322144?text=Merhaba%2C%20do%C4%9Fal%20ta%C5%9F%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-outline text-sm px-8 py-3.5 justify-center"
+                >
+                  <MessageCircle size={16} />
+                  {t.cta_whatsapp}
+                </a>
+              </div>
             </div>
           </div>
         </div>
