@@ -122,6 +122,10 @@ type TranslationKeys = {
   cta_sim_step2: string
   cta_sim_step3: string
   cta_sim_btn: string
+  cta_proje_title: string
+  cta_proje_desc: string
+  cta_proje_btn: string
+  cta_proje_alt: string
   cta_teklif_title: string
   cta_teklif_btn: string
   cta_whatsapp: string
@@ -576,6 +580,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'Taş seç',
     cta_sim_step3: 'Sonucu gör',
     cta_sim_btn: 'Simülasyonu Dene',
+    cta_proje_title: 'Projelerimizi Keşfedin',
+    cta_proje_desc: 'Villa, otel, rezidans projelerimizi harita üzerinde keşfedin',
+    cta_proje_btn: 'Projeleri Gör',
+    cta_proje_alt: 'Proje',
     cta_teklif_title: 'Teklif Al',
     cta_teklif_btn: 'Teklif Formu',
     cta_whatsapp: 'WhatsApp',
@@ -1005,6 +1013,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'Select stone',
     cta_sim_step3: 'See result',
     cta_sim_btn: 'Try Simulation',
+    cta_proje_title: 'Explore Our Projects',
+    cta_proje_desc: 'Discover our villa, hotel and residence projects on the interactive map',
+    cta_proje_btn: 'View Projects',
+    cta_proje_alt: 'Projects',
     cta_teklif_title: 'Get Quote',
     cta_teklif_btn: 'Quote Form',
     cta_whatsapp: 'WhatsApp',
@@ -1434,6 +1446,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'Elegir piedra',
     cta_sim_step3: 'Ver resultado',
     cta_sim_btn: 'Probar Simulación',
+    cta_proje_title: 'Explore Nuestros Proyectos',
+    cta_proje_desc: 'Descubra nuestros proyectos de villas, hoteles y residencias en el mapa',
+    cta_proje_btn: 'Ver Proyectos',
+    cta_proje_alt: 'Proyectos',
     cta_teklif_title: 'Cotización',
     cta_teklif_btn: 'Formulario',
     cta_whatsapp: 'WhatsApp',
@@ -1863,6 +1879,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'اختر حجراً',
     cta_sim_step3: 'شاهد النتيجة',
     cta_sim_btn: 'جرب المحاكاة',
+    cta_proje_title: 'اكتشف مشاريعنا',
+    cta_proje_desc: 'اكتشف مشاريع الفلل والفنادق والمساكن على الخريطة التفاعلية',
+    cta_proje_btn: 'عرض المشاريع',
+    cta_proje_alt: 'مشروع',
     cta_teklif_title: 'طلب عرض سعر',
     cta_teklif_btn: 'نموذج العرض',
     cta_whatsapp: 'واتساب',
@@ -2292,6 +2312,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'Stein wählen',
     cta_sim_step3: 'Ergebnis sehen',
     cta_sim_btn: 'Simulation Testen',
+    cta_proje_title: 'Unsere Projekte Entdecken',
+    cta_proje_desc: 'Entdecken Sie unsere Villa-, Hotel- und Residenzprojekte auf der Karte',
+    cta_proje_btn: 'Projekte Ansehen',
+    cta_proje_alt: 'Projekte',
     cta_teklif_title: 'Angebot',
     cta_teklif_btn: 'Angebotsformular',
     cta_whatsapp: 'WhatsApp',
@@ -2721,6 +2745,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'Choisir la pierre',
     cta_sim_step3: 'Voir le résultat',
     cta_sim_btn: 'Essayer la Simulation',
+    cta_proje_title: 'Découvrez Nos Projets',
+    cta_proje_desc: 'Découvrez nos projets de villas, hôtels et résidences sur la carte',
+    cta_proje_btn: 'Voir les Projets',
+    cta_proje_alt: 'Projets',
     cta_teklif_title: 'Demander un Devis',
     cta_teklif_btn: 'Formulaire de Devis',
     cta_whatsapp: 'WhatsApp',
@@ -3150,6 +3178,10 @@ const translations: Record<Locale, TranslationKeys> = {
     cta_sim_step2: 'Выбрать камень',
     cta_sim_step3: 'Увидеть результат',
     cta_sim_btn: 'Попробовать Симуляцию',
+    cta_proje_title: 'Наши Проекты',
+    cta_proje_desc: 'Откройте для себя наши проекты вилл, отелей и резиденций на карте',
+    cta_proje_btn: 'Смотреть Проекты',
+    cta_proje_alt: 'Проектов',
     cta_teklif_title: 'Запросить Цену',
     cta_teklif_btn: 'Форма Запроса',
     cta_whatsapp: 'WhatsApp',

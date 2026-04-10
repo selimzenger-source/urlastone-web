@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, MessageCircle, Sparkles, Upload } from 'lucide-react'
+import { ArrowRight, MessageCircle, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 
@@ -28,50 +28,36 @@ export default function CTASection() {
 
         {/* Two Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card 1: AI Simülasyon */}
-          <Link href="/simulasyon" className="group">
-            <div className="relative overflow-hidden rounded-2xl p-8 md:p-10 h-full border border-gold-400/10 bg-gradient-to-br from-gold-400/[0.08] via-gold-400/[0.03] to-transparent hover:border-gold-400/20 transition-all duration-500">
-              <div className="absolute top-0 right-0 w-60 h-60 bg-gold-400/[0.06] rounded-full blur-[80px]" />
+          {/* Card 1: Projelerimizi Keşfedin */}
+          <Link href="/projelerimiz" className="group">
+            <div className="relative overflow-hidden rounded-2xl h-full min-h-[380px] border border-gold-400/10 hover:border-gold-400/20 transition-all duration-500">
+              {/* Background image */}
+              <div className="absolute inset-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/slide-1.jpg" alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+              </div>
 
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gold-400/20 flex items-center justify-center">
-                    <Sparkles size={18} className="text-gold-400" />
+              <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-end">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-gold-400/20 backdrop-blur-sm flex items-center justify-center">
+                    <MapPin size={18} className="text-gold-400" />
                   </div>
                   <span className="font-mono text-[11px] text-gold-400 tracking-wider uppercase">
-                    {t.cta_sim_title}
+                    500+ {t.cta_proje_alt || 'Proje'}
                   </span>
                 </div>
 
                 <h3 className="font-heading text-2xl md:text-3xl font-bold text-white mb-3">
-                  {t.cta_sim_title}
+                  {t.cta_proje_title || 'Projelerimizi Keşfedin'}
                 </h3>
 
-                <p className="text-white/50 text-sm font-mono leading-relaxed mb-8 max-w-md">
-                  {t.cta_sim_step1} &rarr; {t.cta_sim_step2} &rarr; {t.cta_sim_step3}
+                <p className="text-white/60 text-sm font-mono leading-relaxed mb-8 max-w-md">
+                  {t.cta_proje_desc || 'Villa, otel, rezidans projelerimizi harita üzerinde keşfedin'}
                 </p>
 
-                {/* Steps mini */}
-                <div className="flex flex-wrap gap-5 mb-8">
-                  {[
-                    { icon: Upload, text: t.cta_sim_step1 },
-                    { icon: Sparkles, text: t.cta_sim_step2 },
-                    { icon: ArrowRight, text: t.cta_sim_step3 },
-                  ].map((step, i) => {
-                    const Icon = step.icon
-                    return (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
-                          <Icon size={14} className="text-gold-400" />
-                        </div>
-                        <span className="text-white/60 text-xs font-mono">{step.text}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <div className="inline-flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-medium text-sm group-hover:bg-gold-400 transition-colors duration-500">
-                  {t.cta_sim_btn}
+                <div className="inline-flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-medium text-sm group-hover:bg-gold-400 transition-colors duration-500 w-fit">
+                  {t.cta_proje_btn || 'Projeleri Gör'}
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
