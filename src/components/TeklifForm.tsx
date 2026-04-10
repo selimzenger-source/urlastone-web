@@ -435,7 +435,7 @@ export default function TeklifForm() {
             <div className="flex gap-2">
               <input
                 type="text"
-                list="phone-codes"
+                inputMode="tel"
                 value={phoneCode}
                 onChange={(e) => {
                   let val = e.target.value
@@ -443,51 +443,9 @@ export default function TeklifForm() {
                   else val = '+' + val.slice(1).replace(/[^0-9]/g, '')
                   if (val.length <= 5) setPhoneCode(val)
                 }}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-2 py-3 text-white/70 text-sm font-mono shrink-0 w-[90px] text-center focus:outline-none focus:border-gold-400/40"
+                className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-2 py-3 text-white/70 text-sm font-mono shrink-0 w-[72px] text-center focus:outline-none focus:border-gold-400/40"
                 placeholder="+90"
               />
-              <datalist id="phone-codes">
-                <option value="+90">🇹🇷 Türkiye</option>
-                <option value="+49">🇩🇪 Almanya</option>
-                <option value="+34">🇪🇸 İspanya</option>
-                <option value="+33">🇫🇷 Fransa</option>
-                <option value="+7">🇷🇺 Rusya</option>
-                <option value="+966">🇸🇦 S. Arabistan</option>
-                <option value="+971">🇦🇪 BAE</option>
-                <option value="+44">🇬🇧 İngiltere</option>
-                <option value="+1">🇺🇸 ABD</option>
-                <option value="+39">🇮🇹 İtalya</option>
-                <option value="+30">🇬🇷 Yunanistan</option>
-                <option value="+31">🇳🇱 Hollanda</option>
-                <option value="+40">🇷🇴 Romanya</option>
-                <option value="+46">🇸🇪 İsveç</option>
-                <option value="+41">🇨🇭 İsviçre</option>
-                <option value="+43">🇦🇹 Avusturya</option>
-                <option value="+32">🇧🇪 Belçika</option>
-                <option value="+48">🇵🇱 Polonya</option>
-                <option value="+380">🇺🇦 Ukrayna</option>
-                <option value="+972">🇮🇱 İsrail</option>
-                <option value="+251">🇪🇹 Etiyopya</option>
-                <option value="+359">🇧🇬 Bulgaristan</option>
-                <option value="+36">🇭🇺 Macaristan</option>
-                <option value="+420">🇨🇿 Çekya</option>
-                <option value="+381">🇷🇸 Sırbistan</option>
-                <option value="+355">🇦🇱 Arnavutluk</option>
-                <option value="+995">🇬🇪 Gürcistan</option>
-                <option value="+994">🇦🇿 Azerbaycan</option>
-                <option value="+998">🇺🇿 Özbekistan</option>
-                <option value="+7">🇰🇿 Kazakistan</option>
-                <option value="+212">🇲🇦 Fas</option>
-                <option value="+216">🇹🇳 Tunus</option>
-                <option value="+213">🇩🇿 Cezayir</option>
-                <option value="+20">🇪🇬 Mısır</option>
-                <option value="+91">🇮🇳 Hindistan</option>
-                <option value="+86">🇨🇳 Çin</option>
-                <option value="+81">🇯🇵 Japonya</option>
-                <option value="+82">🇰🇷 G. Kore</option>
-                <option value="+61">🇦🇺 Avustralya</option>
-                <option value="+55">🇧🇷 Brezilya</option>
-              </datalist>
               <input type="tel" name="telefon" required value={form.telefon}
                 onChange={(e) => {
                   let val = e.target.value
