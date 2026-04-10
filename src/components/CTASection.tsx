@@ -1,11 +1,39 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { ArrowRight, MessageCircle, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
+import { cdnImg } from '@/lib/cdn'
 
 export default function CTASection() {
   const { t } = useLanguage()
+
+  // Proje fotoğrafları slayt
+  const [photos, setPhotos] = useState<string[]>([])
+  const [currentPhoto, setCurrentPhoto] = useState(0)
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then((data: Array<{ photos?: string[] }>) => {
+        if (!Array.isArray(data)) return
+        const allPhotos = data.flatMap(p => (p.photos || []).slice(0, 1)).filter(Boolean)
+        // Rastgele 8 fotoğraf seç
+        const shuffled = allPhotos.sort(() => Math.random() - 0.5).slice(0, 8)
+        if (shuffled.length > 0) setPhotos(shuffled)
+      })
+      .catch(() => {})
+  }, [])
+
+  // Otomatik slayt geçişi (5 saniye)
+  useEffect(() => {
+    if (photos.length <= 1) return
+    const timer = setInterval(() => {
+      setCurrentPhoto(prev => (prev + 1) % photos.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [photos])
 
   return (
     <section className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden border-t border-white/[0.06]">
@@ -31,10 +59,22 @@ export default function CTASection() {
           {/* Card 1: Projelerimizi Keşfedin */}
           <Link href="/projelerimiz" className="group">
             <div className="relative overflow-hidden rounded-2xl h-full min-h-[380px] border border-gold-400/10 hover:border-gold-400/20 transition-all duration-500">
-              {/* Background image */}
+              {/* Background slideshow */}
               <div className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/slide-1.jpg" alt="" className="w-full h-full object-cover" />
+                {photos.map((photo, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={cdnImg(photo)}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                    style={{ opacity: i === currentPhoto ? 1 : 0 }}
+                  />
+                ))}
+                {photos.length === 0 && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src="/slide-1.jpg" alt="" className="w-full h-full object-cover" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
               </div>
 
