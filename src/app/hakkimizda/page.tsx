@@ -104,21 +104,25 @@ export default function HakkimizdaPage() {
       baslik: t.about_val1,
       aciklama: t.about_val1_desc,
       icon: Award,
+      image: '/featured-traverten.jpg',
     },
     {
       baslik: t.about_val2,
       aciklama: t.about_val2_desc,
       icon: Hammer,
+      image: '/slide-2.jpg',
     },
     {
       baslik: t.about_val3,
       aciklama: t.about_val3_desc,
       icon: Users,
+      image: '/slide-1.jpg',
     },
     {
       baslik: t.about_val4,
       aciklama: t.about_val4_desc,
       icon: Globe,
+      image: '/slide-5.jpg',
     },
   ]
 
@@ -301,17 +305,24 @@ export default function HakkimizdaPage() {
               return (
                 <div
                   key={d.baslik}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-gold-400/20 transition-all duration-300"
+                  className="relative overflow-hidden rounded-2xl border border-white/[0.06] hover:border-gold-400/20 transition-all duration-300 min-h-[260px]"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gold-400/10 flex items-center justify-center mb-4">
-                    <Icon size={20} className="text-gold-400" />
+                  {/* Background image */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={d.image} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
+
+                  <div className="relative z-10 p-6 h-full flex flex-col justify-end">
+                    <div className="w-12 h-12 rounded-xl bg-gold-400/20 backdrop-blur-sm flex items-center justify-center mb-4">
+                      <Icon size={20} className="text-gold-400" />
+                    </div>
+                    <h3 className="font-heading text-lg font-semibold text-white mb-2">
+                      {d.baslik}
+                    </h3>
+                    <p className="text-white/60 text-sm leading-relaxed">
+                      {d.aciklama}
+                    </p>
                   </div>
-                  <h3 className="font-heading text-lg font-semibold text-white mb-2">
-                    {d.baslik}
-                  </h3>
-                  <p className="text-white/40 text-sm leading-relaxed">
-                    {d.aciklama}
-                  </p>
                 </div>
               )
             })}
