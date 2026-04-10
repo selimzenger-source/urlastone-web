@@ -1,11 +1,20 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { ArrowRight, MessageCircle, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 
+const CTA_PHOTOS = ['/slide-1.jpg', '/slide-3.jpg', '/slide-6.jpg']
+
 export default function CTASection() {
   const { t } = useLanguage()
+  const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrent(p => (p + 1) % CTA_PHOTOS.length), 6000)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <section className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden border-t border-white/[0.06]">
@@ -31,10 +40,15 @@ export default function CTASection() {
           {/* Card 1: Projelerimizi Keşfedin */}
           <Link href="/projelerimiz" className="group">
             <div className="relative overflow-hidden rounded-2xl h-full min-h-[380px] border border-gold-400/10 hover:border-gold-400/20 transition-all duration-500">
-              {/* Background image */}
+              {/* Background slideshow — 3 statik görsel, hafif */}
               <div className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/slide-1.jpg" alt="" className="w-full h-full object-cover" loading="lazy" />
+                {CTA_PHOTOS.map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={src} src={src} alt="" loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                    style={{ opacity: i === current ? 1 : 0 }}
+                  />
+                ))}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
               </div>
 
