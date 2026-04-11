@@ -18,6 +18,7 @@ import {
   Linkedin,
 } from 'lucide-react'
 import Link from 'next/link'
+import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 
 export default function HakkimizdaPage() {
@@ -104,25 +105,25 @@ export default function HakkimizdaPage() {
       baslik: t.about_val1,
       aciklama: t.about_val1_desc,
       icon: Award,
-      image: '/featured-traverten.jpg',
+      image: heroPhotos[0] || '/featured-traverten.jpg',
     },
     {
       baslik: t.about_val2,
       aciklama: t.about_val2_desc,
       icon: Hammer,
-      image: '/slide-2.jpg',
+      image: heroPhotos[3] || '/slide-2.jpg',
     },
     {
       baslik: t.about_val3,
       aciklama: t.about_val3_desc,
       icon: Users,
-      image: '/slide-1.jpg',
+      image: heroPhotos[6] || '/slide-1.jpg',
     },
     {
       baslik: t.about_val4,
       aciklama: t.about_val4_desc,
       icon: Globe,
-      image: '/slide-5.jpg',
+      image: heroPhotos[9] || '/slide-5.jpg',
     },
   ]
 
@@ -309,7 +310,7 @@ export default function HakkimizdaPage() {
                 >
                   {/* Background image */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={d.image} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                  <img src={cdnImg(d.image)} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
 
                   <div className="relative z-10 p-6 h-full flex flex-col justify-end">
