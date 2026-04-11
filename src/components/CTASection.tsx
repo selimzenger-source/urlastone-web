@@ -99,7 +99,7 @@ export default function CTASection() {
             {/* Background image */}
             <div className="absolute inset-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/slide-4.jpg" alt="" className="w-full h-full object-cover" />
+              <img src="/teklif-hero.jpg" alt="" className="w-full h-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
             </div>
 
