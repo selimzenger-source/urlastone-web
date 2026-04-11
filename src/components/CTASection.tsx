@@ -4,17 +4,33 @@ import { useState, useEffect } from 'react'
 import { ArrowRight, MessageCircle, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
+import { cdnImg } from '@/lib/cdn'
 
-const CTA_PHOTOS = ['/slide-1.jpg', '/slide-3.jpg', '/slide-6.jpg']
+const FALLBACK_PHOTOS = ['/slide-1.jpg', '/slide-3.jpg', '/slide-6.jpg']
 
 export default function CTASection() {
   const { t } = useLanguage()
+  const [photos, setPhotos] = useState<string[]>(FALLBACK_PHOTOS)
   const [current, setCurrent] = useState(0)
 
+  // Projelerden 3 rastgele fotoğraf çek
   useEffect(() => {
-    const timer = setInterval(() => setCurrent(p => (p + 1) % CTA_PHOTOS.length), 6000)
-    return () => clearInterval(timer)
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then((data: Array<{ photos?: string[] }>) => {
+        if (!Array.isArray(data)) return
+        const all = data.flatMap(p => (p.photos || []).slice(0, 1)).filter(Boolean)
+        const picked = all.sort(() => Math.random() - 0.5).slice(0, 3)
+        if (picked.length >= 2) setPhotos(picked)
+      })
+      .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (photos.length < 2) return
+    const timer = setInterval(() => setCurrent(p => (p + 1) % photos.length), 6000)
+    return () => clearInterval(timer)
+  }, [photos])
 
   return (
     <section className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden border-t border-white/[0.06]">
@@ -42,9 +58,9 @@ export default function CTASection() {
             <div className="relative overflow-hidden rounded-2xl h-full min-h-[380px] border border-gold-400/10 hover:border-gold-400/20 transition-all duration-500">
               {/* Background slideshow — 3 statik görsel, hafif */}
               <div className="absolute inset-0">
-                {CTA_PHOTOS.map((src, i) => (
+                {photos.map((src, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={src} src={src} alt="" loading="lazy"
+                  <img key={i} src={cdnImg(src)} alt="" loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
                     style={{ opacity: i === current ? 1 : 0 }}
                   />
