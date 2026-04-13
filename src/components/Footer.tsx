@@ -1,12 +1,38 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MapPin, Phone, Mail, Instagram, Linkedin, ArrowUp } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { generateSlug } from '@/lib/slug'
 
 export default function Footer() {
   const { t } = useLanguage()
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+
+  // Dinamik şehir linkleri — API'den çek
+  const [cityLinks, setCityLinks] = useState<Array<{ href: string; label: string }>>([])
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then((data: Array<{ city?: string }>) => {
+        if (!Array.isArray(data)) return
+        const cityMap = new Map<string, string>()
+        for (const p of data) {
+          if (!p.city) continue
+          const parts = p.city.split(/[,\/]/).map((s: string) => s.trim())
+          const mainCity = parts[parts.length - 1] || parts[0]
+          const slug = generateSlug(mainCity)
+          if (slug && !cityMap.has(slug)) cityMap.set(slug, mainCity)
+        }
+        const links = Array.from(cityMap.entries()).map(([slug, name]) => ({
+          href: `/projelerimiz/${slug}-dogal-tas`,
+          label: `${name} Doğal Taş`,
+        }))
+        setCityLinks(links)
+      })
+      .catch(() => {})
+  }, [])
 
   return (
     <footer className="border-t border-white/[0.06]">
@@ -104,24 +130,61 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* SEO City Links */}
+      {/* SEO Links — Şehirler + Taş Çeşitleri */}
       <div className="border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-8">
-          <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-4">{'Doğal Taş Projelerimiz'}</h4>
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            {[
-              { href: '/projelerimiz/izmir-dogal-tas', label: 'İzmir Doğal Taş' },
-              { href: '/projelerimiz/istanbul-dogal-tas', label: 'İstanbul Doğal Taş' },
-              { href: '/projelerimiz/antalya-dogal-tas', label: 'Antalya Doğal Taş' },
-              { href: '/projelerimiz/mugla-dogal-tas', label: 'Muğla Doğal Taş' },
-              { href: '/projelerimiz/bursa-dogal-tas', label: 'Bursa Doğal Taş' },
-              { href: '/projelerimiz/kocaeli-dogal-tas', label: 'Kocaeli Doğal Taş' },
-              { href: '/projelerimiz/hatay-dogal-tas', label: 'Hatay Doğal Taş' },
-            ].map((link) => (
-              <Link key={link.href} href={link.href} className="text-white/25 hover:text-gold-400/70 text-xs transition-colors">
-                {link.label}
-              </Link>
-            ))}
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-6">
+          {/* Dinamik Şehir Linkleri */}
+          {cityLinks.length > 0 && (
+            <div>
+              <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-3">Doğal Taş Projelerimiz</h4>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {cityLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="text-white/25 hover:text-gold-400/70 text-xs transition-colors">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Taş Çeşitleri Linkleri */}
+          <div>
+            <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-3">Taş Çeşitleri</h4>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {[
+                { href: '/urunlerimiz#traverten', label: 'Traverten Çeşitleri' },
+                { href: '/urunlerimiz#mermer', label: 'Mermer Çeşitleri' },
+                { href: '/urunlerimiz#bazalt', label: 'Bazalt Çeşitleri' },
+                { href: '/urunlerimiz#kalker', label: 'Kalker Çeşitleri' },
+                { href: '/urunlerimiz', label: 'Nature Rockshell' },
+                { href: '/urunlerimiz', label: 'Line Rockshell' },
+                { href: '/urunlerimiz', label: 'Mix Rockshell' },
+                { href: '/urunlerimiz', label: 'Crazy Rockshell' },
+              ].map((link) => (
+                <Link key={link.label} href={link.href} className="text-white/25 hover:text-gold-400/70 text-xs transition-colors">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Hızlı Erişim Linkleri */}
+          <div>
+            <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-3">Hızlı Erişim</h4>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {[
+                { href: '/simulasyon', label: 'AI Taş Simülasyonu' },
+                { href: '/teklif', label: 'Ücretsiz Teklif Al' },
+                { href: '/blog', label: 'Doğal Taş Blog' },
+                { href: '/hakkimizda', label: 'Hakkımızda' },
+                { href: '/iletisim', label: 'İletişim' },
+                { href: '/referanslarimiz', label: 'Referanslarımız' },
+              ].map((link) => (
+                <Link key={link.href} href={link.href} className="text-white/25 hover:text-gold-400/70 text-xs transition-colors">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
