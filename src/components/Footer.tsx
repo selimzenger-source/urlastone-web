@@ -104,6 +104,28 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* SEO City Links */}
+      <div className="border-t border-white/[0.04]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-8">
+          <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-4">{t.footer_city_title || 'Doğal Taş Projelerimiz'}</h4>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {[
+              { href: '/projelerimiz/izmir-dogal-tas', label: 'İzmir Doğal Taş' },
+              { href: '/projelerimiz/istanbul-dogal-tas', label: 'İstanbul Doğal Taş' },
+              { href: '/projelerimiz/antalya-dogal-tas', label: 'Antalya Doğal Taş' },
+              { href: '/projelerimiz/mugla-dogal-tas', label: 'Muğla Doğal Taş' },
+              { href: '/projelerimiz/bursa-dogal-tas', label: 'Bursa Doğal Taş' },
+              { href: '/projelerimiz/kocaeli-dogal-tas', label: 'Kocaeli Doğal Taş' },
+              { href: '/projelerimiz/hatay-dogal-tas', label: 'Hatay Doğal Taş' },
+            ].map((link) => (
+              <Link key={link.href} href={link.href} className="text-white/25 hover:text-gold-400/70 text-xs transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="border-t border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
           <p className="text-white/20 text-xs font-mono">&copy; {new Date().getFullYear()} Urlastone. {t.footer_rights}</p>
