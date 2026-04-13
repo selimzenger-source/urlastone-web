@@ -107,7 +107,7 @@ export default function Footer() {
       {/* SEO City Links */}
       <div className="border-t border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-8">
-          <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-4">{t.footer_city_title || 'Doğal Taş Projelerimiz'}</h4>
+          <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-4">{'Doğal Taş Projelerimiz'}</h4>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {[
               { href: '/projelerimiz/izmir-dogal-tas', label: 'İzmir Doğal Taş' },
