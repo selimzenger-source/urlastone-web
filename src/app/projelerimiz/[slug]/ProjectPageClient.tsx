@@ -182,8 +182,11 @@ export default function ProjectPageClient() {
                   {cityName}&apos;{locale === 'tr' ? t.apps_city_projects : t.apps_city_projects}
                 </h1>
               </div>
-              <p className="text-white/40 text-sm font-mono">
+              <p className="text-white/40 text-sm font-mono mb-4">
                 {cityProjects.length} {t.apps_showing_count}
+              </p>
+              <p className="text-white/50 text-sm leading-relaxed max-w-3xl">
+                {cityName} bölgesinde tamamladığımız doğal taş cephe kaplama, iç mekan duvar ve peyzaj projeleri. Traverten, bazalt, kalker ve mermer Rockshell uygulamalarıyla {cityName} ve çevresindeki villa, otel ve rezidans projelerimizi inceleyin. URLASTONE olarak {cityName} bölgesinde {cityProjects.length} projemiz bulunmaktadır.
               </p>
             </div>
 
