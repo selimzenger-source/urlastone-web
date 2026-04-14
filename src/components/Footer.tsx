@@ -10,13 +10,16 @@ export default function Footer() {
   const { t } = useLanguage()
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-  // Dinamik şehir linkleri — API'den çek
+  // Dinamik şehir + kategori linkleri — API'den çek
   const [cityLinks, setCityLinks] = useState<Array<{ href: string; label: string }>>([])
+  const [categoryGroups, setCategoryGroups] = useState<Array<{ category: string; projects: Array<{ href: string; label: string }> }>>([])
   useEffect(() => {
     fetch('/api/projects')
       .then(r => r.json())
-      .then((data: Array<{ city?: string }>) => {
+      .then((data: Array<{ city?: string; category?: string; project_name: string }>) => {
         if (!Array.isArray(data)) return
+
+        // Şehir linkleri
         const cityMap = new Map<string, string>()
         for (const p of data) {
           if (!p.city) continue
@@ -30,6 +33,22 @@ export default function Footer() {
           label: `${name} Doğal Taş`,
         }))
         setCityLinks(links)
+
+        // Kategori bazlı proje linkleri
+        const catMap = new Map<string, Array<{ href: string; label: string }>>()
+        for (const p of data) {
+          if (!p.category || !p.project_name) continue
+          const cat = p.category
+          if (!catMap.has(cat)) catMap.set(cat, [])
+          catMap.get(cat)!.push({
+            href: `/projelerimiz/${generateSlug(p.project_name)}`,
+            label: p.project_name,
+          })
+        }
+        const groups = Array.from(catMap.entries())
+          .filter(([, projects]) => projects.length > 0)
+          .map(([category, projects]) => ({ category, projects }))
+        setCategoryGroups(groups)
       })
       .catch(() => {})
   }, [])
@@ -146,6 +165,20 @@ export default function Footer() {
               </div>
             </div>
           )}
+
+          {/* Kategori Bazlı Proje Linkleri */}
+          {categoryGroups.map((group) => (
+            <div key={group.category}>
+              <h4 className="text-white/30 font-mono text-[10px] tracking-wider uppercase mb-3">{group.category} Projeleri</h4>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {group.projects.map((link) => (
+                  <Link key={link.href} href={link.href} className="text-white/25 hover:text-gold-400/70 text-xs transition-colors">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
 
           {/* Taş Çeşitleri Linkleri */}
           <div>
