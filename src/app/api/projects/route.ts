@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Vercel Data Cache'i devre dışı bırak — yeni eklenen projeler anında görünsün
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 function validateAdmin(request: NextRequest): boolean {
   const auth = request.headers.get('Authorization')
   const password = (process.env.ADMIN_PASSWORD || '').trim()

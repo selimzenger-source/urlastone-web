@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { generateSlug } from '@/lib/slug'
 
+// Vercel Data Cache'i devre dışı bırak — yeni eklenen projeler anında görünsün
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // GET — find project by slug (generated from project_name)
 export async function GET(
   request: NextRequest,
@@ -27,5 +31,7 @@ export async function GET(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  return NextResponse.json(project)
+  return NextResponse.json(project, {
+    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
+  })
 }

@@ -19,7 +19,7 @@ async function getProjectBySlug(slug: string) {
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
         },
-        next: { revalidate: 3600 },
+        next: { revalidate: 60 },
       }
     )
     if (!res.ok) return null
@@ -44,7 +44,7 @@ async function getCityInfo(citySlug: string) {
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
         },
-        next: { revalidate: 3600 },
+        next: { revalidate: 60 },
       }
     )
     if (!res.ok) return { count: 0, cityName: citySlug }
