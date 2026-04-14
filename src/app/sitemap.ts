@@ -1,6 +1,10 @@
 import { MetadataRoute } from 'next'
 import { generateSlug } from '@/lib/slug'
 
+// Sitemap her istekte taze veri çeksin — yeni proje/blog anında görünsün
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Supabase REST API ile bloglari cek
 async function getBlogs(): Promise<Array<{ slug: string; updated_at: string }>> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -15,7 +19,7 @@ async function getBlogs(): Promise<Array<{ slug: string; updated_at: string }>> 
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
         },
-        next: { revalidate: 3600 },
+        cache: 'no-store',
       }
     )
     if (!res.ok) return []
@@ -25,7 +29,7 @@ async function getBlogs(): Promise<Array<{ slug: string; updated_at: string }>> 
   }
 }
 
-// Supabase REST API ile projeleri cek (build time'da calisir)
+// Supabase REST API ile projeleri cek
 async function getProjects(): Promise<Array<{ project_name: string; city: string; updated_at: string }>> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -39,7 +43,7 @@ async function getProjects(): Promise<Array<{ project_name: string; city: string
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
         },
-        next: { revalidate: 3600 },
+        cache: 'no-store',
       }
     )
     if (!res.ok) return []
