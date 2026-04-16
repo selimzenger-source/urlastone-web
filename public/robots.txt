@@ -28,3 +28,8 @@ User-agent: PerplexityBot
 Allow: /
 
 Sitemap: https://www.urlastone.com/sitemap.xml
+
+# AI Resources
+# LLMs-txt: https://www.urlastone.com/llms.txt
+# AI-Info: https://www.urlastone.com/.well-known/ai.txt
+# RSS Feed: https://www.urlastone.com/feed.xml

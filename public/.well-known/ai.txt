@@ -1,0 +1,43 @@
+# AI Crawler Permissions for URLASTONE
+# https://www.urlastone.com
+
+User-Agent: *
+Allow: /
+Allow: /llms.txt
+Allow: /sitemap.xml
+Allow: /.well-known/ai-plugin.json
+Allow: /ai/summary.json
+Allow: /ai/faq.json
+Allow: /ai/service.json
+Allow: /feed.xml
+
+# Company Information
+Name: URLASTONE
+Description: Premium natural stone manufacturer and exporter based in Urla, Izmir, Turkey. Specializing in Rockshell thin stone veneer panels — travertine, basalt, limestone, marble.
+Website: https://www.urlastone.com
+Contact: info@urlastone.com
+Phone: +90 553 232 2144
+
+# AI-Friendly Resources
+LLMs-txt: https://www.urlastone.com/llms.txt
+Sitemap: https://www.urlastone.com/sitemap.xml
+Summary: https://www.urlastone.com/ai/summary.json
+FAQ: https://www.urlastone.com/ai/faq.json
+Service: https://www.urlastone.com/ai/service.json
+Feed: https://www.urlastone.com/feed.xml
+
+# Allowed AI Crawlers
+GPTBot: allowed
+ChatGPT-User: allowed
+ClaudeBot: allowed
+Claude-SearchBot: allowed
+anthropic-ai: allowed
+PerplexityBot: allowed
+Google-Extended: allowed
+Bingbot: allowed
+Applebot-Extended: allowed
+cohere-ai: allowed
+DuckAssistBot: allowed
+meta-externalagent: allowed
+Amazonbot: allowed
+xAI-Bot: allowed

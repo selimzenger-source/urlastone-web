@@ -2,6 +2,20 @@
 
 > URLASTONE is a premium natural stone manufacturer and exporter based in Urla, İzmir, Turkey. We produce and export high-quality natural stone cladding products including travertine, basalt, limestone, and marble. Our patented Rockshell technology creates thin, lightweight stone veneer panels perfect for exterior facades, interior walls, fireplaces, and landscaping.
 
+## Key Pages
+
+- [Homepage](https://www.urlastone.com) — Main landing page with hero slider, featured stones, and AI simulation showcase
+- [Products](https://www.urlastone.com/urunlerimiz) — Full catalog: Nature, Line, Mix, Crazy Rockshell in travertine, basalt, limestone, marble
+- [Projects](https://www.urlastone.com/projelerimiz) — 500+ completed project gallery with photos and details
+- [Stone Types](https://www.urlastone.com/taslar) — Detailed information about travertine, basalt, limestone, and marble
+- [Applications](https://www.urlastone.com/uygulamalarimiz) — Facade cladding, interior walls, fireplaces, flooring, landscaping
+- [AI Stone Simulation](https://www.urlastone.com/simulasyon) — Upload building photo, see stone applied with AI visualization (free)
+- [Get a Quote](https://www.urlastone.com/teklif) — Free instant quote request with stone selection and project photos
+- [Blog](https://www.urlastone.com/blog) — Articles about natural stone, architecture, installation guides
+- [References](https://www.urlastone.com/referanslarimiz) — Client testimonials and partner references
+- [About Us](https://www.urlastone.com/hakkimizda) — Company history, team, factory, Daymar Stone heritage
+- [Contact](https://www.urlastone.com/iletisim) — Address, phone, email, map, working hours
+
 ## Company Overview
 - **Founded**: 2015 (11+ years of experience under Daymar Stone brand)
 - **Completed Projects**: 500+ residential, commercial, and hospitality projects worldwide

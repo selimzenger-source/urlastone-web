@@ -126,7 +126,11 @@ const jsonLd = {
         { '@type': 'Country', name: 'Greece' }, { '@type': 'Country', name: 'Netherlands' },
       ],
       knowsLanguage: ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'],
-      sameAs: ['https://www.instagram.com/urlastone/'],
+      sameAs: [
+        'https://www.instagram.com/urlastone/',
+        'https://www.linkedin.com/company/urlastone/',
+        'https://www.facebook.com/urlastone/',
+      ],
       openingHoursSpecification: [{
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -305,6 +309,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
+        <link rel="alternate" type="application/rss+xml" title="URLASTONE Blog RSS" href="https://www.urlastone.com/feed.xml" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
