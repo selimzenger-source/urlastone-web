@@ -127,6 +127,17 @@ export default function SimulationWizard() {
   const [localUsage, setLocalUsage] = useState(0)
   const [validating, setValidating] = useState(false)
 
+  // ──────── TEST MODE TOGGLE (?test=1 → Replicate nano-banana-pro) ────────
+  // Varsayılan olarak Gemini (eski sistem). URL'de ?test=1 varsa yeni Replicate API.
+  // Eski sisteme dönmek için: ?test=1'i kaldır. Rollback için: create-replicate route'unu sil.
+  const [useTestProvider, setUseTestProvider] = useState(false)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    setUseTestProvider(params.get('test') === '1')
+  }, [])
+  const apiEndpoint = useTestProvider ? '/api/simulation/create-replicate' : '/api/simulation/create'
+
   const labels = STEP_LABELS[locale] || STEP_LABELS.tr
   const info = INFO_TEXTS[locale] || INFO_TEXTS.tr
 
@@ -220,7 +231,7 @@ export default function SimulationWizard() {
 
       try {
         // Synchronous API — blocks until result is ready (~10-30 seconds)
-        const res = await fetch('/api/simulation/create', {
+        const res = await fetch(apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -265,7 +276,7 @@ export default function SimulationWizard() {
         setStep('mode')
       }
     }
-  }, [imageDataUrl, selectedStone, locale, checkLocalLimit])
+  }, [imageDataUrl, selectedStone, locale, checkLocalLimit, apiEndpoint])
 
   // Handle mask submit — start AI generation (brush mode)
   const handleMaskSubmit = useCallback(async (mask: string, userNote?: string) => {
@@ -326,7 +337,7 @@ export default function SimulationWizard() {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
       setStep('mask')
     }
-  }, [imageDataUrl, selectedStone, locale, checkLocalLimit])
+  }, [imageDataUrl, selectedStone, locale, checkLocalLimit, apiEndpoint])
 
   // Animate progress while waiting for synchronous API response
   useEffect(() => {
@@ -389,6 +400,16 @@ export default function SimulationWizard() {
 
   return (
     <div className="max-w-5xl mx-auto">
+      {/* TEST MODE Badge — sadece ?test=1 ile görünür */}
+      {useTestProvider && (
+        <div className="mb-4 flex items-center justify-center gap-2 p-2.5 bg-gradient-to-r from-purple-500/10 via-gold-400/10 to-purple-500/10 rounded-xl border border-gold-400/30">
+          <Sparkles size={14} className="text-gold-400" />
+          <span className="text-gold-400 text-[11px] font-mono tracking-wider">
+            TEST MODE · REPLICATE (nano-banana-pro)
+          </span>
+        </div>
+      )}
+
       {/* Usage info banner */}
       <div className="flex items-center justify-center gap-6 mb-6 p-3 bg-white/[0.02] rounded-xl border border-white/[0.06]">
         <div className="flex items-center gap-2">
