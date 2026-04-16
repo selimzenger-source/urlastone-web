@@ -249,13 +249,16 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
       // Draw watermarks
       drawWatermarks(ctx, canvas.width, canvas.height, logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
 
-      // Download — use Web Share API on mobile (saves to Photos on iOS)
+      // Download — Web Share API ONLY on mobile (saves to Photos on iOS).
+      // Masaüstünde her zaman direkt indirme yap.
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
       canvas.toBlob(async (blob) => {
         if (!blob) return
         const fileName = `urlastone-simulation-${Date.now()}.jpg`
 
-        // Try Web Share API first (iOS/mobile — allows "Save to Photos")
-        if (navigator.share && navigator.canShare) {
+        // Mobilde Web Share API dene (iOS → "Save to Photos")
+        if (isMobile && navigator.share && navigator.canShare) {
           try {
             const file = new File([blob], fileName, { type: 'image/jpeg' })
             if (navigator.canShare({ files: [file] })) {
@@ -267,7 +270,7 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
           }
         }
 
-        // Fallback: standard download (desktop / Android)
+        // Masaüstü ve Android fallback: direkt dosya indir
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
@@ -322,12 +325,14 @@ export default function StepResult({ originalUrl, resultUrl, stoneName, stoneCod
       ctx.drawImage(img, 0, 0)
       drawWatermarks(ctx, canvas.width, canvas.height, logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
 
-      // 4. Download — use Web Share API on mobile
+      // 4. Download — Web Share API ONLY on mobile, desktop always direct download
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
       canvas.toBlob(async (blob) => {
         if (!blob) return
         const fileName = `urlastone-simulation-HD-${Date.now()}.jpg`
 
-        if (navigator.share && navigator.canShare) {
+        if (isMobile && navigator.share && navigator.canShare) {
           try {
             const file = new File([blob], fileName, { type: 'image/jpeg' })
             if (navigator.canShare({ files: [file] })) {
