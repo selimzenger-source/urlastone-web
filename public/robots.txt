@@ -1,4 +1,4 @@
-User-agent: *
+User-Agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
@@ -8,26 +8,86 @@ Disallow: /*?lang=
 # AI Content Signals (contentsignals.org)
 Content-Signal: search=yes, ai-input=yes, ai-train=yes
 
-# AI Crawlers
-User-agent: GPTBot
+# AI Crawlers — all allowed
+User-Agent: GPTBot
 Allow: /
 
-User-agent: ChatGPT-User
+User-Agent: ChatGPT-User
 Allow: /
 
-User-agent: Google-Extended
+User-Agent: OAI-SearchBot
 Allow: /
 
-User-agent: anthropic-ai
+User-Agent: Google-Extended
 Allow: /
 
-User-agent: ClaudeBot
+User-Agent: Google-CloudVertexBot
 Allow: /
 
-User-agent: Applebot-Extended
+User-Agent: anthropic-ai
 Allow: /
 
-User-agent: PerplexityBot
+User-Agent: ClaudeBot
+Allow: /
+
+User-Agent: Claude-SearchBot
+Allow: /
+
+User-Agent: claude-web
+Allow: /
+
+User-Agent: Applebot-Extended
+Allow: /
+
+User-Agent: Applebot
+Allow: /
+
+User-Agent: PerplexityBot
+Allow: /
+
+User-Agent: Perplexity-User
+Allow: /
+
+User-Agent: Bingbot
+Allow: /
+
+User-Agent: cohere-ai
+Allow: /
+
+User-Agent: DuckAssistBot
+Allow: /
+
+User-Agent: meta-externalagent
+Allow: /
+
+User-Agent: Meta-ExternalFetcher
+Allow: /
+
+User-Agent: facebookexternalhit
+Allow: /
+
+User-Agent: Amazonbot
+Allow: /
+
+User-Agent: AI2Bot
+Allow: /
+
+User-Agent: AI2Bot-Dolma
+Allow: /
+
+User-Agent: xAI-Bot
+Allow: /
+
+User-Agent: PetalBot
+Allow: /
+
+User-Agent: YouBot
+Allow: /
+
+User-Agent: CCBot
+Allow: /
+
+User-Agent: Bytespider
 Allow: /
 
 Sitemap: https://www.urlastone.com/sitemap.xml
@@ -35,4 +95,7 @@ Sitemap: https://www.urlastone.com/sitemap.xml
 # AI Resources
 # LLMs-txt: https://www.urlastone.com/llms.txt
 # AI-Info: https://www.urlastone.com/.well-known/ai.txt
+# API Catalog: https://www.urlastone.com/.well-known/api-catalog
+# MCP Server Card: https://www.urlastone.com/.well-known/mcp/server-card.json
+# Agent Skills: https://www.urlastone.com/.well-known/agent-skills/index.json
 # RSS Feed: https://www.urlastone.com/feed.xml
