@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
+import { sendTelegramMediaGroup, toLowResUrl } from '@/lib/telegram'
 
 // ═══════════════════════════════════════════════════════════════
 // PARALEL TEST ROUTE: Replicate (google/nano-banana-pro)
@@ -567,7 +568,26 @@ export async function POST(req: NextRequest) {
       outputUrl = replicateResultUrl // fallback to direct Replicate URL
     }
 
-    // 8. Return
+    // 8. Telegram bildirimi — fire-and-forget (response'u beklemez)
+    // Before (bina) + After (sonuc) + IP bilgisi
+    const telegramCaption = [
+      `🖼️ *AI Simulasyon Kullanildi*`,
+      ``,
+      `📍 IP: \`${ip}\``,
+      `🧱 Tas: \`${stoneCode}\`${categorySlug ? ` (${categorySlug})` : ''}`,
+      `🏠 Yuzey: ${surfaceContext}${applyMode === 'brush' ? ' (brush)' : ' (full)'}`,
+      `🧩 Derz: ${groutStyle === 'groutless' ? 'derzsiz' : 'derzli'}`,
+      userNote ? `📝 Not: ${String(userNote).slice(0, 200)}` : '',
+      ``,
+      `⬆️ Before | ⬇️ After`,
+    ].filter(Boolean).join('\n')
+
+    sendTelegramMediaGroup([
+      { url: toLowResUrl(buildingUrl, 800), caption: telegramCaption },
+      { url: toLowResUrl(outputUrl, 800) },
+    ]).catch(err => console.error('[Telegram Simulation Notif] Error:', err))
+
+    // 9. Return
     const remaining = await getRemainingCount(ip)
 
     return NextResponse.json({
