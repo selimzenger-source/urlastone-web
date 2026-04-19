@@ -505,9 +505,9 @@ export default function AdminBlog() {
               {generating ? (
                 <><RefreshCw size={16} className="animate-spin" /> Üretiliyor...</>
               ) : monthlyLimitReached ? (
-                <><AlertCircle size={16} /> Bu Ay Kullanıldı</>
+                <><AlertCircle size={16} /> Limit Doldu (14 Gün)</>
               ) : (
-                <><Sparkles size={16} /> Bu Ayın Blogunu Üret</>
+                <><Sparkles size={16} /> Yeni Blog Üret (2 Haftada 1)</>
               )}
             </button>
           </div>

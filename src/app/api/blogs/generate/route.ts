@@ -6,41 +6,45 @@ export const maxDuration = 120
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// Check monthly AI blog limit (max 1 per month, starting from April 2026)
+// Check bi-weekly AI blog limit (max 1 per 14 days, updated April 2026)
 async function checkMonthlyLimit(): Promise<{ allowed: boolean; message: string; currentMonth: string }> {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1 // 1-12
   const currentMonth = `${year}-${String(month).padStart(2, '0')}`
 
-  // Get AI-generated blogs for current month
-  const startOfMonth = `${currentMonth}-01T00:00:00.000Z`
-  const endOfMonth = month === 12
-    ? `${year + 1}-01-01T00:00:00.000Z`
-    : `${year}-${String(month + 1).padStart(2, '0')}-01T00:00:00.000Z`
+  // Get AI-generated blogs from last 14 days
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: monthBlogs, error } = await supabaseAdmin
+  const { data: recentBlogs, error } = await supabaseAdmin
     .from('blogs')
     .select('id, created_at')
     .eq('ai_generated', true)
-    .gte('created_at', startOfMonth)
-    .lt('created_at', endOfMonth)
+    .gte('created_at', fourteenDaysAgo)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Monthly limit check error:', error)
+    console.error('Bi-weekly limit check error:', error)
     return { allowed: true, message: '', currentMonth }
   }
 
-  const count = monthBlogs?.length || 0
-  const monthNames: Record<number, string> = {
-    1: 'Ocak', 2: 'Şubat', 3: 'Mart', 4: 'Nisan', 5: 'Mayıs', 6: 'Haziran',
-    7: 'Temmuz', 8: 'Ağustos', 9: 'Eylül', 10: 'Ekim', 11: 'Kasım', 12: 'Aralık'
-  }
+  const count = recentBlogs?.length || 0
 
-  if (count >= 1) {
+  if (count >= 1 && recentBlogs && recentBlogs.length > 0) {
+    // Son blog tarihini al ve 14 gun sonraki tarihi hesapla
+    const lastBlogDate = new Date(recentBlogs[0].created_at)
+    const nextAllowedDate = new Date(lastBlogDate.getTime() + 14 * 24 * 60 * 60 * 1000)
+    const daysRemaining = Math.ceil((nextAllowedDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
+
+    const nextDateStr = nextAllowedDate.toLocaleDateString('tr-TR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+
     return {
       allowed: false,
-      message: `Bu ay (${monthNames[month]} ${year}) zaten 1 AI blog üretildi. Her ay en fazla 1 AI blog üretilebilir. Sonraki blog ${monthNames[month === 12 ? 1 : month + 1]} ayında üretilebilir.`,
+      message: `Son 14 günde zaten 1 AI blog üretildi. 2 haftada en fazla 1 AI blog üretilebilir. Sonraki blog ${nextDateStr} tarihinden sonra üretilebilir (${daysRemaining} gün kaldı).`,
       currentMonth
     }
   }
