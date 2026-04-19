@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Doğal Taş Çeşitleri - Rockshell, Traverten, Bazalt, Kalker',
-  description: 'URLASTONE doğal taş ürünleri: Rockshell, traverten, bazalt, kalker, mermer. Nature, Line, Mix, Classic, Crazy ebat seçenekleri. Cephe kaplama ve zemin döşeme taşları. Scabas, Silver, Noche, Toros, Carbon modelleri. Urla, İzmir.',
+  title: 'Doğal Taş Çeşitleri - Traverten, Bazalt, Kalker',
+  description: 'Doğal taş: Rockshell, traverten, bazalt, kalker, mermer. Nature, Line, Mix, Crazy ebatlar. Cephe ve zemin döşeme. Scabas, Silver, Noche renkler.',
   openGraph: {
     title: 'Doğal Taş Çeşitleri - Rockshell, Traverten, Bazalt, Kalker | URLASTONE',
     description: 'Rockshell, traverten, bazalt, kalker doğal taş ürünleri. Nature, Line, Mix, Classic ebatlar. Urla, İzmir.',

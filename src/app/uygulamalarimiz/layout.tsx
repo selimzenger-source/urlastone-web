@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Uygulama Alanları - Dış Cephe, İç Mekan, Şömine, Peyzaj',
-  description: 'URLASTONE doğal taş uygulama alanları. Dış cephe kaplama, iç mekan duvar, şömine çevresi, havuz kenarı, bahçe peyzaj ve zemin döşeme çözümleri. Traverten, bazalt, kalker, mermer ile her mekana uygun doğal taş.',
+  title: 'Uygulama Alanları - Cephe, İç Mekan, Şömine',
+  description: 'Doğal taş uygulama alanları: dış cephe, iç mekan duvar, şömine, havuz kenarı, peyzaj, zemin. Traverten, bazalt, kalker, mermer.',
   openGraph: {
     title: 'Uygulama Alanları - Dış Cephe, İç Mekan, Şömine | URLASTONE',
     description: 'Dış cephe kaplama, iç mekan duvar, şömine, peyzaj doğal taş uygulama alanları.',

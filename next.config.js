@@ -44,7 +44,7 @@ const nextConfig = {
         ],
       },
       {
-        // Agent discovery Link headers (RFC 8288) — sitenin her sayfasinda
+        // Agent discovery Link headers (RFC 8288) + Security headers — sitenin her sayfasinda
         source: '/:path*',
         headers: [
           {
@@ -58,6 +58,37 @@ const nextConfig = {
               '</sitemap.xml>; rel="sitemap"; type="application/xml"',
               '</.well-known/ai.txt>; rel="ai-info"',
             ].join(', '),
+          },
+          // MIME-type sniffing koruma (ucretsiz + etkisiz)
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // Clickjacking koruma — kendi subdomain'lerimize izin
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          // Referer bilgisi cross-origin disinda full, harici sitelere origin'e kadar
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // Tarayici izinleri — kamera/mikrofon vs. kapali (AI simulasyonda gerekli degil)
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()',
+          },
+          // CSP — permissive ama framing korumasi var, XSS mit. icin 'self' tabanli
+          // Not: 'unsafe-inline' ve 'unsafe-eval' Next.js + Tailwind + Vercel Analytics icin gerekli
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self' https: data: blob:",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live",
+              "style-src 'self' 'unsafe-inline' https:",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self' data: https:",
+              "connect-src 'self' https: wss:",
+              "media-src 'self' https: blob: data:",
+              "frame-src 'self' https:",
+              "frame-ancestors 'self'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "object-src 'none'",
+              "upgrade-insecure-requests",
+            ].join('; '),
           },
         ],
       },

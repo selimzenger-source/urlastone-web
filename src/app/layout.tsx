@@ -11,10 +11,13 @@ import { Analytics } from '@vercel/analytics/next'
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.urlastone.com'),
   title: {
-    default: 'URLASTONE | Doğal Taş Üreticisi & İhracatçı - Traverten, Bazalt, Kalker, Mermer | Urla, Çeşme, İzmir',
-    template: '%s | URLASTONE - Doğal Taş Üreticisi İzmir',
+    // 58 chars — Google SERP uyumlu
+    default: 'URLASTONE | Doğal Taş Üreticisi İzmir Urla | Rockshell',
+    // Alt sayfa basligi max ~55 char olmali, sonuna kisa marka eklenir (toplam ~60)
+    template: '%s | URLASTONE',
   },
-  description: 'İzmir, Urla merkezli doğal taş üreticisi URLASTONE. Ege\'nin en kaliteli traverten, bazalt, kalker ve mermeriyle dış cephe kaplama, iç mekan duvar, şömine ve peyzaj çözümleri. Rockshell ince taş panelleri. AI simülasyon ile taşı binanızda görün. 50+ ülkeye ihracat, Türkiye geneli anahtar teslim uygulama.',
+  // 155 chars — Google meta description uyumlu, anahtar kelimeler + CTA
+  description: 'İzmir Urla\'dan doğal taş üreticisi. Traverten, bazalt, kalker, mermer cephe kaplama. Rockshell ince panel + AI simülasyon. 50+ ülkeye ihracat.',
   keywords: [
     // TR
     'doğal taş', 'traverten', 'bazalt', 'kalker', 'mermer', 'taş kaplama', 'cephe kaplama', 'dış cephe taş kaplama', 'iç mekan taş', 'şömine taş kaplama', 'peyzaj taşı', 'doğal taş üretici', 'doğal taş fabrikası', 'doğal taş fiyat', 'taş duvar kaplama', 'villa taş', 'otel taş cephe', 'doğal taş ihracat', 'urlastone', 'rockshell', 'urla', 'izmir', 'çeşme', 'alaçatı',
@@ -34,8 +37,8 @@ export const metadata: Metadata = {
   authors: [{ name: 'URLASTONE' }],
   creator: 'URLASTONE',
   openGraph: {
-    title: 'URLASTONE | Doğal Taş Üreticisi & İhracatçı - Urla, Çeşme, İzmir',
-    description: 'İzmir Ege bölgesinden traverten, bazalt, kalker, mermer doğal taş üretimi ve ihracatı. Dış cephe kaplama, iç mekan, şömine, peyzaj. AI simülasyon. 50+ ülkeye ihracat.',
+    title: 'URLASTONE | Doğal Taş Üreticisi İzmir - Rockshell',
+    description: 'Traverten, bazalt, kalker, mermer doğal taş cephe kaplama. Rockshell ince panel teknolojisi + AI simülasyon. 50+ ülkeye ihracat.',
     url: 'https://www.urlastone.com',
     siteName: 'URLASTONE',
     locale: 'tr_TR',

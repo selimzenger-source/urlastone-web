@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Projelerimiz - Doğal Taş Cephe Kaplama Referansları',
-  description: 'URLASTONE tamamlanmış doğal taş projeleri. Villa, otel, rezidans dış cephe kaplama, iç mekan duvar ve peyzaj uygulamaları. İzmir, İstanbul, Ankara, Bodrum, Çeşme ve yurt dışı referanslar. Harita üzerinde 500+ proje.',
+  title: 'Projelerimiz - Doğal Taş Cephe Referansları',
+  description: '500+ tamamlanmış doğal taş projesi. Villa, otel, rezidans cephe kaplama + iç mekan. İzmir, İstanbul, Bodrum, Çeşme ve yurt dışı.',
   openGraph: {
     title: 'Projelerimiz - Doğal Taş Referansları | URLASTONE',
     description: 'Villa, otel, rezidans doğal taş cephe kaplama projeleri. 500+ tamamlanmış proje.',

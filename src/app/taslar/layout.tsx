@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Taş Kataloğu - Traverten, Bazalt, Kalker, Mermer Detayları',
-  description: 'URLASTONE taş kataloğu. Her taş türünün teknik özellikleri, renk seçenekleri ve uygulama fotoğrafları. Scabas, Silver, Noche, Toros, Antico, Carbon renkleri. Nature, Line, Mix, Crazy kesim modelleri detaylı inceleme.',
+  title: 'Taş Kataloğu - Traverten, Bazalt, Kalker',
+  description: 'Taş kataloğu: teknik özellikler, renk seçenekleri. Scabas, Silver, Noche, Toros, Antico. Nature, Line, Mix, Crazy kesim modelleri.',
   openGraph: {
     title: 'Taş Kataloğu - Detaylı İnceleme | URLASTONE',
     description: 'Traverten, bazalt, kalker, mermer teknik detaylar ve renk seçenekleri. Urla, İzmir.',
