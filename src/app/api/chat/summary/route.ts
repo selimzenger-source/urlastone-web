@@ -15,15 +15,26 @@ export async function POST(req: NextRequest) {
     // Müşteri hiç mesaj yazmadıysa özet gönderme (sadece açıp kapamış)
     if (userMessages.length === 0) return NextResponse.json({ ok: true })
 
-    // Konuları çıkar (kullanıcı mesajlarından, dosya ekleri dahil)
-    const topics = userMessages
-      .map((m: { content: string }) => m.content.replace(/📷|📎/g, '').trim().slice(0, 100))
-      .filter(Boolean)
-      .join('\n- ')
-
     const now = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
 
-    const summaryMsg = `📊 SOHBET OZETI
+    // Diyalog formatında sohbeti olustur (musteri sorusu + Uri cevabi sirayla)
+    // Sadece user ve assistant rolleri, sira korunur
+    const conversation: string[] = []
+    let questionNo = 0
+    for (const m of messages as Array<{ role: string; content: string }>) {
+      if (!m.content || !m.content.trim()) continue
+      const cleanContent = m.content.replace(/📷|📎/g, '').trim()
+      if (!cleanContent) continue
+      const snippet = cleanContent.length > 400 ? cleanContent.slice(0, 400) + '...' : cleanContent
+      if (m.role === 'user') {
+        questionNo++
+        conversation.push(`\n❓ *Soru ${questionNo}* (${name || 'Müşteri'}):\n${snippet}`)
+      } else if (m.role === 'assistant') {
+        conversation.push(`💬 *Uri'nin cevabı:*\n${snippet}`)
+      }
+    }
+
+    const header = `📊 SOHBET OZETI
 
 👤 Müşteri: ${name || 'Bilinmiyor'}
 📞 Telefon: ${phone || '-'}
@@ -33,13 +44,22 @@ export async function POST(req: NextRequest) {
 🕐 Tarih: ${now}
 💬 Toplam mesaj: ${messages.length} (${userMessages.length} müşteri, ${assistantMessages.length} Uri)
 
-📝 Müşterinin sorduğu konular:
-- ${topics || 'Sadece dosya gönderdi / kısa etkileşim'}
-
-💡 İlk soru: "${userMessages[0].content.replace(/📷|📎/g, '').trim().slice(0, 200)}"
-${userMessages.length > 1 ? `💡 Son soru: "${userMessages[userMessages.length - 1].content.replace(/📷|📎/g, '').trim().slice(0, 200)}"` : ''}
+━━━━━━━━━━━━━━━━━━
+📜 *Diyalog:*
+`
+    const footer = `
+━━━━━━━━━━━━━━━━━━
 
 Engellemek icin: /engelle ${ip}`
+
+    // Telegram 4096 char limit — uzarsa kisalt
+    const maxBodyLen = 4000 - header.length - footer.length
+    let body = conversation.join('\n\n')
+    if (body.length > maxBodyLen) {
+      body = body.slice(0, maxBodyLen - 30) + '\n\n_[...uzun, Supabase\'de tam kayit]_'
+    }
+
+    const summaryMsg = header + body + footer
 
     await sendTelegramNotification(summaryMsg)
 
