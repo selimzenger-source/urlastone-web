@@ -201,38 +201,78 @@ export default function AdminTeklifler() {
           />
         </div>
         <button
-          onClick={() => {
-            // CSV oluştur (Excel uyumlu, UTF-8 BOM)
+          onClick={async () => {
+            // Gercek .xlsx olustur (kolon genislikleri + baslik stili)
+            const XLSX = await import('xlsx')
             const headers = ['Tarih', 'Saat', 'Ad Soyad', 'Telefon', 'E-posta', 'Ülke', 'İl', 'İlçe', 'Proje Tipi', 'Metrekare', 'Taş Tercihi', 'Fiyat Kapsamı', 'İletişim Tercihi', 'Kaynak', 'Açıklama', 'Durum']
-            const rows = teklifler.map(t => {
+            const data = teklifler.map(t => {
               const d = new Date(t.created_at)
-              return [
-                d.toLocaleDateString('tr-TR'),
-                d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-                t.ad_soyad,
-                t.telefon,
-                t.email || '',
-                t.ulke,
-                t.il,
-                t.ilce || '',
-                t.proje_tipi,
-                t.metrekare || '',
-                t.tas_tercihi?.join(', ') || '',
-                t.fiyat_tipi === 'sadece_tas' ? 'Sadece Taş' : t.fiyat_tipi === 'tas_ve_malzeme' ? 'Taş + Yapıştırıcı + Derz' : (t.fiyat_tipi || ''),
-                ({ phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' } as Record<string, string>)[t.iletisim_turu || ''] || t.iletisim_turu || '',
-                t.kaynak || '',
-                t.aciklama || '',
-                t.durum,
-              ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')
+              return {
+                Tarih: d.toLocaleDateString('tr-TR'),
+                Saat: d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+                'Ad Soyad': t.ad_soyad,
+                Telefon: t.telefon,
+                'E-posta': t.email || '',
+                Ülke: t.ulke,
+                İl: t.il,
+                İlçe: t.ilce || '',
+                'Proje Tipi': t.proje_tipi,
+                Metrekare: t.metrekare || '',
+                'Taş Tercihi': t.tas_tercihi?.join(', ') || '',
+                'Fiyat Kapsamı': t.fiyat_tipi === 'sadece_tas' ? 'Sadece Taş' : t.fiyat_tipi === 'tas_ve_malzeme' ? 'Taş + Yapıştırıcı + Derz' : (t.fiyat_tipi || ''),
+                'İletişim Tercihi': ({ phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' } as Record<string, string>)[t.iletisim_turu || ''] || t.iletisim_turu || '',
+                Kaynak: t.kaynak || '',
+                Açıklama: t.aciklama || '',
+                Durum: t.durum,
+              }
             })
-            const csv = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n')
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = `urlastone-teklifler-${new Date().toISOString().split('T')[0]}.csv`
-            a.click()
-            URL.revokeObjectURL(url)
+
+            const ws = XLSX.utils.json_to_sheet(data, { header: headers })
+
+            // Kolon genislikleri — her kolon icin ideal genislik (wch = karakter birimi)
+            ws['!cols'] = [
+              { wch: 12 },  // Tarih
+              { wch: 8 },   // Saat
+              { wch: 22 },  // Ad Soyad
+              { wch: 18 },  // Telefon
+              { wch: 28 },  // E-posta
+              { wch: 12 },  // Ülke
+              { wch: 14 },  // İl
+              { wch: 14 },  // İlçe
+              { wch: 16 },  // Proje Tipi
+              { wch: 10 },  // Metrekare
+              { wch: 25 },  // Taş Tercihi
+              { wch: 26 },  // Fiyat Kapsamı
+              { wch: 16 },  // İletişim Tercihi
+              { wch: 14 },  // Kaynak
+              { wch: 40 },  // Açıklama
+              { wch: 18 },  // Durum
+            ]
+
+            // Tum hucrelere metin formati + icerik wrap (uzun aciklamalar icin)
+            const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+              for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cellRef = XLSX.utils.encode_cell({ r: R, c: C })
+                if (ws[cellRef]) {
+                  ws[cellRef].s = ws[cellRef].s || {}
+                  if (R === 0) {
+                    // Baslik satiri
+                    ws[cellRef].s = { font: { bold: true }, alignment: { wrapText: true, vertical: 'center' } }
+                  } else {
+                    ws[cellRef].s = { alignment: { wrapText: true, vertical: 'top' } }
+                  }
+                }
+              }
+            }
+
+            // Ilk satir yuksekligi
+            ws['!rows'] = [{ hpt: 24 }]
+
+            const wb = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(wb, ws, 'Teklifler')
+
+            XLSX.writeFile(wb, `urlastone-teklifler-${new Date().toISOString().split('T')[0]}.xlsx`)
           }}
           className="flex items-center gap-2 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-xs font-mono hover:bg-green-500/20 transition-colors whitespace-nowrap"
         >
