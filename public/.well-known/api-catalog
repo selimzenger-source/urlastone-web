@@ -1,0 +1,49 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://www.urlastone.com/ai/summary.json",
+      "service-desc": [
+        { "href": "https://www.urlastone.com/ai/summary.json", "type": "application/json", "title": "URLASTONE Company Summary" }
+      ],
+      "status": [
+        { "href": "https://www.urlastone.com/ai/summary.json", "type": "application/json" }
+      ]
+    },
+    {
+      "anchor": "https://www.urlastone.com/ai/faq.json",
+      "service-desc": [
+        { "href": "https://www.urlastone.com/ai/faq.json", "type": "application/json", "title": "URLASTONE FAQ" }
+      ],
+      "status": [
+        { "href": "https://www.urlastone.com/ai/faq.json", "type": "application/json" }
+      ]
+    },
+    {
+      "anchor": "https://www.urlastone.com/ai/service.json",
+      "service-desc": [
+        { "href": "https://www.urlastone.com/ai/service.json", "type": "application/json", "title": "URLASTONE Service Catalog" }
+      ],
+      "status": [
+        { "href": "https://www.urlastone.com/ai/service.json", "type": "application/json" }
+      ]
+    },
+    {
+      "anchor": "https://www.urlastone.com/feed.xml",
+      "service-desc": [
+        { "href": "https://www.urlastone.com/feed.xml", "type": "application/rss+xml", "title": "URLASTONE Blog RSS Feed" }
+      ]
+    },
+    {
+      "anchor": "https://www.urlastone.com/sitemap.xml",
+      "service-desc": [
+        { "href": "https://www.urlastone.com/sitemap.xml", "type": "application/xml", "title": "URLASTONE Sitemap" }
+      ]
+    },
+    {
+      "anchor": "https://www.urlastone.com/llms.txt",
+      "service-desc": [
+        { "href": "https://www.urlastone.com/llms.txt", "type": "text/plain", "title": "URLASTONE LLM Profile" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "serverInfo": {
+    "name": "urlastone-info",
+    "version": "1.0.0",
+    "description": "URLASTONE natural stone manufacturer information server — provides company data, product catalog, FAQ, and service information for AI agents."
+  },
+  "publisher": {
+    "name": "URLASTONE",
+    "url": "https://www.urlastone.com",
+    "contact": "info@urlastone.com"
+  },
+  "transport": {
+    "type": "http",
+    "endpoint": "https://www.urlastone.com/ai/"
+  },
+  "capabilities": {
+    "resources": {
+      "listChanged": false,
+      "subscribe": false
+    },
+    "tools": {
+      "listChanged": false
+    }
+  },
+  "resources": [
+    {
+      "uri": "https://www.urlastone.com/ai/summary.json",
+      "name": "company-summary",
+      "description": "URLASTONE company profile, products, services, and contact info",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "https://www.urlastone.com/ai/faq.json",
+      "name": "faq",
+      "description": "Frequently asked questions about URLASTONE products and services",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "https://www.urlastone.com/ai/service.json",
+      "name": "service-catalog",
+      "description": "URLASTONE service capabilities and pricing overview",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "https://www.urlastone.com/llms.txt",
+      "name": "llms-profile",
+      "description": "Full company profile formatted for LLM consumption",
+      "mimeType": "text/plain"
+    },
+    {
+      "uri": "https://www.urlastone.com/feed.xml",
+      "name": "blog-feed",
+      "description": "Latest URLASTONE blog articles (RSS)",
+      "mimeType": "application/rss+xml"
+    }
+  ]
+}

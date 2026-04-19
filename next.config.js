@@ -37,6 +37,13 @@ const nextConfig = {
         ],
       },
       {
+        // api-catalog Content-Type (RFC 9727)
+        source: '/.well-known/api-catalog',
+        headers: [
+          { key: 'Content-Type', value: 'application/linkset+json; charset=utf-8' },
+        ],
+      },
+      {
         // Agent discovery Link headers (RFC 8288) — sitenin her sayfasinda
         source: '/:path*',
         headers: [
