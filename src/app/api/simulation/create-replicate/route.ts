@@ -569,18 +569,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 8. Telegram bildirimi — fire-and-forget (response'u beklemez)
-    // Before (bina) + After (sonuc) + IP bilgisi
-    const telegramCaption = [
-      `🖼️ *AI Simulasyon Kullanildi*`,
-      ``,
-      `📍 IP: \`${ip}\``,
-      `🧱 Tas: \`${stoneCode}\`${categorySlug ? ` (${categorySlug})` : ''}`,
-      `🏠 Yuzey: ${surfaceContext}${applyMode === 'brush' ? ' (brush)' : ' (full)'}`,
-      `🧩 Derz: ${groutStyle === 'groutless' ? 'derzsiz' : 'derzli'}`,
-      userNote ? `📝 Not: ${String(userNote).slice(0, 200)}` : '',
-      ``,
-      `⬆️ Before | ⬇️ After`,
-    ].filter(Boolean).join('\n')
+    const telegramCaption = `\`${ip}\` IP adresinden 1 kişi AI simülasyonla sonuç üretti\nSeçilen taş: *${stoneCode}*`
 
     sendTelegramMediaGroup([
       { url: toLowResUrl(buildingUrl, 800), caption: telegramCaption },
