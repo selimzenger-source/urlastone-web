@@ -1,9 +1,9 @@
 import { MetadataRoute } from 'next'
 import { generateSlug } from '@/lib/slug'
 
-// Sitemap her istekte taze veri çeksin — yeni proje/blog anında görünsün
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Sitemap 5 dakika CDN'de cache'lenir — Fast Origin Transfer tasarrufu
+// Yeni proje/blog max 5 dk sonra sitemap'te görünür (Google için farksız)
+export const revalidate = 300
 
 // Supabase REST API ile bloglari cek
 async function getBlogs(): Promise<Array<{ slug: string; updated_at: string }>> {

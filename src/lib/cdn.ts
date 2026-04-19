@@ -1,12 +1,11 @@
-// Supabase storage URL'lerini Vercel CDN proxy üzerinden servis et
-// Bu sayede Supabase egress azalır, görseller Vercel Edge'den cache'lenir
+// Supabase Pro tier ($25) — kendi CDN'imiz var, Vercel origin transfer tasarrufu icin
+// Supabase URL'leri DIREKT servis edilir, /api/img proxy artik gerekli degil.
+//
+// Not: /api/img route'u silinmedi (backward compat ve fallback icin duruyor).
+// Yeni istekler direkt Supabase CDN'e gidecek.
 
 export function cdnImg(url: string | null | undefined): string {
   if (!url) return ''
-  // Sadece Supabase storage URL'lerini proxy'le
-  if (url.includes('supabase.co/storage')) {
-    return `/api/img?url=${encodeURIComponent(url)}`
-  }
-  // Diğer URL'ler (local, clearbit vb.) olduğu gibi döner
+  // Tum URL'ler direkt (Supabase dahil) — proxy bypass
   return url
 }
