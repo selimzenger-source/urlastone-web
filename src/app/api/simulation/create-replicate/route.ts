@@ -468,6 +468,7 @@ export async function POST(req: NextRequest) {
       image,
       mask,
       stoneCode,
+      stoneName,
       categorySlug,
       stoneImageUrl,
       locale,
@@ -569,12 +570,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 8. Telegram bildirimi — fire-and-forget (response'u beklemez)
-    const telegramCaption = `\`${ip}\` IP adresinden 1 kişi AI simülasyonla sonuç üretti\nSeçilen taş: *${stoneCode}*`
+    // Fotolari ayri gonderirsek Telegram her birini tam boyda gosterir (media group kucultuyor)
+    const displayStoneName = stoneName
+      ? `${stoneName}${stoneCode ? ` (${stoneCode})` : ''}`
+      : stoneCode || 'bilinmiyor'
+    const telegramCaption = `\`${ip}\` IP adresinden 1 kişi AI simülasyonla sonuç üretti\nSeçilen taş: *${displayStoneName}*`
 
     sendTelegramMediaGroup([
-      { url: toLowResUrl(buildingUrl, 800), caption: telegramCaption },
-      { url: toLowResUrl(outputUrl, 800) },
-    ]).catch(err => console.error('[Telegram Simulation Notif] Error:', err))
+      { url: toLowResUrl(buildingUrl, 1200), caption: `📷 Before\n\n${telegramCaption}` },
+      { url: toLowResUrl(outputUrl, 1200), caption: '✨ After' },
+    ], { separate: true }).catch(err => console.error('[Telegram Simulation Notif] Error:', err))
 
     // 9. Return
     const remaining = await getRemainingCount(ip)

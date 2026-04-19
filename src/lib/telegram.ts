@@ -29,10 +29,13 @@ export function toLowResUrl(url: string, width = 800, quality = 70): string {
     `?width=${width}&quality=${quality}`
 }
 
-// Telegram'a 2-10 fotoğraf göndermek için media group
+// Telegram'a fotograf(lar) gonder
+// options.separate = true ise her foto ayri mesajda gonderilir (her biri tam boyda gorunur)
+// options.separate = false (default) ise media group olarak 2-10 foto yan yana
 // Fotograflar URL ile gönderilir (Telegram sunucusu kendisi indirir, bizden bandwidth yemez)
 export async function sendTelegramMediaGroup(
-  photos: Array<{ url: string; caption?: string }>
+  photos: Array<{ url: string; caption?: string }>,
+  options: { separate?: boolean } = {}
 ): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatIds = (process.env.TELEGRAM_CHAT_ID || '').split(',').map(id => id.trim()).filter(Boolean)
@@ -40,24 +43,24 @@ export async function sendTelegramMediaGroup(
   if (!token || chatIds.length === 0) return
   if (photos.length < 1) return
 
-  // Telegram sendMediaGroup 2-10 item kabul eder
-  // Tek foto varsa sendPhoto kullan
-  if (photos.length === 1) {
-    const p = photos[0]
-    await Promise.allSettled(
-      chatIds.map(chatId =>
-        fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            photo: p.url,
-            caption: p.caption,
-            parse_mode: 'Markdown',
-          }),
-        }).catch(err => console.error(`[Telegram Photo] Error (${chatId}):`, err))
+  // Ayri ayri gonder — her foto tam boyda gorunur (media group'ta kucuk kalir)
+  if (options.separate || photos.length === 1) {
+    for (const p of photos) {
+      await Promise.allSettled(
+        chatIds.map(chatId =>
+          fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              photo: p.url,
+              caption: p.caption,
+              parse_mode: 'Markdown',
+            }),
+          }).catch(err => console.error(`[Telegram Photo] Error (${chatId}):`, err))
+        )
       )
-    )
+    }
     return
   }
 

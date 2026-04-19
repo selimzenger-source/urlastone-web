@@ -247,6 +247,7 @@ export default function SimulationWizard() {
           body: JSON.stringify({
             image: imageDataUrl,
             stoneCode: selectedStone.code,
+            stoneName: selectedStone.name,
             categorySlug: selectedStone.categorySlug,
             categoryImageUrl: selectedStone.categoryImageUrl,
             stoneImageUrl: selectedStone.image_url,
@@ -309,6 +310,7 @@ export default function SimulationWizard() {
           image: imageDataUrl,
           mask,
           stoneCode: selectedStone.code,
+          stoneName: selectedStone.name,
           categorySlug: selectedStone.categorySlug,
           categoryImageUrl: selectedStone.categoryImageUrl,
           stoneImageUrl: selectedStone.image_url,
