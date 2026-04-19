@@ -83,6 +83,9 @@ export const metadata: Metadata = {
   },
 }
 
+// Build zamanini ISO tarih olarak al — dateModified icin kullanilir
+const BUILD_DATE = new Date().toISOString()
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -91,6 +94,7 @@ const jsonLd = {
       '@type': ['LocalBusiness', 'Organization', 'Store'],
       '@id': 'https://www.urlastone.com/#business',
       name: 'URLASTONE',
+      dateModified: BUILD_DATE,
       alternateName: ['Urlastone', 'Urla Stone', 'URLASTONE Doğal Taş', 'Daymar Stone'],
       description: 'URLASTONE is a premium natural stone manufacturer and exporter based in Urla, İzmir, Turkey. Specializing in Rockshell technology — thin natural stone veneer panels made from travertine, basalt, limestone and marble. Products include exterior facade cladding, interior wall cladding, fireplace surrounds, bathroom walls, floor tiling and landscape stone. Serving 50+ countries with AI-powered stone visualization technology.',
       url: 'https://www.urlastone.com',
@@ -160,6 +164,7 @@ const jsonLd = {
       '@id': 'https://www.urlastone.com/#website',
       url: 'https://www.urlastone.com',
       name: 'URLASTONE - Doğal Taş Üreticisi',
+      dateModified: BUILD_DATE,
       description: 'Premium natural stone manufacturer in Urla, İzmir, Turkey. Travertine, basalt, limestone, marble facade cladding and interior design solutions.',
       publisher: { '@id': 'https://www.urlastone.com/#business' },
       inLanguage: ['tr', 'en', 'es', 'de', 'fr', 'ru', 'ar'],
@@ -269,32 +274,92 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'URLASTONE nerede? Doğal taş nereden alınır?',
-          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE, İzmir Urla\'da bulunan doğal taş üretim tesisindedir. Adres: Altıntaş, İzmir Çeşme Cad. No: 319, Urla, İzmir. Showroom ziyareti için randevu alabilirsiniz.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE, İzmir Urla\'da bulunan doğal taş üretim tesisindedir. Adres: Altıntaş, İzmir Çeşme Cad. No: 319, Urla, İzmir 35430. Showroom ziyareti için randevu alabilirsiniz. 2015\'ten bu yana 500+ projede kullanılmıştır.' },
         },
         {
           '@type': 'Question',
           name: 'Hangi taş türleri mevcut?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Traverten, bazalt, kalker ve mermer olmak üzere 4 ana taş türü ve Nature, Line, Mix, Crazy olmak üzere 4 farklı kesim modeli mevcuttur. Classic, Scabas, Silver, Noche, Antico, Toros renk seçenekleri vardır.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Traverten, bazalt, kalker ve mermer olmak üzere 4 ana taş türü ve Nature, Line, Mix, Crazy olmak üzere 4 farklı kesim modeli mevcuttur. Classic, Scabas, Silver, Noche, Antico, Toros renk seçenekleri vardır. Toplam 100+ kombinasyon sunulur.' },
         },
         {
           '@type': 'Question',
           name: 'Yurt dışına ihracat yapıyor musunuz?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Evet, 50\'den fazla ülkeye doğal taş ihracatı yapıyoruz. Almanya, Fransa, İspanya, İngiltere, ABD, Suudi Arabistan, BAE ve daha birçok ülkeye gönderim yapıyoruz.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Evet, 50\'den fazla ülkeye doğal taş ihracatı yapıyoruz. Almanya, Fransa, İspanya, İngiltere, ABD, Suudi Arabistan, BAE, Rusya, İtalya, Yunanistan ve Hollanda başlıca pazarlarımızdır. Konteyner sevkiyatı ve gümrük desteği sağlıyoruz.' },
         },
         {
           '@type': 'Question',
           name: 'AI simülasyon nasıl çalışır?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Binanızın veya mekanınızın fotoğrafını yükleyin, istediğiniz taş modelini seçin. Yapay zeka, taşın binaya nasıl görüneceğini fotogerçekçi olarak simüle eder. Ücretsizdir.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Binanızın veya mekanınızın fotoğrafını yükleyin, istediğiniz taş modelini seçin. Yapay zeka (Google Gemini + Replicate nano-banana-pro), taşın binaya nasıl görüneceğini fotogerçekçi olarak simüle eder. Ücretsizdir, günlük 10 simülasyon hakkınız vardır.' },
         },
         {
           '@type': 'Question',
           name: 'What is Rockshell technology?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Rockshell is URLASTONE\'s patented thin stone veneer technology. Natural stones are precisely cut into thin panels (1-3cm) that can be easily applied to any wall surface. Lightweight, durable, and authentic natural stone appearance.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Rockshell is URLASTONE\'s patented thin stone veneer technology. Natural stones are precisely cut into thin panels (1-3cm) that can be easily applied to any wall surface without structural modifications. Lightweight (15-30 kg/m²), durable, and authentic natural stone appearance. Available in grouted (derzli) or groutless (derzsiz) installation.' },
         },
         {
           '@type': 'Question',
           name: 'Where to buy natural stone in İzmir?',
-          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE is a leading natural stone manufacturer in İzmir, located in Urla. We offer travertine, basalt, limestone and marble with direct factory pricing. Visit our showroom or request a free quote online at urlastone.com.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE is a leading natural stone manufacturer in İzmir, located in Urla. Founded 2015 under Daymar Stone heritage. We offer travertine, basalt, limestone and marble with direct factory pricing ($30-$130/m²). Visit our showroom or request a free quote online at urlastone.com/teklif.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Doğal taş kaplama m² fiyatı ne kadar?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Doğal taş kaplama fiyatları m² başına $30-$130 USD arasında değişir. Taş türüne (traverten, bazalt, kalker, mermer), kesim modeline (Nature, Line, Mix, Crazy) ve kalınlığa (1-3cm) göre fiyat belirlenir. Ücretsiz teklif için urlastone.com/teklif sayfasını kullanın.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Traverten mi mermer mi daha iyi?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Seçim uygulama alanına bağlıdır. Traverten sıcak krem-bej tonlarıyla villa ve otel dış cephelerde tercih edilir, doğal gözenekli dokuya sahiptir. Mermer beyaz-krem damarlı yapısıyla iç mekan ve lüks mekanlarda kullanılır. Traverten genellikle daha ekonomik, mermer daha prestijli bir görünüm sunar.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Dış cephe taş kaplama kaç yıl dayanır?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Doğal taş dış cephe kaplama, doğru uygulandığında 50+ yıl dayanır. Rockshell ince taş veneer teknolojisi geleneksel taşa göre daha hafif (15-30 kg/m²) ve montajı daha kolaydır. Bazalt en dayanıklı, traverten ve kalker orta dayanıklılık, mermer estetik olarak en seçkin seçenektir.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Şömine için hangi taş uygundur?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Şömine kaplama için ısıya dayanıklı bazalt (volkanik), sıcak görünümlü traverten veya doğal fosilli kalker tercih edilir. URLASTONE\'un Nature Rockshell modeli (1.5-3cm) şömine kaplaması için en popüler üründür. Mermer de iç mekan şömineleri için estetik bir seçenek.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Havuz kenarına hangi taş kullanılır?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Havuz kenarı için kaydırmaz yüzeyli traverten veya kalker önerilir. Bu taşlar suya dayanıklıdır, ısıyı tutmaz ve güneş altında ısınıp cildi yakmaz. URLASTONE\'un Crazy Rockshell mozaik deseni havuz deck uygulamaları için idealdir.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Derzli mi derzsiz mi kaplama daha iyi?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Derzli uygulama geleneksel görünüm ve esneklik sunar, uygulama hataları toleranslıdır. Derzsiz (fayans gibi) daha modern, minimalist ve temizlemesi kolaydır ama hassas montaj gerektirir. URLASTONE tüm modellerini her iki stil ile sunar — AI simülasyonda ikisini de önizleyebilirsiniz.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Rockshell kalınlığı nedir?',
+          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE Rockshell panelleri 1cm ile 3cm arasında kalınlıklarda üretilir. Line Rockshell: 1-2cm (modern minimalist), Nature Rockshell: 1.5-3cm (doğal), Mix Rockshell: 1.5-3cm (çok yönlü), Crazy Rockshell: 1.5-2.5cm (mozaik). Proje isteğine göre özel kesim yapılabilir.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'URLASTONE kaç dil destekliyor?',
+          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE web sitesi ve müşteri desteği 7 dilde hizmet verir: Türkçe, İngilizce, İspanyolca, Almanca, Fransızca, Rusça ve Arapça. 50+ ülkeye ihracat yapan uluslararası bir üretici olarak çok dilli destek standarttır.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Kaç proje tamamladınız?',
+          acceptedAnswer: { '@type': 'Answer', text: 'URLASTONE 2015\'ten bu yana (Daymar Stone mirası ile 11+ yıl) 500\'den fazla projede görev almıştır. Villa, otel, apartman, ticari bina, restoran, AVM, konut ve peyzaj projeleri arasında Türkiye ve 50+ ülke vardır. Referans projeler urlastone.com/projelerimiz sayfasında görülebilir.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Anahtar teslim uygulama yapıyor musunuz?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Evet, İzmir, Çeşme, Urla, Alaçatı ve çevresinde anahtar teslim doğal taş kaplama uygulaması sunuyoruz. Türkiye genelinde partner montaj ekiplerimiz bulunur. Alternatif olarak sadece taş satışı (stone-only) seçeneği ile kendi ekibinizle de çalışabilirsiniz.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'What natural stone is best for modern facades?',
+          acceptedAnswer: { '@type': 'Answer', text: 'For modern facades, basalt (dark charcoal grey) and limestone (sandy beige) are most popular. URLASTONE\'s Line Rockshell (thin horizontal strips, 1-2cm) creates contemporary minimalist aesthetics. Nature Rockshell with irregular polygonal stones works for rustic-modern hybrid designs. Free AI simulation available at urlastone.com/simulasyon.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Which Turkish natural stone is most exported?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Turkish travertine from Denizli is the most exported natural stone worldwide, with warm cream, ivory and honey tones prized for luxury facades and interiors. URLASTONE exports travertine, basalt (Anatolian volcanic), limestone and marble to 50+ countries including Germany, France, USA, UAE, Saudi Arabia.' },
         },
       ],
     },
