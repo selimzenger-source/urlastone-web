@@ -70,13 +70,14 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()',
           },
-          // CSP — permissive ama framing korumasi var, XSS mit. icin 'self' tabanli
-          // Not: 'unsafe-inline' ve 'unsafe-eval' Next.js + Tailwind + Vercel Analytics icin gerekli
+          // CSP — permissive (3rd party widgets uyumlu: ElfSight, Instagram vs.), frame-ancestors koruma
+          // Not: 'unsafe-inline' ve 'unsafe-eval' Next.js + Tailwind icin gerekli
+          // script-src https: — ElfSight Instagram widget + tum 3rd party embedler icin
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self' https: data: blob:",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:",
               "style-src 'self' 'unsafe-inline' https:",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https:",
