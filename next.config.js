@@ -36,6 +36,24 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
+      {
+        // Agent discovery Link headers (RFC 8288) — sitenin her sayfasinda
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Link',
+            value: [
+              '</llms.txt>; rel="describedby"; type="text/plain"',
+              '</ai/summary.json>; rel="alternate"; type="application/json"; title="AI Summary"',
+              '</ai/faq.json>; rel="alternate"; type="application/json"; title="AI FAQ"',
+              '</ai/service.json>; rel="alternate"; type="application/json"; title="AI Service Catalog"',
+              '</feed.xml>; rel="alternate"; type="application/rss+xml"; title="URLASTONE Blog RSS"',
+              '</sitemap.xml>; rel="sitemap"; type="application/xml"',
+              '</.well-known/ai.txt>; rel="ai-info"',
+            ].join(', '),
+          },
+        ],
+      },
     ]
   },
   images: {

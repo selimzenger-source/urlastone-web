@@ -1,0 +1,53 @@
+{
+  "$schema": "https://agentskills.io/schemas/v0.2.0/index.json",
+  "version": "0.2.0",
+  "publisher": {
+    "name": "URLASTONE",
+    "url": "https://www.urlastone.com",
+    "contact": "info@urlastone.com"
+  },
+  "skills": [
+    {
+      "name": "company-summary",
+      "type": "data",
+      "description": "Structured summary of URLASTONE company, products, services, and contact information",
+      "url": "https://www.urlastone.com/ai/summary.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "faq",
+      "type": "data",
+      "description": "Frequently asked questions about URLASTONE natural stone products, shipping, installation, and services",
+      "url": "https://www.urlastone.com/ai/faq.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "service-catalog",
+      "type": "data",
+      "description": "Catalog of URLASTONE capabilities: stone manufacturing, AI visualization, international export, turnkey installation, custom cutting, quote system",
+      "url": "https://www.urlastone.com/ai/service.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "llms-profile",
+      "type": "document",
+      "description": "Full URLASTONE company profile formatted for LLM consumption (llms.txt standard)",
+      "url": "https://www.urlastone.com/llms.txt",
+      "contentType": "text/plain"
+    },
+    {
+      "name": "blog-feed",
+      "type": "feed",
+      "description": "RSS feed of URLASTONE blog articles about natural stone, architecture, installation guides",
+      "url": "https://www.urlastone.com/feed.xml",
+      "contentType": "application/rss+xml"
+    },
+    {
+      "name": "sitemap",
+      "type": "sitemap",
+      "description": "Full sitemap of URLASTONE website pages across 7 languages",
+      "url": "https://www.urlastone.com/sitemap.xml",
+      "contentType": "application/xml"
+    }
+  ]
+}
