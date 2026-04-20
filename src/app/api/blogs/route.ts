@@ -38,9 +38,12 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  // Yeni blog yayinlaninca max 60 saniye sonra gorunur (onceden 30 dk idi)
+  // max-age=0: browser her zaman yeniden kontrol eder (cache tutmaz)
+  // s-maxage=300: Vercel CDN 5 dk cache — yeni blog max 5 dk sonra gorunur
+  // stale-while-revalidate=600: eski cache'i bile 10 dk boyunca kullanip arka planda yeniden fetch
+  // Yani Vercel origin'e hit gitme sikligi: dakikada max 1 defa (cok dusuk yük)
   return NextResponse.json(data || [], {
-    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+    headers: { 'Cache-Control': 'public, max-age=0, s-maxage=300, stale-while-revalidate=600' },
   })
 }
 
