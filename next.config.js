@@ -26,31 +26,17 @@ const nextConfig = {
       { source: '/taslar/:slug', destination: '/urunlerimiz/:slug', permanent: true },
       { source: '/uygulamalarimiz', destination: '/projelerimiz', permanent: true },
       { source: '/uygulamalarimiz/:slug', destination: '/projelerimiz/:slug', permanent: true },
-      // Katalog kisayollari — Vercel'den gecmeden direkt Supabase'e yonlendir
-      // permanent: false (302) — yeni katalog geldiginde tarayici cache'i yanlis URL tutmasin
-      // Icinde bulundugumuz sezonun (2025-2026) katalogu
+      // Katalog kisayolu — Vercel edge-level redirect (sifir function invocation, sifir bandwidth)
+      // permanent: false (302) — dosya adi degistiginde tarayici cache'i yanilmasin
+      // Yeni katalog yuklenince dosya adi ayni kalir ise URL otomatik calisir,
+      // farkli adla yuklenirse buradaki destination elle guncellenir.
       {
         source: '/katalog',
         destination: 'https://lwqwsxkwubuwwhlzujvy.supabase.co/storage/v1/object/public/products/catalog/Catalog-compressed.pdf',
         permanent: false,
       },
       {
-        source: '/katalog2026',
-        destination: 'https://lwqwsxkwubuwwhlzujvy.supabase.co/storage/v1/object/public/products/catalog/Catalog-compressed.pdf',
-        permanent: false,
-      },
-      {
-        source: '/katalog-2025-2026',
-        destination: 'https://lwqwsxkwubuwwhlzujvy.supabase.co/storage/v1/object/public/products/catalog/Catalog-compressed.pdf',
-        permanent: false,
-      },
-      {
         source: '/catalog',
-        destination: 'https://lwqwsxkwubuwwhlzujvy.supabase.co/storage/v1/object/public/products/catalog/Catalog-compressed.pdf',
-        permanent: false,
-      },
-      {
-        source: '/brochure',
         destination: 'https://lwqwsxkwubuwwhlzujvy.supabase.co/storage/v1/object/public/products/catalog/Catalog-compressed.pdf',
         permanent: false,
       },
