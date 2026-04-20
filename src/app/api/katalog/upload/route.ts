@@ -9,11 +9,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { fileName } = await req.json()
-
-  if (!fileName) {
-    return NextResponse.json({ error: 'fileName required' }, { status: 400 })
-  }
+  // Client'tan fileName parametresi geliyor ama biz yok sayiyoruz
+  // Her katalog SABIT isim ile kaydedilir — /katalog URL'i hic kirilmaz
+  await req.json().catch(() => ({}))
 
   try {
     // Remove old catalog files first
@@ -26,7 +24,9 @@ export async function POST(req: NextRequest) {
       await supabaseAdmin.storage.from('products').remove(filesToRemove)
     }
 
-    // Create signed upload URL for direct client upload
+    // SABIT dosya adi — admin hangi isimle yuklerse yuklesin ayni isimle kaydedilir
+    // Boylece /katalog URL'i her zaman en guncel katalogu gosterir
+    const fileName = 'Catalog-compressed.pdf'
     const filePath = `catalog/${fileName}`
     const { data, error } = await supabaseAdmin.storage
       .from('products')
