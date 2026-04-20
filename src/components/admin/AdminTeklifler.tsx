@@ -14,6 +14,8 @@ import {
   Trash2,
   Download,
   ZoomIn,
+  Copy,
+  Check,
 } from 'lucide-react'
 
 type Durum = 'Yeni' | 'İletişime Geçildi' | 'Teklif Verildi' | 'Onaylandı' | 'Reddedildi'
@@ -49,6 +51,41 @@ const durumRenk: Record<Durum, string> = {
 }
 
 const durumlar: Durum[] = ['Yeni', 'İletişime Geçildi', 'Teklif Verildi', 'Onaylandı', 'Reddedildi']
+
+// Kopyalama butonu — tiklayinca panoya kopyalar, 1.5 saniye tik isaretine doner
+function CopyButton({ value, label }: { value: string; label?: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // fallback for older browsers
+      const ta = document.createElement('textarea')
+      ta.value = value
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    }
+  }
+  return (
+    <button
+      onClick={handleCopy}
+      className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] transition-colors flex-shrink-0"
+      title={copied ? 'Kopyalandı!' : (label || 'Kopyala')}
+    >
+      {copied
+        ? <Check size={14} className="text-green-400" />
+        : <Copy size={14} className="text-white/50" />}
+    </button>
+  )
+}
 
 export default function AdminTeklifler() {
   const [teklifler, setTeklifler] = useState<Teklif[]>([])
@@ -356,9 +393,11 @@ export default function AdminTeklifler() {
                 <p className="text-white/30 text-[10px] font-mono uppercase tracking-wider">İletişim</p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <a href={`tel:${selectedTeklif.telefon.replace(/[\s\-\(\)]/g, '')}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
-                      <Phone size={14} className="text-green-400" />{selectedTeklif.telefon}
+                    <a href={`tel:${selectedTeklif.telefon.replace(/[\s\-\(\)]/g, '')}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors flex-1 min-w-0">
+                      <Phone size={14} className="text-green-400 flex-shrink-0" />
+                      <span className="truncate">{selectedTeklif.telefon}</span>
                     </a>
+                    <CopyButton value={selectedTeklif.telefon} label="Telefonu kopyala" />
                     <a href={`https://wa.me/${(() => {
                       const clean = selectedTeklif.telefon.replace(/[\s\-\(\)]/g, '')
                       // + ile baslayan: uluslararasi format, oldugu gibi kullan (+'i kaldir)
@@ -374,9 +413,13 @@ export default function AdminTeklifler() {
                     </a>
                   </div>
                   {selectedTeklif.email && (
-                    <a href={`mailto:${selectedTeklif.email}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors">
-                      <Mail size={14} className="text-blue-400" />{selectedTeklif.email}
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <a href={`mailto:${selectedTeklif.email}`} className="flex items-center gap-3 text-white/70 text-sm hover:text-white transition-colors flex-1 min-w-0">
+                        <Mail size={14} className="text-blue-400 flex-shrink-0" />
+                        <span className="truncate">{selectedTeklif.email}</span>
+                      </a>
+                      <CopyButton value={selectedTeklif.email} label="Email'i kopyala" />
+                    </div>
                   )}
                   <p className="flex items-center gap-3 text-white/70 text-sm">
                     <MapPin size={14} className="text-gold-400" />{selectedTeklif.il}{selectedTeklif.ilce ? `, ${selectedTeklif.ilce}` : ''} · {selectedTeklif.ulke}
