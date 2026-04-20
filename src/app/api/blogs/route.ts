@@ -38,8 +38,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  // Yeni blog yayinlaninca max 60 saniye sonra gorunur (onceden 30 dk idi)
   return NextResponse.json(data || [], {
-    headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
+    headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
   })
 }
 
