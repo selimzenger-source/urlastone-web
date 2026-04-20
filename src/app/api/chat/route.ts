@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getDynamicPrompt, isIPBlocked, blockIP, getProductProjectPrompt } from '@/lib/bot-knowledge'
 import { sendTelegramNotification } from '@/lib/telegram'
+import { supabaseAdmin } from '@/lib/supabase'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -391,6 +392,56 @@ Engellemek icin: /engelle ${ip}`
 
       // Telegram'a gönder
       sendTelegramNotification(teklifMsg).catch(() => {})
+
+      // Admin panele ekle: teklifler tablosuna insert
+      // iletisim_turu mapping: frontend formatina (phone/email/whatsapp)
+      const iletisimMap: Record<string, string> = {
+        'WhatsApp': 'whatsapp', 'whatsapp': 'whatsapp',
+        'E-posta': 'email', 'Email': 'email', 'email': 'email',
+        'Telefon': 'phone', 'Phone': 'phone', 'phone': 'phone',
+      }
+      const iletisimRaw = fields.iletisim || ''
+      const iletisimTuru = iletisimMap[iletisimRaw] || iletisimRaw.toLowerCase() || null
+
+      // fiyat_tipi mapping
+      const fiyatMap: Record<string, string> = {
+        'Sadece Taş': 'sadece_tas', 'Stone only': 'sadece_tas', 'sadece_tas': 'sadece_tas',
+        'Taş + Yapıştırıcı + Derz': 'tas_ve_malzeme', 'Stone + Adhesive + Grout': 'tas_ve_malzeme', 'tas_ve_malzeme': 'tas_ve_malzeme',
+      }
+      const fiyatTipi = fiyatMap[fields.fiyat_tipi || ''] || fields.fiyat_tipi || 'sadece_tas'
+
+      // tas_tercihi array'e cevir (virgul veya ornek: "Classic (RKS 1)")
+      const tasArr = fields.tas_tercihi
+        ? fields.tas_tercihi.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+        : []
+
+      // dil kodunu 2 karaktere indir
+      const tercihDil = (fields.dil || 'tr').toLowerCase().slice(0, 2)
+
+      try {
+        await supabaseAdmin.from('teklifler').insert({
+          ad_soyad: lead?.name || 'Chatbot Müşteri',
+          telefon: lead?.phone || '',
+          email: lead?.email || null,
+          ulke: fields.ulke || 'Türkiye',
+          il: fields.il || 'belirtilmedi',
+          ilce: fields.ilce || null,
+          proje_tipi: fields.proje_tipi || 'Belirtilmedi',
+          tas_tercihi: tasArr,
+          cephe_metre: fields.metrekare ? parseInt(fields.metrekare.replace(/\D/g, '')) || null : null,
+          dis_kose_uzunluk: fields.dis_kose ? parseInt(fields.dis_kose.replace(/\D/g, '')) || null : null,
+          fiyat_tipi: fiyatTipi,
+          aciklama: fields.aciklama || null,
+          kaynak: fields.kaynak || 'Chatbot',
+          iletisim_turu: iletisimTuru,
+          tercih_dil: tercihDil,
+          foto_urls: [],
+          durum: 'Yeni',
+        })
+        console.log('[Chatbot Teklif] Supabase insert OK')
+      } catch (dbErr) {
+        console.error('[Chatbot Teklif] Supabase insert error:', dbErr)
+      }
 
       // E-posta gönder (müşteriye + ekibe)
       const emailLocale = fields.dil?.toLowerCase().slice(0, 2) || 'tr'
