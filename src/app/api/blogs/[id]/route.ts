@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { pingBlogPublished } from '@/lib/indexnow'
 
 // GET /api/blogs/[id]
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -51,6 +52,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // IndexNow — yayina alindiysa Bing/Yandex'e bildir (fire-and-forget)
+  if (body.is_published === true && data?.slug) {
+    pingBlogPublished(data.slug).catch(() => {})
+  }
+
   return NextResponse.json(data)
 }
 

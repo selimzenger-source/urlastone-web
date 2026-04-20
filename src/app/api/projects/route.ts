@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { pingProjectAdded } from '@/lib/indexnow'
+import { generateSlug } from '@/lib/slug'
 
 // Vercel Data Cache'i devre dışı bırak — yeni eklenen projeler anında görünsün
 export const dynamic = 'force-dynamic'
@@ -57,6 +59,12 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // IndexNow — yeni proje aktif ise Bing/Yandex'e bildir (fire-and-forget)
+  if (data?.active !== false && data?.project_name) {
+    const slug = generateSlug(data.project_name)
+    pingProjectAdded(slug).catch(() => {})
   }
 
   return NextResponse.json(data, { status: 201 })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase, supabaseAdmin } from '@/lib/supabase'
 import { generateSlug } from '@/lib/slug'
+import { pingBlogPublished } from '@/lib/indexnow'
 
 // GET /api/blogs - List blogs
 export async function GET(req: NextRequest) {
@@ -95,5 +96,11 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // IndexNow — yeni blog yayinlandiysa Bing/Yandex'e bildir (fire-and-forget)
+  if (is_published && data?.slug) {
+    pingBlogPublished(data.slug).catch(() => {})
+  }
+
   return NextResponse.json(data)
 }
