@@ -10,9 +10,9 @@ const DEDUP_WINDOW_MS = 30 * 60 * 1000 // 30 dk
 
 function cleanExpired() {
   const cutoff = Date.now() - DEDUP_WINDOW_MS
-  for (const [key, ts] of recentSummaries.entries()) {
+  recentSummaries.forEach((ts, key) => {
     if (ts < cutoff) recentSummaries.delete(key)
-  }
+  })
 }
 
 export async function POST(req: NextRequest) {
