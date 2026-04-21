@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramNotification } from '@/lib/telegram'
 import { isIPBlocked } from '@/lib/bot-knowledge'
 
+// Lead dedup: ayni IP + telefon 30 dk icinde 1 kez bildirilir
+const recentLeads = new Map<string, number>()
+const LEAD_DEDUP_WINDOW_MS = 30 * 60 * 1000
+
+function cleanExpiredLeads() {
+  const cutoff = Date.now() - LEAD_DEDUP_WINDOW_MS
+  recentLeads.forEach((ts, key) => {
+    if (ts < cutoff) recentLeads.delete(key)
+  })
+}
+
 // Lead bilgilerini email + Telegram ile bildir
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +28,17 @@ export async function POST(req: NextRequest) {
     if (await isIPBlocked(ip)) {
       return NextResponse.json({ error: 'Erişiminiz kısıtlanmıştır.' }, { status: 403 })
     }
+
+    // Dedup: ayni IP + telefon 30 dk icinde varsa skip (double submit koruma)
+    cleanExpiredLeads()
+    const dedupKey = `${ip}:${phone}`
+    const lastSent = recentLeads.get(dedupKey)
+    if (lastSent && Date.now() - lastSent < LEAD_DEDUP_WINDOW_MS) {
+      console.log(`[ChatLead] Duplicate skipped — IP: ${ip}, phone: ${phone}`)
+      return NextResponse.json({ ok: true, skipped: 'duplicate' })
+    }
+    recentLeads.set(dedupKey, Date.now())
+
     const tarih = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
 
     // 1) Email bildirim (Resend)
