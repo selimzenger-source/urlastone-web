@@ -3,6 +3,20 @@ import Anthropic from '@anthropic-ai/sdk'
 import { getDynamicPrompt, isIPBlocked, blockIP, getProductProjectPrompt } from '@/lib/bot-knowledge'
 import { sendTelegramNotification } from '@/lib/telegram'
 import { supabaseAdmin } from '@/lib/supabase'
+import crypto from 'crypto'
+
+// Server-side teklif dedup — ayni musteri ayni teklifi 30 dk icinde 1 kez gonderebilir
+// Sebep: Claude bazen ayni konusmanin ilerisinde TEKLIF_DATA marker'ini tekrar uretiyor,
+// bu da duplicate insert'e yol aciyordu.
+const recentTeklifler = new Map<string, number>()
+const TEKLIF_DEDUP_WINDOW_MS = 30 * 60 * 1000
+
+function cleanExpiredTeklifler() {
+  const cutoff = Date.now() - TEKLIF_DEDUP_WINDOW_MS
+  recentTeklifler.forEach((ts, key) => {
+    if (ts < cutoff) recentTeklifler.delete(key)
+  })
+}
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -390,74 +404,150 @@ export async function POST(req: NextRequest) {
 Bu teklif chatbot üzerinden adım adım toplandı.
 Engellemek icin: /engelle ${ip}`
 
-      // Telegram'a gönder
-      sendTelegramNotification(teklifMsg).catch(() => {})
+      // Dedup: ayni IP + telefon + il + proje_tipi 30 dk icinde 1 kez insert edilir
+      // Sebep: Claude bazen konusmanin ilerisinde TEKLIF_DATA marker'ini tekrar uretiyor
+      cleanExpiredTeklifler()
+      const teklifDedupKey = crypto
+        .createHash('md5')
+        .update(`${ip}|${lead?.phone || ''}|${fields.il || ''}|${fields.proje_tipi || ''}`)
+        .digest('hex')
+        .slice(0, 16)
+      const lastTeklifSent = recentTeklifler.get(teklifDedupKey)
+      const isDuplicate = lastTeklifSent && Date.now() - lastTeklifSent < TEKLIF_DEDUP_WINDOW_MS
 
-      // Admin panele ekle: teklifler tablosuna insert
-      // iletisim_turu mapping: frontend formatina (phone/email/whatsapp)
-      const iletisimMap: Record<string, string> = {
-        'WhatsApp': 'whatsapp', 'whatsapp': 'whatsapp',
-        'E-posta': 'email', 'Email': 'email', 'email': 'email',
-        'Telefon': 'phone', 'Phone': 'phone', 'phone': 'phone',
-      }
-      const iletisimRaw = fields.iletisim || ''
-      const iletisimTuru = iletisimMap[iletisimRaw] || iletisimRaw.toLowerCase() || null
+      if (isDuplicate) {
+        console.log(`[Chatbot Teklif] Duplicate skipped — IP: ${ip}, phone: ${lead?.phone}`)
+        // Telegram da gondermeyelim, duplicate cunku
+      } else {
+        recentTeklifler.set(teklifDedupKey, Date.now())
 
-      // fiyat_tipi mapping
-      const fiyatMap: Record<string, string> = {
-        'Sadece Taş': 'sadece_tas', 'Stone only': 'sadece_tas', 'sadece_tas': 'sadece_tas',
-        'Taş + Yapıştırıcı + Derz': 'tas_ve_malzeme', 'Stone + Adhesive + Grout': 'tas_ve_malzeme', 'tas_ve_malzeme': 'tas_ve_malzeme',
-      }
-      const fiyatTipi = fiyatMap[fields.fiyat_tipi || ''] || fields.fiyat_tipi || 'sadece_tas'
+        // Telegram'a gönder
+        sendTelegramNotification(teklifMsg).catch(() => {})
 
-      // tas_tercihi array'e cevir (virgul veya ornek: "Classic (RKS 1)")
-      const tasArr = fields.tas_tercihi
-        ? fields.tas_tercihi.split(/[,;]/).map(s => s.trim()).filter(Boolean)
-        : []
+        // TR normalization — admin panelinde Turkce degerler gorunsun
+        // proje_tipi: "Wall covering" → "Cephe Kaplama" vb.
+        const projeTipiMap: Record<string, string> = {
+          'wall covering': 'Cephe Kaplama',
+          'facade cladding': 'Cephe Kaplama',
+          'facade': 'Cephe Kaplama',
+          'cephe kaplama': 'Cephe Kaplama',
+          'residential': 'Konut',
+          'interior': 'İç Mekan',
+          'interior wall': 'İç Mekan Duvar',
+          'fireplace': 'Şömine',
+          'pool': 'Havuz',
+          'bord de piscine': 'Havuz Kenarı',
+          'poolside': 'Havuz Kenarı',
+          'landscape': 'Peyzaj',
+          'garden': 'Bahçe & Peyzaj',
+          'garden & landscape': 'Bahçe & Peyzaj',
+          'flooring': 'Zemin Döşeme',
+          'floor': 'Zemin',
+          'stairs': 'Merdiven',
+          'commercial': 'Ticari',
+          'hotel': 'Otel',
+          'villa': 'Villa',
+          'apartment': 'Apartman',
+        }
+        const projeTipiRaw = (fields.proje_tipi || '').trim()
+        const projeTipi = projeTipiMap[projeTipiRaw.toLowerCase()] || projeTipiRaw || 'Belirtilmedi'
 
-      // dil kodunu 2 karaktere indir
-      const tercihDil = (fields.dil || 'tr').toLowerCase().slice(0, 2)
+        // fiyat_tipi mapping: DB key (sadece_tas / tas_ve_malzeme)
+        const fiyatMap: Record<string, string> = {
+          'sadece taş': 'sadece_tas', 'stone only': 'sadece_tas', 'sadece_tas': 'sadece_tas',
+          'taş + yapıştırıcı + derz': 'tas_ve_malzeme', 'stone + adhesive + grout': 'tas_ve_malzeme',
+          'stone with adhesive': 'tas_ve_malzeme', 'tas_ve_malzeme': 'tas_ve_malzeme',
+        }
+        const fiyatTipi = fiyatMap[(fields.fiyat_tipi || '').toLowerCase()] || fields.fiyat_tipi || 'sadece_tas'
 
-      try {
-        await supabaseAdmin.from('teklifler').insert({
-          ad_soyad: lead?.name || 'Chatbot Müşteri',
-          telefon: lead?.phone || '',
-          email: lead?.email || null,
-          ulke: fields.ulke || 'Türkiye',
-          il: fields.il || 'belirtilmedi',
-          ilce: fields.ilce || null,
-          proje_tipi: fields.proje_tipi || 'Belirtilmedi',
-          tas_tercihi: tasArr,
-          cephe_metre: fields.metrekare ? parseInt(fields.metrekare.replace(/\D/g, '')) || null : null,
-          dis_kose_uzunluk: fields.dis_kose ? parseInt(fields.dis_kose.replace(/\D/g, '')) || null : null,
-          fiyat_tipi: fiyatTipi,
-          aciklama: fields.aciklama || null,
-          kaynak: fields.kaynak || 'Chatbot',
-          iletisim_turu: iletisimTuru,
-          tercih_dil: tercihDil,
-          foto_urls: [],
-          durum: 'Yeni',
-        })
-        console.log('[Chatbot Teklif] Supabase insert OK')
-      } catch (dbErr) {
-        console.error('[Chatbot Teklif] Supabase insert error:', dbErr)
-      }
+        // iletisim_turu: DB key (phone/email/whatsapp)
+        const iletisimMap: Record<string, string> = {
+          'whatsapp': 'whatsapp', 'wp': 'whatsapp',
+          'e-posta': 'email', 'email': 'email', 'mail': 'email',
+          'telefon': 'phone', 'phone': 'phone', 'telephone': 'phone',
+        }
+        const iletisimTuru = iletisimMap[(fields.iletisim || '').toLowerCase()] || (fields.iletisim || '').toLowerCase() || null
 
-      // E-posta gönder (müşteriye + ekibe)
-      const emailLocale = fields.dil?.toLowerCase().slice(0, 2) || 'tr'
-      try {
-        await fetch(new URL('/api/chat/teklif-email', req.url).toString(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lead: { name: lead?.name, phone: lead?.phone, email: lead?.email },
-            fields,
-            locale: emailLocale,
-            ip,
-          }),
-        })
-      } catch (emailErr) {
-        console.error('[Teklif Email] Error:', emailErr)
+        // tas_tercihi array + TR normalization (belirsiz ifadeleri Turkce'ye cevir)
+        const tasTercihiRaw = (fields.tas_tercihi || '').trim()
+        const tasNormalize = (s: string): string => {
+          const low = s.toLowerCase().trim()
+          if (low.includes('not sure') || low.includes('recommendation') || low.includes('any') || low === '-')
+            return 'Fark etmez (öneri bekliyor)'
+          if (low.includes('unsure') || low.includes('undecided')) return 'Kararsız'
+          return s.trim()
+        }
+        const tasArr = tasTercihiRaw
+          ? tasTercihiRaw.split(/[,;]/).map(s => tasNormalize(s)).filter(Boolean)
+          : []
+
+        // ulke TR'ye normalize (e-mail/chatbot ingilizce olabilir)
+        const ulkeMap: Record<string, string> = {
+          'turkey': 'Türkiye', 'türkiye': 'Türkiye', 'tr': 'Türkiye',
+          'new zealand': 'Yeni Zelanda',
+          'germany': 'Almanya', 'deutschland': 'Almanya',
+          'france': 'Fransa',
+          'spain': 'İspanya', 'españa': 'İspanya',
+          'italy': 'İtalya', 'italia': 'İtalya',
+          'greece': 'Yunanistan', 'ελλάδα': 'Yunanistan',
+          'uk': 'İngiltere', 'united kingdom': 'İngiltere', 'england': 'İngiltere',
+          'usa': 'ABD', 'united states': 'ABD',
+          'russia': 'Rusya', 'россия': 'Rusya',
+          'netherlands': 'Hollanda', 'holland': 'Hollanda',
+          'belgium': 'Belçika', 'belgique': 'Belçika',
+          'romania': 'Romanya',
+          'bulgaria': 'Bulgaristan',
+          'poland': 'Polonya', 'polska': 'Polonya',
+          'saudi arabia': 'Suudi Arabistan',
+          'uae': 'BAE', 'united arab emirates': 'BAE',
+        }
+        const ulkeRaw = (fields.ulke || 'Türkiye').trim()
+        const ulke = ulkeMap[ulkeRaw.toLowerCase()] || ulkeRaw
+
+        // dil kodunu 2 karaktere indir
+        const tercihDil = (fields.dil || 'tr').toLowerCase().slice(0, 2)
+
+        try {
+          await supabaseAdmin.from('teklifler').insert({
+            ad_soyad: lead?.name || 'Chatbot Müşteri',
+            telefon: lead?.phone || '',
+            email: lead?.email || null,
+            ulke,
+            il: fields.il || 'belirtilmedi',
+            ilce: fields.ilce || null,
+            proje_tipi: projeTipi,
+            tas_tercihi: tasArr,
+            cephe_metre: fields.metrekare ? parseInt(fields.metrekare.replace(/\D/g, '')) || null : null,
+            dis_kose_uzunluk: fields.dis_kose ? parseInt(fields.dis_kose.replace(/\D/g, '')) || null : null,
+            fiyat_tipi: fiyatTipi,
+            aciklama: fields.aciklama || null,
+            kaynak: fields.kaynak || 'Chatbot',
+            iletisim_turu: iletisimTuru,
+            tercih_dil: tercihDil,
+            foto_urls: [],
+            durum: 'Yeni',
+          })
+          console.log('[Chatbot Teklif] Supabase insert OK')
+        } catch (dbErr) {
+          console.error('[Chatbot Teklif] Supabase insert error:', dbErr)
+        }
+
+        // E-posta gönder (müşteriye + ekibe) — sadece duplicate degilse
+        const emailLocale = fields.dil?.toLowerCase().slice(0, 2) || 'tr'
+        try {
+          await fetch(new URL('/api/chat/teklif-email', req.url).toString(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lead: { name: lead?.name, phone: lead?.phone, email: lead?.email },
+              fields,
+              locale: emailLocale,
+              ip,
+            }),
+          })
+        } catch (emailErr) {
+          console.error('[Teklif Email] Error:', emailErr)
+        }
       }
 
       // Teklif marker'ını kullanıcıya gösterme
