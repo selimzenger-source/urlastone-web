@@ -10,6 +10,7 @@ declare global {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/context/LanguageContext'
 import { MessageCircle, X, Send, Loader2, ChevronDown, Paperclip, Mic, MicOff } from 'lucide-react'
 import { cdnImg } from '@/lib/cdn'
@@ -273,6 +274,10 @@ function clearChatSession() {
 export default function ChatWidget() {
   const { locale } = useLanguage()
   const t = chatTranslations[locale] || chatTranslations.en
+  const pathname = usePathname()
+
+  // Admin paneli ve alt rotalarinda widget'i hic gosterme
+  const isAdminRoute = pathname?.startsWith('/admin')
 
   // Önceki oturumu yükle (5 dk içinde dönmüşse)
   const savedSession = typeof window !== 'undefined' ? loadChatSession() : null
@@ -736,31 +741,31 @@ export default function ChatWidget() {
     clearChatSession()
   }
 
-  // 15 saniyede bir otomatik tanıtım baloncuğu (döngüsel)
+  // Otomatik tanıtım baloncuğu (döngüsel)
   const [showGreeting, setShowGreeting] = useState(false)
 
   useEffect(() => {
-    if (isOpen) { setShowGreeting(false); return }
+    if (isOpen || isAdminRoute) { setShowGreeting(false); return }
 
     const show = () => setShowGreeting(true)
     const hide = () => setShowGreeting(false)
 
-    // İlk giriş: 4 saniye sonra göster
+    // İlk giriş: 4 saniye sonra göster, 10 saniye kalsın (okunabilsin)
     const firstTimer = setTimeout(() => {
       show()
-      setTimeout(hide, 6000)
+      setTimeout(hide, 10000)
     }, 4000)
 
-    // Sonra her 20 saniyede tekrarla
+    // Sonra her 30 saniyede tekrarla (10s görünür + 20s bekle)
     const interval = setInterval(() => {
       show()
-      setTimeout(hide, 6000)
-    }, 26000)
+      setTimeout(hide, 10000)
+    }, 30000)
 
     return () => { clearTimeout(firstTimer); clearInterval(interval) }
-  }, [isOpen])
+  }, [isOpen, isAdminRoute])
 
-  if (isBlocked) return null
+  if (isBlocked || isAdminRoute) return null
 
   const greetingTexts: Record<string, string> = {
     tr: 'Merhaba! Ben Uri, AI asistanınız. Yardıma ihtiyacınız olursa buradayım',
