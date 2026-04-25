@@ -26,11 +26,27 @@ const nextConfig = {
       { source: '/taslar/:slug', destination: '/urunlerimiz/:slug', permanent: true },
       { source: '/uygulamalarimiz', destination: '/projelerimiz', permanent: true },
       { source: '/uygulamalarimiz/:slug', destination: '/projelerimiz/:slug', permanent: true },
-      // Eski site 404'leri — GSC'de gorduler, SEO degerini kurtaralim
+      // Eski site 404'leri — GSC tespiti, SEO degerini kurtarma (301)
       { source: '/Geo-Rockshell', destination: '/urunlerimiz', permanent: true },
-      { source: '/logo-white.png', destination: '/logo-outline.png', permanent: true },
+      { source: '/Geo-Rockshell/:slug', destination: '/urunlerimiz', permanent: true },
+      { source: '/logo-white.png', destination: '/logo.png', permanent: true },
+      // Eski CMS favicon/gorsel yollari
       { source: '/gallery/favicons/:file', destination: '/favicon.png', permanent: true },
+      { source: '/gallery/images/:path*', destination: '/', permanent: true },
       { source: '/gallery_gen/:path*', destination: '/', permanent: true },
+      // Eski WordPress / Joomla / diger CMS kaliplari
+      { source: '/wp-content/:path*', destination: '/', permanent: true },
+      { source: '/wp-admin/:path*', destination: '/', permanent: true },
+      { source: '/wp-includes/:path*', destination: '/', permanent: true },
+      { source: '/uploads/:path*', destination: '/', permanent: true },
+      { source: '/images/:path*', destination: '/', permanent: true },
+      // Eski Rockshell urun sayfalari
+      { source: '/Crazy-Rockshell', destination: '/urunlerimiz', permanent: true },
+      { source: '/Crazy-Rockshell/:slug', destination: '/urunlerimiz', permanent: true },
+      { source: '/Mix-Rockshell/:slug', destination: '/urunlerimiz', permanent: true },
+      { source: '/Classic-Line-Rockshell', destination: '/urunlerimiz', permanent: true },
+      { source: '/Classic-Crazy-Rockshell', destination: '/urunlerimiz', permanent: true },
+      { source: '/Classic-Mix-Rockshell', destination: '/urunlerimiz', permanent: true },
 
       // Katalog kisayolu — Vercel edge-level redirect (sifir function invocation, sifir bandwidth)
       // permanent: false (302) — dosya adi degistiginde tarayici cache'i yanilmasin

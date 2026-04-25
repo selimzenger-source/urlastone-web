@@ -118,7 +118,7 @@ const jsonLd = {
       },
       geo: { '@type': 'GeoCoordinates', latitude: 38.3220, longitude: 26.7636 },
       image: 'https://www.urlastone.com/og-image.jpg',
-      logo: 'https://www.urlastone.com/logo-white.png',
+      logo: 'https://www.urlastone.com/logo.png',
       priceRange: '$$',
       currenciesAccepted: 'TRY, USD, EUR',
       paymentAccepted: 'Cash, Credit Card, Bank Transfer',
