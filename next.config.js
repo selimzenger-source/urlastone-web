@@ -26,6 +26,12 @@ const nextConfig = {
       { source: '/taslar/:slug', destination: '/urunlerimiz/:slug', permanent: true },
       { source: '/uygulamalarimiz', destination: '/projelerimiz', permanent: true },
       { source: '/uygulamalarimiz/:slug', destination: '/projelerimiz/:slug', permanent: true },
+      // Eski site 404'leri — GSC'de gorduler, SEO degerini kurtaralim
+      { source: '/Geo-Rockshell', destination: '/urunlerimiz', permanent: true },
+      { source: '/logo-white.png', destination: '/logo-outline.png', permanent: true },
+      { source: '/gallery/favicons/:file', destination: '/favicon.png', permanent: true },
+      { source: '/gallery_gen/:path*', destination: '/', permanent: true },
+
       // Katalog kisayolu — Vercel edge-level redirect (sifir function invocation, sifir bandwidth)
       // permanent: false (302) — dosya adi degistiginde tarayici cache'i yanilmasin
       // Yeni katalog yuklenince dosya adi ayni kalir ise URL otomatik calisir,
