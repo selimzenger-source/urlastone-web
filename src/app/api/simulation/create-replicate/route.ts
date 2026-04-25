@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { ApplyMode, SurfaceContext } from '@/lib/simulation'
 import { supabaseAdmin } from '@/lib/supabase'
 import { sendTelegramMediaGroup, toLowResUrl } from '@/lib/telegram'
+import { waitUntil } from '@vercel/functions'
 
 // ═══════════════════════════════════════════════════════════════
 // PARALEL TEST ROUTE: Replicate (google/nano-banana-pro)
@@ -576,10 +577,12 @@ export async function POST(req: NextRequest) {
       : stoneCode || 'bilinmiyor'
     const telegramCaption = `\`${ip}\` IP adresinden 1 kişi AI simülasyonla sonuç üretti\nSeçilen taş: *${displayStoneName}*`
 
-    sendTelegramMediaGroup([
-      { url: toLowResUrl(buildingUrl, 1200), caption: `📷 Before\n\n${telegramCaption}` },
-      { url: toLowResUrl(outputUrl, 1200), caption: '✨ After' },
-    ], { separate: true }).catch(err => console.error('[Telegram Simulation Notif] Error:', err))
+    // Sadece After — kullaniciya yansimasin, waitUntil ile arka planda
+    waitUntil(
+      sendTelegramMediaGroup([
+        { url: toLowResUrl(outputUrl, 1200), caption: `✨ After\n\n${telegramCaption}` },
+      ]).catch(err => console.error('[Telegram Simulation Notif] Error:', err))
+    )
 
     // 9. Return
     const remaining = await getRemainingCount(ip)

@@ -29,9 +29,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erişiminiz kısıtlanmıştır.' }, { status: 403 })
     }
 
-    // Dedup: ayni IP + telefon 30 dk icinde varsa skip (double submit koruma)
+    // Dedup: ayni IP 30 dk icinde varsa skip (double submit + spam koruma)
     cleanExpiredLeads()
-    const dedupKey = `${ip}:${phone}`
+    const dedupKey = ip
     const lastSent = recentLeads.get(dedupKey)
     if (lastSent && Date.now() - lastSent < LEAD_DEDUP_WINDOW_MS) {
       console.log(`[ChatLead] Duplicate skipped — IP: ${ip}, phone: ${phone}`)
