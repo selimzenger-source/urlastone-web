@@ -205,6 +205,12 @@ function formatMessage(text: string): string {
   formatted = formatted.replace(/\|\|\|AUTO_BLOCK\|\|\|/g, '')
   formatted = formatted.replace(/\|\|\|BLOCK_REASON\|\|\|[\s\S]*?\|\|\|END_REASON\|\|\|/g, '')
   formatted = formatted.replace(/\|\|\|REPORT_IRRELEVANT\|\|\|/g, '')
+  // [![alt](img)](link) → tiklanabilir thumbnail (proje gorseli)
+  formatted = formatted.replace(/\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
+    '<a href="$3" target="_blank" rel="noopener noreferrer" class="inline-block mr-2 mb-2"><img src="$2" alt="$1" class="w-20 h-20 object-cover rounded-lg border border-[#d2b96e]/30 hover:border-[#d2b96e] transition-colors" /></a>')
+  // ![alt](url) → <img> (standalone gorsel)
+  formatted = formatted.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+    '<img src="$2" alt="$1" class="inline-block w-20 h-20 object-cover rounded-lg mr-2 mb-2 border border-[#d2b96e]/30" />')
   // [text](url) → <a> linkleri (yeni sekmede aç)
   formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#d2b96e] underline hover:text-[#e0c97a] transition-colors">$1</a>')
   // Düz URL'leri de linkle (markdown linki olmayanlar) - yeni sekmede aç

@@ -2,6 +2,7 @@
 // Telegram bot komutlarıyla yönetilir
 
 import { supabase } from '@/lib/supabase'
+import { generateSlug } from '@/lib/slug'
 
 let kvStore: Record<string, string> | null = null
 
@@ -333,22 +334,39 @@ export async function getProductProjectPrompt(): Promise<string> {
     prompt += `\nŞehir projesi linki formatı: https://www.urlastone.com/projelerimiz/SEHIR-dogal-tas (küçük harf, Türkçe karaktersiz)\n`
     prompt += `Şehirde proje yoksa: "Bu şehirde henüz projemiz yok ama Türkiye genelinde ${projects.length}+ projemiz var!" + genel proje sayfası linki\n\n`
 
-    // Ürüne göre proje eşleştirme
-    const productProjects: Record<string, string[]> = {}
+    // Ürüne göre proje eşleştirme — gorsel + link ile
+    type ProjEntry = { name: string; city: string; slug: string; photo: string | null }
+    const productProjects: Record<string, ProjEntry[]> = {}
     for (const proj of projects) {
       if (!proj.product) continue
-      const prodKey = proj.product.split(/\s+/).slice(0, 2).join(' ') // "EBT-2 Scabas" → ilk 2 kelime
+      const prodKey = proj.product.split(/\s+/).slice(0, 2).join(' ')
       if (!productProjects[prodKey]) productProjects[prodKey] = []
       if (productProjects[prodKey].length < 3) {
-        productProjects[prodKey].push(`${proj.project_name} (${proj.city})`)
+        const photos = Array.isArray(proj.photos) ? proj.photos as string[] : []
+        productProjects[prodKey].push({
+          name: proj.project_name,
+          city: proj.city,
+          slug: generateSlug(proj.project_name),
+          photo: photos[0] || null,
+        })
       }
     }
 
     if (Object.keys(productProjects).length > 0) {
-      prompt += `### Ürüne Göre Projeler\n`
-      prompt += `"Bu taşla yapılan projeleriniz var mı?" sorusuna cevap ver:\n`
+      prompt += `### Ürüne Göre Projeler (gorsel + link)\n`
+      prompt += `"Bu taşla yapılan projeleriniz var mı?" sorusuna cevap verirken her projeyi su markdown formatinda paylas:\n`
+      prompt += `[![ProjeAdi](GORSEL_URL)](https://www.urlastone.com/projelerimiz/SLUG)\n`
+      prompt += `Veya kisa: [ProjeAdi (Sehir)](https://www.urlastone.com/projelerimiz/SLUG)\n\n`
       for (const [prod, projs] of Object.entries(productProjects)) {
-        prompt += `- ${prod}: ${projs.join(', ')}\n`
+        prompt += `- **${prod}**:\n`
+        for (const pr of projs) {
+          const link = `https://www.urlastone.com/projelerimiz/${pr.slug}`
+          if (pr.photo) {
+            prompt += `  - [![${pr.name}](${pr.photo})](${link}) ${pr.name} (${pr.city})\n`
+          } else {
+            prompt += `  - [${pr.name} (${pr.city})](${link})\n`
+          }
+        }
       }
       prompt += '\n'
     }
