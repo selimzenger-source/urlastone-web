@@ -7,6 +7,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { languages } from '@/lib/i18n'
 import { turkishCities, cityDistricts } from '@/lib/turkey-cities'
 import { useSearchParams } from 'next/navigation'
+import { suggestEmail } from '@/lib/email-suggest'
 
 interface FormData {
   adSoyad: string
@@ -75,6 +76,9 @@ export default function TeklifForm() {
     fiyatTipi: 'sadece_tas', aciklama: '', kaynak: '',
     iletisimTuru: 'phone', tercihDil: locale,
   })
+
+  // Email typo onerisi (gnail.com → gmail.com)
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
 
   const [dosyalar, setDosyalar] = useState<File[]>([])
   const [gonderiliyor, setGonderiliyor] = useState(false)
@@ -471,10 +475,21 @@ export default function TeklifForm() {
 
         <div>
           <label className="block text-white/50 text-xs font-mono mb-2">{t.form_email_label} <span className="text-gold-400">*</span></label>
-          <input type="email" name="email" required value={form.email} onChange={handleChange}
+          <input type="email" name="email" autoComplete="email" required value={form.email} onChange={handleChange}
+            onBlur={e => setEmailSuggestion(suggestEmail(e.target.value))}
             placeholder={t.form_email_placeholder}
             className={`${inputClass} ${errors.email ? 'border-red-500/50' : ''}`} />
           {errors.email && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.email}</p>}
+          {emailSuggestion && !errors.email && (
+            <p className="text-[11px] font-mono mt-1 text-amber-300/80">
+              Bunu mu demek istediniz:{' '}
+              <button type="button" className="underline hover:text-amber-200"
+                onClick={() => { setForm(f => ({ ...f, email: emailSuggestion })); setEmailSuggestion(null) }}>
+                {emailSuggestion}
+              </button>
+              {' '}?
+            </p>
+          )}
         </div>
 
         {/* İletişim Türü & Dil Tercihi */}

@@ -14,6 +14,7 @@ import { usePathname } from 'next/navigation'
 import { useLanguage } from '@/context/LanguageContext'
 import { MessageCircle, X, Send, Loader2, ChevronDown, Paperclip, Mic, MicOff } from 'lucide-react'
 import { cdnImg } from '@/lib/cdn'
+import { suggestEmail } from '@/lib/email-suggest'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -291,6 +292,7 @@ export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(!!savedSession)
   const [phase, setPhase] = useState<'form' | 'chat'>(savedSession?.phase === 'chat' ? 'chat' : 'form')
   const [lead, setLead] = useState<LeadInfo>(savedSession?.lead || { name: '', email: '', phone: '' })
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>(savedSession?.messages || [])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -878,11 +880,23 @@ export default function ChatWidget() {
               />
               <input
                 type="email"
+                autoComplete="email"
                 value={lead.email}
                 onChange={e => setLead({ ...lead, email: e.target.value })}
+                onBlur={e => setEmailSuggestion(suggestEmail(e.target.value))}
                 placeholder={t.emailPlaceholder}
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white placeholder-white/30 text-[16px] md:text-sm font-body outline-none focus:border-[#b39345]/50 transition-colors"
               />
+              {emailSuggestion && (
+                <p className="text-[11px] font-body text-amber-300/80 -mt-1">
+                  Bunu mu demek istediniz:{' '}
+                  <button type="button" className="underline hover:text-amber-200"
+                    onClick={() => { setLead(l => ({ ...l, email: emailSuggestion })); setEmailSuggestion(null) }}>
+                    {emailSuggestion}
+                  </button>
+                  {' '}?
+                </p>
+              )}
               <input
                 type="tel"
                 value={lead.phone}
