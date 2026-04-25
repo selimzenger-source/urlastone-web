@@ -3,10 +3,6 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 Disallow: /teklif-basarili
-Disallow: /*?lang=
-
-# AI Content Signals (contentsignals.org)
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
 
 # AI Crawlers — all allowed
 User-Agent: GPTBot
