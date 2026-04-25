@@ -3,6 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 Disallow: /teklif-basarili
+Disallow: /_next/static/
 
 # AI Crawlers — all allowed
 User-Agent: GPTBot

@@ -40,6 +40,12 @@ const nextConfig = {
       { source: '/wp-includes/:path*', destination: '/', permanent: true },
       { source: '/uploads/:path*', destination: '/', permanent: true },
       { source: '/images/:path*', destination: '/', permanent: true },
+      // Eski pattern gorsel URL'leri
+      { source: '/pattern-line.png', destination: '/urunlerimiz', permanent: true },
+      { source: '/pattern-crazy.png', destination: '/urunlerimiz', permanent: true },
+      { source: '/pattern-nature.png', destination: '/urunlerimiz', permanent: true },
+      { source: '/pattern-mix.png', destination: '/urunlerimiz', permanent: true },
+
       // Eski Rockshell urun sayfalari
       { source: '/Crazy-Rockshell', destination: '/urunlerimiz', permanent: true },
       { source: '/Crazy-Rockshell/:slug', destination: '/urunlerimiz', permanent: true },
