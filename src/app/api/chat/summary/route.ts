@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramNotification } from '@/lib/telegram'
-import crypto from 'crypto'
 
 // Server-side dedup: ayni IP + ayni konusma 30 dk icinde 1 kezden fazla gonderilmesin
 // Lambda restart'inde Map temizlenir ama client side sessionStorage da var, ikisi birlikte
@@ -29,25 +28,14 @@ export async function POST(req: NextRequest) {
     // Müşteri hiç mesaj yazmadıysa özet gönderme (sadece açıp kapamış)
     if (userMessages.length === 0) return NextResponse.json({ ok: true })
 
-    // Dedup kontrolu — konusma icerigi hash'i + IP
+    // Dedup — sadece IP, 30 dk icinde 1 ozet (mesaj icerigi degisse bile yine 1 ozet)
     cleanExpired()
-    const contentHash = crypto
-      .createHash('md5')
-      .update(
-        (messages as Array<{ role: string; content: string }>)
-          .map(m => `${m.role}:${(m.content || '').slice(0, 100)}`)
-          .join('|')
-      )
-      .digest('hex')
-      .slice(0, 12)
-    const dedupKey = `${ip}:${contentHash}`
+    const dedupKey = ip
     const lastSent = recentSummaries.get(dedupKey)
     if (lastSent && Date.now() - lastSent < DEDUP_WINDOW_MS) {
-      console.log(`[Chat Summary] Duplicate skipped — IP: ${ip}, hash: ${contentHash}`)
+      console.log(`[Chat Summary] Duplicate skipped — IP: ${ip}`)
       return NextResponse.json({ ok: true, skipped: 'duplicate' })
     }
-    // Ipin ilk mesajdan beri X dakikali mesajlari olsa dahi, hic degisiklik yoksa skip
-    // Kaydet (Telegram gonderme basarili olsa da olmasa da, cunku yine 30 dk bekletmek istiyoruz)
     recentSummaries.set(dedupKey, Date.now())
 
     const now = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })

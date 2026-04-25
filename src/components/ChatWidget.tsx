@@ -736,6 +736,25 @@ export default function ChatWidget() {
     return () => { if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current) }
   }, [messages, phase, sendSummary])
 
+  // Sayfa kapanirken/sekme kapanirken ozet gonder — sendBeacon kullaniyoruz cunku
+  // fetch sayfa kapaninca iptal olur ama sendBeacon arka planda garantili gider
+  useEffect(() => {
+    if (phase !== 'chat') return
+    const handler = () => {
+      if (isSummarySent() || messages.length <= 1) return
+      try { sessionStorage.setItem('chat_summary_sent', 'true') } catch {}
+      const payload = JSON.stringify({ name: lead.name, phone: lead.phone, email: lead.email, messages, locale })
+      const blob = new Blob([payload], { type: 'application/json' })
+      navigator.sendBeacon('/api/chat/summary', blob)
+    }
+    window.addEventListener('pagehide', handler)
+    window.addEventListener('beforeunload', handler)
+    return () => {
+      window.removeEventListener('pagehide', handler)
+      window.removeEventListener('beforeunload', handler)
+    }
+  }, [phase, messages, lead, locale, isSummarySent])
+
   const handleNewChat = () => {
     if (messages.length > 1) sendSummary() // kapanırken özet gönder
     setPhase('form')
