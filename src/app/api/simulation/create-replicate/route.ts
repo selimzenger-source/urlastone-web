@@ -132,11 +132,11 @@ function getSurfaceDescription(surfaceContext: string, analysis: SonnetAnalysis)
 
 function getCategoryDesc(categorySlug: string): string {
   switch (categorySlug) {
-    case 'nature': return 'Small irregular flat stone pieces in natural shapes — like broken ceramic tiles, NOT boulders'
-    case 'mix': return 'MIX pattern: alternates thin HORIZONTAL stone strips (2-3cm tall, 20-40cm wide) with small irregular rounded pieces. Must include visible horizontal strip rows'
-    case 'crazy': return 'Dense mosaic of MANY TINY rounded pieces — like cobblestones, very small very dense'
-    case 'line': return 'THIN uniform horizontal strips (2-3cm tall, 30-60cm wide) — minimalist linear pattern'
-    default: return 'Small irregular flat stone pieces, NOT boulders'
+    case 'nature': return 'SMALL irregular flat polygonal stone pieces — like broken ceramic tiles. Each piece max 20cm. NOT boulders, NOT large rocks. Dozens of pieces visible per square meter.'
+    case 'mix': return 'MIX pattern: alternates thin HORIZONTAL stone strips (2-3cm tall, 20-40cm wide) with SMALL irregular rounded pieces. Must include visible horizontal strip rows. Strips are thin, not blocks.'
+    case 'crazy': return 'Dense mosaic of MANY TINY rounded cobblestone pieces — each piece 10-15cm max. CRITICAL: 30+ stones visible per square meter. NOT large rocks, NOT boulders. Think small river pebbles packed tight. Hundreds of small pieces on a full wall.'
+    case 'line': return 'THIN uniform horizontal strips (2-3cm tall, 30-60cm wide) — minimalist linear pattern. Strips are razor thin, not blocks.'
+    default: return 'SMALL irregular flat stone pieces, NOT boulders, NOT large rocks. Dozens visible per square meter.'
   }
 }
 
@@ -182,7 +182,9 @@ function buildFullPrompt(
   analysis: SonnetAnalysis,
   userNote?: string,
 ): string {
-  const stoneSize = surfaceContext === 'facade' ? 0.18 : 0.14
+  const stoneSize = surfaceContext === 'facade'
+    ? (categorySlug === 'crazy' ? 0.12 : categorySlug === 'line' ? 0.05 : 0.15)
+    : (categorySlug === 'crazy' ? 0.10 : 0.12)
   const wallHeight = analysis.estimated_wall_height_m || 6
   const stonesVertical = Math.round(wallHeight / stoneSize)
   const categoryDesc = getCategoryDesc(categorySlug)
@@ -195,10 +197,13 @@ EDIT Image 1: Apply Image 2's stone to ${coverage.apply}.
 ⚠️ STONE COLOR & TEXTURE (HIGHEST PRIORITY):
 Study Image 2 carefully. Copy its EXACT colors — reproduce ALL tones (brown, cream, dark patches, red-brown). Do NOT simplify to uniform beige.
 
-STONE SIZE:
-Each stone piece is ~${Math.round(stoneSize * 100)}cm in real life. ${analysis.scale_instruction ? `SCALE: ${analysis.scale_instruction}` : ''}
-- Wall height ~${wallHeight}m ÷ ${stoneSize}m = ${stonesVertical} pieces bottom to top
+STONE SIZE (CRITICAL — DO NOT MAKE STONES LARGE):
+Each stone piece is ~${Math.round(stoneSize * 100)}cm in real life — TINY compared to the building.
+- Wall height ~${wallHeight}m ÷ ${stoneSize}m = ${stonesVertical} stones from bottom to top — that many rows MUST be visible
 - ${categoryDesc}
+${analysis.scale_instruction ? `- SCALE REFERENCE: ${analysis.scale_instruction}` : ''}
+⚠️ If a window is ~1m wide, it should span ~${Math.round(1 / stoneSize)} stones horizontally.
+⚠️ WRONG: 5-10 huge boulders on a wall. CORRECT: ${stonesVertical * 3}+ small pieces visible.
 
 ⚠️ UNIFORMITY: Same stone size on ALL walls. Zero size variation.
 
