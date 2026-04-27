@@ -132,7 +132,7 @@ function getSurfaceDescription(surfaceContext: string, analysis: SonnetAnalysis)
 
 function getCategoryDesc(categorySlug: string): string {
   switch (categorySlug) {
-    case 'nature': return 'SMALL irregular flat polygonal stone pieces — like broken ceramic tiles. Each piece max 20cm. NOT boulders, NOT large rocks. Dozens of pieces visible per square meter.'
+    case 'nature': return 'IRREGULAR polygonal flat stones at COMPLETELY RANDOM angles — ZERO horizontal alignment. NO strips, NO rows, NO courses, NO brick-like pattern. Each piece a different shape like shattered ceramic tiles scattered randomly. Think mosaic chaos, NOT lined rows. EXPLICITLY NOT like the LINE category (which has strips). Pieces max 20cm, dozens visible per m².'
     case 'mix': return 'MIX pattern: alternates thin HORIZONTAL stone strips (2-3cm tall, 20-40cm wide) with SMALL irregular rounded pieces. Must include visible horizontal strip rows. Strips are thin, not blocks.'
     case 'crazy': return 'Dense mosaic of MANY TINY rounded cobblestone pieces — each piece 10-15cm max. CRITICAL: 30+ stones visible per square meter. NOT large rocks, NOT boulders. Think small river pebbles packed tight. Hundreds of small pieces on a full wall.'
     case 'line': return 'THIN uniform horizontal strips (2-3cm tall, 30-60cm wide) — minimalist linear pattern. Strips are razor thin, not blocks.'
@@ -208,7 +208,7 @@ ${analysis.scale_instruction ? `- SCALE REFERENCE: ${analysis.scale_instruction}
 ⚠️ WRONG: 5-10 huge boulders on a wall. CORRECT: ${stonesVertical * 3}+ small pieces visible.
 
 ⚠️ UNIFORMITY: Same stone size on ALL walls. Zero size variation.
-
+${categorySlug === 'nature' || categorySlug === 'crazy' ? `\n⚠️ CRITICAL FOR THIS CATEGORY — NO HORIZONTAL STRIPS:\nThis is NOT a LINE pattern. Do NOT create horizontal rows/strips/courses.\nStones must be at RANDOM angles — chaotic mosaic arrangement only.\n` : ''}
 COVERAGE: ${coverage.full}
 
 ${coverage.preserve}
@@ -245,7 +245,7 @@ ${analysis.scale_instruction ? `SCALE REFERENCE: ${analysis.scale_instruction}` 
 ⚠️ THE MOST COMMON MISTAKE: Making stones TOO LARGE like boulders.
 ✅ CORRECT: Many small pieces (${Math.round(stoneSize * 100)}cm each), dense mosaic
 ❌ WRONG: Large rocks or boulders
-
+${categorySlug === 'nature' || categorySlug === 'crazy' ? `\n⚠️ CRITICAL — NO HORIZONTAL STRIPS (this is NOT a LINE pattern):\n✅ Stones at RANDOM angles — chaotic mosaic\n❌ NO horizontal rows, NO strips, NO brick courses\n` : ''}
 ⚠️ UNIFORMITY: Every part of masked area has IDENTICAL stone size.
 
 COLOR: Copy EXACT tones from Image 2 with natural color variety.
