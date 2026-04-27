@@ -122,9 +122,9 @@ async function analyzeImageWithSonnet(
 function getSurfaceDescription(surfaceContext: string, analysis: SonnetAnalysis): string {
   switch (surfaceContext) {
     case 'facade': return `${analysis.floors || 2}-story building (~${analysis.estimated_wall_height_m || 6}m tall)`
-    case 'fireplace': return 'interior room with fireplace'
-    case 'interior': return 'interior room'
-    case 'bathroom': return 'bathroom'
+    case 'fireplace': return 'interior room with fireplace (~2.5m ceiling — stones must be tiny, many per m²)'
+    case 'interior': return 'interior room (~2.5m ceiling height — SMALL space, stones must be proportionally tiny)'
+    case 'bathroom': return 'bathroom (~2.5m ceiling — tiles/stones must be small, realistic bathroom scale)'
     case 'floor': return 'room (floor view)'
     default: return 'building exterior'
   }
@@ -182,10 +182,12 @@ function buildFullPrompt(
   analysis: SonnetAnalysis,
   userNote?: string,
 ): string {
+  const isInterior = ['interior', 'fireplace', 'bathroom'].includes(surfaceContext)
   const stoneSize = surfaceContext === 'facade'
     ? (categorySlug === 'crazy' ? 0.12 : categorySlug === 'line' ? 0.05 : 0.15)
-    : (categorySlug === 'crazy' ? 0.10 : 0.12)
-  const wallHeight = analysis.estimated_wall_height_m || 6
+    : (categorySlug === 'crazy' ? 0.08 : categorySlug === 'line' ? 0.04 : 0.10)
+  // Ic mekan duvari max 2.5m, dis cephe 6m+
+  const wallHeight = analysis.estimated_wall_height_m || (isInterior ? 2.5 : 6)
   const stonesVertical = Math.round(wallHeight / stoneSize)
   const categoryDesc = getCategoryDesc(categorySlug)
   const coverage = getCoverageInstructions(surfaceContext)
@@ -222,8 +224,11 @@ function buildBrushPrompt(
   maskImageNum: number,
   userNote?: string,
 ): string {
-  const stoneSize = surfaceContext === 'facade' ? 0.15 : 0.12
-  const wallHeight = analysis.estimated_wall_height_m || 6
+  const isInteriorB = ['interior', 'fireplace', 'bathroom'].includes(surfaceContext)
+  const stoneSize = surfaceContext === 'facade'
+    ? (categorySlug === 'crazy' ? 0.12 : categorySlug === 'line' ? 0.05 : 0.15)
+    : (categorySlug === 'crazy' ? 0.08 : categorySlug === 'line' ? 0.04 : 0.10)
+  const wallHeight = analysis.estimated_wall_height_m || (isInteriorB ? 2.5 : 6)
   const stonesVertical = Math.round(wallHeight / stoneSize)
   const totalEstimate = stonesVertical * 15
   const categoryDesc = getCategoryDesc(categorySlug)
