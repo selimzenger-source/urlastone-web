@@ -292,7 +292,7 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'AI simülasyon nasıl çalışır?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Binanızın veya mekanınızın fotoğrafını yükleyin, istediğiniz taş modelini seçin. Yapay zeka (Google Gemini + Replicate nano-banana-pro), taşın binaya nasıl görüneceğini fotogerçekçi olarak simüle eder. Ücretsizdir, günlük 10 simülasyon hakkınız vardır.' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Binanızın veya mekanınızın fotoğrafını yükleyin, istediğiniz taş modelini seçin. Yapay zeka (Google Gemini + Replicate nano-banana-pro), taşın binaya nasıl görüneceğini fotogerçekçi olarak simüle eder. Ücretsizdir, günlük 5 simülasyon hakkınız vardır.' },
         },
         {
           '@type': 'Question',

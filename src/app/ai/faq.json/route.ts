@@ -26,7 +26,7 @@ export function GET() {
       },
       {
         question: 'What is the AI stone simulation?',
-        answer: 'Our free AI-powered tool lets you upload a photo of your building or room, select a stone type and pattern, and see a photorealistic preview of how the stone will look applied. Uses Google Gemini and Replicate nano-banana-pro models. Daily limit: 10 simulations. Available at urlastone.com/simulasyon in 7 languages.',
+        answer: 'Our free AI-powered tool lets you upload a photo of your building or room, select a stone type and pattern, and see a photorealistic preview of how the stone will look applied. Uses Google Gemini and Replicate nano-banana-pro models. Daily limit: 5 simulations. Available at urlastone.com/simulasyon in 7 languages.',
       },
       {
         question: 'Where is URLASTONE located?',

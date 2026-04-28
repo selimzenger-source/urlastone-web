@@ -11,7 +11,7 @@ import StepApplyMode from './StepApplyMode'
 import StepMaskDraw from './StepMaskDraw'
 import StepResult from './StepResult'
 
-const DAILY_LOCAL_LIMIT = 10
+const DAILY_LOCAL_LIMIT = 5
 
 const STEPS: { key: SimStep; icon: typeof Upload }[] = [
   { key: 'upload', icon: Upload },
@@ -47,32 +47,32 @@ const VALIDATION_ERRORS: Record<string, Record<string, string>> = {
 
 const INFO_TEXTS: Record<string, { limit: string; daily: string; free: string }> = {
   tr: {
-    limit: 'Günlük 10 simülasyon hakkınız bulunmaktadır',
+    limit: 'Günlük 5 simülasyon hakkınız bulunmaktadır',
     daily: 'Limitler her gün gece yarısı sıfırlanır',
     free: 'Ücretsiz',
   },
   en: {
-    limit: 'You have 10 simulations per day',
+    limit: 'You have 5 simulations per day',
     daily: 'Limits reset every day at midnight',
     free: 'Free',
   },
   es: {
-    limit: 'Tiene 10 simulaciones por día',
+    limit: 'Tiene 5 simulaciones por día',
     daily: 'Los límites se restablecen cada día a medianoche',
     free: 'Gratis',
   },
   ar: {
-    limit: 'لديك 10 محاكاات يومياً',
+    limit: 'لديك 5 محاكاات يومياً',
     daily: 'تتم إعادة تعيين الحدود كل يوم عند منتصف الليل',
     free: 'مجاني',
   },
   de: {
-    limit: 'Sie haben 10 Simulationen pro Tag',
+    limit: 'Sie haben 5 Simulationen pro Tag',
     daily: 'Limits werden jeden Tag um Mitternacht zurückgesetzt',
     free: 'Kostenlos',
   },
   fr: {
-    limit: 'Vous avez 10 simulations par jour',
+    limit: 'Vous avez 5 simulations par jour',
     daily: 'Les limites sont réinitialisées chaque jour à minuit',
     free: 'Gratuit',
   },
