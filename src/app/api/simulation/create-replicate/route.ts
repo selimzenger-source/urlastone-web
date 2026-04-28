@@ -15,7 +15,7 @@ import { waitUntil } from '@vercel/functions'
 
 export const maxDuration = 300
 
-const DAILY_LIMIT_PER_IP = 10
+const DAILY_LIMIT_PER_IP = 5
 const DAILY_LIMIT_GLOBAL = 50
 
 const LIMIT_MSGS: Record<string, { ip: string; global: string }> = {
