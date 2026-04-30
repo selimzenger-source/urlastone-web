@@ -783,11 +783,11 @@ export default function ChatWidget() {
       setTimeout(hide, 10000)
     }, 4000)
 
-    // Sonra her 30 saniyede tekrarla (10s görünür + 20s bekle)
+    // Sonra her 40 saniyede tekrarla (10s görünür + 30s bekle)
     const interval = setInterval(() => {
       show()
       setTimeout(hide, 10000)
-    }, 30000)
+    }, 40000)
 
     return () => { clearTimeout(firstTimer); clearInterval(interval) }
   }, [isOpen, isAdminRoute])
