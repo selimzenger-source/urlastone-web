@@ -20,9 +20,12 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url)
   const period = searchParams.get('period') || '30d'
-  const days = period === '7d' ? 7 : period === '90d' ? 90 : 30
+  const days = period === '1d' ? 1 : period === '7d' ? 7 : period === '90d' ? 90 : 30
   const { from, to } = getDateRange(days)
-  const prevRange = getDateRange(days * 2)
+  // Önceki dönem: mevcut periyodun hemen öncesi (Vercel'in gösterdiği karşılaştırma gibi)
+  const now = new Date()
+  const prevTo = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString()
+  const prevFrom = new Date(now.getTime() - days * 2 * 24 * 60 * 60 * 1000).toISOString()
 
   const headers = { Authorization: `Bearer ${VERCEL_TOKEN}` }
   const base = `https://vercel.com/api/web-analytics`
@@ -31,7 +34,7 @@ export async function GET(req: Request) {
   try {
     const [overviewRes, prevOverviewRes, timeseriesRes, pathsRes, countriesRes, devicesRes, referrersRes] = await Promise.all([
       fetch(`${base}/overview?${qs}&from=${from}&to=${to}`, { headers }),
-      fetch(`${base}/overview?${qs}&from=${prevRange.from}&to=${prevRange.to}`, { headers }),
+      fetch(`${base}/overview?${qs}&from=${prevFrom}&to=${prevTo}`, { headers }),
       fetch(`${base}/timeseries?${qs}&from=${from}&to=${to}`, { headers }),
       fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=8&type=path`, { headers }),
       fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=8&type=country`, { headers }),

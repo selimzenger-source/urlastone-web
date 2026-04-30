@@ -5,14 +5,15 @@ import { Eye, Users, Globe, Monitor, Smartphone, Tablet, ArrowUpRight, ArrowDown
 
 const PAGE_LABELS: Record<string, string> = {
   '/': 'Ana Sayfa',
+  '/urunlerimiz': 'Ürünlerimiz',
   '/taslar': 'Taşlarımız',
   '/simulasyon': 'Simülasyon',
+  '/projelerimiz': 'Projeler',
   '/uygulamalarimiz': 'Uygulamalar',
   '/hakkimizda': 'Hakkımızda',
   '/iletisim': 'İletişim',
   '/teklif': 'Teklif',
   '/blog': 'Blog',
-  '/projelerimiz': 'Projeler',
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -20,10 +21,14 @@ const COUNTRY_FLAGS: Record<string, string> = {
   FR: '🇫🇷', ES: '🇪🇸', SA: '🇸🇦', AE: '🇦🇪',
   RU: '🇷🇺', NL: '🇳🇱', IT: '🇮🇹', JP: '🇯🇵',
   CN: '🇨🇳', AU: '🇦🇺', CA: '🇨🇦', KW: '🇰🇼',
-  QA: '🇶🇦', IN: '🇮🇳', BR: '🇧🇷',
+  QA: '🇶🇦', IN: '🇮🇳', BR: '🇧🇷', PL: '🇵🇱',
+  AT: '🇦🇹', SE: '🇸🇪', NO: '🇳🇴', DK: '🇩🇰',
+  CH: '🇨🇭', BE: '🇧🇪', GR: '🇬🇷', PT: '🇵🇹',
+  MX: '🇲🇽', AR: '🇦🇷', ZA: '🇿🇦', SG: '🇸🇬',
 }
 
 const PERIOD_OPTIONS = [
+  { value: '1d', label: 'Son 24 Saat' },
   { value: '7d', label: 'Son 7 Gün' },
   { value: '30d', label: 'Son 30 Gün' },
   { value: '90d', label: 'Son 90 Gün' },
@@ -39,13 +44,15 @@ interface AnalyticsData {
   referrers: { data: { key: string; total: number; devices: number }[] }
 }
 
-function ChangeIndicator({ current, prev }: { current: number; prev: number }) {
+function ChangeIndicator({ current, prev, reverseColor = false }: { current: number; prev: number; reverseColor?: boolean }) {
   if (prev === 0) return null
   const pct = Math.round(((current - prev) / prev) * 100)
   if (pct === 0) return null
   const up = pct > 0
+  // reverseColor: bounce rate'de artış kötü, azalış iyi
+  const isGood = reverseColor ? !up : up
   return (
-    <span className={`flex items-center gap-0.5 text-[10px] font-mono ${up ? 'text-green-400' : 'text-red-400'}`}>
+    <span className={`flex items-center gap-0.5 text-[10px] font-mono ${isGood ? 'text-green-400' : 'text-red-400'}`}>
       {up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
       {Math.abs(pct)}%
     </span>
@@ -55,7 +62,7 @@ function ChangeIndicator({ current, prev }: { current: number; prev: number }) {
 export default function AdminAnalytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState('30d')
+  const [period, setPeriod] = useState('7d')
 
   useEffect(() => {
     setLoading(true)
@@ -119,15 +126,15 @@ export default function AdminAnalytics() {
         {[
           { label: 'Sayfa Görüntüleme', value: (ov?.total ?? 0).toLocaleString(), icon: Eye, color: 'text-gold-400', current: ov?.total ?? 0, prev: prevOv?.total ?? 0 },
           { label: 'Tekil Ziyaretçi', value: (ov?.devices ?? 0).toLocaleString(), icon: Users, color: 'text-blue-400', current: ov?.devices ?? 0, prev: prevOv?.devices ?? 0 },
-          { label: 'Ülkeler', value: countriesData.length.toString(), icon: Globe, color: 'text-purple-400', current: 0, prev: 0 },
-          { label: 'Hemen Çıkma', value: `%${Math.round((ov?.bounceRate ?? 0) * 100)}`, icon: ArrowUpRight, color: 'text-orange-400', current: 0, prev: 0 },
+          { label: 'Ülkeler', value: countriesData.length.toString(), icon: Globe, color: 'text-purple-400', current: 0, prev: 0, reverseColor: false },
+          { label: 'Hemen Çıkma', value: `%${Math.round(ov?.bounceRate ?? 0)}`, icon: ArrowUpRight, color: 'text-orange-400', current: ov?.bounceRate ?? 0, prev: prevOv?.bounceRate ?? 0, reverseColor: true },
         ].map(stat => {
           const Icon = stat.icon
           return (
             <div key={stat.label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <Icon size={20} className={stat.color} />
-                <ChangeIndicator current={stat.current} prev={stat.prev} />
+                <ChangeIndicator current={stat.current} prev={stat.prev} reverseColor={stat.reverseColor} />
               </div>
               <p className="font-heading text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
               <p className="text-white/40 text-xs font-mono mt-1">{stat.label}</p>
