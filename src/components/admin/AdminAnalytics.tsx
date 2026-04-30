@@ -46,7 +46,6 @@ const PERIOD_OPTIONS = [
   { value: '1d', label: 'Son 24 Saat' },
   { value: '7d', label: 'Son 7 Gün' },
   { value: '30d', label: 'Son 30 Gün' },
-  { value: '90d', label: 'Son 90 Gün' },
 ]
 
 interface AnalyticsData {
