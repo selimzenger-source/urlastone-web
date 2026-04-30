@@ -201,10 +201,10 @@ export default function TaslarPage() {
   }
   const labels = usageLabels[locale] || usageLabels.tr
   const kullanimAlanlari = [
-    { baslik: t.stones_usage1_name, label: labels[0], img: '/usage-cephe.png' },
-    { baslik: t.stones_usage2_name, label: labels[1], img: '/usage-icmekan.png' },
-    { baslik: t.stones_usage3_name, label: labels[2], img: '/usage-zemin.png' },
-    { baslik: t.stones_usage4_name, label: labels[3], img: '/usage-bahce.png' },
+    { baslik: t.stones_usage1_name, label: labels[0], img: '/usage-cephe.jpg' },
+    { baslik: t.stones_usage2_name, label: labels[1], img: '/usage-icmekan.jpg' },
+    { baslik: t.stones_usage3_name, label: labels[2], img: '/usage-zemin.jpg' },
+    { baslik: t.stones_usage4_name, label: labels[3], img: '/usage-bahce.jpg' },
   ]
 
   // Filter products by category
