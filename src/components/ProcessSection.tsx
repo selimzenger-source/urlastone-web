@@ -1,20 +1,17 @@
 'use client'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// URLA STONE — ProcessSection (animated)
-// 4 sahne, ~13s, sürekli döngü — scroll bağımsız RAF döngüsü
+// URLA STONE — ProcessSection v3 (mobile-optimized, ref-based DOM updates)
 //
-// Sahne 0 (TALEP):    Yıkık taş yığını → "Projenizi Dinliyoruz"
-// Sahne 1 (TASARIM):  Rubble solar, iki yan duvar yükseliyor
-// Sahne 2 (ÜRETİM):   Duvarlar uzuyor, kemer tamamlanıyor
-// Sahne 3 (TESLİMAT): Çatı + tam logo + gold pulse + wordmark
+// Performance: setState SADECE step değişirken çağrılır (4×/döngü). Sürekli
+// değerler (progress, transform, opacity) doğrudan DOM'a refs üzerinden yazılır
+// → React render cycle bypass → mobilde pürüzsüz.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { memo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/context/LanguageContext'
 
-// ── Timing ──────────────────────────────────────────────────────────────────
 const STEP_DURS = [2800, 2800, 2800, 4600] as const
 const STEP_OFFSETS = STEP_DURS.reduce<number[]>((acc, d) => {
   acc.push((acc[acc.length - 1] ?? 0) + d)
@@ -22,135 +19,43 @@ const STEP_OFFSETS = STEP_DURS.reduce<number[]>((acc, d) => {
 }, [])
 const TOTAL = STEP_OFFSETS[STEP_OFFSETS.length - 1]!
 
-// ── Logo regions (clip-path polygons building a house silhouette) ─────────
-const REGIONS: { name: string; poly: string; step: number }[] = [
-  { name: 'leftBaseShort',  poly: 'polygon(8% 50%, 32% 50%, 32% 95%, 8% 95%)',                                             step: 1 },
+const REGIONS = [
+  { name: 'leftBaseShort',  poly: 'polygon(8% 50%, 32% 50%, 32% 95%, 8% 95%)',                                              step: 1 },
   { name: 'rightBaseShort', poly: 'polygon(68% 50%, 92% 50%, 92% 95%, 68% 95%)',                                            step: 1 },
   { name: 'leftWallFull',   poly: 'polygon(8% 25%, 32% 25%, 32% 95%, 8% 95%)',                                              step: 2 },
   { name: 'rightWallFull',  poly: 'polygon(68% 25%, 92% 25%, 92% 95%, 68% 95%)',                                            step: 2 },
   { name: 'archTop',        poly: 'polygon(32% 25%, 68% 25%, 68% 50%, 60% 45%, 50% 42%, 40% 45%, 32% 50%)',                step: 2 },
   { name: 'gableRoof',      poly: 'polygon(32% 25%, 50% 5%, 68% 25%)',                                                      step: 3 },
-]
+] as const
 
-// ── Dust particles (seeded, stable across renders) ───────────────────────
-const DUST = (() => {
-  const arr: { x: number; startY: number; size: number; shade: number; delay: number; drift: number; rot: number }[] = []
-  let s = 73
-  const r = () => { s = (s * 9301 + 49297) % 233280; return s / 233280 }
-  for (let i = 0; i < 14; i++) {
-    arr.push({ x: 20 + r() * 60, startY: 70 + r() * 20, size: 3 + r() * 7, shade: 0.6 + r() * 0.35, delay: r() * 0.4, drift: (r() - 0.5) * 25, rot: r() * 360 })
-  }
-  return arr
-})()
-
-// ── Helpers ──────────────────────────────────────────────────────────────
 function clamp(v: number) { return Math.max(0, Math.min(1, v)) }
 function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3) }
-
-// ── Sub-components ────────────────────────────────────────────────────────
-
-const RisingDust = memo(function RisingDust({ step, progress }: { step: number; progress: number }) {
-  const t =
-    step === 0 ? Math.max(0, (progress - 0.7) / 0.3) * 0.3
-    : step === 1 ? Math.min(1, progress / 0.6)
-    : 0
-  if (t <= 0) return null
-  return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-      {DUST.map((d, i) => {
-        const local = clamp((t - d.delay) / 0.7)
-        if (local <= 0) return null
-        const ease = easeOutCubic(local)
-        const y = d.startY - ease * 60
-        const x = d.x + d.drift * ease
-        const opacity = local < 0.7 ? local : 1 - (local - 0.7) / 0.3
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: `${x}%`, top: `${y}%`,
-              width: d.size, height: d.size * 0.85,
-              transform: `translate(-50%, -50%) rotate(${d.rot + ease * 180}deg)`,
-              opacity: clamp(opacity) * 0.7,
-              background: `rgba(${230 - 20 * d.shade}, ${228 - 20 * d.shade}, ${220 - 20 * d.shade}, ${d.shade})`,
-              borderRadius: '40%',
-              boxShadow: 'inset 0 -1px 0 rgba(0,0,0,0.15)',
-            }}
-          />
-        )
-      })}
-    </div>
-  )
-})
-
-function ShineSweep({ progress }: { progress: number }) {
-  return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-      <div
-        style={{
-          position: 'absolute',
-          top: 0, bottom: 0, width: '50%',
-          left: `${-50 + progress * 150}%`,
-          background: 'linear-gradient(105deg, transparent 30%, rgba(255,235,180,0.45) 50%, transparent 70%)',
-          mixBlendMode: 'screen',
-          opacity: Math.sin(progress * Math.PI),
-        }}
-      />
-    </div>
-  )
-}
-
-const LogoRegion = memo(function LogoRegion({ name, poly, step: appearStep, activeStep, progress, finalPulse }: {
-  name: string; poly: string; step: number; activeStep: number; progress: number; finalPulse: number
-}) {
-  if (activeStep < appearStep) return null
-  const seed = name.charCodeAt(0) + name.charCodeAt(1)
-  const delay = (seed % 7) / 30
-  const local = activeStep > appearStep ? 1 : clamp((progress - delay) / 0.55)
-  const ease = easeOutCubic(local)
-  const goldMix = activeStep === 3 ? finalPulse : (activeStep > appearStep ? 0.15 : 0)
-  return (
-    <div
-      style={{
-        position: 'absolute', inset: 0,
-        clipPath: poly,
-        opacity: ease,
-        transform: `translateY(${(1 - ease) * 36}px) scale(${0.85 + ease * 0.15})`,
-        transformOrigin: '50% 100%',
-        pointerEvents: 'none',
-        filter: `drop-shadow(0 0 ${4 + goldMix * 18}px rgba(179,147,69,${0.10 + goldMix * 0.45}))`,
-        transition: 'filter 400ms ease',
-      }}
-    >
-      <Image src="/logo-outline.png" alt="" fill className="object-contain" />
-    </div>
-  )
-})
-
-// ── Main Component ────────────────────────────────────────────────────────
 
 export default function ProcessSection() {
   const { t } = useLanguage()
   const [step, setStep] = useState(0)
-  const [progress, setProgress] = useState(0)
-  const rafRef = useRef<number>(0)
   const sectionRef = useRef<HTMLElement>(null)
+
+  // Animated DOM nodes
+  const rubbleRef = useRef<HTMLDivElement>(null)
+  const glowRef = useRef<HTMLDivElement>(null)
+  const regionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const wordmarkBoxRef = useRef<HTMLDivElement>(null)
+  const wordmarkRuleRef = useRef<HTMLDivElement>(null)
+  const wordmarkTextRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduced) { setStep(3); setProgress(1); return }
+    if (reduced) { setStep(3); return }
 
     const sec = sectionRef.current
     if (!sec) return
 
+    let raf = 0
+    let lastStep = -1
     let isVisible = false
     let startOffset = 0
     let pauseTime = 0
-    let lastUpdate = 0
-    let lastStep = -1
-    let lastP = -1
-    const FRAME_MS = 33
 
     const tick = (now: number) => {
       if (!isVisible) return
@@ -164,58 +69,44 @@ export default function ProcessSection() {
         }
       }
       const p = (elapsed - stepStart) / STEP_DURS[s]
-      const stepChanged = s !== lastStep
-      const progressChangedEnough = Math.abs(p - lastP) > 0.015
-      if (stepChanged || (now - lastUpdate >= FRAME_MS && progressChangedEnough)) {
-        if (stepChanged) setStep(s)
-        setProgress(p)
-        lastUpdate = now
-        lastStep = s
-        lastP = p
-      }
-      rafRef.current = requestAnimationFrame(tick)
+
+      if (s !== lastStep) { lastStep = s; setStep(s) }
+
+      // Direct DOM updates — bypass React render
+      applyVisualFrame(s, p, { rubbleRef, glowRef, regionRefs, wordmarkBoxRef, wordmarkRuleRef, wordmarkTextRef })
+
+      raf = requestAnimationFrame(tick)
     }
 
-    // Sadece görünürken çalış, scroll edilince dur
+    const start = (resume = false) => {
+      if (isVisible) return
+      isVisible = true
+      const now = performance.now()
+      startOffset = resume && pauseTime > 0 ? now - pauseTime : now
+      pauseTime = 0
+      raf = requestAnimationFrame(tick)
+    }
+    const stop = () => {
+      if (!isVisible) return
+      isVisible = false
+      pauseTime = (performance.now() - startOffset) % TOTAL
+      cancelAnimationFrame(raf)
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && document.visibilityState === 'visible') {
-          if (!isVisible) {
-            isVisible = true
-            const now = performance.now()
-            // Pause ettiği yerden devam etsin
-            startOffset = pauseTime > 0 ? now - pauseTime : now
-            pauseTime = 0
-            rafRef.current = requestAnimationFrame(tick)
-          }
-        } else if (isVisible) {
-          isVisible = false
-          // Mevcut elapsed'i sakla, sonra devam ettiğimizde aynı yerden başlasın
-          pauseTime = (performance.now() - startOffset) % TOTAL
-          cancelAnimationFrame(rafRef.current)
-        }
+        if (entry.isIntersecting && document.visibilityState === 'visible') start(true)
+        else stop()
       },
       { threshold: 0.15 }
     )
     observer.observe(sec)
 
-    // Sekme arka plana geçince de durdur
     const onVisibility = () => {
-      if (document.visibilityState !== 'visible' && isVisible) {
-        isVisible = false
-        pauseTime = (performance.now() - startOffset) % TOTAL
-        cancelAnimationFrame(rafRef.current)
-      } else if (document.visibilityState === 'visible') {
-        // Görünürse ve section ekrandaysa observer zaten devam ettirir
-        const rect = sec.getBoundingClientRect()
-        const inView = rect.bottom > 0 && rect.top < window.innerHeight
-        if (inView && !isVisible) {
-          isVisible = true
-          const now = performance.now()
-          startOffset = pauseTime > 0 ? now - pauseTime : now
-          pauseTime = 0
-          rafRef.current = requestAnimationFrame(tick)
-        }
+      if (document.visibilityState !== 'visible') stop()
+      else {
+        const r = sec.getBoundingClientRect()
+        if (r.bottom > 0 && r.top < window.innerHeight) start(true)
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
@@ -223,7 +114,7 @@ export default function ProcessSection() {
     return () => {
       observer.disconnect()
       document.removeEventListener('visibilitychange', onVisibility)
-      cancelAnimationFrame(rafRef.current)
+      cancelAnimationFrame(raf)
     }
   }, [])
 
@@ -234,16 +125,6 @@ export default function ProcessSection() {
     { tag: t.process_step4_tag, title: t.process_step4_title, desc: t.process_step4_desc },
   ]
 
-  // Gold pulse (sahne 3)
-  const finalPulse = step === 3
-    ? (progress < 0.25 ? clamp(progress / 0.25) : progress < 0.70 ? 1 : clamp(1 - (progress - 0.70) / 0.30))
-    : 0
-
-  // Rubble animasyonu
-  const rubbleOp = step === 0 ? 1 : step === 1 ? Math.max(0, 1 - progress * 1.6) : 0
-  const rubbleY  = step === 1 ? -progress * 30 : 0
-  const rubbleScale = step === 1 ? 1 - progress * 0.15 : 1
-
   return (
     <section
       ref={sectionRef}
@@ -251,7 +132,6 @@ export default function ProcessSection() {
       style={{ background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1510 50%, #0a0a0a 100%)' }}
     >
       <div className="max-w-7xl mx-auto">
-        {/* Başlık */}
         <div className="mb-10 md:mb-14">
           <p className="font-mono text-[11px] text-white/40 tracking-wider uppercase mb-4">
             {t.process_tag}
@@ -261,11 +141,9 @@ export default function ProcessSection() {
           </h2>
         </div>
 
-        {/* Metin + Görsel */}
-        <div className="flex flex-col-reverse md:flex-row items-center gap-10 md:gap-14 lg:gap-20">
-
+        <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
           {/* Sol: Step metni */}
-          <div className="flex-1 w-full" style={{ minHeight: 220, position: 'relative' }}>
+          <div className="relative" style={{ minHeight: 220 }}>
             {steps.map((s, i) => (
               <div
                 key={i}
@@ -275,6 +153,7 @@ export default function ProcessSection() {
                   transform: step === i ? 'translateY(0)' : 'translateY(12px)',
                   transition: 'opacity 600ms ease, transform 600ms cubic-bezier(0.22, 1, 0.36, 1)',
                   pointerEvents: step === i ? 'auto' : 'none',
+                  willChange: 'opacity, transform',
                 }}
               >
                 <div className="flex items-center gap-4 mb-4">
@@ -294,96 +173,194 @@ export default function ProcessSection() {
             ))}
           </div>
 
-          {/* Sağ: Logo animasyonu + dots */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-6">
+          {/* Sağ: Görsel kare */}
+          <div className="flex justify-center">
             <div
               style={{
                 position: 'relative',
-                width: 'min(288px, 72vw)',
+                width: 'min(360px, 80%)',
                 aspectRatio: '1 / 1',
               }}
             >
               {/* Ambient gold glow */}
               <div
+                ref={glowRef}
                 style={{
                   position: 'absolute', inset: '-15%',
-                  background: `radial-gradient(circle at 50% 55%, rgba(179,147,69,${0.05 + (step >= 2 ? 0.10 : 0) + finalPulse * 0.18}) 0%, transparent 60%)`,
-                  filter: 'blur(20px)', pointerEvents: 'none',
-                  transition: 'all 600ms ease',
+                  background: 'radial-gradient(circle at 50% 50%, rgba(214,184,120,0.04) 0%, transparent 65%)',
+                  filter: 'blur(20px)',
+                  pointerEvents: 'none',
+                  willChange: 'background',
                 }}
               />
 
-              {/* Zemin gölgesi */}
+              {/* Floor shadow */}
               <div
                 style={{
-                  position: 'absolute', bottom: '6%', left: '15%', right: '15%', height: 14,
+                  position: 'absolute', bottom: '18%', left: '20%', right: '20%',
+                  height: 14,
                   background: 'radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%)',
                   filter: 'blur(8px)',
                 }}
               />
 
-              {/* Yıkık taş yığını */}
+              {/* Rubble pile */}
               <div
+                ref={rubbleRef}
                 style={{
-                  position: 'absolute', inset: 0,
-                  opacity: rubbleOp,
-                  transform: `translateY(${rubbleY}px) scale(${rubbleScale})`,
+                  position: 'absolute', inset: '0 0 18% 0',
+                  opacity: 1,
+                  transform: 'translate3d(0,0,0) scale(1)',
+                  willChange: 'transform, opacity',
                   display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
                   pointerEvents: 'none',
                 }}
               >
-                <Image src="/logo-rubble-v2.png" alt="Taş yığını" fill className="object-contain object-bottom" />
+                <div style={{ position: 'relative', width: '70%', height: '70%' }}>
+                  <Image src="/logo-rubble-v2.png" alt="Taş yığını" fill className="object-contain object-bottom" />
+                </div>
               </div>
 
-              {/* Toz parçacıkları */}
-              {step <= 1 && <RisingDust step={step} progress={progress} />}
-
-              {/* Logo bölgeleri */}
+              {/* Logo regions */}
               {REGIONS.map(r => (
-                <LogoRegion
-                  key={r.name}
-                  name={r.name}
-                  poly={r.poly}
-                  step={r.step}
-                  activeStep={step}
-                  progress={progress}
-                  finalPulse={finalPulse}
-                />
-              ))}
-
-              {/* Shine sweep (sahne 3 başı) */}
-              {step === 3 && progress > 0.05 && progress < 0.35 && (
-                <ShineSweep progress={(progress - 0.05) / 0.30} />
-              )}
-            </div>
-
-            {/* Progress dots */}
-            <div className="flex items-center gap-2">
-              {[0, 1, 2, 3].map(i => (
                 <div
-                  key={i}
+                  key={r.name}
+                  ref={el => { regionRefs.current[r.name] = el }}
                   style={{
-                    position: 'relative',
-                    width: i === step ? 32 : 6,
-                    height: 6,
-                    borderRadius: 999,
-                    background: 'rgba(255,255,255,0.12)',
-                    transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1)',
-                    overflow: 'hidden',
+                    position: 'absolute', inset: '0 0 18% 0',
+                    clipPath: r.poly,
+                    opacity: 0,
+                    transform: 'translate3d(0, 36px, 0) scale(0.85)',
+                    transformOrigin: '50% 100%',
+                    pointerEvents: 'none',
+                    willChange: 'transform, opacity',
+                    display: 'none',
                   }}
                 >
-                  {i === step && (
-                    <div style={{ position: 'absolute', inset: 0, width: `${progress * 100}%`, background: '#b39345', opacity: 0.85 }} />
-                  )}
-                  {i !== step && i < step && (
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(179,147,69,0.4)' }} />
-                  )}
+                  <Image src="/logo-outline.png" alt="" fill className="object-contain" />
                 </div>
               ))}
+
+              {/* Wordmark — görsel karenin içinde alt kısımda, çakışma yok */}
+              <div
+                ref={wordmarkBoxRef}
+                style={{
+                  position: 'absolute',
+                  left: 0, right: 0, bottom: '6%',
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                  display: 'none',
+                }}
+              >
+                <div
+                  ref={wordmarkRuleRef}
+                  style={{
+                    width: 60, height: 1, margin: '0 auto 14px',
+                    background: 'linear-gradient(90deg, transparent, #b39345, transparent)',
+                    transform: 'scaleX(0)', opacity: 0,
+                    willChange: 'transform, opacity',
+                  }}
+                />
+                <div
+                  ref={wordmarkTextRef}
+                  style={{
+                    fontFamily: 'var(--font-heading, "Playfair Display", serif)',
+                    fontWeight: 600,
+                    fontSize: 'clamp(16px, 2vw, 24px)',
+                    letterSpacing: '0.18em',
+                    opacity: 0,
+                    transform: 'translate3d(0, 8px, 0)',
+                    willChange: 'transform, opacity',
+                  }}
+                >
+                  <span style={{ color: '#b39345' }}>URLA</span>
+                  <span style={{ color: '#fff', marginLeft: '0.18em' }}>STONE</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
   )
+}
+
+// ─── DOM updater (RAF içinden çağrılır, React'a hiç dokunmaz) ─────────────
+function applyVisualFrame(
+  step: number,
+  progress: number,
+  refs: {
+    rubbleRef: React.RefObject<HTMLDivElement>
+    glowRef: React.RefObject<HTMLDivElement>
+    regionRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>
+    wordmarkBoxRef: React.RefObject<HTMLDivElement>
+    wordmarkRuleRef: React.RefObject<HTMLDivElement>
+    wordmarkTextRef: React.RefObject<HTMLDivElement>
+  }
+) {
+  const { rubbleRef, glowRef, regionRefs, wordmarkBoxRef, wordmarkRuleRef, wordmarkTextRef } = refs
+
+  // Rubble
+  const rubbleOp = step === 0 ? 1 : step === 1 ? Math.max(0, 1 - progress * 1.6) : 0
+  const rubbleY = step === 1 ? -progress * 30 : 0
+  const rubbleScale = step === 1 ? 1 - progress * 0.15 : 1
+  if (rubbleRef.current) {
+    rubbleRef.current.style.opacity = String(rubbleOp)
+    rubbleRef.current.style.transform = `translate3d(0, ${rubbleY}px, 0) scale(${rubbleScale})`
+  }
+
+  // Final pulse — daha güçlü, sürekli hold
+  const finalPulse = step === 3
+    ? (progress < 0.20 ? clamp(progress / 0.20)
+        : progress < 0.85 ? 1
+        : clamp(1 - (progress - 0.85) / 0.15))
+    : 0
+
+  // Ambient glow — sıcak halo
+  if (glowRef.current) {
+    const a = 0.04 + (step >= 2 ? 0.06 : 0) + finalPulse * 0.18
+    glowRef.current.style.background =
+      `radial-gradient(circle at 50% 55%, rgba(214,184,120,${a}) 0%, transparent 65%)`
+  }
+
+  // Regions
+  for (const r of REGIONS) {
+    const el = regionRefs.current[r.name]
+    if (!el) continue
+    const show = step >= r.step
+    if (!show) {
+      el.style.display = 'none'
+      continue
+    }
+    el.style.display = ''
+
+    const seed = r.name.charCodeAt(0) + r.name.charCodeAt(1)
+    const delay = (seed % 7) / 30
+    const local = step > r.step ? 1 : clamp((progress - delay) / 0.55)
+    const ease = easeOutCubic(local)
+
+    const ty = (1 - ease) * 36
+    const scale = 0.85 + ease * 0.15
+
+    el.style.opacity = String(ease)
+    el.style.transform = `translate3d(0, ${ty}px, 0) scale(${scale})`
+    el.style.filter = 'none'
+  }
+
+  // Wordmark (step 3 only)
+  if (step === 3) {
+    if (wordmarkBoxRef.current) wordmarkBoxRef.current.style.display = ''
+    const wordmarkP = clamp((progress - 0.30) / 0.25) * (progress < 0.92 ? 1 : 1 - (progress - 0.92) / 0.08)
+
+    if (wordmarkRuleRef.current) {
+      wordmarkRuleRef.current.style.transform = `scaleX(${wordmarkP})`
+      wordmarkRuleRef.current.style.opacity = String(wordmarkP)
+    }
+    if (wordmarkTextRef.current) {
+      wordmarkTextRef.current.style.opacity = String(wordmarkP)
+      wordmarkTextRef.current.style.transform = `translate3d(0, ${(1 - wordmarkP) * 8}px, 0)`
+    }
+  } else {
+    if (wordmarkBoxRef.current) wordmarkBoxRef.current.style.display = 'none'
+  }
 }
