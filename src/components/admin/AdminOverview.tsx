@@ -92,7 +92,7 @@ export default function AdminOverview() {
     return d.toLocaleDateString('tr-TR')
   }
 
-  const recentTeklifler = teklifler.slice(0, 5)
+  const recentTeklifler = teklifler.slice(0, 7)
 
   // Count stone preferences
   const tasCounts: Record<string, number> = {}
