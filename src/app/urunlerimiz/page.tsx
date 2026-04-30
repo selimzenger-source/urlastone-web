@@ -202,7 +202,7 @@ export default function TaslarPage() {
   const labels = usageLabels[locale] || usageLabels.tr
   const kullanimAlanlari = [
     { baslik: t.stones_usage1_name, label: labels[0], img: '/usage-cephe.jpg' },
-    { baslik: t.stones_usage2_name, label: labels[1], img: '/usage-icmekan.jpg' },
+    { baslik: t.stones_usage2_name, label: labels[1], img: '/slide-5.jpg' },
     { baslik: t.stones_usage3_name, label: labels[2], img: '/usage-zemin.jpg' },
     { baslik: t.stones_usage4_name, label: labels[3], img: '/usage-bahce.jpg' },
   ]
