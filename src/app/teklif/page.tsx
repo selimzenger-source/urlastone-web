@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TeklifForm from '@/components/TeklifForm'
+import UrlastoneLoader from '@/components/UrlastoneLoader'
 import { useLanguage } from '@/context/LanguageContext'
 
 export default function TeklifPage() {
@@ -36,7 +37,7 @@ export default function TeklifPage() {
       {/* Form Section */}
       <section className="px-6 md:px-12 pt-12 md:pt-16 pb-20">
         <div className="max-w-3xl mx-auto">
-          <Suspense fallback={<div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>}>
+          <Suspense fallback={<div className="flex justify-center py-12"><UrlastoneLoader size="md" /></div>}>
             <TeklifForm />
           </Suspense>
         </div>

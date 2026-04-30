@@ -15,6 +15,7 @@ import {
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import { generateSlug } from '@/lib/slug'
+import UrlastoneLoader from '@/components/UrlastoneLoader'
 
 interface StoneType {
   id: string
@@ -330,7 +331,7 @@ export default function TaslarPage() {
 
               {/* Products Grid */}
               {loading ? (
-                <div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>
+                <div className="flex justify-center py-12"><UrlastoneLoader size="sm" /></div>
               ) : categoryProducts.length === 0 ? (
                 <div className="text-center py-12 text-white/30 font-mono text-sm">Bu kategoride ürün bulunamadı</div>
               ) : (
@@ -432,7 +433,7 @@ export default function TaslarPage() {
                 </button>
               </div>
               {loading ? (
-                <div className="text-center py-12 text-white/30 font-mono text-sm">Yükleniyor...</div>
+                <div className="flex justify-center py-12"><UrlastoneLoader size="sm" /></div>
               ) : stoneTypeProducts.length === 0 ? (
                 <div className="text-center py-12 text-white/30 font-mono text-sm">Bu türde ürün bulunamadı</div>
               ) : (

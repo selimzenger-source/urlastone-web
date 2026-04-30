@@ -3,9 +3,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { Instagram, ExternalLink } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import UrlastoneLoader from './UrlastoneLoader'
+
+const LOADING_LABEL: Record<string, string> = {
+  tr: 'Yükleniyor',
+  en: 'Loading',
+  es: 'Cargando',
+  ar: 'جار التحميل',
+  de: 'Wird geladen',
+  fr: 'Chargement',
+  ru: 'Загрузка',
+}
 
 export default function InstagramFeed() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
   const widgetRef = useRef<HTMLDivElement>(null)
   const [shouldLoad, setShouldLoad] = useState(false)
@@ -122,7 +133,7 @@ export default function InstagramFeed() {
         {/* Placeholder (shouldLoad olana kadar) — yer tutucu, layout shift önler */}
         {!shouldLoad && (
           <div className="min-h-[300px] flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-gold-400/60 animate-spin" />
+            <UrlastoneLoader size="md" label={LOADING_LABEL[locale] || 'Loading'} />
           </div>
         )}
       </div>
