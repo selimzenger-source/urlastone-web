@@ -25,6 +25,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
 
     let introTimer: NodeJS.Timeout
     let fallbackTimer: NodeJS.Timeout
+    let forceTimer: NodeJS.Timeout
     let introComplete = false
     let videoReady = false
 
@@ -38,10 +39,10 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
       }
     }
 
-    const onCanPlay = () => {
-      videoReady = true
-      tryPlay()
-    }
+    const onReady = () => { videoReady = true; tryPlay() }
+
+    // iPad/iOS — explicit load() ile metadata indirmeyi zorla
+    try { video.load() } catch {}
 
     introTimer = setTimeout(() => {
       introComplete = true
@@ -49,19 +50,26 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
       tryPlay()
     }, 1500)
 
-    // canplay yeterli — canplaythrough tüm videoyu bekliyor, büyük dosyalarda donuyor
-    video.addEventListener('canplay', onCanPlay, { once: true })
+    video.addEventListener('loadedmetadata', onReady, { once: true })
+    video.addEventListener('canplay', onReady, { once: true })
+
     fallbackTimer = setTimeout(() => {
-      if (!videoReady && video.readyState >= 2) {
+      if (!videoReady && video.readyState >= 1) {
         videoReady = true
         tryPlay()
       }
     }, 3000)
 
+    forceTimer = setTimeout(() => {
+      if (!videoReady) { videoReady = true; tryPlay() }
+    }, 6000)
+
     return () => {
       clearTimeout(introTimer)
       clearTimeout(fallbackTimer)
-      video.removeEventListener('canplay', onCanPlay)
+      clearTimeout(forceTimer)
+      video.removeEventListener('loadedmetadata', onReady)
+      video.removeEventListener('canplay', onReady)
     }
   }, [])
 
@@ -95,7 +103,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
               `}</style>
             </div>
           )}
-          <video ref={videoRef} src={url} controls playsInline preload="none" className="w-full" style={{ maxHeight: '80vh' }} />
+          <video ref={videoRef} src={url} controls playsInline preload="metadata" className="w-full" style={{ maxHeight: '80vh' }} />
           {/* Sağ üst URLASTONE logosu — video oynarken */}
           {phase === 'playing' && (
             <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1.5 pointer-events-none">
