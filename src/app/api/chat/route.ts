@@ -104,6 +104,7 @@ Müşteri kaynak seçtikten sonra:
    - Sonuna ekle: |||SHOW_CONTACT_FORM|||
    - Mesajın EN SONUNA (kullanıcıya görünmez, MUTLAKA ekle) şunu ekle:
      |||TEKLIF_DATA|||iletisim:TERCIH|dil:DIL|ulke:ULKE|il:IL|ilce:ILCE|proje_tipi:TIP|metrekare:M2|dis_kose:MT|fiyat_tipi:TIP|tas_tercihi:TAS|aciklama:NOT|kaynak:KAYNAK|||END_TEKLIF|||
+- tas_tercihi alanına MUTLAKA ürün adı VE kodunu yaz: örn. "Classic Mix (EBT 1)" — sadece "Mix" veya sadece "EBT 1" yazma. Birden fazla ürün varsa virgülle ayır: "Classic (RKS 1), Scabas Mix (RKS 2)".
 
 KRİTİK KURALLAR:
 - HİÇBİR ADIMI ATLAMA. 12 adımın hepsini sırayla sor. Müşteri cevap verdikten sonra bir sonraki adıma geç.
