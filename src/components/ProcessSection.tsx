@@ -135,19 +135,26 @@ export default function ProcessSection() {
   const [step, setStep] = useState(0)
   const [progress, setProgress] = useState(0)
   const rafRef = useRef<number>(0)
+  const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     if (reduced) { setStep(3); setProgress(1); return }
 
-    const start = performance.now()
+    const sec = sectionRef.current
+    if (!sec) return
+
+    let isVisible = false
+    let startOffset = 0
+    let pauseTime = 0
     let lastUpdate = 0
     let lastStep = -1
     let lastP = -1
-    // ~30fps throttle — yeterince akıcı, yarısı kadar render
     const FRAME_MS = 33
+
     const tick = (now: number) => {
-      const elapsed = (now - start) % TOTAL
+      if (!isVisible) return
+      const elapsed = (now - startOffset) % TOTAL
       let s = 0, stepStart = 0
       for (let i = 0; i < STEP_DURS.length; i++) {
         if (elapsed < STEP_OFFSETS[i]!) {
@@ -168,8 +175,56 @@ export default function ProcessSection() {
       }
       rafRef.current = requestAnimationFrame(tick)
     }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
+
+    // Sadece görünürken çalış, scroll edilince dur
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && document.visibilityState === 'visible') {
+          if (!isVisible) {
+            isVisible = true
+            const now = performance.now()
+            // Pause ettiği yerden devam etsin
+            startOffset = pauseTime > 0 ? now - pauseTime : now
+            pauseTime = 0
+            rafRef.current = requestAnimationFrame(tick)
+          }
+        } else if (isVisible) {
+          isVisible = false
+          // Mevcut elapsed'i sakla, sonra devam ettiğimizde aynı yerden başlasın
+          pauseTime = (performance.now() - startOffset) % TOTAL
+          cancelAnimationFrame(rafRef.current)
+        }
+      },
+      { threshold: 0.15 }
+    )
+    observer.observe(sec)
+
+    // Sekme arka plana geçince de durdur
+    const onVisibility = () => {
+      if (document.visibilityState !== 'visible' && isVisible) {
+        isVisible = false
+        pauseTime = (performance.now() - startOffset) % TOTAL
+        cancelAnimationFrame(rafRef.current)
+      } else if (document.visibilityState === 'visible') {
+        // Görünürse ve section ekrandaysa observer zaten devam ettirir
+        const rect = sec.getBoundingClientRect()
+        const inView = rect.bottom > 0 && rect.top < window.innerHeight
+        if (inView && !isVisible) {
+          isVisible = true
+          const now = performance.now()
+          startOffset = pauseTime > 0 ? now - pauseTime : now
+          pauseTime = 0
+          rafRef.current = requestAnimationFrame(tick)
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      observer.disconnect()
+      document.removeEventListener('visibilitychange', onVisibility)
+      cancelAnimationFrame(rafRef.current)
+    }
   }, [])
 
   const steps = [
@@ -191,6 +246,7 @@ export default function ProcessSection() {
 
   return (
     <section
+      ref={sectionRef}
       className="section-padding border-t border-white/[0.06] overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1510 50%, #0a0a0a 100%)' }}
     >
