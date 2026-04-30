@@ -296,11 +296,25 @@ export default function AdminAnalytics() {
             <div className="space-y-3">
               {referrersData.map(r => {
                 const maxRef = referrersData[0]?.total || 1
+                const domain = r.key || ''
+                // Kök domain al: l.instagram.com → instagram.com
+                const rootDomain = domain.split('.').slice(-2).join('.')
+                const faviconUrl = domain
+                  ? `https://www.google.com/s2/favicons?domain=${rootDomain}&sz=32`
+                  : null
                 return (
                   <div key={r.key}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-white/60 text-sm font-mono truncate max-w-[200px]">{r.key || 'Direkt'}</span>
-                      <span className="text-white font-mono text-sm ml-2">{r.total}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {faviconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={faviconUrl} alt="" width={16} height={16} className="rounded-sm shrink-0 opacity-80" />
+                        ) : (
+                          <Globe size={14} className="text-white/30 shrink-0" />
+                        )}
+                        <span className="text-white/70 text-sm truncate">{domain || 'Direkt'}</span>
+                      </div>
+                      <span className="text-white font-mono text-sm ml-3 shrink-0">{r.total}</span>
                     </div>
                     <div className="h-1.5 bg-white/[0.05] rounded-full">
                       <div className="h-1.5 bg-green-400/40 rounded-full" style={{ width: `${(r.total / maxRef) * 100}%` }} />
