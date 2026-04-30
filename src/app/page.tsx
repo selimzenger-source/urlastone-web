@@ -14,10 +14,10 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <MiniStats />
+      <InstagramFeed />
       <FeaturedStones />
       <ProcessSection />
       <ReferansMarquee />
-      <InstagramFeed />
       <CTASection />
       <Footer />
     </main>
