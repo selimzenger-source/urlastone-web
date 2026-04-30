@@ -128,48 +128,6 @@ function LogoRegion({ name, poly, step: appearStep, activeStep, progress, finalP
   )
 }
 
-function FinalCaption({ wordmarkP, taglineP }: { wordmarkP: number; taglineP: number }) {
-  return (
-    <div
-      style={{ position: 'absolute', left: '-10%', right: '-10%', bottom: '-22%', textAlign: 'center', pointerEvents: 'none' }}
-    >
-      <div
-        style={{
-          width: 60, height: 1, margin: '0 auto 14px',
-          background: 'linear-gradient(90deg, transparent, #b39345, transparent)',
-          transform: `scaleX(${wordmarkP})`, opacity: wordmarkP,
-        }}
-      />
-      <div
-        style={{
-          opacity: wordmarkP,
-          transform: `translateY(${(1 - wordmarkP) * 8}px)`,
-          fontFamily: 'var(--font-heading, "Playfair Display", serif)',
-          fontWeight: 600,
-          fontSize: 'clamp(16px, 2vw, 24px)',
-          letterSpacing: '0.18em',
-          marginBottom: 8,
-        }}
-      >
-        <span style={{ color: '#b39345' }}>URLA</span>
-        <span style={{ color: '#fff', marginLeft: '0.18em' }}>STONE</span>
-      </div>
-      <div
-        style={{
-          opacity: taglineP,
-          transform: `translateY(${(1 - taglineP) * 6}px)`,
-          fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
-          fontSize: 9, letterSpacing: '0.4em',
-          color: 'rgba(255,255,255,0.5)',
-          textTransform: 'uppercase',
-        }}
-      >
-        IN ITS NATURAL STATE
-      </div>
-    </div>
-  )
-}
-
 // ── Main Component ────────────────────────────────────────────────────────
 
 export default function ProcessSection() {
@@ -211,12 +169,6 @@ export default function ProcessSection() {
   // Gold pulse (sahne 3)
   const finalPulse = step === 3
     ? (progress < 0.25 ? clamp(progress / 0.25) : progress < 0.70 ? 1 : clamp(1 - (progress - 0.70) / 0.30))
-    : 0
-  const wordmarkP = step === 3
-    ? clamp((progress - 0.30) / 0.25) * (progress < 0.92 ? 1 : 1 - (progress - 0.92) / 0.08)
-    : 0
-  const taglineP = step === 3
-    ? clamp((progress - 0.45) / 0.25) * (progress < 0.92 ? 1 : 1 - (progress - 0.92) / 0.08)
     : 0
 
   // Rubble animasyonu
@@ -334,9 +286,6 @@ export default function ProcessSection() {
               {step === 3 && progress > 0.05 && progress < 0.35 && (
                 <ShineSweep progress={(progress - 0.05) / 0.30} />
               )}
-
-              {/* Wordmark + tagline (sahne 3 sonu) */}
-              {step === 3 && <FinalCaption wordmarkP={wordmarkP} taglineP={taglineP} />}
             </div>
 
             {/* Progress dots */}
