@@ -10,7 +10,7 @@
 // Sahne 3 (TESLİMAT): Çatı + tam logo + gold pulse + wordmark
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLanguage } from '@/context/LanguageContext'
 
@@ -49,7 +49,7 @@ function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3) }
 
 // ── Sub-components ────────────────────────────────────────────────────────
 
-function RisingDust({ step, progress }: { step: number; progress: number }) {
+const RisingDust = memo(function RisingDust({ step, progress }: { step: number; progress: number }) {
   const t =
     step === 0 ? Math.max(0, (progress - 0.7) / 0.3) * 0.3
     : step === 1 ? Math.min(1, progress / 0.6)
@@ -82,7 +82,7 @@ function RisingDust({ step, progress }: { step: number; progress: number }) {
       })}
     </div>
   )
-}
+})
 
 function ShineSweep({ progress }: { progress: number }) {
   return (
@@ -101,7 +101,7 @@ function ShineSweep({ progress }: { progress: number }) {
   )
 }
 
-function LogoRegion({ name, poly, step: appearStep, activeStep, progress, finalPulse }: {
+const LogoRegion = memo(function LogoRegion({ name, poly, step: appearStep, activeStep, progress, finalPulse }: {
   name: string; poly: string; step: number; activeStep: number; progress: number; finalPulse: number
 }) {
   if (activeStep < appearStep) return null
@@ -126,7 +126,7 @@ function LogoRegion({ name, poly, step: appearStep, activeStep, progress, finalP
       <Image src="/logo-outline.png" alt="" fill className="object-contain" />
     </div>
   )
-}
+})
 
 // ── Main Component ────────────────────────────────────────────────────────
 
@@ -141,6 +141,11 @@ export default function ProcessSection() {
     if (reduced) { setStep(3); setProgress(1); return }
 
     const start = performance.now()
+    let lastUpdate = 0
+    let lastStep = -1
+    let lastP = -1
+    // ~30fps throttle — yeterince akıcı, yarısı kadar render
+    const FRAME_MS = 33
     const tick = (now: number) => {
       const elapsed = (now - start) % TOTAL
       let s = 0, stepStart = 0
@@ -151,8 +156,16 @@ export default function ProcessSection() {
           break
         }
       }
-      setStep(s)
-      setProgress((elapsed - stepStart) / STEP_DURS[s])
+      const p = (elapsed - stepStart) / STEP_DURS[s]
+      const stepChanged = s !== lastStep
+      const progressChangedEnough = Math.abs(p - lastP) > 0.015
+      if (stepChanged || (now - lastUpdate >= FRAME_MS && progressChangedEnough)) {
+        if (stepChanged) setStep(s)
+        setProgress(p)
+        lastUpdate = now
+        lastStep = s
+        lastP = p
+      }
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
