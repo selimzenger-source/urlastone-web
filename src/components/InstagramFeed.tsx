@@ -6,13 +6,35 @@ import { useLanguage } from '@/context/LanguageContext'
 
 export default function InstagramFeed() {
   const { t } = useLanguage()
+  const sectionRef = useRef<HTMLElement>(null)
   const widgetRef = useRef<HTMLDivElement>(null)
+  const [shouldLoad, setShouldLoad] = useState(false)
   const [showFallback, setShowFallback] = useState(false)
 
+  // 1) IntersectionObserver: kullanıcı yaklaşmadan ElfSight'ı hiç yükleme
   useEffect(() => {
     if (typeof window === 'undefined') return
+    const sec = sectionRef.current
+    if (!sec) return
 
-    // ElfSight platform.js — yalnızca bir kez ekle
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShouldLoad(true)
+          observer.disconnect()
+        }
+      },
+      // 600px önceden tetikle (kullanıcı yaklaşırken hazırlamaya başla)
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(sec)
+    return () => observer.disconnect()
+  }, [])
+
+  // 2) Yaklaşınca ElfSight script'i yükle + 7sn fallback
+  useEffect(() => {
+    if (!shouldLoad || typeof window === 'undefined') return
+
     const SCRIPT_SRC = 'https://elfsightcdn.com/platform.js'
     let script = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`)
     if (!script) {
@@ -22,30 +44,19 @@ export default function InstagramFeed() {
       document.body.appendChild(script)
     }
 
-    // Mobil için lazy attribute olmadan eager-init zorla
-    // Script yüklü olsa bile yeni eklenen <div>'i tanıması için tetiklemek gerekiyor
-    const tryInit = () => {
-      // ElfSight script global init fonksiyonunu çağırır; lazy attribute yoksa ilk yüklemede hallediyor
-      const w = widgetRef.current
-      if (!w) return
-      // Boyut bekle — ElfSight render edince div'in içine iframe/img ekler
-    }
-    tryInit()
-
-    // Fallback: 7 sn sonra hâlâ içerik yoksa CTA göster
+    // Fallback: 7 sn sonra hâlâ render etmediyse görsel grid göster
     const fallbackTimer = setTimeout(() => {
       const el = widgetRef.current
-      // ElfSight render olduysa div içinde child element olur
       if (!el || el.children.length === 0 || el.offsetHeight < 60) {
         setShowFallback(true)
       }
     }, 7000)
 
     return () => clearTimeout(fallbackTimer)
-  }, [])
+  }, [shouldLoad])
 
   return (
-    <section className="section-padding border-t border-white/[0.06]">
+    <section ref={sectionRef} className="section-padding border-t border-white/[0.06]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12 md:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
@@ -76,15 +87,15 @@ export default function InstagramFeed() {
           </a>
         </div>
 
-        {/* ElfSight Instagram Feed Widget — lazy KALDIRILDI (mobilde tetiklenmiyordu) */}
-        {!showFallback && (
+        {/* ElfSight widget — sadece scroll yaklaşınca render edilir */}
+        {shouldLoad && !showFallback && (
           <div
             ref={widgetRef}
             className="elfsight-app-5b69cc52-8d39-4e4d-aec9-8b290e0dfe72 min-h-[120px]"
           />
         )}
 
-        {/* Fallback: ElfSight render etmezse görsel CTA grid */}
+        {/* Fallback: ElfSight render edemezse görsel grid */}
         {showFallback && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {['/slide-3.jpg', '/slide-5.jpg', '/slide-7.jpg', '/slide-2.jpg'].map((src, i) => (
@@ -105,6 +116,13 @@ export default function InstagramFeed() {
                 </div>
               </a>
             ))}
+          </div>
+        )}
+
+        {/* Placeholder (shouldLoad olana kadar) — yer tutucu, layout shift önler */}
+        {!shouldLoad && (
+          <div className="min-h-[300px] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-gold-400/60 animate-spin" />
           </div>
         )}
       </div>
