@@ -269,13 +269,13 @@ export default function TeklifForm() {
       newErrors.adSoyad = 'Ad Soyad en az 3 karakter olmalıdır'
     }
 
-    // Telefon: Türkiye ise 5XX format (10 hane, ülke kodu hariç), diğer ülkeler min 7 hane
+    // Telefon: +90 ise 5XX format (10 hane), diğer ülke kodları için min 6 hane
     const cleanPhone = form.telefon.replace(/[\s\-\(\)+]/g, '')
-    if (form.ulke === 'Türkiye') {
+    if (phoneCode === '+90') {
       if (!/^5\d{9}$/.test(cleanPhone)) {
         newErrors.telefon = 'Telefon numaranızı 5XX XXX XX XX formatında girin (10 hane)'
       }
-    } else if (cleanPhone.length < 7) {
+    } else if (cleanPhone.length < 6) {
       newErrors.telefon = 'Geçerli bir telefon numarası giriniz'
     }
 
@@ -453,7 +453,7 @@ export default function TeklifForm() {
               <input type="tel" name="telefon" required value={form.telefon}
                 onChange={(e) => {
                   let val = e.target.value
-                  if (form.ulke === 'Türkiye') {
+                  if (phoneCode === '+90') {
                     const digits = val.replace(/[^0-9]/g, '').slice(0, 10)
                     // Auto-format: 532 258 41 11
                     if (digits.length <= 3) val = digits
@@ -461,12 +461,13 @@ export default function TeklifForm() {
                     else if (digits.length <= 8) val = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
                     else val = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8)}`
                   } else {
-                    val = val.replace(/[^0-9\s]/g, '')
+                    // Uluslararası: rakam, boşluk, tire, parantez serbestçe
+                    val = val.replace(/[^0-9\s\-\(\)]/g, '')
                   }
                   setForm(prev => ({ ...prev, telefon: val }))
                   if (errors.telefon) setErrors(prev => ({ ...prev, telefon: '' }))
                 }}
-                placeholder={form.ulke === 'Türkiye' ? '532 258 41 11' : '555 123 4567'}
+                placeholder={phoneCode === '+90' ? '532 258 41 11' : '176 1234 5678'}
                 className={`${inputClass} flex-1 ${errors.telefon ? 'border-red-500/50' : ''}`} />
             </div>
             {errors.telefon && <p className="text-red-400 text-[10px] font-mono mt-1">{errors.telefon}</p>}
