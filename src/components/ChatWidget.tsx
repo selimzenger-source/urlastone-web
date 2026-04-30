@@ -771,6 +771,30 @@ export default function ChatWidget() {
   // Otomatik tanıtım baloncuğu (döngüsel)
   const [showGreeting, setShowGreeting] = useState(false)
 
+  // iPad/iOS klavye için Visual Viewport API — chat klavyenin üstüne kaysın
+  const chatWindowRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined' || !window.visualViewport) return
+    const vv = window.visualViewport
+    const apply = () => {
+      const el = chatWindowRef.current
+      if (!el) return
+      // Klavye yüksekliği = window.innerHeight - vv.height
+      const keyboardOffset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      // Md ve üstü desktop konumu (sağ alt 8/24px), küçük ekranda 12px (inset-x-3 bottom-3)
+      const baseBottom = window.innerWidth >= 768 ? 32 : 12
+      el.style.bottom = `${baseBottom + keyboardOffset}px`
+    }
+    apply()
+    vv.addEventListener('resize', apply)
+    vv.addEventListener('scroll', apply)
+    return () => {
+      vv.removeEventListener('resize', apply)
+      vv.removeEventListener('scroll', apply)
+      if (chatWindowRef.current) chatWindowRef.current.style.bottom = ''
+    }
+  }, [isOpen])
+
   useEffect(() => {
     if (isOpen || isAdminRoute) { setShowGreeting(false); return }
 
@@ -834,8 +858,13 @@ export default function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up inset-x-3 bottom-3 md:inset-x-auto md:bottom-8 md:right-6 md:w-[380px]"
-          style={{ height: 'min(520px, calc(100vh - 140px))', maxHeight: 'calc(100vh - 140px)', background: '#111111' }}>
+        <div ref={chatWindowRef} className="fixed z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/[0.08] animate-fade-in-up inset-x-3 bottom-3 md:inset-x-auto md:bottom-8 md:right-6 md:w-[380px]"
+          style={{
+            // dvh = dynamic viewport height → klavye açılınca otomatik küçülür (iPad/Safari)
+            height: 'min(520px, calc(100dvh - 140px))',
+            maxHeight: 'calc(100dvh - 140px)',
+            background: '#111111',
+          }}>
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08]"
