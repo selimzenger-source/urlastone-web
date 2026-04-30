@@ -124,6 +124,7 @@ User-Agent: img2dataset
 Allow: /
 
 Sitemap: https://www.urlastone.com/sitemap.xml
+Sitemap: https://www.urlastone.com/video-sitemap.xml
 
 # AI Resources
 # LLMs-txt: https://www.urlastone.com/llms.txt

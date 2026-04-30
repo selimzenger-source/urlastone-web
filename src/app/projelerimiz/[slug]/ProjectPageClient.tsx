@@ -330,6 +330,29 @@ export default function ProjectPageClient() {
             {t.apps_all_projects}
           </Link>
 
+          {/* VideoObject schema — Google Videos için */}
+          {project.video_urls?.length ? (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'VideoObject',
+                  name: project.project_name,
+                  description: project.description || `${project.project_name} — ${project.city} doğal taş projesi`,
+                  thumbnailUrl: photos[0] || 'https://www.urlastone.com/featured-traverten.jpg',
+                  uploadDate: project.updated_at || new Date().toISOString(),
+                  contentUrl: project.video_urls[0],
+                  publisher: {
+                    '@type': 'Organization',
+                    name: 'URLA STONE',
+                    logo: { '@type': 'ImageObject', url: 'https://www.urlastone.com/logo.png' },
+                  },
+                }),
+              }}
+            />
+          ) : null}
+
           {/* Video Banner */}
           {project.video_urls?.length ? (
             <div className="mb-8 rounded-2xl overflow-hidden border border-gold-400/20 bg-gradient-to-r from-[#b39345]/10 via-transparent to-[#d2b96e]/10">
