@@ -9,7 +9,7 @@ Disallow: /_next/static/
 # ai-train=no: içerik AI eğitimi için kullanılamaz
 # search=yes:  arama motorları içeriği indeksleyebilir
 # ai-input=yes: AI araçları içeriği girdi olarak kullanabilir (Perplexity, ChatGPT Search vb.)
-Content-Signal: ai-train=no, search=yes, ai-input=yes
+# Content-Signal: ai-train=no, search=yes, ai-input=yes
 
 # AI Crawlers — all allowed
 User-Agent: GPTBot
