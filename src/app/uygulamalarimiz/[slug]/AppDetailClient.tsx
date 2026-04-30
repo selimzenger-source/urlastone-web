@@ -145,7 +145,7 @@ export default function AppDetailClient() {
                     src={project.video_urls[0]}
                     controls
                     playsInline
-                    loop
+                    preload="none"
                     className="w-full"
                     style={{ maxHeight: '50vh' }}
                     poster={photos[0]}

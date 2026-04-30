@@ -97,7 +97,7 @@ function VideoModal({ url, name, onClose }: { url: string; name: string; onClose
               `}</style>
             </div>
           )}
-          <video ref={videoRef} src={url} controls playsInline preload="metadata" className="w-full" style={{ maxHeight: '80vh' }} />
+          <video ref={videoRef} src={url} controls playsInline preload="none" className="w-full" style={{ maxHeight: '80vh' }} />
           {/* Sağ üst URLASTONE logosu — video oynarken */}
           {phase === 'playing' && (
             <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-lg px-2.5 py-1.5 pointer-events-none">
