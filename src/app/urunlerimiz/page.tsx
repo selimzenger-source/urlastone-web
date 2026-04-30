@@ -492,9 +492,10 @@ export default function TaslarPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
             {kullanimAlanlari.map((alan, i) => (
-              <div
+              <Link
                 key={alan.baslik}
-                className="group relative rounded-2xl overflow-hidden bg-[#111] cursor-pointer transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5"
+                href="/projelerimiz"
+                className="group relative rounded-2xl overflow-hidden bg-[#111] cursor-pointer transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 block"
                 style={{ aspectRatio: '3 / 4' }}
               >
                 {/* Image */}
@@ -529,7 +530,7 @@ export default function TaslarPage() {
                     <ArrowRight size={14} />
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
