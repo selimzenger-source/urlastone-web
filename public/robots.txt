@@ -5,6 +5,12 @@ Disallow: /api/
 Disallow: /teklif-basarili
 Disallow: /_next/static/
 
+# Content Signals — AI content usage preferences (https://contentsignals.org/)
+# ai-train=no: içerik AI eğitimi için kullanılamaz
+# search=yes:  arama motorları içeriği indeksleyebilir
+# ai-input=yes: AI araçları içeriği girdi olarak kullanabilir (Perplexity, ChatGPT Search vb.)
+Content-Signal: ai-train=no, search=yes, ai-input=yes
+
 # AI Crawlers — all allowed
 User-Agent: GPTBot
 Allow: /
@@ -87,6 +93,36 @@ Allow: /
 User-Agent: Bytespider
 Allow: /
 
+User-Agent: Diffbot
+Allow: /
+
+User-Agent: Timpibot
+Allow: /
+
+User-Agent: omgili
+Allow: /
+
+User-Agent: omgilibot
+Allow: /
+
+User-Agent: iaskspider
+Allow: /
+
+User-Agent: webzio-extended
+Allow: /
+
+User-Agent: ICC-Crawler
+Allow: /
+
+User-Agent: Nicecrawler
+Allow: /
+
+User-Agent: DataForSeoBot
+Allow: /
+
+User-Agent: img2dataset
+Allow: /
+
 Sitemap: https://www.urlastone.com/sitemap.xml
 
 # AI Resources
@@ -96,3 +132,4 @@ Sitemap: https://www.urlastone.com/sitemap.xml
 # MCP Server Card: https://www.urlastone.com/.well-known/mcp/server-card.json
 # Agent Skills: https://www.urlastone.com/.well-known/agent-skills/index.json
 # RSS Feed: https://www.urlastone.com/feed.xml
+# Content Signals: https://www.urlastone.com/.well-known/content-signals
