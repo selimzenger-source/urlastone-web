@@ -103,6 +103,12 @@ type TranslationKeys = {
   process_step2_desc: string
   process_step3_title: string
   process_step3_desc: string
+  process_step1_tag: string
+  process_step2_tag: string
+  process_step3_tag: string
+  process_step4_tag: string
+  process_step4_title: string
+  process_step4_desc: string
 
   // Referans
   ref_tag: string
@@ -567,6 +573,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Rockshell teknolojisiyle Nature, Mix, Crazy ve Line ebat kategorilerinde özel kesim ve işleme yapıyoruz. Terminimize sadık kalarak üretimi tamamlıyoruz.',
     process_step3_title: 'Teslimat & Uygulama',
     process_step3_desc: 'Verilen sürede ürünleri teslim edip, uzman ekibimiz ile sahada kusursuz montaj gerçekleştiriyoruz. Projenizi anahtar teslim hayata geçiriyoruz',
+    process_step1_tag: 'TALEP',
+    process_step2_tag: 'TASARIM',
+    process_step3_tag: 'ÜRETİM',
+    process_step4_tag: 'TESLİMAT',
+    process_step4_title: 'Yerinde Uygulama',
+    process_step4_desc: 'Lojistik ve montaj ekiplerimizle proje sahasında teslim ediyoruz. Süreç anahtar teslim sonlanır.',
     ref_tag: 'Referanslarımız',
     ref_title: 'Sektörün',
     ref_gold: 'tercihi',
@@ -1000,6 +1012,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'With Rockshell technology, we perform custom cutting and processing in Nature, Mix, Crazy and Line size categories. We complete production on schedule.',
     process_step3_title: 'Delivery & Installation',
     process_step3_desc: 'We deliver products on schedule and perform flawless on-site installation with our expert team. We bring your project to life turnkey',
+    process_step1_tag: 'REQUEST',
+    process_step2_tag: 'DESIGN',
+    process_step3_tag: 'PRODUCTION',
+    process_step4_tag: 'DELIVERY',
+    process_step4_title: 'On-Site Installation',
+    process_step4_desc: 'We deliver on your project site with our logistics and installation teams. The process concludes turnkey.',
     ref_tag: 'Our References',
     ref_title: 'The industry\'s',
     ref_gold: 'preferred choice',
@@ -1433,6 +1451,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Con tecnología Rockshell, realizamos corte y procesamiento personalizado en categorías Nature, Mix, Crazy y Line. Completamos la producción según lo programado.',
     process_step3_title: 'Entrega e Instalación',
     process_step3_desc: 'Entregamos los productos a tiempo y realizamos una instalación impecable en obra con nuestro equipo experto. Llevamos su proyecto a la realidad llave en mano',
+    process_step1_tag: 'SOLICITUD',
+    process_step2_tag: 'DISEÑO',
+    process_step3_tag: 'PRODUCCIÓN',
+    process_step4_tag: 'ENTREGA',
+    process_step4_title: 'Instalación en Obra',
+    process_step4_desc: 'Entregamos en el lugar del proyecto con nuestros equipos de logística e instalación. El proceso concluye llave en mano.',
     ref_tag: 'Nuestras Referencias',
     ref_title: 'Elección del',
     ref_gold: 'sector',
@@ -1866,6 +1890,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'بتقنية روكشيل، نقوم بالقص والمعالجة المخصصة في فئات Nature وMix وCrazy وLine. نكمل الإنتاج في الموعد المحدد.',
     process_step3_title: 'التسليم والتركيب',
     process_step3_desc: 'نسلم المنتجات في الوقت المحدد وننفذ التركيب المثالي في الموقع مع فريقنا الخبير. ننفذ مشروعكم تسليم مفتاح',
+    process_step1_tag: 'الطلب',
+    process_step2_tag: 'التصميم',
+    process_step3_tag: 'الإنتاج',
+    process_step4_tag: 'التسليم',
+    process_step4_title: 'التركيب في الموقع',
+    process_step4_desc: 'نسلم في موقع المشروع مع فرق اللوجستيات والتركيب. تنتهي العملية تسليم مفتاح.',
     ref_tag: 'مراجعنا',
     ref_title: 'خيار',
     ref_gold: 'القطاع',
@@ -2299,6 +2329,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Mit Rockshell-Technologie führen wir individuellen Zuschnitt und Verarbeitung in den Kategorien Nature, Mix, Crazy und Line durch. Wir schließen die Produktion termingerecht ab.',
     process_step3_title: 'Lieferung & Montage',
     process_step3_desc: 'Wir liefern die Produkte termingerecht und führen mit unserem Expertenteam eine einwandfreie Montage vor Ort durch. Wir realisieren Ihr Projekt schlüsselfertig',
+    process_step1_tag: 'ANFRAGE',
+    process_step2_tag: 'DESIGN',
+    process_step3_tag: 'PRODUKTION',
+    process_step4_tag: 'LIEFERUNG',
+    process_step4_title: 'Montage vor Ort',
+    process_step4_desc: 'Wir liefern mit unseren Logistik- und Montageteams auf der Baustelle. Der Prozess endet schlüsselfertig.',
     ref_tag: 'Unsere Referenzen',
     ref_title: 'Die Wahl der',
     ref_gold: 'Branche',
@@ -2732,6 +2768,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'Avec la technologie Rockshell, nous effectuons des découpes sur mesure dans les catégories Nature, Mix, Crazy et Line. Production dans les délais.',
     process_step3_title: 'Livraison et Installation',
     process_step3_desc: 'Nous livrons les produits dans les délais et réalisons une installation impeccable sur site avec notre équipe d\'experts. Nous concrétisons votre projet clé en main',
+    process_step1_tag: 'DEMANDE',
+    process_step2_tag: 'DESIGN',
+    process_step3_tag: 'PRODUCTION',
+    process_step4_tag: 'LIVRAISON',
+    process_step4_title: 'Installation sur Site',
+    process_step4_desc: 'Nous livrons sur le chantier avec nos équipes logistique et installation. Le processus se conclut clé en main.',
     ref_tag: 'Nos Références',
     ref_title: 'Le choix',
     ref_gold: 'privilégié du secteur',
@@ -3165,6 +3207,12 @@ const translations: Record<Locale, TranslationKeys> = {
     process_step2_desc: 'С технологией Rockshell мы выполняем индивидуальную резку в категориях Nature, Mix, Crazy и Line. Производство в срок.',
     process_step3_title: 'Доставка и Монтаж',
     process_step3_desc: 'Мы доставляем продукцию в срок и выполняем безупречный монтаж на объекте силами нашей экспертной команды. Реализуем ваш проект под ключ',
+    process_step1_tag: 'ЗАПРОС',
+    process_step2_tag: 'ДИЗАЙН',
+    process_step3_tag: 'ПРОИЗВОДСТВО',
+    process_step4_tag: 'ДОСТАВКА',
+    process_step4_title: 'Монтаж на объекте',
+    process_step4_desc: 'Доставляем на объект с нашими командами логистики и монтажа. Процесс завершается под ключ.',
     ref_tag: 'Наши Референции',
     ref_title: 'Предпочтительный',
     ref_gold: 'выбор отрасли',
