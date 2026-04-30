@@ -6,10 +6,6 @@ import Footer from '@/components/Footer'
 import { cdnImg } from '@/lib/cdn'
 import {
   ArrowRight,
-  Layers,
-  Shield,
-  Ruler,
-  Palette,
   ChevronRight,
   X,
   Building2,
@@ -193,11 +189,22 @@ export default function TaslarPage() {
     return stoneTypeInfo[st.code]?.foto || '/featured-traverten.jpg'
   }
 
+  // V1 (Editorial Split) — görselli kart tasarımı
+  const usageLabels: Record<string, string[]> = {
+    tr: ['Dış Cephe', 'İç Mimari', 'Yer', 'Açık Hava'],
+    en: ['Exterior', 'Interior', 'Flooring', 'Outdoor'],
+    es: ['Exterior', 'Interior', 'Suelo', 'Exterior'],
+    ar: ['واجهة خارجية', 'تصميم داخلي', 'أرضية', 'هواء طلق'],
+    de: ['Außenfassade', 'Innenraum', 'Boden', 'Außenbereich'],
+    fr: ['Extérieur', 'Intérieur', 'Sol', 'Extérieur'],
+    ru: ['Фасад', 'Интерьер', 'Пол', 'Снаружи'],
+  }
+  const labels = usageLabels[locale] || usageLabels.tr
   const kullanimAlanlari = [
-    { baslik: t.stones_usage1_name, icon: Layers },
-    { baslik: t.stones_usage2_name, icon: Palette },
-    { baslik: t.stones_usage3_name, icon: Ruler },
-    { baslik: t.stones_usage4_name, icon: Shield },
+    { baslik: t.stones_usage1_name, label: labels[0], img: '/slide-3.jpg' },
+    { baslik: t.stones_usage2_name, label: labels[1], img: '/slide-5.jpg' },
+    { baslik: t.stones_usage3_name, label: labels[2], img: '/slide-7.jpg' },
+    { baslik: t.stones_usage4_name, label: labels[3], img: '/slide-2.jpg' },
   ]
 
   // Filter products by category
@@ -475,23 +482,55 @@ export default function TaslarPage() {
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {kullanimAlanlari.map((alan) => {
-              const Icon = alan.icon
-              return (
+          <p className="text-center text-white/40 text-sm tracking-[0.04em] -mt-12 mb-14">
+            {locale === 'tr' && 'Doğal taşın dört uygulama alanı — tek bir mekânda ya da hepsinde'}
+            {locale === 'en' && 'Four applications of natural stone — in a single space or all of them'}
+            {locale === 'es' && 'Cuatro aplicaciones de la piedra natural — en un solo espacio o en todos'}
+            {locale === 'ar' && 'أربعة مجالات لتطبيق الحجر الطبيعي — في مكان واحد أو في جميعها'}
+            {locale === 'de' && 'Vier Anwendungen für Naturstein — in einem Raum oder in allen'}
+          </p>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+            {kullanimAlanlari.map((alan, i) => (
+              <div
+                key={alan.baslik}
+                className="group relative rounded-2xl overflow-hidden bg-[#111] cursor-pointer transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5"
+                style={{ aspectRatio: '3 / 4' }}
+              >
+                {/* Image */}
                 <div
-                  key={alan.baslik}
-                  className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-8 text-center hover:border-gold-400/20 transition-all duration-300 group"
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-gold-400/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-gold-400/20 transition-colors">
-                    <Icon size={28} className="text-gold-400" />
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                  style={{ backgroundImage: `url(${alan.img})` }}
+                />
+
+                {/* Gradient overlay */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.92) 100%)',
+                  }}
+                />
+
+                {/* Number badge */}
+                <div className="absolute top-4 left-4 font-mono text-[10px] tracking-[0.2em] text-white/70 bg-black/35 backdrop-blur-md border border-white/[0.08] rounded-full px-2.5 py-1.5">
+                  {String(i + 1).padStart(2, '0')} / 04
+                </div>
+
+                {/* Content */}
+                <div className="absolute left-5 right-5 bottom-5">
+                  <div className="font-mono text-[9px] tracking-[0.25em] text-gold-400 uppercase mb-2">
+                    {alan.label}
                   </div>
-                  <h3 className="font-heading text-base font-semibold text-white">
+                  <h3 className="font-heading text-xl md:text-2xl font-medium text-white mb-3.5 leading-tight">
                     {alan.baslik}
                   </h3>
+                  <div className="w-9 h-9 rounded-full bg-white/[0.08] border border-white/[0.12] flex items-center justify-center text-white transition-all duration-300 group-hover:bg-gold-400 group-hover:border-gold-400 group-hover:text-black group-hover:translate-x-1">
+                    <ArrowRight size={14} />
+                  </div>
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
