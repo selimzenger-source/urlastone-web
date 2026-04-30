@@ -25,6 +25,21 @@ const COUNTRY_FLAGS: Record<string, string> = {
   AT: '🇦🇹', SE: '🇸🇪', NO: '🇳🇴', DK: '🇩🇰',
   CH: '🇨🇭', BE: '🇧🇪', GR: '🇬🇷', PT: '🇵🇹',
   MX: '🇲🇽', AR: '🇦🇷', ZA: '🇿🇦', SG: '🇸🇬',
+  UA: '🇺🇦', RO: '🇷🇴', CZ: '🇨🇿', HU: '🇭🇺',
+  IL: '🇮🇱', IR: '🇮🇷', PK: '🇵🇰', BD: '🇧🇩',
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  TR: 'Türkiye', DE: 'Almanya', US: 'Amerika Birleşik Devletleri', GB: 'Birleşik Krallık',
+  FR: 'Fransa', ES: 'İspanya', SA: 'Suudi Arabistan', AE: 'Birleşik Arap Emirlikleri',
+  RU: 'Rusya', NL: 'Hollanda', IT: 'İtalya', JP: 'Japonya',
+  CN: 'Çin', AU: 'Avustralya', CA: 'Kanada', KW: 'Kuveyt',
+  QA: 'Katar', IN: 'Hindistan', BR: 'Brezilya', PL: 'Polonya',
+  AT: 'Avusturya', SE: 'İsveç', NO: 'Norveç', DK: 'Danimarka',
+  CH: 'İsviçre', BE: 'Belçika', GR: 'Yunanistan', PT: 'Portekiz',
+  MX: 'Meksika', AR: 'Arjantin', ZA: 'Güney Afrika', SG: 'Singapur',
+  UA: 'Ukrayna', RO: 'Romanya', CZ: 'Çekya', HU: 'Macaristan',
+  IL: 'İsrail', IR: 'İran', PK: 'Pakistan', BD: 'Bangladeş',
 }
 
 const PERIOD_OPTIONS = [
@@ -224,7 +239,7 @@ export default function AdminAnalytics() {
                   <div key={c.key} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-xl leading-none">{COUNTRY_FLAGS[c.key] || '🌐'}</span>
-                      <span className="text-white/60 text-sm font-mono">{c.key}</span>
+                      <span className="text-white/60 text-sm">{COUNTRY_NAMES[c.key] || c.key}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-24 h-1.5 bg-white/[0.05] rounded-full">
