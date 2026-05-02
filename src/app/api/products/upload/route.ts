@@ -17,26 +17,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'file and product_id required' }, { status: 400 })
   }
 
+  // Fetch existing image_url so we can delete the old file after a successful upload
+  const { data: existing } = await supabaseAdmin
+    .from('products')
+    .select('image_url')
+    .eq('id', productId)
+    .maybeSingle()
+  const oldPath = extractStoragePath(existing?.image_url ?? null)
+
   // Auto-optimize image
   const optimized = await optimizeUploadedFile(file, { maxWidth: 1200, quality: 82 })
-  const fileName = `${productId}.${optimized.ext}`
+  const fileName = `${productId}-${Date.now()}.${optimized.ext}`
 
-  // Upload optimized image to Supabase Storage
+  // Upload optimized image to Supabase Storage (unique filename = no CDN/browser cache hit)
   const { error: uploadError } = await supabaseAdmin.storage
     .from('products')
-    .upload(fileName, optimized.buffer, { upsert: true, contentType: optimized.contentType })
+    .upload(fileName, optimized.buffer, { upsert: false, contentType: optimized.contentType })
 
   if (uploadError) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 })
   }
 
-  // Get public URL
   const { data: urlData } = supabaseAdmin.storage
     .from('products')
     .getPublicUrl(fileName)
 
-  // Update product record with cache-busted URL
-  const imageUrl = `${urlData.publicUrl}?v=${Date.now()}`
+  const imageUrl = urlData.publicUrl
   const { error: updateError } = await supabaseAdmin
     .from('products')
     .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
@@ -46,5 +52,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  return NextResponse.json({ url: urlData.publicUrl })
+  if (oldPath && oldPath !== fileName) {
+    await supabaseAdmin.storage.from('products').remove([oldPath])
+  }
+
+  return NextResponse.json({ url: imageUrl })
+}
+
+function extractStoragePath(url: string | null): string | null {
+  if (!url) return null
+  const match = url.match(/\/storage\/v1\/object\/public\/products\/(.+?)(\?|$)/)
+  return match ? match[1] : null
 }
