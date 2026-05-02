@@ -98,10 +98,12 @@ export default function AdminTaslar() {
 
   const fetchData = async () => {
     setLoading(true)
+    // Cache-bust: admin paneli her zaman taze veri çeksin (Vercel CDN s-maxage'i bypass et)
+    const t = Date.now()
     const [prods, cats, types] = await Promise.all([
-      fetch('/api/products?include_hidden=true').then(r => r.json()),
-      fetch('/api/categories').then(r => r.json()),
-      fetch('/api/stone-types').then(r => r.json()),
+      fetch(`/api/products?include_hidden=true&_t=${t}`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(`/api/categories?_t=${t}`, { cache: 'no-store' }).then(r => r.json()),
+      fetch(`/api/stone-types?_t=${t}`, { cache: 'no-store' }).then(r => r.json()),
     ])
     setProducts(prods)
     setCategories(cats)
