@@ -5,7 +5,11 @@ import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 
-export default function FeaturedStones() {
+interface Props {
+  stoneImages?: Record<string, string>
+}
+
+export default function FeaturedStones({ stoneImages = {} }: Props) {
   const { t } = useLanguage()
   const [hovered, setHovered] = useState<string | null>(null)
 
@@ -16,7 +20,7 @@ export default function FeaturedStones() {
       name: t.featured_traverten_name,
       description: t.featured_traverten_desc,
       origin: t.featured_traverten_origin,
-      image: '/featured-traverten.jpg',
+      image: stoneImages['TRV'] || '/featured-traverten.jpg',
       bgSize: 'cover',
       bgPos: 'center',
     },
@@ -26,7 +30,7 @@ export default function FeaturedStones() {
       name: t.featured_mermer_name,
       description: t.featured_mermer_desc,
       origin: t.featured_mermer_origin,
-      image: '/featured-mermer.jpg',
+      image: stoneImages['MRMR'] || '/featured-mermer.jpg',
       bgSize: 'cover',
       bgPos: 'center',
     },
@@ -36,7 +40,7 @@ export default function FeaturedStones() {
       name: t.featured_bazalt_name,
       description: t.featured_bazalt_desc,
       origin: t.featured_bazalt_origin,
-      image: '/featured-bazalt.jpg',
+      image: stoneImages['BZLT'] || '/featured-bazalt.jpg',
       bgSize: 'cover',
       bgPos: 'center',
     },
@@ -46,7 +50,7 @@ export default function FeaturedStones() {
       name: t.featured_kalker_name,
       description: t.featured_kalker_desc,
       origin: t.featured_kalker_origin,
-      image: '/featured-kalker.jpg',
+      image: stoneImages['KLKR'] || '/featured-kalker.jpg',
       bgSize: 'cover',
       bgPos: 'center',
     },
