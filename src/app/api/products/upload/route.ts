@@ -1,5 +1,6 @@
 import { optimizeUploadedFile } from '@/lib/image-optimize'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
 
 // POST /api/products/upload - Upload product image (admin only)
@@ -17,19 +18,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'file and product_id required' }, { status: 400 })
   }
 
-  // Fetch existing image_url so we can delete the old file after a successful upload
-  const { data: existing } = await supabaseAdmin
-    .from('products')
-    .select('image_url')
-    .eq('id', productId)
-    .maybeSingle()
-  const oldPath = extractStoragePath(existing?.image_url ?? null)
-
-  // Auto-optimize image
   const optimized = await optimizeUploadedFile(file, { maxWidth: 1200, quality: 82 })
   const fileName = `${productId}-${Date.now()}.${optimized.ext}`
 
-  // Upload optimized image to Supabase Storage (unique filename = no CDN/browser cache hit)
   const { error: uploadError } = await supabaseAdmin.storage
     .from('products')
     .upload(fileName, optimized.buffer, { upsert: false, contentType: optimized.contentType })
@@ -52,15 +43,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  if (oldPath && oldPath !== fileName) {
-    await supabaseAdmin.storage.from('products').remove([oldPath])
-  }
+  revalidatePath('/')
+  revalidatePath('/urunlerimiz')
 
   return NextResponse.json({ url: imageUrl })
-}
-
-function extractStoragePath(url: string | null): string | null {
-  if (!url) return null
-  const match = url.match(/\/storage\/v1\/object\/public\/products\/(.+?)(\?|$)/)
-  return match ? match[1] : null
 }

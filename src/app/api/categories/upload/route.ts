@@ -1,5 +1,6 @@
 import { optimizeUploadedFile } from '@/lib/image-optimize'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
 
 // POST /api/categories/upload - Upload category image (admin only)
@@ -16,13 +17,6 @@ export async function POST(req: NextRequest) {
   if (!file || !categoryId) {
     return NextResponse.json({ error: 'file and category_id required' }, { status: 400 })
   }
-
-  const { data: existing } = await supabaseAdmin
-    .from('categories')
-    .select('image_url')
-    .eq('id', categoryId)
-    .maybeSingle()
-  const oldPath = extractStoragePath(existing?.image_url ?? null)
 
   const optimized = await optimizeUploadedFile(file, { maxWidth: 1200, quality: 82 })
   const fileName = `categories/${categoryId}-${Date.now()}.${optimized.ext}`
@@ -50,15 +44,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
   }
 
-  if (oldPath && oldPath !== fileName) {
-    await supabaseAdmin.storage.from('products').remove([oldPath])
-  }
+  revalidatePath('/')
+  revalidatePath('/urunlerimiz')
 
   return NextResponse.json({ url: imageUrl })
-}
-
-function extractStoragePath(url: string | null): string | null {
-  if (!url) return null
-  const match = url.match(/\/storage\/v1\/object\/public\/products\/(.+?)(\?|$)/)
-  return match ? match[1] : null
 }
