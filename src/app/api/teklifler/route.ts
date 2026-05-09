@@ -3,6 +3,10 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { sendCustomerConfirmation, sendAdminNotification } from '@/lib/email'
 import { sendTelegramNotification } from '@/lib/telegram'
 
+// Email + Telegram her ikisini de garantili gönder — Resend yavaşlarsa
+// default 10s'de Telegram'a sıra gelmiyordu. 30s yeterli pay.
+export const maxDuration = 30
+
 // GET /api/teklifler — admin only
 export async function GET(req: Request) {
   const pw = req.headers.get('x-admin-password')
@@ -62,7 +66,25 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Send emails — MUST await, otherwise Vercel kills the function before emails are sent
+  // Telegram bildirim — emails'den ÖNCE çağrılır ki Resend yavaşlasa bile
+  // bildirim mutlaka iletilsin (eskiden tersi sırada idi, kayıplara sebep oldu)
+  await sendTelegramNotification(
+    [
+      '📋 *Yeni Teklif Talebi*',
+      '',
+      `👤 *Ad:* ${ad_soyad}`,
+      `📞 *Telefon:* ${telefon}`,
+      email ? `📧 *Email:* ${email}` : '',
+      `📍 *Konum:* ${il}${ilce ? ', ' + ilce : ''}, ${ulke || 'Türkiye'}`,
+      `🏗 *Proje:* ${proje_tipi}`,
+      `🪨 *Taş:* ${(tas_tercihi || []).join(', ') || '-'}`,
+      `📐 *m²:* ${cephe_metre || '-'}`,
+      `💰 *Fiyat Tipi:* ${fiyat_tipi || '-'}`,
+      aciklama ? `📝 *Not:* ${aciklama.substring(0, 100)}` : '',
+    ].filter(Boolean).join('\n')
+  )
+
+  // Send emails
   if (process.env.RESEND_API_KEY) {
     const emailData = { ad_soyad, telefon, email, ulke: ulke || 'Türkiye', il, ilce, proje_tipi, tas_tercihi: tas_tercihi || [], cephe_metre, dis_kose_uzunluk, fiyat_tipi, aciklama, kaynak, iletisim_turu, tercih_dil: tercih_dil || 'tr' }
     try {
@@ -81,23 +103,6 @@ export async function POST(req: Request) {
       console.error('Email send error:', e)
     }
   }
-
-  // Telegram bildirim
-  await sendTelegramNotification(
-    [
-      '📋 *Yeni Teklif Talebi*',
-      '',
-      `👤 *Ad:* ${ad_soyad}`,
-      `📞 *Telefon:* ${telefon}`,
-      email ? `📧 *Email:* ${email}` : '',
-      `📍 *Konum:* ${il}${ilce ? ', ' + ilce : ''}, ${ulke || 'Türkiye'}`,
-      `🏗 *Proje:* ${proje_tipi}`,
-      `🪨 *Taş:* ${(tas_tercihi || []).join(', ') || '-'}`,
-      `📐 *m²:* ${cephe_metre || '-'}`,
-      `💰 *Fiyat Tipi:* ${fiyat_tipi || '-'}`,
-      aciklama ? `📝 *Not:* ${aciklama.substring(0, 100)}` : '',
-    ].filter(Boolean).join('\n')
-  )
 
   return NextResponse.json(data)
 }

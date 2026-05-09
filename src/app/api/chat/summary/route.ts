@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { sendTelegramNotification } from '@/lib/telegram'
 
+// Yabancı dil özetlerinde Claude çevirisi + Telegram için 30s pay
+export const maxDuration = 30
+
 const translateClient = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null

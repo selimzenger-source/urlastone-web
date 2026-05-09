@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramNotification } from '@/lib/telegram'
 import { isIPBlocked } from '@/lib/bot-knowledge'
 
+// Telegram'a yetişmek için 30s pay (default 10s yetmeyebilir)
+export const maxDuration = 30
+
 // Lead dedup: ayni IP + telefon 30 dk icinde 1 kez bildirilir
 const recentLeads = new Map<string, number>()
 const LEAD_DEDUP_WINDOW_MS = 30 * 60 * 1000
