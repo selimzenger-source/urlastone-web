@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 // Allow up to 120 seconds for Vercel serverless function (Sonnet analysis + Gemini generation)
 export const maxDuration = 120
 
-const DAILY_LIMIT_PER_IP = 10
+const DAILY_LIMIT_PER_IP = 3
 const DAILY_LIMIT_GLOBAL = 50
 
 
