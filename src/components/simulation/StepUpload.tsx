@@ -299,12 +299,14 @@ export default function StepUpload({ onUpload }: Props) {
 
       {/* ───── Desktop: V3 Live Tray ───── */}
       <div className="hidden md:grid grid-cols-[1fr_360px] gap-0 rounded-3xl overflow-hidden border border-white/[0.07] bg-[#0a0a0a]">
-        {/* Left: cinematic viewport */}
+        {/* Left column: cinematic viewport + Önce/Sonra örnek bant */}
+        <div className="flex flex-col">
+        {/* Cinematic viewport */}
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
-          className="relative min-h-[560px] flex items-center justify-center bg-black overflow-hidden"
+          className="relative min-h-[440px] flex-1 flex items-center justify-center bg-black overflow-hidden"
         >
           {/* Background image */}
           <div
@@ -349,7 +351,53 @@ export default function StepUpload({ onUpload }: Props) {
           </div>
         </div>
 
-        {/* Right: tray */}
+        {/* Önce / Sonra — sol kolonda viewport altı geniş yatay bant */}
+        <div className="border-t border-white/[0.05] bg-black/40 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase m-0">
+              {t.examplesTitle}
+            </h4>
+            <span className="text-[11px] text-white/45 leading-snug">{t.examplesSub}</span>
+          </div>
+          <div className="rounded-[14px] overflow-hidden border border-white/[0.06] bg-black">
+            <div className="grid grid-cols-2 relative aspect-[20/6]">
+              {/* Before — sol */}
+              <div className="relative overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${BEFORE_SRC})`, filter: 'saturate(0.4) brightness(0.7)' }}
+                />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.85))' }} />
+                <span className="absolute left-3 top-3 z-[1] font-mono text-[10px] tracking-[0.2em] text-white/65 px-2 py-1 rounded bg-black/45 backdrop-blur-sm">
+                  {t.beforeLabel}
+                </span>
+              </div>
+              {/* After — sağ */}
+              <div className="relative overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${AFTER_SRC})` }}
+                />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.7))' }} />
+                <span className="absolute right-3 top-3 z-[1] font-mono text-[10px] tracking-[0.2em] text-gold-400 px-2 py-1 rounded bg-gold-400/15 border border-gold-400/30 backdrop-blur-sm">
+                  {t.afterLabel}
+                </span>
+              </div>
+              {/* Ayraç çizgi + ortadaki ok */}
+              <span className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-gold-400/70 to-transparent" />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 border border-gold-400/40 flex items-center justify-center backdrop-blur-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold-400">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+        </div>
+        {/* /Left column */}
+
+        {/* Right: tray (ipuçları + kullanım hakkı) */}
         <div className="border-l border-white/[0.05] bg-white/[0.015] p-7 flex flex-col gap-6 overflow-y-auto">
           <div>
             <h4 className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase mb-3.5 m-0">
@@ -366,43 +414,6 @@ export default function StepUpload({ onUpload }: Props) {
                   </span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase mb-3.5 m-0">
-              {t.examplesTitle}
-            </h4>
-            <div className="rounded-[14px] overflow-hidden border border-white/[0.06] bg-black">
-              <div className="grid grid-cols-2 relative aspect-[16/10]">
-                {/* Before */}
-                <div className="relative overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${BEFORE_SRC})`, filter: 'saturate(0.4) brightness(0.7)' }}
-                  />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.85))' }} />
-                  <span className="absolute left-2 top-2 z-[1] font-mono text-[9px] tracking-[0.2em] text-white/60 px-1.5 py-0.5 rounded bg-black/40 backdrop-blur-sm">
-                    {t.beforeLabel}
-                  </span>
-                </div>
-                {/* After */}
-                <div className="relative overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${AFTER_SRC})` }}
-                  />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.7))' }} />
-                  <span className="absolute right-2 top-2 z-[1] font-mono text-[9px] tracking-[0.2em] text-gold-400 px-1.5 py-0.5 rounded bg-gold-400/15 border border-gold-400/30 backdrop-blur-sm">
-                    {t.afterLabel}
-                  </span>
-                </div>
-                {/* Center divider */}
-                <span className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-gold-400/60 to-transparent" />
-              </div>
-              <p className="text-[11px] text-white/45 leading-snug px-3 py-2.5 border-t border-white/[0.05]">
-                {t.examplesSub}
-              </p>
             </div>
           </div>
 
