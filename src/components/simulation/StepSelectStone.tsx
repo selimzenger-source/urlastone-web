@@ -28,13 +28,26 @@ const STONE_TYPES = [
   { code: 'KLKR', label: { tr: 'Kalker', en: 'Limestone', es: 'Caliza', ar: 'حجر جيري', de: 'Kalkstein' } },
 ]
 
-const SELECT_TEXTS: Record<string, { title: string; desc: string; back: string; next: string }> = {
-  tr: { title: 'Taş Türü Seçin', desc: 'Mekanınıza uygulamak istediğiniz doğal taş türünü seçin', back: 'Geri', next: 'Alan İşaretle' },
-  en: { title: 'Select Stone Type', desc: 'Choose the natural stone you want to apply to your space', back: 'Back', next: 'Mark Area' },
-  es: { title: 'Seleccione tipo de piedra', desc: 'Elija la piedra natural que desea aplicar', back: 'Atrás', next: 'Marcar área' },
-  ar: { title: 'اختر نوع الحجر', desc: 'اختر الحجر الطبيعي الذي تريد تطبيقه', back: 'رجوع', next: 'حدد المنطقة' },
-  de: { title: 'Steinart wählen', desc: 'Wählen Sie den Naturstein, den Sie anwenden möchten', back: 'Zurück', next: 'Bereich markieren' },
+const SELECT_TEXTS: Record<string, { title: string; desc: string; back: string; next: string; allLabel: string }> = {
+  tr: { title: 'Taş Türü Seçin', desc: 'Mekanınıza uygulamak istediğiniz doğal taş türünü seçin', back: 'Geri', next: 'Alan İşaretle', allLabel: 'Tümü' },
+  en: { title: 'Select Stone Type', desc: 'Choose the natural stone you want to apply to your space', back: 'Back', next: 'Mark Area', allLabel: 'All' },
+  es: { title: 'Seleccione tipo de piedra', desc: 'Elija la piedra natural que desea aplicar', back: 'Atrás', next: 'Marcar área', allLabel: 'Todo' },
+  ar: { title: 'اختر نوع الحجر', desc: 'اختر الحجر الطبيعي الذي تريد تطبيقه', back: 'رجوع', next: 'حدد المنطقة', allLabel: 'الكل' },
+  de: { title: 'Steinart wählen', desc: 'Wählen Sie den Naturstein, den Sie anwenden möchten', back: 'Zurück', next: 'Bereich markieren', allLabel: 'Alle' },
+  fr: { title: 'Choisir le type de pierre', desc: 'Choisissez la pierre naturelle à appliquer', back: 'Retour', next: 'Marquer la zone', allLabel: 'Tout' },
+  ru: { title: 'Выберите тип камня', desc: 'Выберите натуральный камень для применения', back: 'Назад', next: 'Отметить область', allLabel: 'Все' },
 }
+
+// Stilfamilya etiketleri (slug bazlı 7 dil)
+const CATEGORY_LABELS: Record<string, Record<string, string>> = {
+  nature: { tr: 'Doğa', en: 'Nature', es: 'Natural', ar: 'طبيعي', de: 'Natur', fr: 'Naturel', ru: 'Природа' },
+  mix:    { tr: 'Mix',  en: 'Mix',    es: 'Mix',     ar: 'ميكس',  de: 'Mix',   fr: 'Mix',     ru: 'Микс' },
+  crazy:  { tr: 'Crazy',en: 'Crazy',  es: 'Crazy',   ar: 'كريزي', de: 'Crazy', fr: 'Crazy',   ru: 'Crazy' },
+  line:   { tr: 'Line', en: 'Line',   es: 'Línea',   ar: 'خط',    de: 'Linie', fr: 'Ligne',   ru: 'Линия' },
+}
+
+const categoryLabel = (slug: string, locale: string, fallbackName?: string) =>
+  CATEGORY_LABELS[slug]?.[locale] || CATEGORY_LABELS[slug]?.tr || fallbackName || slug
 
 export default function StepSelectStone({ imagePreview, onSelect, onBack }: Props) {
   const { locale } = useLanguage()
@@ -42,6 +55,7 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [activeType, setActiveType] = useState('TRV')
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [selected, setSelected] = useState<Product | null>(null)
 
   useEffect(() => {
@@ -54,7 +68,25 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
       .finally(() => setLoading(false))
   }, [])
 
-  const filtered = products.filter(p => p.stone_type?.code === activeType)
+  // Aktif taş türünde gerçekten ürünü olan kategori slug'ları
+  const availableCategories = Array.from(
+    new Set(
+      products
+        .filter(p => p.stone_type?.code === activeType && p.category?.slug)
+        .map(p => p.category!.slug)
+    )
+  )
+
+  // Stone type değişince kategori sıfırla — bazen kategori başka türde de olmayabilir
+  useEffect(() => {
+    setActiveCategory(null)
+    setSelected(null)
+  }, [activeType])
+
+  const filtered = products.filter(p =>
+    p.stone_type?.code === activeType &&
+    (!activeCategory || p.category?.slug === activeCategory)
+  )
 
   const handleConfirm = () => {
     if (!selected || !selected.stone_type) return
@@ -96,11 +128,11 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
       </div>
 
       {/* Stone type tabs — 4'ü ekrana sığsın, mobilde grid (scroll yok) */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-6">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3">
         {STONE_TYPES.map((st) => (
           <button
             key={st.code}
-            onClick={() => { setActiveType(st.code); setSelected(null) }}
+            onClick={() => setActiveType(st.code)}
             className={`px-2 sm:px-4 py-2 rounded-full text-[10.5px] sm:text-xs font-medium text-center truncate transition-all ${
               activeType === st.code
                 ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
@@ -111,6 +143,35 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
           </button>
         ))}
       </div>
+
+      {/* Stilfamilya filtresi — Tümü + dinamik kategoriler (Nature/Mix/Crazy/Line) */}
+      {availableCategories.length > 1 && (
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6">
+          <button
+            onClick={() => { setActiveCategory(null); setSelected(null) }}
+            className={`px-3 sm:px-3.5 py-1.5 rounded-full text-[10.5px] sm:text-[11px] font-medium transition-all ${
+              activeCategory === null
+                ? 'bg-white text-black'
+                : 'bg-white/[0.04] text-white/50 border border-white/[0.08] hover:border-white/[0.18]'
+            }`}
+          >
+            {t.allLabel}
+          </button>
+          {availableCategories.map((slug) => (
+            <button
+              key={slug}
+              onClick={() => { setActiveCategory(slug); setSelected(null) }}
+              className={`px-3 sm:px-3.5 py-1.5 rounded-full text-[10.5px] sm:text-[11px] font-medium transition-all ${
+                activeCategory === slug
+                  ? 'bg-white text-black'
+                  : 'bg-white/[0.04] text-white/50 border border-white/[0.08] hover:border-white/[0.18]'
+              }`}
+            >
+              {categoryLabel(slug, locale)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Products grid */}
       {loading ? (
