@@ -309,7 +309,7 @@ export default function StepUpload({ onUpload }: Props) {
           {/* Background image */}
           <div
             className="absolute inset-0 bg-center bg-cover"
-            style={{ backgroundImage: 'url(/featured-bazalt.jpg)', opacity: 0.18, filter: 'saturate(0.6) blur(2px)' }}
+            style={{ backgroundImage: 'url(/sim-upload-bg.jpg)', opacity: 0.22, filter: 'saturate(0.6) blur(2.5px)' }}
           />
           {/* Vignette */}
           <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.85) 100%)' }} />
@@ -436,7 +436,7 @@ export default function StepUpload({ onUpload }: Props) {
         >
           <div
             className="absolute inset-0 bg-center bg-cover"
-            style={{ backgroundImage: 'url(/featured-bazalt.jpg)', opacity: 0.22, filter: 'saturate(0.5) blur(1.5px)' }}
+            style={{ backgroundImage: 'url(/sim-upload-bg.jpg)', opacity: 0.26, filter: 'saturate(0.5) blur(2px)' }}
           />
           <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at center, transparent 25%, rgba(0,0,0,0.95) 100%)' }} />
           <div className="absolute inset-3.5 pointer-events-none">
