@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Upload, AlertCircle, Check } from 'lucide-react'
+import { Upload, AlertCircle, Check, Camera } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Props {
@@ -344,9 +344,16 @@ export default function StepUpload({ onUpload }: Props) {
                 <Upload size={18} />
                 {t.chooseBtn}
               </button>
-              <span className="text-white/35 font-mono text-[11px] tracking-[0.2em] uppercase">
-                {t.dragHint}
-              </span>
+              <button
+                onClick={openCamera}
+                className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.12] text-white text-sm font-medium hover:bg-white/[0.1] hover:-translate-y-0.5 transition-all"
+              >
+                <Camera size={18} className="text-gold-400" />
+                {t.cameraBtn}
+              </button>
+            </div>
+            <div className="mt-4 text-white/35 font-mono text-[11px] tracking-[0.2em] uppercase text-center">
+              {t.dragHint}
             </div>
           </div>
         </div>
