@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Upload, AlertCircle, Camera, Check, RefreshCw } from 'lucide-react'
+import { Upload, AlertCircle, Check } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 interface Props {
@@ -38,7 +38,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'Dosya Seç',
     dragHint: 'veya buraya sürükleyin',
     cameraBtn: 'Fotoğraf Çek',
-    galleryBtn: 'Galeriden Seç',
+    galleryBtn: 'Galeriden Yükle',
     tipsTitle: 'İyi bir fotoğraf için',
     tips: [
       { bold: 'Düz bir yüzey', rest: ' — duvar, zemin ya da cephe doğrudan görünür olsun.' },
@@ -65,7 +65,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'Choose File',
     dragHint: 'or drop one here',
     cameraBtn: 'Take Photo',
-    galleryBtn: 'From Gallery',
+    galleryBtn: 'Upload from Gallery',
     tipsTitle: 'For a good photo',
     tips: [
       { bold: 'Flat surface', rest: ' — wall, floor or facade should be directly visible.' },
@@ -92,7 +92,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'Elegir Archivo',
     dragHint: 'o suéltalo aquí',
     cameraBtn: 'Tomar Foto',
-    galleryBtn: 'De la Galería',
+    galleryBtn: 'Subir desde Galería',
     tipsTitle: 'Para una buena foto',
     tips: [
       { bold: 'Superficie plana', rest: ' — pared, piso o fachada visible directamente.' },
@@ -119,7 +119,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'اختر ملفًا',
     dragHint: 'أو أفلته هنا',
     cameraBtn: 'التقط صورة',
-    galleryBtn: 'من المعرض',
+    galleryBtn: 'تحميل من المعرض',
     tipsTitle: 'لصورة جيدة',
     tips: [
       { bold: 'سطح مستوٍ', rest: ' — جدار أو أرضية أو واجهة مرئية مباشرة.' },
@@ -146,7 +146,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'Datei wählen',
     dragHint: 'oder hier ablegen',
     cameraBtn: 'Foto aufnehmen',
-    galleryBtn: 'Aus Galerie',
+    galleryBtn: 'Aus Galerie hochladen',
     tipsTitle: 'Für ein gutes Foto',
     tips: [
       { bold: 'Ebene Fläche', rest: ' — Wand, Boden oder Fassade direkt sichtbar.' },
@@ -173,7 +173,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'Choisir le fichier',
     dragHint: 'ou déposez-le ici',
     cameraBtn: 'Prendre une photo',
-    galleryBtn: 'Depuis la galerie',
+    galleryBtn: 'Charger depuis la galerie',
     tipsTitle: 'Pour une bonne photo',
     tips: [
       { bold: 'Surface plane', rest: ' — mur, sol ou façade directement visible.' },
@@ -200,7 +200,7 @@ const TEXTS: Record<string, Texts> = {
     chooseBtn: 'Выбрать файл',
     dragHint: 'или перетащите сюда',
     cameraBtn: 'Сделать фото',
-    galleryBtn: 'Из галереи',
+    galleryBtn: 'Загрузить из галереи',
     tipsTitle: 'Для хорошего фото',
     tips: [
       { bold: 'Ровная поверхность', rest: ' — стена, пол или фасад должны быть видны напрямую.' },
@@ -420,18 +420,11 @@ export default function StepUpload({ onUpload }: Props) {
       {/* ───── Mobile: M3 Camera-First ───── */}
       <div className="md:hidden flex flex-col gap-4">
         {/* Step badge */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center">
           <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] text-gold-400">
             <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse" />
             {t.stepBadge}
           </span>
-          <button
-            onClick={openCamera}
-            className="w-9 h-9 rounded-full bg-white/5 border border-white/[0.08] flex items-center justify-center text-white/70"
-            aria-label={t.cameraBtn}
-          >
-            <RefreshCw size={14} />
-          </button>
         </div>
 
         {/* Cinematic viewport */}
@@ -460,29 +453,29 @@ export default function StepUpload({ onUpload }: Props) {
           </div>
         </div>
 
-        {/* Camera-first controls */}
-        <div className="flex items-center justify-between gap-3 pt-2">
-          {/* Gallery (left) */}
-          <button
-            onClick={openFile}
-            className="w-[52px] h-[52px] rounded-full bg-white/5 border border-white/[0.08] flex items-center justify-center text-white"
-            aria-label={t.galleryBtn}
-          >
-            <Upload size={20} />
-          </button>
-
-          {/* Big shutter (center) — opens camera on mobile */}
+        {/* Camera-first controls — shutter centered, gallery as full-width labeled button below */}
+        <div className="flex flex-col items-center gap-3 pt-1">
+          {/* Big shutter — kamera açar */}
           <button
             onClick={openCamera}
-            className="relative w-[78px] h-[78px] rounded-full bg-white flex items-center justify-center"
+            className="relative w-[78px] h-[78px] rounded-full bg-white flex items-center justify-center active:scale-95 transition-transform"
             aria-label={t.cameraBtn}
           >
             <span className="absolute -inset-1.5 rounded-full border-[1.5px] border-gold-400" />
             <span className="w-[60px] h-[60px] rounded-full bg-gold-400" />
           </button>
+          <span className="font-mono text-[10px] tracking-[0.2em] text-white/40 uppercase">
+            {t.cameraBtn}
+          </span>
 
-          {/* Spacer (right) — keeps shutter centered */}
-          <div className="w-[52px] h-[52px]" />
+          {/* Belirgin Galeri butonu — tam genişlik, ikon + yazı */}
+          <button
+            onClick={openFile}
+            className="w-full mt-2 inline-flex items-center justify-center gap-3 px-5 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.12] text-white text-[14px] font-medium active:scale-[0.99] hover:bg-white/[0.09] transition-all"
+          >
+            <Upload size={18} className="text-gold-400" />
+            {t.galleryBtn}
+          </button>
         </div>
 
         {/* Tips — 4 maddenin tamamı (desktop ile aynı içerik) */}
