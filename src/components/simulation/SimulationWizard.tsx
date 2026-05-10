@@ -422,31 +422,33 @@ export default function SimulationWizard() {
         </div>
       )}
 
-      {/* Usage info banner */}
-      <div className="flex items-center justify-center gap-6 mb-6 p-3 bg-white/[0.02] rounded-xl border border-white/[0.06]">
-        <div className="flex items-center gap-2">
-          <Info size={13} className="text-gold-400" />
-          <span className="text-white/40 text-[11px] font-mono">{info.limit}</span>
-        </div>
-        <div className="w-px h-4 bg-white/10" />
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1">
-            {Array.from({ length: DAILY_LOCAL_LIMIT }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  i < remaining ? 'bg-gold-400' : 'bg-white/10'
-                }`}
-              />
-            ))}
+      {/* Usage info banner — Upload step'inde StepUpload kendi içinde gösterdiği için gizlenir */}
+      {step !== 'upload' && (
+        <div className="flex items-center justify-center gap-6 mb-6 p-3 bg-white/[0.02] rounded-xl border border-white/[0.06]">
+          <div className="flex items-center gap-2">
+            <Info size={13} className="text-gold-400" />
+            <span className="text-white/40 text-[11px] font-mono">{info.limit}</span>
           </div>
-          <span className="text-white/30 text-[10px] font-mono">
-            {remaining}/{DAILY_LOCAL_LIMIT}
-          </span>
+          <div className="w-px h-4 bg-white/10" />
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {Array.from({ length: DAILY_LOCAL_LIMIT }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    i < remaining ? 'bg-gold-400' : 'bg-white/10'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-white/30 text-[10px] font-mono">
+              {remaining}/{DAILY_LOCAL_LIMIT}
+            </span>
+          </div>
+          <div className="w-px h-4 bg-white/10 hidden sm:block" />
+          <span className="text-white/20 text-[10px] font-mono hidden sm:block">{info.daily}</span>
         </div>
-        <div className="w-px h-4 bg-white/10 hidden sm:block" />
-        <span className="text-white/20 text-[10px] font-mono hidden sm:block">{info.daily}</span>
-      </div>
+      )}
 
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2 md:gap-4 mb-10">
