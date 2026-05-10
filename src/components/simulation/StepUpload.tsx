@@ -400,7 +400,7 @@ export default function StepUpload({ onUpload }: Props) {
                     style={{ backgroundImage: `url(${AFTER_SRC})` }}
                   />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.7))' }} />
-                  <span className="absolute left-2 top-2 z-[1] font-mono text-[9px] tracking-[0.2em] text-gold-400 px-1.5 py-0.5 rounded bg-gold-400/15 border border-gold-400/30 backdrop-blur-sm">
+                  <span className="absolute left-2 top-2 z-[1] font-mono text-[9px] tracking-[0.2em] text-gold-400 px-1.5 py-0.5 rounded bg-black/60 border border-gold-400/50 backdrop-blur-sm">
                     {t.afterLabel}
                   </span>
                 </div>
@@ -524,7 +524,7 @@ export default function StepUpload({ onUpload }: Props) {
               <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${AFTER_SRC})` }} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.7))' }} />
-                <span className="absolute left-2 top-2 z-[1] font-mono text-[9px] tracking-[0.2em] text-gold-400 px-1.5 py-0.5 rounded bg-gold-400/15 border border-gold-400/30 backdrop-blur-sm">
+                <span className="absolute left-2 top-2 z-[1] font-mono text-[9px] tracking-[0.2em] text-gold-400 px-1.5 py-0.5 rounded bg-black/60 border border-gold-400/50 backdrop-blur-sm">
                   {t.afterLabel}
                 </span>
               </div>
