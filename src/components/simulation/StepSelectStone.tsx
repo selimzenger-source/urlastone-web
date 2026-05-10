@@ -95,13 +95,13 @@ export default function StepSelectStone({ imagePreview, onSelect, onBack }: Prop
         </div>
       </div>
 
-      {/* Stone type tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      {/* Stone type tabs — 4'ü ekrana sığsın, mobilde grid (scroll yok) */}
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-6">
         {STONE_TYPES.map((st) => (
           <button
             key={st.code}
             onClick={() => { setActiveType(st.code); setSelected(null) }}
-            className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+            className={`px-2 sm:px-4 py-2 rounded-full text-[10.5px] sm:text-xs font-medium text-center truncate transition-all ${
               activeType === st.code
                 ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
                 : 'bg-white/[0.04] text-white/40 border border-white/[0.06] hover:border-white/[0.12]'
