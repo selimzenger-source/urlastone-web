@@ -43,7 +43,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'Düz bir yüzey', rest: ' — duvar, zemin ya da cephe doğrudan görünür olsun.' },
       { bold: 'Bol ışık', rest: ' — gün ışığı en iyi sonucu verir.' },
-      { bold: '1–2 metre mesafe', rest: ' — yüzeyin tamamı görünmeli.' },
+      { bold: '3–5 metre mesafe', rest: ' — yüzeyin tamamı görünmeli.' },
       { bold: 'Min 400×400 px', rest: ' · JPG, PNG, WebP — 10 MB\'a kadar.' },
     ],
     examplesTitle: 'Önce / Sonra',
@@ -70,7 +70,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'Flat surface', rest: ' — wall, floor or facade should be directly visible.' },
       { bold: 'Plenty of light', rest: ' — daylight gives the best result.' },
-      { bold: '1–2 meters away', rest: ' — the entire surface should be visible.' },
+      { bold: '3–5 meters away', rest: ' — the entire surface should be visible.' },
       { bold: 'Min 400×400 px', rest: ' · JPG, PNG, WebP — up to 10 MB.' },
     ],
     examplesTitle: 'Before / After',
@@ -97,7 +97,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'Superficie plana', rest: ' — pared, piso o fachada visible directamente.' },
       { bold: 'Mucha luz', rest: ' — la luz natural da el mejor resultado.' },
-      { bold: '1–2 metros de distancia', rest: ' — la superficie completa debe verse.' },
+      { bold: '3–5 metros de distancia', rest: ' — la superficie completa debe verse.' },
       { bold: 'Mín 400×400 px', rest: ' · JPG, PNG, WebP — hasta 10 MB.' },
     ],
     examplesTitle: 'Antes / Después',
@@ -124,7 +124,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'سطح مستوٍ', rest: ' — جدار أو أرضية أو واجهة مرئية مباشرة.' },
       { bold: 'إضاءة وفيرة', rest: ' — ضوء النهار يعطي أفضل نتيجة.' },
-      { bold: 'مسافة 1–2 متر', rest: ' — يجب أن يكون السطح كاملاً مرئياً.' },
+      { bold: 'مسافة 3–5 أمتار', rest: ' — يجب أن يكون السطح كاملاً مرئياً.' },
       { bold: 'الحد الأدنى 400×400 بكسل', rest: ' · JPG, PNG, WebP — حتى 10 ميجابايت.' },
     ],
     examplesTitle: 'قبل / بعد',
@@ -151,7 +151,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'Ebene Fläche', rest: ' — Wand, Boden oder Fassade direkt sichtbar.' },
       { bold: 'Viel Licht', rest: ' — Tageslicht ergibt das beste Ergebnis.' },
-      { bold: '1–2 Meter Abstand', rest: ' — die gesamte Fläche muss sichtbar sein.' },
+      { bold: '3–5 Meter Abstand', rest: ' — die gesamte Fläche muss sichtbar sein.' },
       { bold: 'Min 400×400 px', rest: ' · JPG, PNG, WebP — bis zu 10 MB.' },
     ],
     examplesTitle: 'Vorher / Nachher',
@@ -178,7 +178,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'Surface plane', rest: ' — mur, sol ou façade directement visible.' },
       { bold: 'Beaucoup de lumière', rest: ' — la lumière du jour donne le meilleur résultat.' },
-      { bold: '1–2 mètres de distance', rest: ' — toute la surface doit être visible.' },
+      { bold: '3–5 mètres de distance', rest: ' — toute la surface doit être visible.' },
       { bold: 'Min 400×400 px', rest: ' · JPG, PNG, WebP — jusqu\'à 10 Mo.' },
     ],
     examplesTitle: 'Avant / Après',
@@ -205,7 +205,7 @@ const TEXTS: Record<string, Texts> = {
     tips: [
       { bold: 'Ровная поверхность', rest: ' — стена, пол или фасад должны быть видны напрямую.' },
       { bold: 'Много света', rest: ' — дневной свет даёт лучший результат.' },
-      { bold: '1–2 метра дистанция', rest: ' — должна быть видна вся поверхность.' },
+      { bold: '3–5 метров дистанция', rest: ' — должна быть видна вся поверхность.' },
       { bold: 'Мин 400×400 px', rest: ' · JPG, PNG, WebP — до 10 МБ.' },
     ],
     examplesTitle: 'До / После',
