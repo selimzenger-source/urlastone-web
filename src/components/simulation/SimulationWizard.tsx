@@ -161,12 +161,21 @@ export default function SimulationWizard() {
     setLocalUsage(getLocalUsageCount())
   }, [])
 
-  // Adım değişince sayfayı tepeye getir (kullanıcı altta uzun listeden sonra
-  // "İleri" basınca yeni adımı baştan görmeli, eski scroll konumunda kalmasın)
+  // Adım değişince sayfayı tepeye getir — iOS Safari için multi-fallback
+  // (mobil bazen window.scrollTo'yu ignore ediyor, documentElement + body
+  // ile garantiye al; render sonrası rAF ile uygula)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    if (typeof window === 'undefined') return
+    requestAnimationFrame(() => {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      } catch {
+        window.scrollTo(0, 0)
+      }
+      // iOS Safari fallback'leri
+      if (document.documentElement) document.documentElement.scrollTop = 0
+      if (document.body) document.body.scrollTop = 0
+    })
   }, [step])
 
   // Check local limit before API call
