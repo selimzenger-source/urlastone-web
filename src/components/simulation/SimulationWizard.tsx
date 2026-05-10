@@ -161,6 +161,14 @@ export default function SimulationWizard() {
     setLocalUsage(getLocalUsageCount())
   }, [])
 
+  // Adım değişince sayfayı tepeye getir (kullanıcı altta uzun listeden sonra
+  // "İleri" basınca yeni adımı baştan görmeli, eski scroll konumunda kalmasın)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [step])
+
   // Check local limit before API call
   const checkLocalLimit = useCallback((): boolean => {
     if (isLocalLimitReached()) {
