@@ -13,18 +13,17 @@ function HreflangTagsInner() {
 
   const cleanPath = pathname === '/' ? '' : pathname
 
+  // Site URL'lerinde dil ön eki yok (i18n client-side, LanguageContext üzerinden).
+  // Eskiden ?lang=xx query'li alternates üretiyorduk → Google bunları ayrı URL gibi
+  // tarayıp 'tarandı eklenmedi' / 'alternatif sayfa' olarak işaretliyordu. Şimdi tüm
+  // diller AYNI URL'e işaret eder (self-referential hreflang), Google duplicate/alt
+  // URL üretmez ama sayfanın çok dilli olduğunu bilir.
+  const url = `${baseUrl}${cleanPath}`
   return (
     <>
-      {/* hreflang - layout metadata'daki alternates.languages ile aynı, dynamic sayfalar için fallback */}
-      <link rel="alternate" hrefLang="x-default" href={`${baseUrl}${cleanPath}`} />
-      <link rel="alternate" hrefLang="tr" href={`${baseUrl}${cleanPath}`} />
-      {locales.filter(l => l !== 'tr').map(loc => (
-        <link
-          key={loc}
-          rel="alternate"
-          hrefLang={loc}
-          href={`${baseUrl}${cleanPath}?lang=${loc}`}
-        />
+      <link rel="alternate" hrefLang="x-default" href={url} />
+      {locales.map(loc => (
+        <link key={loc} rel="alternate" hrefLang={loc} href={url} />
       ))}
     </>
   )
