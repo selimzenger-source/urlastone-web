@@ -129,6 +129,59 @@ export async function generateMetadata(
   }
 }
 
-export default function ProjectSlugPage() {
-  return <ProjectPageClient />
+// Server-side SEO content — Google bot client-side React'i çalıştırmadan ham HTML
+// gördüğünde her proje/şehir sayfası AYNI gövdeyi gösteriyordu (sadece <title> farklı).
+// → Google 'duplicate' sayıp canonical olarak rastgele şehir sayfasını seçiyordu.
+// Şimdi her sayfa için server-rendered ayırt edici içerik HTML'de var; bot doğru
+// canonical kararı verir, ProjectPageClient kullanıcıya zengin UI'yı yine sunar.
+export default async function ProjectSlugPage(
+  { params }: { params: { slug: string } }
+) {
+  const slug = params.slug
+  const isCityPage = slug.endsWith(CITY_SUFFIX)
+
+  let seoContent: React.ReactNode = null
+
+  if (isCityPage) {
+    const citySlug = slug.replace(CITY_SUFFIX, '')
+    const { count, cityName } = await getCityInfo(citySlug)
+    seoContent = (
+      <section className="sr-only" aria-hidden="true">
+        <h1>{cityName} Doğal Taş Projeleri — URLASTONE</h1>
+        <p>
+          {cityName} bölgesinde URLASTONE doğal taş cephe kaplama ve uygulamaları.
+          {count > 0 ? ` ${cityName} şehrinde tamamlanmış ${count} referans projemiz bulunmaktadır.` : ''} Traverten, bazalt, kalker ve mermer dış cephe seçenekleri,
+          iç mekan kaplamaları ve peyzaj çözümleri. {cityName} için doğal taş danışmanlığı,
+          numune ve teklif alma imkanı.
+        </p>
+        <p>Bölge: {cityName}. Hizmet: Dış cephe kaplama, iç mekan duvar, zemin, peyzaj. Ürünler: Doğal taş — traverten, mermer, bazalt, kalker.</p>
+      </section>
+    )
+  } else {
+    const project = await getProjectBySlug(slug)
+    if (project) {
+      const photos: string[] = Array.isArray(project.photos) ? project.photos : []
+      seoContent = (
+        <section className="sr-only" aria-hidden="true">
+          <h1>{project.project_name}</h1>
+          {project.city && <p>Konum: {project.city}</p>}
+          {project.category && <p>Kategori: {project.category}</p>}
+          {project.product && <p>Ürün: {project.product}</p>}
+          {project.description && <p>{project.description}</p>}
+          <p>URLASTONE doğal taş referans projesi: {project.project_name}{project.city ? `, ${project.city}` : ''}. {project.product ? `${project.product} uygulaması. ` : ''}{project.category ? `${project.category} kategorisinde.` : ''}</p>
+          {photos.slice(0, 6).map((p, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={i} src={p} alt={`${project.project_name} - fotoğraf ${i + 1}`} />
+          ))}
+        </section>
+      )
+    }
+  }
+
+  return (
+    <>
+      {seoContent}
+      <ProjectPageClient />
+    </>
+  )
 }
