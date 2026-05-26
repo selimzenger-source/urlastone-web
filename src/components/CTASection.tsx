@@ -60,7 +60,7 @@ export default function CTASection() {
               <div className="absolute inset-0">
                 {photos.map((src, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={cdnImg(src)} alt="" loading="lazy"
+                  <img key={i} src={cdnImg(src)} alt={`URLASTONE doğal taş projesi ${i + 1}`} loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
                     style={{ opacity: i === current ? 1 : 0 }}
                   />
@@ -99,7 +99,7 @@ export default function CTASection() {
             {/* Background image */}
             <div className="absolute inset-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/teklif-hero.jpg" alt="" className="w-full h-full object-cover" loading="lazy" />
+              <img src="/teklif-hero.jpg" alt="URLA STONE doğal taş cephe kaplı villa — teklif al" className="w-full h-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
             </div>
 

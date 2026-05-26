@@ -237,7 +237,7 @@ export default function ProcessSection() {
                     display: 'none',
                   }}
                 >
-                  <Image src="/logo-outline.png" alt="" fill className="object-contain" />
+                  <Image src="/logo-outline.png" alt="URLASTONE doğal taş üreticisi logosu" fill className="object-contain" />
                 </div>
               ))}
 
