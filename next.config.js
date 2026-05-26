@@ -2,6 +2,17 @@
 const nextConfig = {
   async redirects() {
     return [
+      // ─── KANONİK HOST: non-www → www (308 permanent) ───
+      // Vercel default 307 (temporary) ile redirect ediyordu → Google iki ayrı
+      // property gibi tarayıp index'liyordu (urlastone.com VE www.urlastone.com).
+      // 308 ile Google asıl URL'in www olduğunu kesin öğrenir, property birleşir.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'urlastone.com' }],
+        destination: 'https://www.urlastone.com/:path*',
+        permanent: true,
+      },
+
       // Eski site URL'lerini yeni sayfalara yönlendir (301 permanent)
       // Türkçe karakterli ve büyük harfli eski URL'ler
       { source: '/Hakk%C4%B1m%C4%B1zda', destination: '/hakkimizda', permanent: true },
