@@ -16,36 +16,31 @@ const PAGE_LABELS: Record<string, string> = {
   '/blog': 'Blog',
 }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  TR: '🇹🇷', DE: '🇩🇪', US: '🇺🇸', GB: '🇬🇧',
-  FR: '🇫🇷', ES: '🇪🇸', SA: '🇸🇦', AE: '🇦🇪',
-  RU: '🇷🇺', NL: '🇳🇱', IT: '🇮🇹', JP: '🇯🇵',
-  CN: '🇨🇳', AU: '🇦🇺', CA: '🇨🇦', KW: '🇰🇼',
-  QA: '🇶🇦', IN: '🇮🇳', BR: '🇧🇷', PL: '🇵🇱',
-  AT: '🇦🇹', SE: '🇸🇪', NO: '🇳🇴', DK: '🇩🇰',
-  CH: '🇨🇭', BE: '🇧🇪', GR: '🇬🇷', PT: '🇵🇹',
-  MX: '🇲🇽', AR: '🇦🇷', ZA: '🇿🇦', SG: '🇸🇬',
-  UA: '🇺🇦', RO: '🇷🇴', CZ: '🇨🇿', HU: '🇭🇺',
-  IL: '🇮🇱', IR: '🇮🇷', PK: '🇵🇰', BD: '🇧🇩',
+// Ülke kodu (ISO 3166-1 alpha-2) → bayrak emoji (Regional Indicator Symbol).
+// Manuel map'e gerek yok, her geçerli 2-harfli kod için otomatik emoji üretilir.
+function flagEmoji(code: string): string {
+  if (!code || !/^[A-Za-z]{2}$/.test(code)) return '🌐'
+  return Array.from(code.toUpperCase())
+    .map(c => String.fromCodePoint(127397 + c.charCodeAt(0)))
+    .join('')
 }
 
-const COUNTRY_NAMES: Record<string, string> = {
-  TR: 'Türkiye', DE: 'Almanya', US: 'Amerika Birleşik Devletleri', GB: 'Birleşik Krallık',
-  FR: 'Fransa', ES: 'İspanya', SA: 'Suudi Arabistan', AE: 'Birleşik Arap Emirlikleri',
-  RU: 'Rusya', NL: 'Hollanda', IT: 'İtalya', JP: 'Japonya',
-  CN: 'Çin', AU: 'Avustralya', CA: 'Kanada', KW: 'Kuveyt',
-  QA: 'Katar', IN: 'Hindistan', BR: 'Brezilya', PL: 'Polonya',
-  AT: 'Avusturya', SE: 'İsveç', NO: 'Norveç', DK: 'Danimarka',
-  CH: 'İsviçre', BE: 'Belçika', GR: 'Yunanistan', PT: 'Portekiz',
-  MX: 'Meksika', AR: 'Arjantin', ZA: 'Güney Afrika', SG: 'Singapur',
-  UA: 'Ukrayna', RO: 'Romanya', CZ: 'Çekya', HU: 'Macaristan',
-  IL: 'İsrail', IR: 'İran', PK: 'Pakistan', BD: 'Bangladeş',
+// Tarayıcı Intl API'siyle ülke ismi (TR locale, otomatik)
+let regionDisplay: Intl.DisplayNames | null = null
+function countryName(code: string): string {
+  if (!code) return ''
+  try {
+    if (!regionDisplay) regionDisplay = new Intl.DisplayNames(['tr'], { type: 'region' })
+    return regionDisplay.of(code.toUpperCase()) || code
+  } catch {
+    return code
+  }
 }
 
 const PERIOD_OPTIONS = [
-  { value: '1d', label: 'Son 24 Saat' },
-  { value: '7d', label: 'Son 7 Gün' },
-  { value: '30d', label: 'Son 30 Gün' },
+  { value: '1d',  label: 'Son 24 Saat', short: '24s' },
+  { value: '7d',  label: 'Son 7 Gün',   short: '7g' },
+  { value: '30d', label: 'Son 30 Gün',  short: '30g' },
 ]
 
 interface AnalyticsData {
@@ -112,24 +107,25 @@ export default function AdminAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* Dönem Seçici */}
-      <div className="flex items-center justify-between">
+      {/* Dönem Seçici — mobilde alt satır, butonlar kısa etiket */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
           <span className="text-white/30 text-xs font-mono">{loading ? 'Yükleniyor...' : 'Vercel Analytics'}</span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 self-start sm:self-auto">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => setPeriod(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-mono transition-all ${
                 period === opt.value
                   ? 'bg-gold-400/20 text-gold-400 border border-gold-400/30'
                   : 'text-white/30 hover:text-white/60 border border-white/[0.06]'
               }`}
             >
-              {opt.label}
+              <span className="hidden sm:inline">{opt.label}</span>
+              <span className="sm:hidden">{opt.short}</span>
             </button>
           ))}
         </div>
@@ -237,8 +233,8 @@ export default function AdminAnalytics() {
                 return (
                   <div key={c.key} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl leading-none">{COUNTRY_FLAGS[c.key] || '🌐'}</span>
-                      <span className="text-white/60 text-sm">{COUNTRY_NAMES[c.key] || c.key}</span>
+                      <span className="text-xl leading-none">{flagEmoji(c.key)}</span>
+                      <span className="text-white/60 text-sm">{countryName(c.key)}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-24 h-1.5 bg-white/[0.05] rounded-full">
