@@ -40,15 +40,48 @@ function FlagImg({ code, size = 18 }: { code: string; size?: number }) {
   )
 }
 
-// Tarayıcı Intl API'siyle ülke ismi (TR locale, otomatik)
+// Türkçe ülke isim mapping — Intl.DisplayNames bazı eski tarayıcılarda veya
+// SSR ortamında "GE", "HR" gibi kodlar için fallback'e düşüyordu. Manuel
+// kapsayıcı map en yaygın 60+ ülkeyi garanti eder; eksik için Intl fallback.
+const COUNTRY_TR: Record<string, string> = {
+  TR: 'Türkiye', DE: 'Almanya', US: 'Amerika Birleşik Devletleri', GB: 'Birleşik Krallık',
+  FR: 'Fransa', ES: 'İspanya', SA: 'Suudi Arabistan', AE: 'Birleşik Arap Emirlikleri',
+  RU: 'Rusya', NL: 'Hollanda', IT: 'İtalya', JP: 'Japonya',
+  CN: 'Çin', AU: 'Avustralya', CA: 'Kanada', KW: 'Kuveyt',
+  QA: 'Katar', IN: 'Hindistan', BR: 'Brezilya', PL: 'Polonya',
+  AT: 'Avusturya', SE: 'İsveç', NO: 'Norveç', DK: 'Danimarka',
+  CH: 'İsviçre', BE: 'Belçika', GR: 'Yunanistan', PT: 'Portekiz',
+  MX: 'Meksika', AR: 'Arjantin', ZA: 'Güney Afrika', SG: 'Singapur',
+  UA: 'Ukrayna', RO: 'Romanya', CZ: 'Çekya', HU: 'Macaristan',
+  IL: 'İsrail', IR: 'İran', PK: 'Pakistan', BD: 'Bangladeş',
+  GE: 'Gürcistan', HR: 'Hırvatistan', IE: 'İrlanda', FI: 'Finlandiya',
+  IS: 'İzlanda', BG: 'Bulgaristan', SK: 'Slovakya', SI: 'Slovenya',
+  EE: 'Estonya', LV: 'Letonya', LT: 'Litvanya', RS: 'Sırbistan',
+  AZ: 'Azerbaycan', KZ: 'Kazakistan', UZ: 'Özbekistan', AM: 'Ermenistan',
+  AL: 'Arnavutluk', BA: 'Bosna-Hersek', MK: 'Kuzey Makedonya', ME: 'Karadağ',
+  CY: 'Kıbrıs', MT: 'Malta', LU: 'Lüksemburg', BY: 'Belarus',
+  MA: 'Fas', TN: 'Tunus', EG: 'Mısır', DZ: 'Cezayir',
+  LY: 'Libya', JO: 'Ürdün', LB: 'Lübnan', IQ: 'Irak',
+  SY: 'Suriye', OM: 'Umman', BH: 'Bahreyn', YE: 'Yemen',
+  AF: 'Afganistan', NZ: 'Yeni Zelanda', KR: 'Güney Kore', TH: 'Tayland',
+  VN: 'Vietnam', ID: 'Endonezya', MY: 'Malezya', PH: 'Filipinler',
+  HK: 'Hong Kong', TW: 'Tayvan', NG: 'Nijerya', KE: 'Kenya',
+  ET: 'Etiyopya', GH: 'Gana', CL: 'Şili', CO: 'Kolombiya',
+  PE: 'Peru', VE: 'Venezuela', UY: 'Uruguay', EC: 'Ekvador',
+}
+
 let regionDisplay: Intl.DisplayNames | null = null
 function countryName(code: string): string {
   if (!code) return ''
+  const upper = code.toUpperCase()
+  // Önce manuel TR map (her zaman doğru, Intl bağımsız)
+  if (COUNTRY_TR[upper]) return COUNTRY_TR[upper]
+  // Map'te yoksa Intl fallback dener
   try {
     if (!regionDisplay) regionDisplay = new Intl.DisplayNames(['tr'], { type: 'region' })
-    return regionDisplay.of(code.toUpperCase()) || code
+    return regionDisplay.of(upper) || upper
   } catch {
-    return code
+    return upper
   }
 }
 

@@ -1,29 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 
 const ADMIN_PASSWORD = 'urlastone2026'
 
+// Lazy state initializer — ilk render ÖNCESİ localStorage kontrol edilir.
+// useEffect ile yapsaydık form bir an gözüküp sonra dashboard'a geçerdi
+// (flicker). Lazy initializer ile login formu hiç render edilmez.
+function getInitialAuth(): { authenticated: boolean; password: string } {
+  if (typeof window === 'undefined') return { authenticated: false, password: '' }
+  try {
+    const saved = localStorage.getItem('admin_pw')
+    if (saved === ADMIN_PASSWORD) return { authenticated: true, password: saved }
+  } catch { /* private mode etc. */ }
+  return { authenticated: false, password: '' }
+}
+
 export default function AdminPage() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
+  const [initial] = useState(getInitialAuth)
+  const [authenticated, setAuthenticated] = useState(initial.authenticated)
+  const [password, setPassword] = useState(initial.password)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-
-  // Sayfa yenilense bile oturum sürsün — localStorage'da kayıtlı doğru
-  // şifre varsa direkt authenticated state'ine geç. Eskiden mount'ta
-  // okumuyordu, her refresh'te login formu çıkıyordu.
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('admin_pw')
-      if (saved === ADMIN_PASSWORD) {
-        setPassword(saved)
-        setAuthenticated(true)
-      }
-    } catch { /* localStorage erişim hatası — login formu göster */ }
-  }, [])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
