@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { pingProjectAdded } from '@/lib/indexnow'
+import { generateSlug } from '@/lib/slug'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -48,6 +50,15 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // IndexNow — proje güncellendiyse Bing/Yandex'e bildir (fire-and-forget).
+  // Slug değişmiş olabilir (proje adı güncellenmiştir) ya da içerik değişti
+  // (fotoğraf eklendi, kategori güncellendi vb.) → her durumda Google/Bing
+  // tekrar taramalı.
+  if (data?.active !== false && data?.project_name) {
+    const slug = generateSlug(data.project_name)
+    pingProjectAdded(slug).catch(() => {})
   }
 
   return NextResponse.json(data)
