@@ -65,9 +65,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/hakkimizda`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/iletisim`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/referanslarimiz`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    // SEO/AEO pillar pages — İzmir kanonik üretici + uygulayıcı sayfaları
+    // SEO/AEO pillar pages — İzmir + Türkiye geneli kanonik üretici + uygulayıcı sayfaları
     { url: `${baseUrl}/izmir-dogal-tas-ureticisi`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.95 },
     { url: `${baseUrl}/izmir-dogal-tas-uygulamasi`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.95 },
+    { url: `${baseUrl}/turkiye-dogal-tas-ureticisi`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.95 },
+    { url: `${baseUrl}/turkiye-dogal-tas-uygulamasi`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.95 },
   ]
 
   // Dinamik proje sayfalari — artık dil alternatifleri ile

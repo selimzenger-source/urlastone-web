@@ -16,13 +16,28 @@ const PAGE_LABELS: Record<string, string> = {
   '/blog': 'Blog',
 }
 
-// Ülke kodu (ISO 3166-1 alpha-2) → bayrak emoji (Regional Indicator Symbol).
-// Manuel map'e gerek yok, her geçerli 2-harfli kod için otomatik emoji üretilir.
-function flagEmoji(code: string): string {
-  if (!code || !/^[A-Za-z]{2}$/.test(code)) return '🌐'
-  return Array.from(code.toUpperCase())
-    .map(c => String.fromCodePoint(127397 + c.charCodeAt(0)))
-    .join('')
+// Ülke kodu (ISO 3166-1 alpha-2) → bayrak PNG.
+// Emoji-based çözüm Windows'ta bayrak emojilerini render etmiyordu
+// (sadece Mac/iOS desteklenir). flagcdn.com tüm geçerli kodlar için
+// ücretsiz, hızlı PNG döndürür — her cihazda garantili görünür.
+function FlagImg({ code, size = 18 }: { code: string; size?: number }) {
+  const ok = code && /^[A-Za-z]{2}$/.test(code)
+  if (!ok) {
+    return <span style={{ fontSize: size, lineHeight: 1 }}>🌐</span>
+  }
+  const lc = code.toLowerCase()
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`https://flagcdn.com/${size * 2}x${Math.round(size * 1.5)}/${lc}.png`}
+      srcSet={`https://flagcdn.com/${size * 4}x${Math.round(size * 3)}/${lc}.png 2x`}
+      alt={code.toUpperCase()}
+      width={Math.round(size * 1.4)}
+      height={size}
+      style={{ display: 'inline-block', borderRadius: 2, objectFit: 'cover', verticalAlign: 'middle' }}
+      loading="lazy"
+    />
+  )
 }
 
 // Tarayıcı Intl API'siyle ülke ismi (TR locale, otomatik)
@@ -233,7 +248,7 @@ export default function AdminAnalytics() {
                 return (
                   <div key={c.key} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl leading-none">{flagEmoji(c.key)}</span>
+                      <FlagImg code={c.key} size={18} />
                       <span className="text-white/60 text-sm">{countryName(c.key)}</span>
                     </div>
                     <div className="flex items-center gap-3">
