@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 
@@ -11,6 +11,19 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+
+  // Sayfa yenilense bile oturum sürsün — localStorage'da kayıtlı doğru
+  // şifre varsa direkt authenticated state'ine geç. Eskiden mount'ta
+  // okumuyordu, her refresh'te login formu çıkıyordu.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('admin_pw')
+      if (saved === ADMIN_PASSWORD) {
+        setPassword(saved)
+        setAuthenticated(true)
+      }
+    } catch { /* localStorage erişim hatası — login formu göster */ }
+  }, [])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
