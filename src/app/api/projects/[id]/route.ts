@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
 import { pingProjectAdded } from '@/lib/indexnow'
 import { generateSlug } from '@/lib/slug'
@@ -59,6 +60,13 @@ export async function PUT(
   if (data?.active !== false && data?.project_name) {
     const slug = generateSlug(data.project_name)
     pingProjectAdded(slug).catch(() => {})
+  }
+
+  // Vercel CDN cache'ini hemen temizle — değişiklik anında yansısın
+  revalidatePath('/projelerimiz')
+  revalidatePath('/')
+  if (data?.project_name) {
+    revalidatePath(`/projelerimiz/${generateSlug(data.project_name)}`)
   }
 
   return NextResponse.json(data)

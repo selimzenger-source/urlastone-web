@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase'
 import { pingBlogPublished } from '@/lib/indexnow'
 
@@ -57,6 +58,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (body.is_published === true && data?.slug) {
     pingBlogPublished(data.slug).catch(() => {})
   }
+
+  // Vercel CDN cache'ini hemen temizle — değişiklik anında yansısın
+  revalidatePath('/blog')
+  revalidatePath('/')
+  if (data?.slug) revalidatePath(`/blog/${data.slug}`)
 
   return NextResponse.json(data)
 }

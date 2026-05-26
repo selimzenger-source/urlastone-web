@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabase, supabaseAdmin } from '@/lib/supabase'
 import { generateSlug } from '@/lib/slug'
 import { pingBlogPublished } from '@/lib/indexnow'
@@ -100,6 +101,14 @@ export async function POST(req: NextRequest) {
   // IndexNow — yeni blog yayinlandiysa Bing/Yandex'e bildir (fire-and-forget)
   if (is_published && data?.slug) {
     pingBlogPublished(data.slug).catch(() => {})
+  }
+
+  // Vercel CDN cache'ini hemen temizle — blog liste sayfası 5 dk beklemesin,
+  // yeni yazı anında görünsün
+  if (is_published) {
+    revalidatePath('/blog')
+    revalidatePath('/')
+    if (data?.slug) revalidatePath(`/blog/${data.slug}`)
   }
 
   return NextResponse.json(data)
