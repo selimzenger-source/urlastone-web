@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { getUrlaklinkerSupabase } from '@/lib/urlaklinker-supabase'
 import { optimizeUploadedFile } from '@/lib/image-optimize'
 
 // POST /api/blogs/upload - Upload blog cover image (admin only)
@@ -8,6 +9,10 @@ export async function POST(req: NextRequest) {
   if (password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const { searchParams } = new URL(req.url)
+  const brand = searchParams.get('brand') === 'urlaklinker' ? 'urlaklinker' : 'urlastone'
+  const db = brand === 'urlaklinker' ? getUrlaklinkerSupabase() : supabaseAdmin
 
   const formData = await req.formData()
   const file = formData.get('file') as File
@@ -19,14 +24,14 @@ export async function POST(req: NextRequest) {
   const optimized = await optimizeUploadedFile(file, { maxWidth: 1200, quality: 85 })
   const fileName = `blog-covers/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${optimized.ext}`
 
-  const { error: uploadError } = await supabaseAdmin.storage
+  const { error: uploadError } = await db.storage
     .from('blog-covers')
     .upload(fileName, optimized.buffer, { upsert: true, contentType: optimized.contentType })
 
   if (uploadError) {
     if (uploadError.message.includes('not found') || uploadError.message.includes('Bucket')) {
-      await supabaseAdmin.storage.createBucket('blog-covers', { public: true })
-      const { error: retryError } = await supabaseAdmin.storage
+      await db.storage.createBucket('blog-covers', { public: true })
+      const { error: retryError } = await db.storage
         .from('blog-covers')
         .upload(fileName, optimized.buffer, { upsert: true, contentType: optimized.contentType })
       if (retryError) {
@@ -37,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { data: urlData } = supabaseAdmin.storage
+  const { data: urlData } = db.storage
     .from('blog-covers')
     .getPublicUrl(fileName)
 

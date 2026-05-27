@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from '@/lib/supabase'
+import { getUrlaklinkerSupabase } from '@/lib/urlaklinker-supabase'
 
 export const maxDuration = 300
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 // POST /api/blogs/generate-from-source
-// Accepts: { sourceText?: string, sourceImage?: string (base64), sourceImageType?: string }
+// Accepts: { sourceText?: string, sourceImage?: string (base64), sourceImageType?: string, brand? }
 export async function POST(req: NextRequest) {
   const password = req.headers.get('x-admin-password')
   if (password !== process.env.ADMIN_PASSWORD) {
@@ -15,6 +16,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}))
+  const brand: 'urlastone' | 'urlaklinker' = body.brand === 'urlaklinker' ? 'urlaklinker' : 'urlastone'
   const { sourceText, sourceImages } = body
   // Backward compat: single image
   const { sourceImage, sourceImageType } = body
@@ -25,17 +27,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const db = brand === 'urlaklinker' ? getUrlaklinkerSupabase() : supabaseAdmin
+    const table = brand === 'urlaklinker' ? 'urlaklinker_blogs' : 'blogs'
+
     // Get existing blog titles to avoid repetition
-    const { data: existingBlogs } = await supabaseAdmin
-      .from('blogs')
+    const { data: existingBlogs } = await db
+      .from(table)
       .select('title')
       .order('created_at', { ascending: false })
 
     const existingTitles = (existingBlogs || []).map((b: { title: string }) => b.title)
 
-    // Get product info for context
+    // Get product info for context (urlastone only — urlaklinker has no products table)
     let productInfo = ''
     try {
+      if (brand === 'urlastone') {
       const { data: products } = await supabaseAdmin
         .from('products')
         .select('name, code, stone_type, category')
@@ -44,6 +50,7 @@ export async function POST(req: NextRequest) {
         productInfo = products.map((p: { name: string; code: string; stone_type?: string; category?: string }) =>
           `${p.name} (${p.code}) - ${p.stone_type || ''} ${p.category || ''}`
         ).join('\n')
+      }
       }
     } catch { /* skip */ }
 
@@ -63,10 +70,45 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Add the main prompt
-    contentParts.push({
-      type: 'text',
-      text: `Sen, uluslararası çapta faaliyet gösteren premium doğal taş üreticisi "Urla Stone" (www.urlastone.com) firmasının blog yazarısın.
+    const urlaklinkerPrompt = `Sen, premium handmade klinker tuğla üreticisi "URLAKLINKER" (www.urlaklinker.com) firmasının editorial blog yazarısın.
+
+GÖREV: Aşağıdaki kaynak içeriği referans alarak, TAMAMEN YENİ ve ORİJİNAL bir Türkçe blog yazısı üret. Bu bir çeviri DEĞİL — kaynaktaki bilgiyi temel al ama farklı bir bakış açısı, anlatım tarzı ve yapıyla sun.
+
+${images.length > 0 ? `Yukarıdaki ${images.length} görseldeki tüm metinleri oku ve birleştirerek referans al.` : ''}
+${sourceText ? `KAYNAK METİN:\n${sourceText}` : ''}
+
+ADAPTASYON KURALLARI:
+1. Firma adları → "URLAKLINKER" olarak değiştir
+2. İnç (inch, ") → cm'ye çevir
+3. Feet, square foot → m² veya metre'ye çevir
+4. Pound → kilogram'a çevir
+5. ABD/yabancı bölgeler → İzmir, Urla, Türkiye olarak uyarla
+6. Dolar → spesifik fiyat verme, genel ifadeler
+7. Konsept: handmade klinker tuğla, terracotta tonları, doğal kil + ateş zanaatı, modern cephe mimarisi
+8. Slogan referansı: "In Its Handmade State" (doğal olarak 1 yerde geçebilir)
+9. İzmir/Urla merkezli üretim
+
+MEVCUT BLOG BAŞLIKLARI (TEKRAR ETME):
+${existingTitles.length > 0 ? existingTitles.join('\n') : 'Henüz yok'}
+
+İÇERİK KURALLARI:
+- Başlık: 5-8 kelime, çarpıcı, SEO uyumlu, Türkçe, sonunda nokta YOK
+- İçerik: EN AZ 1000 kelime, HTML formatında. SADECE bu tagleri kullan: <h2>, <h3>, <p>, <strong>
+- Editorial ton — reklam değil, mimarlar için bilgi
+- CTA: Yazı sonunda kısa ve doğal bir keşfetme daveti
+- Meta description: 150-160 karakter, SEO uyumlu
+- Kapak fotoğrafı için İngilizce prompt (handmade klinker brick, terracotta facade, no text)
+- Kaynak içerikten BİREBİR KOPYA YAPMA
+
+ÇIKTI FORMATI (SADECE JSON):
+{
+  "title": "...",
+  "content": "<h2>...</h2><p>...</p>...",
+  "meta_description": "...",
+  "cover_image_prompt": "..."
+}`
+
+    const urlastonePrompt = `Sen, uluslararası çapta faaliyet gösteren premium doğal taş üreticisi "Urla Stone" (www.urlastone.com) firmasının blog yazarısın.
 
 GÖREV: Aşağıdaki kaynak içeriği referans alarak, TAMAMEN YENİ ve ORİJİNAL bir Türkçe blog yazısı üret. Bu bir çeviri DEĞİL — kaynaktaki bilgiyi temel al ama farklı bir bakış açısı, anlatım tarzı ve yapıyla sun.
 
@@ -107,6 +149,10 @@ ${existingTitles.length > 0 ? existingTitles.join('\n') : 'Henüz yok'}
   "meta_description": "...",
   "cover_image_prompt": "..."
 }`
+
+    contentParts.push({
+      type: 'text',
+      text: brand === 'urlaklinker' ? urlaklinkerPrompt : urlastonePrompt,
     })
 
     const message = await anthropic.messages.create({
@@ -130,10 +176,12 @@ ${existingTitles.length > 0 ? existingTitles.join('\n') : 'Henüz yok'}
         .replace(/\*([^*]+)\*/g, '<em>$1</em>')
     }
 
-    // Generate cover image with Gemini
+    // Generate cover image — Flux Pro for urlaklinker, Gemini for urlastone
     let coverImageUrl = ''
     try {
-      coverImageUrl = await generateCoverImage(generated.cover_image_prompt || generated.title)
+      coverImageUrl = brand === 'urlaklinker'
+        ? await generateCoverImageFlux(generated.cover_image_prompt || generated.title)
+        : await generateCoverImage(generated.cover_image_prompt || generated.title)
     } catch (imgErr) {
       console.error('Cover image generation failed:', imgErr)
     }
@@ -195,4 +243,57 @@ async function generateCoverImage(prompt: string): Promise<string> {
     } catch { continue }
   }
   return ''
+}
+
+async function generateCoverImageFlux(promptInput: string): Promise<string> {
+  const token = process.env.REPLICATE_API_TOKEN
+  if (!token) return ''
+  try {
+    const prompt =
+      `Editorial architecture magazine cover photograph, 16:9 widescreen, premium quality, ` +
+      `photorealistic, soft warm natural lighting, terracotta and ochre accents, ` +
+      `museum-grade composition, fine paper-grain noise, no text no logos no labels. ` +
+      `Subject: ${promptInput || 'handmade terracotta klinker brick architecture'}, ` +
+      `subtle storytelling — craftsmanship, fire, clay, modern facade context.`
+
+    const resp = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'wait',
+      },
+      body: JSON.stringify({
+        input: {
+          prompt,
+          aspect_ratio: '16:9',
+          output_format: 'jpg',
+          output_quality: 90,
+          safety_tolerance: 2,
+          prompt_upsampling: true,
+        },
+      }),
+    })
+    if (!resp.ok) return ''
+    const result: any = await resp.json()
+    let outUrl: string | null = result.output
+    if (Array.isArray(outUrl)) outUrl = outUrl[0]
+    if (!outUrl) return ''
+
+    const imgRes = await fetch(outUrl)
+    if (!imgRes.ok) return ''
+    const buf = Buffer.from(await imgRes.arrayBuffer())
+
+    const db = getUrlaklinkerSupabase()
+    const path = `urlaklinker-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`
+    await db.storage.createBucket('blog-covers', { public: true }).catch(() => null)
+    const { error: upErr } = await db.storage
+      .from('blog-covers')
+      .upload(path, buf, { contentType: 'image/jpeg', upsert: false })
+    if (upErr) return ''
+    const { data: pub } = db.storage.from('blog-covers').getPublicUrl(path)
+    return pub?.publicUrl || ''
+  } catch {
+    return ''
+  }
 }

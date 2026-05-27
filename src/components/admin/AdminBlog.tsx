@@ -19,8 +19,12 @@ interface Blog {
 }
 
 const AUTHORS = ['Cihan Zenger', 'Fatih At', 'Özer Demirkıran']
+const URLAKLINKER_AUTHORS = ['URLAKLINKER Editör', 'Cihan Zenger']
+
+type Brand = 'urlastone' | 'urlaklinker'
 
 export default function AdminBlog() {
+  const [brand, setBrand] = useState<Brand>('urlastone')
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -68,12 +72,13 @@ export default function AdminBlog() {
   }
 
   const fetchBlogs = async () => {
+    setLoading(true)
     try {
-      const res = await fetch('/api/blogs?all=true', {
+      const res = await fetch(`/api/blogs?all=true&brand=${brand}`, {
         headers: { 'x-admin-password': password },
       })
       if (!res.ok) {
-        if (res.status === 500 || res.status === 404) {
+        if ((res.status === 500 || res.status === 404) && brand === 'urlastone') {
           setNeedsSetup(true)
         }
         return
@@ -82,11 +87,11 @@ export default function AdminBlog() {
       if (Array.isArray(data)) {
         setBlogs(data)
         setNeedsSetup(false)
-      } else {
+      } else if (brand === 'urlastone') {
         setNeedsSetup(true)
       }
     } catch {
-      setNeedsSetup(true)
+      if (brand === 'urlastone') setNeedsSetup(true)
     } finally {
       setLoading(false)
     }
@@ -100,7 +105,7 @@ export default function AdminBlog() {
           'Content-Type': 'application/json',
           'x-admin-password': password,
         },
-        body: JSON.stringify({ checkLimit: true }),
+        body: JSON.stringify({ checkLimit: true, brand }),
       })
       const data = await res.json()
       setMonthlyLimitReached(!data.allowed)
@@ -108,7 +113,12 @@ export default function AdminBlog() {
     } catch { /* ignore */ }
   }
 
-  useEffect(() => { fetchBlogs(); checkMonthlyLimit() }, [])
+  useEffect(() => {
+    fetchBlogs()
+    checkMonthlyLimit()
+    setGenerateAttempts(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brand])
 
   const handleSetup = async () => {
     setSaving(true)
@@ -138,7 +148,7 @@ export default function AdminBlog() {
     setEditId(null)
     setFormTitle('')
     setFormContent('')
-    setFormAuthor(AUTHORS[0])
+    setFormAuthor(brand === 'urlaklinker' ? URLAKLINKER_AUTHORS[0] : AUTHORS[0])
     setFormMeta('')
     setFormCover('')
     setFormPublished(false)
@@ -168,7 +178,7 @@ export default function AdminBlog() {
     formData.append('file', file)
 
     try {
-      const res = await fetch('/api/blogs/upload', {
+      const res = await fetch(`/api/blogs/upload?brand=${brand}`, {
         method: 'POST',
         headers: { 'x-admin-password': password },
         body: formData,
@@ -201,9 +211,10 @@ export default function AdminBlog() {
         meta_description: formMeta,
         is_published: formPublished,
         ai_generated: formAiGenerated,
+        brand,
       }
 
-      const url = editId ? `/api/blogs/${editId}` : '/api/blogs'
+      const url = editId ? `/api/blogs/${editId}?brand=${brand}` : '/api/blogs'
       const method = editId ? 'PUT' : 'POST'
 
       const res = await fetch(url, {
@@ -234,7 +245,7 @@ export default function AdminBlog() {
     if (!confirm('Bu blogu silmek istediğinize emin misiniz?')) return
 
     try {
-      const res = await fetch(`/api/blogs/${id}`, {
+      const res = await fetch(`/api/blogs/${id}?brand=${brand}`, {
         method: 'DELETE',
         headers: { 'x-admin-password': password },
       })
@@ -251,13 +262,13 @@ export default function AdminBlog() {
 
   const handleTogglePublish = async (blog: Blog) => {
     try {
-      const res = await fetch(`/api/blogs/${blog.id}`, {
+      const res = await fetch(`/api/blogs/${blog.id}?brand=${brand}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'x-admin-password': password,
         },
-        body: JSON.stringify({ is_published: !blog.is_published }),
+        body: JSON.stringify({ is_published: !blog.is_published, brand }),
       })
       if (res.ok) {
         showMsg('success', blog.is_published ? 'Taslağa alındı' : 'Yayınlandı')
@@ -277,7 +288,7 @@ export default function AdminBlog() {
           'Content-Type': 'application/json',
           'x-admin-password': password,
         },
-        body: JSON.stringify({ blogId }),
+        body: JSON.stringify({ blogId, brand }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -305,7 +316,7 @@ export default function AdminBlog() {
     setGenerating(true)
     setShowTopicInput(false)
     try {
-      const body: Record<string, string> = {}
+      const body: Record<string, string> = { brand }
       if (topicInput.trim()) body.topic = topicInput.trim()
       if (topicDesc.trim()) body.description = topicDesc.trim()
 
@@ -324,7 +335,7 @@ export default function AdminBlog() {
         setFormContent(data.content || '')
         setFormMeta(data.meta_description || '')
         setFormCover(data.cover_image_url || '')
-        setFormAuthor(AUTHORS[0])
+        setFormAuthor(brand === 'urlaklinker' ? URLAKLINKER_AUTHORS[0] : AUTHORS[0])
         setFormPublished(false)
         setFormAiGenerated(true)
         setEditId(null)
@@ -386,7 +397,7 @@ export default function AdminBlog() {
     setGeneratingFromSource(true)
     setShowSourceInput(false)
     try {
-      const bodyPayload: Record<string, unknown> = {}
+      const bodyPayload: Record<string, unknown> = { brand }
       if (sourceText.trim()) bodyPayload.sourceText = sourceText.trim()
       if (sourceImages.length > 0) {
         bodyPayload.sourceImages = sourceImages.map(img => ({ base64: img.base64, type: img.type }))
@@ -407,7 +418,7 @@ export default function AdminBlog() {
         setFormContent(data.content || '')
         setFormMeta(data.meta_description || '')
         setFormCover(data.cover_image_url || '')
-        setFormAuthor(AUTHORS[0])
+        setFormAuthor(brand === 'urlaklinker' ? URLAKLINKER_AUTHORS[0] : AUTHORS[0])
         setFormPublished(false)
         setFormAiGenerated(true)
         setEditId(null)
@@ -455,6 +466,36 @@ export default function AdminBlog() {
 
   return (
     <div className="space-y-6">
+      {/* Marka Seçici — URLASTONE vs URLAKLINKER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${brand === 'urlaklinker' ? 'bg-orange-400' : 'bg-gold-400'}`} />
+          <span className="text-white/30 text-xs font-mono uppercase tracking-[0.18em]">Blog Yönetimi</span>
+        </div>
+        <div className="flex items-center gap-1 p-1 rounded-xl border border-white/[0.06] bg-white/[0.02] self-start sm:self-auto">
+          <button
+            onClick={() => setBrand('urlastone')}
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em] font-bold transition-all ${
+              brand === 'urlastone'
+                ? 'bg-gold-400/20 text-gold-400 border border-gold-400/40 shadow-[0_0_12px_-4px_rgba(179,147,69,0.4)]'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            ✦ URLASTONE
+          </button>
+          <button
+            onClick={() => setBrand('urlaklinker')}
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em] font-bold transition-all ${
+              brand === 'urlaklinker'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            🧱 URLAKLINKER
+          </button>
+        </div>
+      </div>
+
       {/* Message */}
       {message && (
         <div className={`flex items-center gap-2 p-4 rounded-xl text-sm ${
@@ -713,7 +754,7 @@ export default function AdminBlog() {
               onChange={(e) => setFormAuthor(e.target.value)}
               className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-400/50"
             >
-              {AUTHORS.map(a => (
+              {(brand === 'urlaklinker' ? URLAKLINKER_AUTHORS : AUTHORS).map(a => (
                 <option key={a} value={a} className="bg-[#111]">{a}</option>
               ))}
             </select>

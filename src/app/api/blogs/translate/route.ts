@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin } from '@/lib/supabase'
+import { getUrlaklinkerSupabase } from '@/lib/urlaklinker-supabase'
 
 export const maxDuration = 300
 
@@ -82,13 +83,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { blogId } = await req.json()
+  const reqBody = await req.json()
+  const { blogId } = reqBody
+  const brand: 'urlastone' | 'urlaklinker' = reqBody.brand === 'urlaklinker' ? 'urlaklinker' : 'urlastone'
   if (!blogId) {
     return NextResponse.json({ error: 'blogId required' }, { status: 400 })
   }
 
-  const { data: blog, error } = await supabaseAdmin
-    .from('blogs')
+  const db = brand === 'urlaklinker' ? getUrlaklinkerSupabase() : supabaseAdmin
+  const table = brand === 'urlaklinker' ? 'urlaklinker_blogs' : 'blogs'
+
+  const { data: blog, error } = await db
+    .from(table)
     .select('title, content, meta_description')
     .eq('id', blogId)
     .single()
@@ -105,7 +111,7 @@ export async function POST(req: NextRequest) {
   // Türkçe content farklıysa güncelle
   if (cleanContent !== blog.content) {
     console.log('[Translate] Cleaning Turkish content markdown artifacts')
-    await supabaseAdmin.from('blogs').update({ content: cleanContent }).eq('id', blogId)
+    await db.from(table).update({ content: cleanContent }).eq('id', blogId)
     blog.content = cleanContent
   }
 
@@ -147,8 +153,8 @@ export async function POST(req: NextRequest) {
   if (Object.keys(updateData).length > 0) {
     updateData.updated_at = new Date().toISOString()
 
-    const { error: updateError } = await supabaseAdmin
-      .from('blogs')
+    const { error: updateError } = await db
+      .from(table)
       .update(updateData)
       .eq('id', blogId)
 
