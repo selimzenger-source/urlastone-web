@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'urlastone-web'
+const URLAKLINKER_PROJECT_ID = process.env.URLAKLINKER_VERCEL_PROJECT_ID || 'prj_rPbTUlQQPe4hhkBq5C01MCLOssRN'
 const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_GariHi8fy8koIkpANkIdKjSH'
 
 function getDateRange(days: number) {
@@ -20,6 +21,8 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url)
   const period = searchParams.get('period') || '30d'
+  const project = searchParams.get('project') === 'urlaklinker' ? 'urlaklinker' : 'urlastone'
+  const projectId = project === 'urlaklinker' ? URLAKLINKER_PROJECT_ID : VERCEL_PROJECT_ID
   const days = period === '1d' ? 1 : period === '7d' ? 7 : period === '90d' ? 90 : 30
   const { from, to } = getDateRange(days)
   // Önceki dönem: mevcut periyodun hemen öncesi (Vercel'in gösterdiği karşılaştırma gibi)
@@ -29,7 +32,7 @@ export async function GET(req: Request) {
 
   const headers = { Authorization: `Bearer ${VERCEL_TOKEN}` }
   const base = `https://vercel.com/api/web-analytics`
-  const qs = `environment=production&filter=%7B%7D&projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&tz=Europe%2FIstanbul`
+  const qs = `environment=production&filter=%7B%7D&projectId=${projectId}&teamId=${VERCEL_TEAM_ID}&tz=Europe%2FIstanbul`
 
   try {
     const [overviewRes, prevOverviewRes, timeseriesRes, pathsRes, countriesRes, devicesRes, referrersRes] = await Promise.all([

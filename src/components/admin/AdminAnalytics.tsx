@@ -120,14 +120,15 @@ export default function AdminAnalytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState('7d')
+  const [project, setProject] = useState<'urlastone' | 'urlaklinker'>('urlastone')
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/vercel-analytics?period=${period}`)
+    fetch(`/api/vercel-analytics?period=${period}&project=${project}`)
       .then(r => r.json())
       .then(data => { setAnalytics(data); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [period])
+  }, [period, project])
 
   if (loading && !analytics) {
     return (
@@ -155,13 +156,39 @@ export default function AdminAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* Dönem Seçici — mobilde alt satır, butonlar kısa etiket */}
+      {/* Marka Seçici — URLASTONE vs URLAKLINKER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
           <span className="text-white/30 text-xs font-mono">{loading ? 'Yükleniyor...' : 'Vercel Analytics'}</span>
         </div>
-        <div className="flex gap-1 self-start sm:self-auto">
+        <div className="flex items-center gap-1 p-1 rounded-xl border border-white/[0.06] bg-white/[0.02] self-start sm:self-auto">
+          <button
+            onClick={() => setProject('urlastone')}
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em] font-bold transition-all ${
+              project === 'urlastone'
+                ? 'bg-gold-400/20 text-gold-400 border border-gold-400/40 shadow-[0_0_12px_-4px_rgba(179,147,69,0.4)]'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            ✦ URLASTONE
+          </button>
+          <button
+            onClick={() => setProject('urlaklinker')}
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-[0.12em] font-bold transition-all ${
+              project === 'urlaklinker'
+                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                : 'text-white/40 hover:text-white/70'
+            }`}
+          >
+            🧱 URLAKLINKER
+          </button>
+        </div>
+      </div>
+
+      {/* Dönem Seçici */}
+      <div className="flex justify-end">
+        <div className="flex gap-1">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.value}
