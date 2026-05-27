@@ -11,6 +11,7 @@ interface Teklif {
   durum: string
   tas_tercihi: string[]
   kaynak: string | null
+  source?: 'urlastone' | 'urlaklinker' | null
   created_at: string
 }
 
@@ -110,6 +111,14 @@ export default function AdminOverview() {
     if (t.kaynak) kaynakCounts[t.kaynak] = (kaynakCounts[t.kaynak] || 0) + 1
   })
 
+  // Brand source breakdown
+  const urlastoneTeklifler = teklifler.filter(t => t.source !== 'urlaklinker')
+  const urlaklinkerTeklifler = teklifler.filter(t => t.source === 'urlaklinker')
+  const urlastoneYeni = urlastoneTeklifler.filter(t => t.durum === 'Yeni').length
+  const urlaklinkerYeni = urlaklinkerTeklifler.filter(t => t.durum === 'Yeni').length
+  const urlastoneOnay = urlastoneTeklifler.filter(t => t.durum === 'Onaylandı').length
+  const urlaklinkerOnay = urlaklinkerTeklifler.filter(t => t.durum === 'Onaylandı').length
+
   const stats = [
     { label: 'Teklif Talepleri', value: teklifler.length.toString(), change: `${yeniCount} yeni`, icon: MessageSquare, color: 'text-gold-400' },
     { label: 'Onaylanan', value: onayCount.toString(), change: `%${conversionRate}`, icon: TrendingUp, color: 'text-green-400' },
@@ -134,6 +143,59 @@ export default function AdminOverview() {
             </div>
           )
         })}
+      </div>
+
+      {/* Marka Kaynağı — URLASTONE vs URLAKLINKER */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* URLASTONE */}
+        <div className="relative bg-gradient-to-br from-gold-400/[0.10] via-gold-400/[0.03] to-transparent border border-gold-400/30 rounded-2xl p-5 overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-gold-400/80 to-gold-400/30" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-[11px] font-mono uppercase tracking-[0.15em] font-bold bg-gold-400/20 text-gold-400 border border-gold-400/40">
+              ✦ URLASTONE
+            </span>
+            <span className="text-white/40 text-[10px] font-mono">doğal taş</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <p className="font-heading text-2xl md:text-3xl font-bold text-white">{urlastoneTeklifler.length}</p>
+              <p className="text-white/40 text-[10px] font-mono mt-1">Toplam</p>
+            </div>
+            <div>
+              <p className="font-heading text-2xl md:text-3xl font-bold text-blue-400">{urlastoneYeni}</p>
+              <p className="text-white/40 text-[10px] font-mono mt-1">Yeni</p>
+            </div>
+            <div>
+              <p className="font-heading text-2xl md:text-3xl font-bold text-green-400">{urlastoneOnay}</p>
+              <p className="text-white/40 text-[10px] font-mono mt-1">Onaylı</p>
+            </div>
+          </div>
+        </div>
+
+        {/* URLAKLINKER */}
+        <div className="relative bg-gradient-to-br from-orange-500/[0.12] via-orange-500/[0.04] to-transparent border border-orange-500/40 rounded-2xl p-5 overflow-hidden shadow-[0_0_24px_-12px_rgba(249,115,22,0.4)]">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-[11px] font-mono uppercase tracking-[0.15em] font-bold bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+              🧱 URLAKLINKER
+            </span>
+            <span className="text-white/40 text-[10px] font-mono">klinker tuğla</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <p className="font-heading text-2xl md:text-3xl font-bold text-white">{urlaklinkerTeklifler.length}</p>
+              <p className="text-white/40 text-[10px] font-mono mt-1">Toplam</p>
+            </div>
+            <div>
+              <p className="font-heading text-2xl md:text-3xl font-bold text-blue-400">{urlaklinkerYeni}</p>
+              <p className="text-white/40 text-[10px] font-mono mt-1">Yeni</p>
+            </div>
+            <div>
+              <p className="font-heading text-2xl md:text-3xl font-bold text-green-400">{urlaklinkerOnay}</p>
+              <p className="text-white/40 text-[10px] font-mono mt-1">Onaylı</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
