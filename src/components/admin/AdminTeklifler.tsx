@@ -39,6 +39,7 @@ interface Teklif {
   tercih_dil: string | null
   foto_urls: string[]
   durum: Durum
+  source?: 'urlastone' | 'urlaklinker'
   created_at: string
 }
 
@@ -241,7 +242,7 @@ export default function AdminTeklifler() {
           onClick={async () => {
             // Gercek .xlsx olustur (kolon genislikleri + baslik stili)
             const XLSX = await import('xlsx')
-            const headers = ['Tarih', 'Saat', 'Ad Soyad', 'Telefon', 'E-posta', 'Ülke', 'İl', 'İlçe', 'Proje Tipi', 'Metrekare', 'Taş Tercihi', 'Fiyat Kapsamı', 'İletişim Tercihi', 'Kaynak', 'Açıklama', 'Durum']
+            const headers = ['Tarih', 'Saat', 'Ad Soyad', 'Telefon', 'E-posta', 'Ülke', 'İl', 'İlçe', 'Proje Tipi', 'Metrekare', 'Taş Tercihi', 'Fiyat Kapsamı', 'İletişim Tercihi', 'Referans', 'Açıklama', 'Durum', 'Kaynak']
             const data = teklifler.map(t => {
               const d = new Date(t.created_at)
               return {
@@ -258,9 +259,10 @@ export default function AdminTeklifler() {
                 'Taş Tercihi': t.tas_tercihi?.join(', ') || '',
                 'Fiyat Kapsamı': t.fiyat_tipi === 'sadece_tas' ? 'Sadece Taş' : t.fiyat_tipi === 'tas_ve_malzeme' ? 'Taş + Yapıştırıcı + Derz' : (t.fiyat_tipi || ''),
                 'İletişim Tercihi': ({ phone: 'Telefon', email: 'E-posta', whatsapp: 'WhatsApp' } as Record<string, string>)[t.iletisim_turu || ''] || t.iletisim_turu || '',
-                Kaynak: t.kaynak || '',
+                Referans: t.kaynak || '',
                 Açıklama: t.aciklama || '',
                 Durum: t.durum,
+                Kaynak: t.source === 'urlaklinker' ? 'URLAKLINKER' : 'URLASTONE',
               }
             })
 
@@ -281,9 +283,10 @@ export default function AdminTeklifler() {
               { wch: 25 },  // Taş Tercihi
               { wch: 26 },  // Fiyat Kapsamı
               { wch: 16 },  // İletişim Tercihi
-              { wch: 14 },  // Kaynak
+              { wch: 14 },  // Referans
               { wch: 40 },  // Açıklama
               { wch: 18 },  // Durum
+              { wch: 14 },  // Kaynak
             ]
 
             // Tum hucrelere metin formati + icerik wrap (uzun aciklamalar icin)
@@ -329,15 +332,32 @@ export default function AdminTeklifler() {
             <div
               key={t.id}
               onClick={() => setSelectedTeklif(t)}
-              className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 hover:border-white/[0.12] transition-all cursor-pointer group"
+              className={`relative rounded-2xl p-5 hover:border-white/[0.18] transition-all cursor-pointer group overflow-hidden ${
+                t.source === 'urlaklinker'
+                  ? 'bg-gradient-to-r from-orange-500/[0.12] via-orange-500/[0.04] to-white/[0.02] border border-orange-500/40 shadow-[0_0_24px_-12px_rgba(249,115,22,0.4)] pl-7'
+                  : 'bg-white/[0.03] border border-white/[0.06]'
+              }`}
             >
+              {t.source === 'urlaklinker' && (
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600" />
+              )}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <p className="text-white font-medium text-sm truncate">{t.ad_soyad}</p>
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    {t.source === 'urlaklinker' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-mono uppercase tracking-[0.15em] font-bold bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+                        🧱 URLAKLINKER
+                      </span>
+                    )}
+                    <p className={`font-medium text-sm truncate ${t.source === 'urlaklinker' ? 'text-orange-100' : 'text-white'}`}>{t.ad_soyad}</p>
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono ${durumRenk[t.durum]}`}>
                       {t.durum}
                     </span>
+                    {t.source !== 'urlaklinker' && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                        URLASTONE
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-white/40 text-xs font-mono">
                     <span className="flex items-center gap-1"><MapPin size={12} />{t.il}{t.ilce ? `, ${t.ilce}` : ''}</span>

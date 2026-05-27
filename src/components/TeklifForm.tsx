@@ -342,6 +342,7 @@ export default function TeklifForm() {
           fiyat_tipi: form.fiyatTipi,
           aciklama: form.aciklama, kaynak: form.kaynak,
           iletisim_turu: form.iletisimTuru, tercih_dil: form.tercihDil,
+          source: 'urlastone',
         }),
       })
       if (!res.ok) throw new Error('Failed')

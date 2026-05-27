@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   const {
     ad_soyad, telefon, email, ulke, il, ilce,
     proje_tipi, tas_tercihi, cephe_metre, dis_kose_uzunluk, fiyat_tipi,
-    aciklama, kaynak, iletisim_turu, tercih_dil,
+    aciklama, kaynak, iletisim_turu, tercih_dil, source,
   } = body
 
   // Validate required fields
@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       tercih_dil: tercih_dil || 'tr',
       foto_urls: [],
       durum: 'Yeni',
+      source: source || 'urlastone',
     })
     .select()
     .single()
