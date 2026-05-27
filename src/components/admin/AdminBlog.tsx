@@ -854,7 +854,7 @@ export default function AdminBlog() {
                 {blog.cover_image_url && (
                   <div className="w-full sm:w-24 h-32 sm:h-16 rounded-lg overflow-hidden flex-shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={blog.cover_image_url} alt="" className="w-full h-full object-cover" />
+                    <img src={brand === 'urlaklinker' && blog.cover_image_url.startsWith('/') ? `https://urlaklinker.com${blog.cover_image_url}` : blog.cover_image_url} alt="" className="w-full h-full object-cover" />
                   </div>
                 )}
 
