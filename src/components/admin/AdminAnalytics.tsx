@@ -241,7 +241,7 @@ export default function AdminAnalytics() {
                 const maxV = Math.max(...timeseriesData.map(x => x.total), 1)
                 const h = Math.max(2, (d.total / maxV) * 128)
                 return (
-                  <div key={d.key} className="flex-1 group relative">
+                  <div key={d.key} className="flex-1 h-full flex items-end group relative">
                     <div
                       className="w-full bg-gold-400/30 hover:bg-gold-400/60 rounded-sm transition-colors cursor-default"
                       style={{ height: `${h}px` }}
