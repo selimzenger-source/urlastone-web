@@ -6,6 +6,7 @@ import ReferansMarquee from '@/components/ReferansMarquee'
 import MiniStats from '@/components/MiniStats'
 import InstagramFeed from '@/components/InstagramFeed'
 import CTASection from '@/components/CTASection'
+import SisterBrand from '@/components/SisterBrand'
 import Footer from '@/components/Footer'
 
 // Admin'in yüklediği taş türü resimleri 5 dk cache'lensin; upload sonrası
@@ -43,6 +44,7 @@ export default async function Home() {
       <FeaturedStones stoneImages={stoneImages} />
       <ProcessSection />
       <ReferansMarquee />
+      <SisterBrand />
       <CTASection />
       <Footer />
     </main>

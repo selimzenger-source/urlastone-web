@@ -5,9 +5,12 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ArrowLeft, Calendar, User, Sparkles, ArrowRight } from 'lucide-react'
+import { marked } from 'marked'
 import { cdnImg } from '@/lib/cdn'
 import { useLanguage } from '@/context/LanguageContext'
 import { getTranslations } from '@/lib/i18n'
+
+marked.setOptions({ gfm: true, breaks: false })
 
 interface Blog {
   id: string
@@ -24,10 +27,14 @@ interface Blog {
   published_at: string
 }
 
-function cleanMarkdown(text: string): string {
-  return text
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+function renderContent(text: string): string {
+  if (!text) return ''
+  // If already HTML (eski bloglar), passthrough
+  if (/<(p|h[1-6]|ul|ol|li|div|br|strong|em|a|img|blockquote)[\s>]/i.test(text)) {
+    return text
+  }
+  // Markdown → HTML
+  return marked.parse(text, { async: false }) as string
 }
 
 function getLocalized(blog: Blog, field: 'title' | 'content', locale: string): string {
@@ -38,7 +45,7 @@ function getLocalized(blog: Blog, field: 'title' | 'content', locale: string): s
     const key = `${field}_${locale}` as keyof Blog
     text = (blog[key] as string) || blog[field]
   }
-  return field === 'content' ? cleanMarkdown(text) : text
+  return field === 'content' ? renderContent(text) : text
 }
 
 export default function BlogPostClient({ blog: initialBlog, slug }: { blog: Blog | null; slug: string }) {
