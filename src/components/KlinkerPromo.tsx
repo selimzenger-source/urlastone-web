@@ -34,21 +34,22 @@ export default function KlinkerPromo() {
       aria-modal="true"
     >
       <div
-        className="relative w-full max-w-[380px] rounded-3xl overflow-hidden border border-[#d2613a]/30 bg-[#0c0a08] shadow-[0_30px_90px_-20px_rgba(0,0,0,0.8)]"
+        className="relative w-full max-w-[360px] max-h-[90vh] flex flex-col rounded-3xl overflow-hidden border border-[#d2613a]/30 bg-[#0c0a08] shadow-[0_30px_90px_-20px_rgba(0,0,0,0.8)]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* close */}
+        {/* close — always visible top-right */}
         <button
           onClick={dismiss}
           aria-label="Kapat"
-          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/45 backdrop-blur flex items-center justify-center text-white/80 hover:text-white hover:bg-black/65 transition-colors"
+          className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/55 backdrop-blur flex items-center justify-center text-white hover:bg-black/75 transition-colors"
         >
-          <X size={18} />
+          <X size={20} />
         </button>
 
-        {/* video */}
+        {/* video — capped height so panel fits viewport */}
         <video
-          className="w-full block bg-black"
+          className="w-full block bg-black shrink-0 object-cover"
+          style={{ maxHeight: '46vh' }}
           autoPlay
           muted
           loop
@@ -60,7 +61,7 @@ export default function KlinkerPromo() {
         </video>
 
         {/* copy + actions */}
-        <div className="p-6 text-center">
+        <div className="p-5 text-center shrink-0 overflow-y-auto">
           <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#e8a786] mb-2">
             URLASTONE GROUP
           </p>
