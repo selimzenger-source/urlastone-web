@@ -87,17 +87,17 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         className={`lg:hidden overflow-hidden transition-all duration-500 ${
-          isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[640px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="bg-[#0a0a0a] border-t border-white/[0.06] px-6 py-8 space-y-2">
+        <div className="bg-[#0a0a0a] border-t border-white/[0.06] px-6 py-4 space-y-0.5">
           <Link
             href="/"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 py-3 text-white/70 font-medium text-lg hover:text-white transition-colors"
+            className="flex items-center gap-3 py-2 text-white/70 font-medium text-base hover:text-white transition-colors"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ur2-dark.png" alt="Urlastone Doğal Taş" className="w-7 h-7 object-contain" />
+            <img src="/ur2-dark.png" alt="Urlastone Doğal Taş" className="w-6 h-6 object-contain" />
             {t.nav_anasayfa}
           </Link>
 
@@ -107,15 +107,15 @@ export default function Navbar() {
             target="_blank"
             rel="noopener"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 py-3 my-1 px-3 rounded-xl border border-[#d2613a]/30 bg-[#d2613a]/[0.07] hover:bg-[#d2613a]/[0.14] transition-colors"
+            className="flex items-center gap-2.5 py-2.5 my-1 px-3 rounded-xl border border-[#d2613a]/30 bg-[#d2613a]/[0.07] hover:bg-[#d2613a]/[0.14] transition-colors"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/urlaklinker-mark.png" alt="URLAKLINKER" className="w-8 h-8 object-contain" />
-            <span className="text-lg font-medium tracking-wide">
+            <img src="/urlaklinker-mark.png" alt="URLAKLINKER" className="w-7 h-7 object-contain" />
+            <span className="text-base font-medium tracking-wide">
               <span className="font-bold text-[#d2613a]">URLA</span>
               <span className="text-[#d2613a]/80">KLINKER</span>
             </span>
-            <span className="ml-auto text-[10px] font-mono text-[#d2613a]/70 uppercase tracking-wider">Klinker Tuğla →</span>
+            <span className="ml-auto text-[9px] font-mono text-[#d2613a]/70 uppercase tracking-wider">Klinker Tuğla →</span>
           </a>
 
           {navLinks.map((link) => (
@@ -123,17 +123,17 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="block py-3 text-white/70 font-medium text-lg hover:text-white transition-colors"
+              className="block py-2 text-white/70 font-medium text-base hover:text-white transition-colors"
             >
               {link.label}
             </Link>
           ))}
-          <div className="pt-4 space-y-4">
+          <div className="pt-3 space-y-3">
             <LanguageSwitcher variant="inline" />
             <Link
               href="/teklif"
               onClick={() => setIsOpen(false)}
-              className="btn-primary w-full justify-center text-base py-4"
+              className="btn-primary w-full justify-center text-base py-3.5"
             >
               {t.nav_teklif}
               <ArrowRight size={16} />
