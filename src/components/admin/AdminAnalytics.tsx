@@ -27,12 +27,14 @@ function FlagImg({ code, size = 18 }: { code: string; size?: number }) {
   }
   const lc = code.toLowerCase()
   return (
+    // flagcdn yalnızca belirli boyutları sunar; "WxH" türetince (örn. 72x54)
+    // 404 dönüp retina/mobilde bayrak kayboluyordu. Garantili w40/w80 kullan.
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://flagcdn.com/${size * 2}x${Math.round(size * 1.5)}/${lc}.png`}
-      srcSet={`https://flagcdn.com/${size * 4}x${Math.round(size * 3)}/${lc}.png 2x`}
+      src={`https://flagcdn.com/w40/${lc}.png`}
+      srcSet={`https://flagcdn.com/w80/${lc}.png 2x`}
       alt={code.toUpperCase()}
-      width={Math.round(size * 1.4)}
+      width={Math.round(size * 1.33)}
       height={size}
       style={{ display: 'inline-block', borderRadius: 2, objectFit: 'cover', verticalAlign: 'middle' }}
       loading="lazy"
