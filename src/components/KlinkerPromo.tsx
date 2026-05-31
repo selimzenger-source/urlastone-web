@@ -52,7 +52,6 @@ export default function KlinkerPromo() {
           style={{ maxHeight: '52vh' }}
           autoPlay
           muted
-          loop
           playsInline
           preload="metadata"
           poster="/klinker-promo-poster.jpg"
