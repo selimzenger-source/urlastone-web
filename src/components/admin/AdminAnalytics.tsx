@@ -21,9 +21,12 @@ const PAGE_LABELS: Record<string, string> = {
 // (sadece Mac/iOS desteklenir). flagcdn.com tüm geçerli kodlar için
 // ücretsiz, hızlı PNG döndürür — her cihazda garantili görünür.
 function FlagImg({ code, size = 18 }: { code: string; size?: number }) {
-  const ok = code && /^[A-Za-z]{2}$/.test(code)
-  if (!ok) {
-    return <span style={{ fontSize: size, lineHeight: 1 }}>🌐</span>
+  const [failed, setFailed] = useState(false)
+  const ok = !!code && /^[A-Za-z]{2}$/.test(code)
+  // Geçersiz kod VEYA görsel yüklenemezse 🌐 emoji yerine lucide Globe
+  // ikonuna düş — Windows'ta "?" kutucuğu HİÇ görünmesin.
+  if (!ok || failed) {
+    return <Globe size={size} className="text-white/40 shrink-0" />
   }
   const lc = code.toLowerCase()
   return (
@@ -38,6 +41,7 @@ function FlagImg({ code, size = 18 }: { code: string; size?: number }) {
       height={size}
       style={{ display: 'inline-block', borderRadius: 2, objectFit: 'cover', verticalAlign: 'middle' }}
       loading="lazy"
+      onError={() => setFailed(true)}
     />
   )
 }
