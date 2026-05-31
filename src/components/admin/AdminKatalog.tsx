@@ -155,7 +155,7 @@ export default function AdminKatalog() {
                       <span>Güncelleme: {new Date(catalog.updatedAt).toLocaleDateString('tr-TR')}</span>
                     )}
                   </div>
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     <a
                       href={catalog.url}
                       target="_blank"

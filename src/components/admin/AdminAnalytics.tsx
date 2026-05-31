@@ -140,7 +140,29 @@ export default function AdminAnalytics() {
 
   const ov = analytics?.overview
   const prevOv = analytics?.prevOverview
-  const timeseriesData = analytics?.timeseries?.data?.groups?.all || []
+  const rawTimeseries = analytics?.timeseries?.data?.groups?.all || []
+  // Vercel, 7 günlük aralık için SAATLİK kova döndürebiliyor (≈168 nokta).
+  // Çok sayıda kova, mobilde flex-gap genişliği aşınca çubukları 0px'e
+  // sıkıştırıyor (desktopta geniş olduğu için ~1px kalıp "görünüyor").
+  // Çözüm: 24 saat dışındaki tüm periyotları güne göre topla → 7g=7, 30g=30 çubuk.
+  const timeseriesData =
+    period === '1d'
+      ? rawTimeseries
+      : (Object.values(
+          rawTimeseries.reduce(
+            (acc: Record<string, { key: string; total: number; devices: number }>, d) => {
+              const day = (d.key || '').slice(0, 10)
+              if (!day) return acc
+              if (!acc[day]) acc[day] = { key: day, total: 0, devices: 0 }
+              acc[day].total += d.total || 0
+              acc[day].devices += d.devices || 0
+              return acc
+            },
+            {}
+          )
+        ) as { key: string; total: number; devices: number }[]).sort((a, b) =>
+          a.key.localeCompare(b.key)
+        )
   const pathsData = analytics?.paths?.data || []
   const countriesData = analytics?.countries?.data || []
   const devicesData = analytics?.devices?.data || []
@@ -285,8 +307,8 @@ export default function AdminAnalytics() {
                         <span className="text-white/30 text-[10px] font-mono">{p.devices} kişi</span>
                       </div>
                     </div>
-                    <div className="h-1.5 bg-white/[0.05] rounded-full">
-                      <div className="h-1.5 bg-gold-400/50 rounded-full transition-all" style={{ width: `${(p.total / maxPaths) * 100}%` }} />
+                    <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gold-400/50 rounded-full transition-all" style={{ width: `${Math.min(100, (p.total / maxPaths) * 100)}%` }} />
                     </div>
                   </div>
                 </div>
@@ -306,14 +328,14 @@ export default function AdminAnalytics() {
                 const total = countriesData.reduce((s, x) => s + x.total, 0)
                 const pct = total > 0 ? Math.round((c.total / total) * 100) : 0
                 return (
-                  <div key={c.key} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div key={c.key} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <FlagImg code={c.key} size={18} />
-                      <span className="text-white/60 text-sm">{countryName(c.key)}</span>
+                      <span className="text-white/60 text-sm truncate">{countryName(c.key)}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-24 h-1.5 bg-white/[0.05] rounded-full">
-                        <div className="h-1.5 bg-blue-400/50 rounded-full" style={{ width: `${pct}%` }} />
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                      <div className="w-16 sm:w-24 h-1.5 bg-white/[0.05] rounded-full overflow-hidden shrink-0">
+                        <div className="h-1.5 bg-blue-400/50 rounded-full" style={{ width: `${Math.min(100, pct)}%` }} />
                       </div>
                       <span className="text-white font-mono text-sm w-8 text-right">{c.total}</span>
                       <span className="text-white/30 text-[10px] font-mono w-8 text-right">{pct}%</span>
@@ -347,8 +369,8 @@ export default function AdminAnalytics() {
                         <span className="text-white/30 text-[10px] font-mono">({pct}%)</span>
                       </div>
                     </div>
-                    <div className="h-2 bg-white/[0.05] rounded-full">
-                      <div className="h-2 bg-purple-400/50 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                      <div className="h-2 bg-purple-400/50 rounded-full transition-all" style={{ width: `${Math.min(100, pct)}%` }} />
                     </div>
                   </div>
                 )
@@ -365,7 +387,10 @@ export default function AdminAnalytics() {
           ) : (
             <div className="space-y-3">
               {referrersData.map(r => {
-                const maxRef = referrersData[0]?.total || 1
+                // Gerçek maksimumu al — API sıralı dönmeyebilir; aksi halde
+                // bir değer "ilk" öğeyi aşarsa genişlik %100'ü geçip taşardı.
+                const maxRef = Math.max(...referrersData.map(x => x.total), 1)
+                const refPct = Math.min(100, (r.total / maxRef) * 100)
                 const domain = r.key || ''
                 // Kök domain al: l.instagram.com → instagram.com
                 const rootDomain = domain.split('.').slice(-2).join('.')
@@ -386,8 +411,8 @@ export default function AdminAnalytics() {
                       </div>
                       <span className="text-white font-mono text-sm ml-3 shrink-0">{r.total}</span>
                     </div>
-                    <div className="h-1.5 bg-white/[0.05] rounded-full">
-                      <div className="h-1.5 bg-green-400/40 rounded-full" style={{ width: `${(r.total / maxRef) * 100}%` }} />
+                    <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-green-400/40 rounded-full" style={{ width: `${refPct}%` }} />
                     </div>
                   </div>
                 )
