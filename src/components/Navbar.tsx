@@ -56,6 +56,17 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+          <a
+            href="https://urlaklinker.com"
+            target="_blank"
+            rel="noopener"
+            className="flex items-center gap-1.5 text-[13px] font-semibold tracking-wide text-[#d2613a] hover:text-[#e8845a] transition-colors"
+            title="URLAKLINKER — El Yapımı Klinker Tuğla"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/urlaklinker-mark.png" alt="" className="w-5 h-5 object-contain" />
+            URLAKLINKER
+          </a>
           <LanguageSwitcher />
           <Link href="/teklif" className="btn-primary text-[13px] px-6 py-3">
             {t.nav_teklif}
@@ -89,6 +100,24 @@ export default function Navbar() {
             <img src="/ur2-dark.png" alt="Urlastone Doğal Taş" className="w-7 h-7 object-contain" />
             {t.nav_anasayfa}
           </Link>
+
+          {/* Kardeş marka — URLAKLINKER çapraz link */}
+          <a
+            href="https://urlaklinker.com"
+            target="_blank"
+            rel="noopener"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 py-3 my-1 px-3 rounded-xl border border-[#d2613a]/30 bg-[#d2613a]/[0.07] hover:bg-[#d2613a]/[0.14] transition-colors"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/urlaklinker-mark.png" alt="URLAKLINKER" className="w-8 h-8 object-contain" />
+            <span className="text-lg font-medium tracking-wide">
+              <span className="font-bold text-[#d2613a]">URLA</span>
+              <span className="text-[#d2613a]/80">KLINKER</span>
+            </span>
+            <span className="ml-auto text-[10px] font-mono text-[#d2613a]/70 uppercase tracking-wider">Klinker Tuğla →</span>
+          </a>
+
           {navLinks.map((link) => (
             <Link
               key={link.href}
