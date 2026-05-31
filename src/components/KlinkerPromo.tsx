@@ -46,10 +46,10 @@ export default function KlinkerPromo() {
           <X size={20} />
         </button>
 
-        {/* video — capped height so panel fits viewport */}
+        {/* video — square, fits within viewport */}
         <video
-          className="w-full block bg-black shrink-0 object-cover"
-          style={{ maxHeight: '46vh' }}
+          className="w-full block bg-black shrink-0 object-cover aspect-square"
+          style={{ maxHeight: '52vh' }}
           autoPlay
           muted
           loop
