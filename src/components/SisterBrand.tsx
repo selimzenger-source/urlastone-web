@@ -22,19 +22,21 @@ export default function SisterBrand() {
         >
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* LEFT — copy */}
-            <div className="relative bg-gradient-to-br from-[#1a0f0a] via-[#150d08] to-[#0c0a08] p-8 md:p-14 flex flex-col justify-center">
-              <p className="font-mono text-[11px] tracking-[0.25em] uppercase text-[#e8a786] mb-5">
+            <div className="relative bg-gradient-to-br from-[#1a0f0a] via-[#150d08] to-[#0c0a08] p-8 md:p-14 flex flex-col justify-center overflow-hidden">
+              {/* hover terracotta fill */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#d2613a] via-[#b84e2c] to-[#a8462a] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <p className="relative z-10 font-mono text-[11px] tracking-[0.25em] uppercase text-[#e8a786] group-hover:text-white/85 transition-colors mb-5">
                 {tr ? 'URLASTONE GROUP · YENİ MARKA' : 'URLASTONE GROUP · NEW BRAND'}
               </p>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white leading-[1.05] mb-5">
-                URLA<span className="text-[#d2613a]">KLINKER</span>
+              <h2 className="relative z-10 font-heading text-4xl md:text-5xl font-bold text-white leading-[1.05] mb-5">
+                URLA<span className="text-[#d2613a] group-hover:text-white transition-colors">KLINKER</span>
               </h2>
-              <p className="text-white/55 text-sm md:text-base leading-relaxed max-w-md mb-8 font-mono">
+              <p className="relative z-10 text-white/55 group-hover:text-white/90 transition-colors text-sm md:text-base leading-relaxed max-w-md mb-8 font-mono">
                 {tr
                   ? 'Doğal taşın yanında, ateşte pişen el yapımı klinker tuğla. Urla\'nın toprağından, aynı zanaatkâr ellerden — dış cephe, iç mekan ve peyzaj için.'
                   : 'Beyond natural stone — handmade clinker brick fired in flame. From Urla\'s soil, by the same craftsmen — for facade, interior and landscape.'}
               </p>
-              <span className="inline-flex items-center gap-2 self-start px-7 py-3.5 rounded-full bg-[#d2613a] text-white font-medium text-sm group-hover:bg-[#b84e2c] transition-colors">
+              <span className="relative z-10 inline-flex items-center gap-2 self-start px-7 py-3.5 rounded-full bg-[#d2613a] text-white font-medium text-sm group-hover:bg-white group-hover:text-[#a8462a] transition-colors">
                 {tr ? 'URLAKLINKER\'ı Keşfet' : 'Discover URLAKLINKER'}
                 <ArrowUpRight size={17} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </span>
