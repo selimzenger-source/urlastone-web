@@ -36,22 +36,22 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 mr-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/ur2-dark.png" alt="Urlastone" className="h-9 md:h-10 w-9 md:w-10 object-contain" />
-          <span className="text-white text-xl md:text-2xl tracking-[0.15em] font-light" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-white text-xl md:text-2xl tracking-[0.15em] font-light whitespace-nowrap" style={{ fontFamily: 'Inter, sans-serif' }}>
             <span className="font-bold">URLA</span>
             <span className="font-light">STONE</span>
           </span>
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden xl:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300"
+              className="text-[13px] text-white/60 font-medium tracking-wide hover:text-white transition-colors duration-300 whitespace-nowrap"
             >
               {link.label}
             </Link>
@@ -77,7 +77,7 @@ export default function Navbar() {
         {/* Mobile Toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="lg:hidden p-2 text-white"
+          className="xl:hidden p-2 text-white"
           aria-label="Menü"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -86,7 +86,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden overflow-hidden transition-all duration-500 ${
+        className={`xl:hidden overflow-hidden transition-all duration-500 ${
           isOpen ? 'max-h-[640px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
