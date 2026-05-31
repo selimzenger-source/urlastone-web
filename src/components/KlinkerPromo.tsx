@@ -2,10 +2,33 @@
 
 import { useEffect, useState } from 'react'
 import { X, ArrowUpRight } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 const SEEN_KEY = 'urlastone-klinker-promo-v1'
 
 export default function KlinkerPromo() {
+  const { locale } = useLanguage()
+  const isTr = locale === 'tr'
+  const copy = isTr
+    ? {
+        kicker: 'URLASTONE GROUP',
+        title: <>URLA artık <span className="text-[#d2613a]">KLİNKER</span>&apos;de de hizmetinizde</>,
+        desc: 'El yapımı klinker tuğla — dış cephe, iç mekan ve peyzaj için. Detaylarını keşfedin.',
+        cta: 'Siteyi Ziyaret Et',
+        skip: 'Atla',
+        closeLabel: 'Kapat',
+      }
+    : {
+        kicker: 'URLASTONE GROUP',
+        title: <>URLA now also serves you in <span className="text-[#d2613a]">KLINKER</span></>,
+        desc: 'Handmade klinker brick — for façades, interiors and landscaping. Discover the details.',
+        cta: 'Visit the Site',
+        skip: 'Skip',
+        closeLabel: 'Close',
+      }
+  const videoSrc = isTr ? '/klinker-promo.mp4' : '/klinker-promo-en.mp4'
+  const posterSrc = isTr ? '/klinker-promo-poster.jpg' : '/klinker-promo-en-poster.jpg'
+
   const [show, setShow] = useState(false)
 
   useEffect(() => {
@@ -40,7 +63,7 @@ export default function KlinkerPromo() {
         {/* close — always visible top-right */}
         <button
           onClick={dismiss}
-          aria-label="Kapat"
+          aria-label={copy.closeLabel}
           className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-black/55 backdrop-blur flex items-center justify-center text-white hover:bg-black/75 transition-colors"
         >
           <X size={20} />
@@ -48,27 +71,28 @@ export default function KlinkerPromo() {
 
         {/* video — square, fits within viewport */}
         <video
+          key={videoSrc}
           className="w-full block bg-black shrink-0 object-cover aspect-square"
           style={{ maxHeight: '52vh' }}
           autoPlay
           muted
           playsInline
           preload="metadata"
-          poster="/klinker-promo-poster.jpg"
+          poster={posterSrc}
         >
-          <source src="/klinker-promo.mp4" type="video/mp4" />
+          <source src={videoSrc} type="video/mp4" />
         </video>
 
         {/* copy + actions */}
         <div className="p-5 text-center shrink-0 overflow-y-auto">
           <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-[#e8a786] mb-2">
-            URLASTONE GROUP
+            {copy.kicker}
           </p>
           <h3 className="font-heading text-2xl font-bold text-white leading-tight mb-2">
-            URLA artık <span className="text-[#d2613a]">KLİNKER</span>&apos;de de hizmetinizde
+            {copy.title}
           </h3>
           <p className="text-white/55 text-[13px] leading-relaxed mb-5 font-mono">
-            El yapımı klinker tuğla — dış cephe, iç mekan ve peyzaj için. Detaylarını keşfedin.
+            {copy.desc}
           </p>
           <div className="flex flex-col gap-2.5">
             <a
@@ -78,14 +102,14 @@ export default function KlinkerPromo() {
               onClick={dismiss}
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#d2613a] hover:bg-[#b84e2c] text-white font-medium text-sm transition-colors"
             >
-              Siteyi Ziyaret Et
+              {copy.cta}
               <ArrowUpRight size={16} />
             </a>
             <button
               onClick={dismiss}
               className="text-white/45 hover:text-white/70 text-[13px] font-mono py-1.5 transition-colors"
             >
-              Atla
+              {copy.skip}
             </button>
           </div>
         </div>
