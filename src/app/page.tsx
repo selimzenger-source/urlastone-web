@@ -42,9 +42,9 @@ export default async function Home() {
       <MiniStats />
       <InstagramFeed />
       <FeaturedStones stoneImages={stoneImages} />
+      <SisterBrand />
       <ProcessSection />
       <ReferansMarquee />
-      <SisterBrand />
       <CTASection />
       <Footer />
     </main>
