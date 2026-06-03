@@ -20,7 +20,7 @@ export default function KatalogViewer() {
   const c = COPY[locale] || COPY.en
   const [page, setPage] = useState(1)
   const [zoom, setZoom] = useState(false)
-  const src = (n: number) => `/katalog/pages/p${pad(n)}.webp`
+  const src = (n: number) => `/katalog/pages/p${pad(n)}.webp?v=1`
 
   const go = useCallback((d: number) => setPage(p => Math.min(TOTAL, Math.max(1, p + d))), [])
 
