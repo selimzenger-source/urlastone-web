@@ -440,9 +440,7 @@ export default function TaslarPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                   <a
-                    href={catalogUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/katalog"
                     className="inline-flex items-center justify-center gap-2 bg-white text-black px-6 py-3 rounded-full text-sm font-medium hover:bg-stone-200 transition-colors"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -452,7 +450,7 @@ export default function TaslarPage() {
                     Katalogu Gör
                   </a>
                   <a
-                    href={catalogUrl}
+                    href="/katalog.pdf"
                     download
                     className="inline-flex items-center justify-center gap-2 border border-white/[0.12] text-white/70 px-6 py-3 rounded-full text-sm hover:bg-white/[0.04] transition-colors"
                   >
