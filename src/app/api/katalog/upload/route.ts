@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Marka basina SABIT dosya adi — /katalog URL'leri hic kirilmaz, markalar birbirini silmez
+const CATALOG_FILES: Record<string, string> = {
+  urlastone: 'Catalog-compressed.pdf',
+  urlaklinker: 'urlaklinker-katalog.pdf',
+}
+
 // POST /api/katalog/upload - Get signed upload URL (admin only)
 // Client uploads directly to Supabase Storage to bypass Vercel's 4.5MB body limit
 export async function POST(req: NextRequest) {
@@ -9,25 +15,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Client'tan fileName parametresi geliyor ama biz yok sayiyoruz
-  // Her katalog SABIT isim ile kaydedilir — /katalog URL'i hic kirilmaz
-  await req.json().catch(() => ({}))
+  const body = await req.json().catch(() => ({}))
+  const brand = body?.brand === 'urlaklinker' ? 'urlaklinker' : 'urlastone'
+  const fileName = CATALOG_FILES[brand]
+  const filePath = `catalog/${fileName}`
 
   try {
-    // Remove old catalog files first
-    const { data: existingFiles } = await supabaseAdmin.storage
-      .from('products')
-      .list('catalog')
+    // Yalnizca BU markanin dosyasini kaldir (digerine dokunma) — sonra yeniden olustur
+    await supabaseAdmin.storage.from('products').remove([filePath]).catch(() => {})
 
-    if (existingFiles && existingFiles.length > 0) {
-      const filesToRemove = existingFiles.map(f => `catalog/${f.name}`)
-      await supabaseAdmin.storage.from('products').remove(filesToRemove)
-    }
-
-    // SABIT dosya adi — admin hangi isimle yuklerse yuklesin ayni isimle kaydedilir
-    // Boylece /katalog URL'i her zaman en guncel katalogu gosterir
-    const fileName = 'Catalog-compressed.pdf'
-    const filePath = `catalog/${fileName}`
     const { data, error } = await supabaseAdmin.storage
       .from('products')
       .createSignedUploadUrl(filePath)
@@ -36,7 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Get public URL
     const { data: urlData } = supabaseAdmin.storage
       .from('products')
       .getPublicUrl(filePath)
