@@ -20,7 +20,7 @@ export default function KatalogViewer() {
   const c = COPY[locale] || COPY.en
   const [page, setPage] = useState(1)
   const [zoom, setZoom] = useState(false)
-  const src = (n: number) => `/katalog/pages/p${pad(n)}.webp?v=1`
+  const src = (n: number) => `/katalog/pages/p${pad(n)}.webp?v=2`
 
   const go = useCallback((d: number) => setPage(p => Math.min(TOTAL, Math.max(1, p + d))), [])
 
@@ -63,7 +63,7 @@ export default function KatalogViewer() {
             <button onClick={() => setZoom(true)} className="relative group cursor-zoom-in leading-none" aria-label="zoom">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img key={page} src={src(page)} alt={`${c.page} ${page}`}
-                className="w-[min(560px,76vw)] rounded-lg shadow-2xl bg-white" style={{ aspectRatio: '210/297', objectFit: 'contain' }} />
+                className="w-[min(560px,80vw)] h-auto block rounded-lg shadow-2xl bg-white" />
               <span className="absolute right-3 bottom-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><Maximize2 size={14} /></span>
             </button>
             <button onClick={() => go(1)} disabled={page === TOTAL}
@@ -83,7 +83,7 @@ export default function KatalogViewer() {
               <button key={n} onClick={() => setPage(n)}
                 className={`relative rounded overflow-hidden border transition-all ${n === page ? 'border-gold-400 -translate-y-0.5' : 'border-white/10 hover:border-white/30'}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src(n)} alt="" loading="lazy" className="w-full bg-white" style={{ aspectRatio: '210/297', objectFit: 'cover' }} />
+                <img src={src(n)} alt="" loading="lazy" className="w-full h-auto block bg-white" />
                 <span className="absolute left-1 bottom-1 font-mono text-[7px] px-1 rounded bg-black/55 text-white">{pad(n)}</span>
               </button>
             ))}
