@@ -10,9 +10,9 @@ const TOTAL = 26
 const pad = (n: number) => n.toString().padStart(2, '0')
 const PDF = '/katalog.pdf'
 
-const COPY: Record<string, { eyebrow: string; title: string; sub: string; download: string; page: string }> = {
-  tr: { eyebrow: 'KATALOG', title: 'Doğal Taş Koleksiyonu', sub: 'Tüm doğal taş serilerimizi sayfa sayfa inceleyin ya da PDF olarak indirin.', download: 'PDF İndir', page: 'Sayfa' },
-  en: { eyebrow: 'CATALOGUE', title: 'Natural Stone Collection', sub: 'Browse our full natural stone collection page by page or download the PDF.', download: 'Download PDF', page: 'Page' },
+const COPY: Record<string, { eyebrow: string; title: string; sub: string; download: string; page: string; tapHint: string }> = {
+  tr: { eyebrow: 'KATALOG', title: 'Doğal Taş Koleksiyonu', sub: 'Tüm doğal taş serilerimizi sayfa sayfa inceleyin ya da PDF olarak indirin.', download: 'PDF İndir', page: 'Sayfa', tapHint: 'Tam ekran için görsele dokunun' },
+  en: { eyebrow: 'CATALOGUE', title: 'Natural Stone Collection', sub: 'Browse our full natural stone collection page by page or download the PDF.', download: 'Download PDF', page: 'Page', tapHint: 'Tap the image for fullscreen' },
 }
 
 export default function KatalogViewer() {
@@ -55,27 +55,28 @@ export default function KatalogViewer() {
           </div>
 
           {/* Stage */}
-          <div className="flex items-center justify-center gap-3 md:gap-5">
-            <button onClick={() => go(-1)} disabled={page === 1}
-              className="w-11 h-11 flex-shrink-0 rounded-full border border-white/15 bg-white/5 flex items-center justify-center hover:bg-gold-400 hover:text-black hover:border-gold-400 transition-colors disabled:opacity-30 disabled:pointer-events-none">
-              <ChevronLeft size={22} />
-            </button>
-            <button onClick={() => setZoom(true)} className="relative group cursor-zoom-in leading-none" aria-label="zoom">
+          <div className="relative w-[min(640px,94vw)] mx-auto flex items-center justify-center">
+            <button onClick={() => setZoom(true)} className="relative group cursor-zoom-in leading-none w-full flex justify-center" aria-label="zoom">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img key={page} src={src(page)} alt={`${c.page} ${page}`}
-                className="w-[min(560px,80vw)] h-auto block rounded-lg shadow-2xl bg-white" />
-              <span className="absolute right-3 bottom-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><Maximize2 size={14} /></span>
+                className="w-full max-w-[600px] h-auto block rounded-lg shadow-2xl bg-white" />
+              <span className="absolute right-3 bottom-3 w-9 h-9 rounded-full bg-black/55 backdrop-blur flex items-center justify-center text-white opacity-85 group-hover:opacity-100 transition-opacity"><Maximize2 size={16} /></span>
             </button>
-            <button onClick={() => go(1)} disabled={page === TOTAL}
-              className="w-11 h-11 flex-shrink-0 rounded-full border border-white/15 bg-white/5 flex items-center justify-center hover:bg-gold-400 hover:text-black hover:border-gold-400 transition-colors disabled:opacity-30 disabled:pointer-events-none">
+            <button onClick={() => go(-1)} disabled={page === 1} aria-label="prev"
+              className="absolute left-1 sm:-left-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-white/15 bg-black/45 backdrop-blur flex items-center justify-center text-white hover:bg-gold-400 hover:text-black hover:border-gold-400 transition-colors disabled:opacity-25 disabled:pointer-events-none">
+              <ChevronLeft size={22} />
+            </button>
+            <button onClick={() => go(1)} disabled={page === TOTAL} aria-label="next"
+              className="absolute right-1 sm:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border border-white/15 bg-black/45 backdrop-blur flex items-center justify-center text-white hover:bg-gold-400 hover:text-black hover:border-gold-400 transition-colors disabled:opacity-25 disabled:pointer-events-none">
               <ChevronRight size={22} />
             </button>
           </div>
 
-          {/* Counter */}
-          <div className="text-center mt-5 mb-7 font-mono text-[13px] tracking-[0.3em] text-white/45">
+          {/* Counter + tap hint */}
+          <div className="text-center mt-5 mb-2 font-mono text-[13px] tracking-[0.3em] text-white/45">
             {pad(page)} <span className="text-gold-400">/</span> {TOTAL}
           </div>
+          <div className="text-center mb-7 font-mono text-[10px] tracking-[0.2em] uppercase text-white/30">{c.tapHint}</div>
 
           {/* Thumbnails */}
           <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
@@ -92,12 +93,13 @@ export default function KatalogViewer() {
       </main>
 
       {zoom && (
-        <div className="fixed inset-0 z-[1000] bg-black/92 backdrop-blur flex items-center justify-center gap-4 p-4" onClick={() => setZoom(false)}>
-          <button className="absolute top-5 right-6 w-11 h-11 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold-400 hover:text-black" onClick={() => setZoom(false)}><X size={24} /></button>
-          <button onClick={(e) => { e.stopPropagation(); go(-1) }} disabled={page === 1} className="w-11 h-11 rounded-full border border-white/15 bg-white/5 flex items-center justify-center hover:bg-gold-400 hover:text-black disabled:opacity-30"><ChevronLeft size={22} /></button>
+        <div className="fixed inset-0 z-[1000] bg-black/95 flex items-center justify-center p-1" onClick={() => setZoom(false)}>
+          <button className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-gold-400 hover:text-black" onClick={() => setZoom(false)}><X size={24} /></button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src(page)} alt={`${c.page} ${page}`} className="max-w-[90vw] max-h-[92vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
-          <button onClick={(e) => { e.stopPropagation(); go(1) }} disabled={page === TOTAL} className="w-11 h-11 rounded-full border border-white/15 bg-white/5 flex items-center justify-center hover:bg-gold-400 hover:text-black disabled:opacity-30"><ChevronRight size={22} /></button>
+          <img src={src(page)} alt={`${c.page} ${page}`} className="max-w-[98vw] max-h-[92vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+          <button onClick={(e) => { e.stopPropagation(); go(-1) }} disabled={page === 1} aria-label="prev" className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/15 bg-black/50 backdrop-blur flex items-center justify-center text-white hover:bg-gold-400 hover:text-black disabled:opacity-25 disabled:pointer-events-none"><ChevronLeft size={24} /></button>
+          <button onClick={(e) => { e.stopPropagation(); go(1) }} disabled={page === TOTAL} aria-label="next" className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/15 bg-black/50 backdrop-blur flex items-center justify-center text-white hover:bg-gold-400 hover:text-black disabled:opacity-25 disabled:pointer-events-none"><ChevronRight size={24} /></button>
+          <div className="absolute bottom-4 left-0 right-0 text-center font-mono text-xs tracking-[0.3em] text-white/60">{pad(page)} <span className="text-gold-400">/</span> {TOTAL}</div>
         </div>
       )}
 
