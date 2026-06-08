@@ -292,7 +292,7 @@ export default function AdminBlog() {
       })
       const data = await res.json()
       if (res.ok) {
-        showMsg('success', '6 dile çevrildi')
+        showMsg('success', brand === 'urlaklinker' ? 'İngilizceye çevrildi' : '6 dile çevrildi')
         fetchBlogs()
       } else if (res.status === 207) {
         // Partial success
@@ -890,7 +890,7 @@ export default function AdminBlog() {
                     onClick={() => handleTranslate(blog.id)}
                     disabled={translating === blog.id}
                     className="p-2 text-white/30 hover:text-blue-400 transition-colors disabled:opacity-50"
-                    title="7 Dile Çevir"
+                    title={brand === 'urlaklinker' ? 'İngilizceye Çevir' : '7 Dile Çevir'}
                   >
                     {translating === blog.id ? <RefreshCw size={14} className="animate-spin" /> : <Languages size={14} />}
                   </button>

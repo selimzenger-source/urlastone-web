@@ -93,6 +93,9 @@ export async function POST(req: NextRequest) {
   const db = brand === 'urlaklinker' ? getUrlaklinkerSupabase() : supabaseAdmin
   const table = brand === 'urlaklinker' ? 'urlaklinker_blogs' : 'blogs'
 
+  // URLAKLINKER yalnizca 2 dil (TR + EN) -> sadece EN'e cevir. URLASTONE 7 dil.
+  const langs: Lang[] = brand === 'urlaklinker' ? ['en'] : [...LANGS]
+
   const { data: blog, error } = await db
     .from(table)
     .select('title, content, meta_description')
@@ -119,8 +122,8 @@ export async function POST(req: NextRequest) {
   const results: { lang: string; success: boolean }[] = []
 
   // Translate each language - 3 parallel at a time for speed
-  for (let i = 0; i < LANGS.length; i += 3) {
-    const batch = LANGS.slice(i, i + 3)
+  for (let i = 0; i < langs.length; i += 3) {
+    const batch = langs.slice(i, i + 3)
     console.log(`[Translate] Batch ${i/3 + 1}: ${batch.join(', ')}`)
     const promises = batch.map(async (lang) => {
       try {
