@@ -31,29 +31,56 @@ export async function GET(req: Request) {
   const prevFrom = new Date(now.getTime() - days * 2 * 24 * 60 * 60 * 1000).toISOString()
 
   const headers = { Authorization: `Bearer ${VERCEL_TOKEN}` }
-  const base = `https://vercel.com/api/web-analytics`
+  const base = `https://vercel.com/api/web-analytics/v2`
   const qs = `environment=production&filter=%7B%7D&projectId=${projectId}&teamId=${VERCEL_TEAM_ID}&tz=Europe%2FIstanbul`
+
+  // Vercel boş gövde/HTML dönerse 500 yerine null — panel kalan veriyle çalışmaya devam eder
+  const safeJson = async (res: Response) => {
+    if (!res.ok) {
+      console.error(`Vercel Analytics ${res.url} -> HTTP ${res.status}`)
+      return null
+    }
+    try {
+      return await res.json()
+    } catch {
+      console.error(`Vercel Analytics ${res.url} -> invalid JSON`)
+      return null
+    }
+  }
 
   try {
     const [overviewRes, prevOverviewRes, timeseriesRes, pathsRes, countriesRes, devicesRes, referrersRes] = await Promise.all([
-      fetch(`${base}/overview?${qs}&from=${from}&to=${to}`, { headers }),
-      fetch(`${base}/overview?${qs}&from=${prevFrom}&to=${prevTo}`, { headers }),
+      fetch(`${base}/overview?${qs}&from=${from}&to=${to}&withBounceRate=true`, { headers }),
+      fetch(`${base}/overview?${qs}&from=${prevFrom}&to=${prevTo}&withBounceRate=true`, { headers }),
       fetch(`${base}/timeseries?${qs}&from=${from}&to=${to}`, { headers }),
       fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=8&type=path`, { headers }),
       fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=8&type=country`, { headers }),
       fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=5&type=device_type`, { headers }),
-      fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=5&type=referrer_hostname`, { headers }),
+      fetch(`${base}/stats?${qs}&from=${from}&to=${to}&limit=5&type=referrer`, { headers }),
     ])
 
     const [overview, prevOverview, timeseries, paths, countries, devices, referrers] = await Promise.all([
-      overviewRes.json(),
-      prevOverviewRes.json(),
-      timeseriesRes.json(),
-      pathsRes.json(),
-      countriesRes.json(),
-      devicesRes.json(),
-      referrersRes.json(),
+      safeJson(overviewRes),
+      safeJson(prevOverviewRes),
+      safeJson(timeseriesRes),
+      safeJson(pathsRes),
+      safeJson(countriesRes),
+      safeJson(devicesRes),
+      safeJson(referrersRes),
     ])
+
+    // v2 timeseries saatlik döner — 1 günden uzun periyotlarda günlüğe topla (grafik v1 gibi günlük çubuk bekler)
+    if (days > 1 && timeseries?.data?.groups?.all) {
+      const byDay = new Map<string, { key: string; total: number; devices: number }>()
+      for (const item of timeseries.data.groups.all as Array<{ key: string; total: number; devices: number }>) {
+        const day = item.key.slice(0, 10)
+        const agg = byDay.get(day) || { key: day, total: 0, devices: 0 }
+        agg.total += item.total || 0
+        agg.devices += item.devices || 0
+        byDay.set(day, agg)
+      }
+      timeseries.data.groups.all = Array.from(byDay.values())
+    }
 
     return NextResponse.json(
       { overview, prevOverview, timeseries, paths, countries, devices, referrers, period },
