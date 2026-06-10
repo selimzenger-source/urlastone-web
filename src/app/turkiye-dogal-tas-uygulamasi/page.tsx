@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { ArrowRight, MapPin, Phone, Mail, Hammer, Ruler, Sparkles, ShieldCheck, Award, Wrench, Home, Building, Flame, Trees } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import SisterBrand from '@/components/SisterBrand'
+import { PricingSection, EgeSection, GlobalSection, HomeCTASection } from '@/components/pillar/PillarSections'
 
 const URL = 'https://www.urlastone.com/turkiye-dogal-tas-uygulamasi'
 
@@ -146,6 +148,7 @@ const serviceLd = {
   provider: {
     '@type': 'LocalBusiness', name: 'URLASTONE', url: 'https://www.urlastone.com',
     telephone: '+90 553 232 2144', email: 'info@urlastone.com',
+    priceRange: '$30 - $200 USD/m²',
     address: {
       '@type': 'PostalAddress', streetAddress: 'Altıntaş, İzmir Çeşme Cad. No: 319',
       addressLocality: 'Urla', addressRegion: 'İzmir', postalCode: '35430', addressCountry: 'TR',
@@ -336,6 +339,10 @@ export default function TurkiyeUygulamaPage() {
         </div>
       </section>
 
+      <PricingSection />
+      <EgeSection />
+      <GlobalSection />
+
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-5xl mx-auto">
           <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Keşfet</p>
@@ -353,6 +360,9 @@ export default function TurkiyeUygulamaPage() {
           </div>
         </div>
       </section>
+
+      <SisterBrand />
+      <HomeCTASection />
 
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-3xl mx-auto text-center">

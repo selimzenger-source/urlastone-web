@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { ArrowRight, MapPin, Phone, Mail, Factory, Truck, ShieldCheck, Award, Gem, Layers, Hammer, Building2, Globe2 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import SisterBrand from '@/components/SisterBrand'
+import { PricingSection, EgeSection, GlobalSection, HomeCTASection } from '@/components/pillar/PillarSections'
 
 const URL = 'https://www.urlastone.com/izmir-dogal-tas-ureticisi'
 
@@ -115,6 +117,7 @@ const serviceLd = {
     name: 'URLASTONE',
     url: 'https://www.urlastone.com',
     telephone: '+90 553 232 2144',
+    priceRange: '$30 - $200 USD/m²',
     email: 'info@urlastone.com',
     address: {
       '@type': 'PostalAddress',
@@ -346,6 +349,12 @@ export default function IzmirUreticiPage() {
       </section>
 
       {/* CTA */}
+      <PricingSection />
+      <EgeSection />
+      <GlobalSection />
+      <SisterBrand />
+      <HomeCTASection />
+
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6">
