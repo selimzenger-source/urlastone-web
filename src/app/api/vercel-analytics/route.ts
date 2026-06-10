@@ -1,4 +1,18 @@
 import { NextResponse } from 'next/server'
+import { sendTelegramNotification } from '@/lib/telegram'
+
+// Vercel iç API'si yine değişirse Telegram'a haber ver — instance başına en fazla 6 saatte bir (spam önleme)
+let lastAlertAt = 0
+const ALERT_COOLDOWN_MS = 6 * 60 * 60 * 1000
+
+function alertApiBroken(failures: string[]) {
+  const now = Date.now()
+  if (now - lastAlertAt < ALERT_COOLDOWN_MS) return
+  lastAlertAt = now
+  sendTelegramNotification(
+    `⚠️ *Admin İstatistikler Uyarısı*\n\nVercel Analytics API'sinden veri alınamıyor — Vercel iç API'yi değiştirmiş olabilir.\n\nBozuk: ${failures.join(', ')}\n\nPanel kalan veriyle çalışmaya devam ediyor. Claude'a "istatistik API bozulmuş, düzelt" demen yeterli.`
+  ).catch(() => {})
+}
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'urlastone-web'
@@ -35,15 +49,18 @@ export async function GET(req: Request) {
   const qs = `environment=production&filter=%7B%7D&projectId=${projectId}&teamId=${VERCEL_TEAM_ID}&tz=Europe%2FIstanbul`
 
   // Vercel boş gövde/HTML dönerse 500 yerine null — panel kalan veriyle çalışmaya devam eder
-  const safeJson = async (res: Response) => {
+  const failures: string[] = []
+  const safeJson = async (res: Response, label: string) => {
     if (!res.ok) {
       console.error(`Vercel Analytics ${res.url} -> HTTP ${res.status}`)
+      failures.push(`${label} (HTTP ${res.status})`)
       return null
     }
     try {
       return await res.json()
     } catch {
       console.error(`Vercel Analytics ${res.url} -> invalid JSON`)
+      failures.push(`${label} (bozuk JSON)`)
       return null
     }
   }
@@ -60,14 +77,16 @@ export async function GET(req: Request) {
     ])
 
     const [overview, prevOverview, timeseries, paths, countries, devices, referrers] = await Promise.all([
-      safeJson(overviewRes),
-      safeJson(prevOverviewRes),
-      safeJson(timeseriesRes),
-      safeJson(pathsRes),
-      safeJson(countriesRes),
-      safeJson(devicesRes),
-      safeJson(referrersRes),
+      safeJson(overviewRes, 'özet'),
+      safeJson(prevOverviewRes, 'önceki dönem'),
+      safeJson(timeseriesRes, 'grafik'),
+      safeJson(pathsRes, 'sayfalar'),
+      safeJson(countriesRes, 'ülkeler'),
+      safeJson(devicesRes, 'cihazlar'),
+      safeJson(referrersRes, 'kaynaklar'),
     ])
+
+    if (failures.length > 0) alertApiBroken(failures)
 
     // v2 timeseries saatlik döner — 1 günden uzun periyotlarda günlüğe topla (grafik v1 gibi günlük çubuk bekler)
     if (days > 1 && timeseries?.data?.groups?.all) {

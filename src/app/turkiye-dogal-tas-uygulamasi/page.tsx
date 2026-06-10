@@ -12,6 +12,29 @@ const CITIES = [
   'Hatay', 'Şanlıurfa', 'Diyarbakır', 'Yalova',
 ]
 
+const STONES = [
+  { name: 'Traverten', img: '/featured-traverten.jpg', desc: 'Akdeniz villaları ve sıcak görünüm için en çok uygulanan taş' },
+  { name: 'Bazalt', img: '/featured-bazalt.jpg', desc: 'Modern cepheler ve sert iklimler için en dayanıklı seçim' },
+  { name: 'Kalker', img: '/featured-kalker.jpg', desc: 'Yumuşak bej tonlarıyla sahil projelerinin favorisi' },
+  { name: 'Mermer', img: '/featured-mermer.jpg', desc: 'Lobi ve lüks iç mekan uygulamalarının vazgeçilmezi' },
+]
+
+const PROJECT_PHOTOS = [
+  { src: '/slide-1.jpg', alt: 'Doğal taş cephe kaplama uygulaması villa projesi' },
+  { src: '/slide-4.jpg', alt: 'URLASTONE doğal taş uygulaması — dış cephe' },
+  { src: '/slide-5.jpg', alt: 'Traverten cephe uygulaması lüks konut' },
+  { src: '/slide-8.jpg', alt: 'Doğal taş duvar kaplama uygulanmış proje' },
+]
+
+const EXPLORE_LINKS = [
+  { href: '/', title: 'Ana Sayfa', desc: 'URLASTONE dünyasını keşfedin' },
+  { href: '/urunlerimiz', title: 'Ürünlerimiz', desc: 'Tüm taş türleri, desenler ve renkler' },
+  { href: '/projelerimiz', title: 'Projelerimiz', desc: '500+ proje harita üzerinde' },
+  { href: '/referanslarimiz', title: 'Referanslarımız', desc: 'Otel, villa ve kurumsal referanslar' },
+  { href: '/blog', title: 'Blog', desc: 'Doğal taş rehberleri ve karşılaştırmalar' },
+  { href: '/iletisim', title: 'İletişim', desc: 'Showroom, telefon ve WhatsApp' },
+]
+
 const APPLICATIONS = [
   { icon: Building, title: 'Dış Cephe Kaplama', desc: 'Villa, apartman, otel, ofis ve ticari yapı dış cephelerinde doğal taş kaplama. Türkiye geneli proje deneyimi.' },
   { icon: Home, title: 'İç Mekan Duvar', desc: 'Salon, lobi, restoran ve aksan duvar uygulamaları. Konut ve hospitality projeler.' },
@@ -168,6 +191,27 @@ export default function TurkiyeUygulamaPage() {
         </div>
       </section>
 
+      <section className="px-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative overflow-hidden rounded-3xl border border-white/[0.08]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/sim-example-before.jpg" alt="Doğal taş uygulaması öncesi bina cephesi" loading="eager"
+              className="w-full h-[220px] md:h-[320px] object-cover" />
+            <span className="absolute top-4 left-4 font-mono text-[10px] tracking-[0.2em] uppercase bg-black/60 border border-white/20 text-white/80 px-3 py-1.5 rounded-full">Öncesi</span>
+          </div>
+          <div className="relative overflow-hidden rounded-3xl border border-gold-400/20">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/sim-example-after.jpg" alt="URLASTONE doğal taş uygulaması sonrası aynı cephe" loading="eager"
+              className="w-full h-[220px] md:h-[320px] object-cover" />
+            <span className="absolute top-4 left-4 font-mono text-[10px] tracking-[0.2em] uppercase bg-black/60 border border-gold-400/50 text-gold-400 px-3 py-1.5 rounded-full">Sonrası</span>
+          </div>
+        </div>
+        <p className="text-white/40 text-sm font-mono mt-4 text-center">
+          Kendi binanızı görmek ister misiniz?{' '}
+          <Link href="/simulasyon" className="text-gold-400 hover:text-[#c9a855] transition-colors">Ücretsiz AI simülasyon deneyin →</Link>
+        </p>
+      </section>
+
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-5xl mx-auto">
           <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Hizmet Modelleri</p>
@@ -198,6 +242,61 @@ export default function TurkiyeUygulamaPage() {
                 <p className="text-white/55 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: desc }} />
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-20 border-t border-white/[0.06]">
+        <div className="max-w-5xl mx-auto">
+          <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Taş Seçenekleri</p>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">Hangi taşı uygulayalım</h2>
+          <p className="text-white/55 max-w-2xl mb-12">
+            Projenizin tarzına ve iklim koşullarına göre dört ana taş ailesinden seçim yapılır. Tüm taşlar kendi fabrikamızda Rockshell ince panele dönüştürülür:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {STONES.map(({ name, img, desc }) => (
+              <Link key={name} href="/urunlerimiz" className="group block overflow-hidden rounded-2xl border border-white/[0.06] hover:border-gold-400/40 transition-all duration-500 bg-white/[0.03]">
+                <div className="relative h-44 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`${name} doğal taş uygulaması — URLASTONE`} loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <h3 className="absolute bottom-3 left-4 font-heading text-xl font-semibold">{name}</h3>
+                </div>
+                <p className="text-white/55 text-sm leading-relaxed p-5">{desc}</p>
+              </Link>
+            ))}
+          </div>
+          <Link href="/urunlerimiz" className="inline-flex items-center gap-2 mt-8 bg-white/[0.06] border border-white/[0.12] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-white/[0.1] hover:border-gold-400/30 transition-all">
+            Tüm Ürünleri İncele <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
+
+      <section className="px-6 py-20 border-t border-white/[0.06]">
+        <div className="max-w-5xl mx-auto">
+          <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Uygulanmış Projeler</p>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">İşçiliğimizi yerinde görün</h2>
+          <p className="text-white/55 max-w-2xl mb-10">
+            Türkiye genelinde tamamladığımız villa, otel ve rezidans uygulamalarından bir seçki. Tamamını harita üzerinde inceleyebilirsiniz:
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {PROJECT_PHOTOS.map(({ src, alt }) => (
+              <Link key={src} href="/projelerimiz" className="group relative overflow-hidden rounded-2xl border border-white/[0.06] hover:border-gold-400/40 transition-all duration-500 aspect-[4/5]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={alt} loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-8">
+            <Link href="/projelerimiz" className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.12] text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-white/[0.1] hover:border-gold-400/30 transition-all">
+              Tüm Projeleri Gör <ArrowRight size={14} />
+            </Link>
+            <Link href="/referanslarimiz" className="inline-flex items-center gap-2 text-white/60 px-4 py-3 text-sm font-mono hover:text-gold-400 transition-colors">
+              Referanslarımız →
+            </Link>
           </div>
         </div>
       </section>
@@ -238,9 +337,27 @@ export default function TurkiyeUygulamaPage() {
       </section>
 
       <section className="px-6 py-20 border-t border-white/[0.06]">
+        <div className="max-w-5xl mx-auto">
+          <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Keşfet</p>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">URLASTONE'da sizi neler bekliyor</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {EXPLORE_LINKS.map(({ href, title, desc }) => (
+              <Link key={href} href={href} className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-gold-400/30 hover:bg-white/[0.05] transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-heading text-lg font-semibold">{title}</h3>
+                  <ArrowRight size={16} className="text-gold-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </div>
+                <p className="text-white/50 text-sm">{desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6">
-            Türkiye\'deki projeniz için <span className="text-gold-400">ücretsiz teklif</span>
+            Türkiye&apos;deki projeniz için <span className="text-gold-400">ücretsiz teklif</span>
           </h2>
           <p className="text-white/55 mb-10">
             Şehrinizi ve proje detaylarınızı paylaşın, size en uygun hizmet modelini önerelim.

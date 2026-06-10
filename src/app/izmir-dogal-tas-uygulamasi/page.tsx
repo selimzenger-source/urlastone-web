@@ -230,7 +230,7 @@ export default function IzmirUygulamaPage() {
           <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">İzmir Uygulama Bölgeleri</p>
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">Her ilçede uygulamadayız</h2>
           <p className="text-white/55 max-w-2xl mb-12">
-            Üretim tesisimiz Urla\'da, uygulama ekibimiz İzmir\'in her ilçesinde mobilize.
+            Üretim tesisimiz Urla&apos;da, uygulama ekibimiz İzmir&apos;in her ilçesinde mobilize.
             Sahil ilçelerinde villa cephesi, merkez ilçelerde apartman ve ticari yapı projelerimiz bulunmaktadır.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -247,7 +247,7 @@ export default function IzmirUygulamaPage() {
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-5xl mx-auto">
           <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Neden URLASTONE</p>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">İzmir\'de uygulamacı seçerken</h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">İzmir&apos;de uygulamacı seçerken</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[
               { title: 'Üretici + Uygulayıcı — tek elden', desc: 'Aracı yok. Panel bizim fabrikamızdan çıkar, montajı bizim ekibimiz yapar. Kalite kontrol kapı dışına çıkmaz.' },
@@ -289,7 +289,7 @@ export default function IzmirUygulamaPage() {
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6">
-            İzmir\'deki projenize <span className="text-gold-400">ücretsiz yerinde keşif</span>
+            İzmir&apos;deki projenize <span className="text-gold-400">ücretsiz yerinde keşif</span>
           </h2>
           <p className="text-white/55 mb-10">
             Bina fotoğrafınızı ve adresinizi paylaşın, 48 saat içinde ekibimiz keşfe gelsin.

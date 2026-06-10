@@ -159,8 +159,8 @@ export default function IzmirUreticiPage() {
           <span className="text-gold-400">URLASTONE</span>
         </h1>
         <p className="text-white/60 text-lg leading-relaxed max-w-3xl">
-          URLASTONE, İzmir Urla\'da bulunan kendi üretim tesisinde patentli{' '}
-          <strong className="text-white">Rockshell ince doğal taş paneller</strong> üreten, 2015\'ten
+          URLASTONE, İzmir Urla&apos;da bulunan kendi üretim tesisinde patentli{' '}
+          <strong className="text-white">Rockshell ince doğal taş paneller</strong> üreten, 2015&apos;ten
           bu yana 500+ projeyi tamamlayan, 50+ ülkeye ihracat yapan tam donanımlı bir{' '}
           <strong className="text-white">doğal taş üreticisi</strong>dir. Ham bloğun ocaktan
           alınmasından panelin paketlenmesine kadar tüm süreç fabrikamızda yürütülür — aracı veya
@@ -183,7 +183,7 @@ export default function IzmirUreticiPage() {
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-5xl mx-auto">
           <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Neden URLASTONE</p>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">İzmir\'de doğal taş üreticisi seçerken</h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-12">İzmir&apos;de doğal taş üreticisi seçerken</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               { icon: Factory, title: 'Kendi fabrikamız', desc: 'Urla\'daki üretim tesisinde tüm süreç — ham blok kesimi, kalibrasyon, paketleme. Aracı yok.' },
@@ -235,9 +235,9 @@ export default function IzmirUreticiPage() {
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-5xl mx-auto">
           <p className="font-mono text-[11px] tracking-[0.3em] text-gold-400 uppercase mb-4">Hizmet Bölgeleri</p>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">İzmir\'in tüm ilçelerinde</h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">İzmir&apos;in tüm ilçelerinde</h2>
           <p className="text-white/55 max-w-2xl mb-12">
-            Üretim tesisimiz Urla\'da olmakla birlikte İzmir\'in tüm ilçelerine teslimat ve uygulama hizmeti sunuyoruz.
+            Üretim tesisimiz Urla&apos;da olmakla birlikte İzmir&apos;in tüm ilçelerine teslimat ve uygulama hizmeti sunuyoruz.
             Sahil ilçelerinde villa cephesi, merkez ilçelerde apartman ve ticari yapı projelerimiz bulunmaktadır.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -349,7 +349,7 @@ export default function IzmirUreticiPage() {
       <section className="px-6 py-20 border-t border-white/[0.06]">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-6">
-            İzmir\'deki projeniz için <span className="text-gold-400">ücretsiz teklif</span>
+            İzmir&apos;deki projeniz için <span className="text-gold-400">ücretsiz teklif</span>
           </h2>
           <p className="text-white/55 mb-10">
             Bina fotoğrafınızı paylaşın, 24 saat içinde detaylı teklif gönderelim.
