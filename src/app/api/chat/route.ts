@@ -18,6 +18,9 @@ function cleanExpiredTeklifler() {
   })
 }
 
+// Teklif akışı Sonnet kullanır — uzun yanıtlarda 10sn default limit yetmeyebilir
+export const maxDuration = 30
+
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const SYSTEM_PROMPT = `Sen Uri'sin - URLASTONE'un yapay zeka asistanı. Adın "Uri" (URLASTONE'dan geliyor). Kullanıcı hangi dilde yazarsa o dilde cevap ver. Türkçe yazarsa Türkçe, İngilizce yazarsa İngilizce, Almanca yazarsa Almanca, İspanyolca yazarsa İspanyolca, Fransızca yazarsa Fransızca, Rusça yazarsa Rusça, Arapça yazarsa Arapça cevap ver.
@@ -374,7 +377,7 @@ export async function POST(req: NextRequest) {
     const allText = trimmedMessages.map((m: { content: string }) => m.content).join(' ').toLowerCase()
     const teklifKeywords = ['teklif', 'fiyat', 'metrekare', 'm²', 'cephe kaplama', 'proje tipi', 'dış köşe', 'metre tül', 'yapıştırıcı', 'derz', 'kaplanacak', 'adım adım', 'birlikte yapalım', 'birlikte yönet']
     const isTeklifFlow = teklifKeywords.some(kw => allText.includes(kw))
-    const model = isTeklifFlow ? 'claude-sonnet-4-20250514' : 'claude-haiku-4-5-20251001'
+    const model = isTeklifFlow ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001'
 
     const response = await client.messages.create({
       model,

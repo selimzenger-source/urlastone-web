@@ -17,7 +17,7 @@ async function translateTitleMeta(title: string, meta: string, lang: Lang): Prom
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const msg = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         messages: [{
           role: 'user',
@@ -47,7 +47,7 @@ async function translateContent(content: string, lang: Lang): Promise<string | n
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const msg = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 8192,
         messages: [{
           role: 'user',

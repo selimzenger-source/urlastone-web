@@ -585,6 +585,14 @@ export default function ChatWidget() {
         }
 
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+      } else if (!res.ok) {
+        // Sunucu hatası (500 vb.) — yanıt boş gelirse kullanıcı sessizce beklemesin
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: locale === 'tr'
+            ? 'Şu an yanıt veremedim, lütfen tekrar deneyin. Acele ediyorsanız WhatsApp: +90 553 232 21 44'
+            : 'I could not respond right now, please try again. WhatsApp: +90 553 232 21 44',
+        }])
       }
 
       // 403 = IP engellenmiş

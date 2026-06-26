@@ -25,7 +25,7 @@ async function detectWatermarkRegions(imageUrl: string): Promise<{ type: 'diagon
   const mediaType = (imgRes.headers.get('content-type') || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 800,
     messages: [{
       role: 'user',
