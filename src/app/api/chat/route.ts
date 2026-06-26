@@ -21,6 +21,11 @@ function cleanExpiredTeklifler() {
 // Teklif akışı Sonnet kullanır — uzun yanıtlarda 10sn default limit yetmeyebilir
 export const maxDuration = 30
 
+// Müşteri mesajı hata alırsa Telegram'a bildir — aynı IP için 2 dakikada 1 kez
+// (API tamamen çökerse Telegram'ı boğmamak için cooldown)
+const chatErrorNotified = new Map<string, number>()
+const CHAT_ERROR_COOLDOWN_MS = 2 * 60 * 1000
+
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const SYSTEM_PROMPT = `Sen Uri'sin - URLASTONE'un yapay zeka asistanı. Adın "Uri" (URLASTONE'dan geliyor). Kullanıcı hangi dilde yazarsa o dilde cevap ver. Türkçe yazarsa Türkçe, İngilizce yazarsa İngilizce, Almanca yazarsa Almanca, İspanyolca yazarsa İspanyolca, Fransızca yazarsa Fransızca, Rusça yazarsa Rusça, Arapça yazarsa Arapça cevap ver.
@@ -353,8 +358,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // catch bloğunda kullanmak için try dışında tut (müşteri hata bildirimi)
+  let leadInfo: { name?: string; phone?: string; email?: string } | undefined
+  let lastUserMsg = ''
+
   try {
     const { messages, lead } = await req.json()
+    leadInfo = lead
+    lastUserMsg = [...(Array.isArray(messages) ? messages : [])].reverse().find((m: { role: string }) => m.role === 'user')?.content || ''
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 })
@@ -618,6 +629,31 @@ Engellemek icin: /engelle ${ip}`
     return NextResponse.json({ message: text })
   } catch (error) {
     console.error('[Chat] Error:', error)
+
+    // Müşteri mesaj yazdı ama cevap alamadı — Telegram'dan haber ver (cooldown'lu)
+    const now = Date.now()
+    const lastNotified = chatErrorNotified.get(ip) || 0
+    if (now - lastNotified > CHAT_ERROR_COOLDOWN_MS) {
+      chatErrorNotified.set(ip, now)
+      // Eski kayıtları temizle
+      chatErrorNotified.forEach((ts, key) => {
+        if (now - ts > CHAT_ERROR_COOLDOWN_MS) chatErrorNotified.delete(key)
+      })
+      const tarih = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
+      const errMsg = error instanceof Error ? error.message : String(error)
+      sendTelegramNotification(
+        `🔴 *URİ CEVAP VEREMEDİ — Müşteri bekliyor!*\n\n` +
+        `👤 *Müşteri:* ${leadInfo?.name || 'Bilinmiyor'}\n` +
+        `📞 *Telefon:* ${leadInfo?.phone || '-'}\n` +
+        `📧 *Email:* ${leadInfo?.email || '-'}\n` +
+        `💬 *Son mesajı:* ${lastUserMsg ? lastUserMsg.slice(0, 300) : '-'}\n` +
+        `⚠️ *Hata:* ${errMsg.slice(0, 200)}\n` +
+        `🔒 IP: \`${ip}\`\n` +
+        `🕐 ${tarih}\n\n` +
+        `Bu müşteriye chatbot cevap veremedi. Mümkünse telefonundan ulaşın.`
+      ).catch(() => {})
+    }
+
     return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
   }
 }
