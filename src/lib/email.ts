@@ -5,11 +5,14 @@ function getResend() {
 }
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-// info@urlastone.com bounce ediyor (alici tarafinda mailbox sorunu) — sadece teslim olanlar
-const ADMIN_EMAILS = (process.env.ADMIN_NOTIFICATION_EMAILS || 'export@daymarstone.com,cihanzenger@gmail.com')
-  .split(',')
-  .map(e => e.trim())
-  .filter(e => e && e !== 'info@urlastone.com') // bounce eden adresi her halukarda cikar
+// info@urlastone.com artik kendi mail hosting'imizde — teklifler bu kutuya da gelsin.
+// Her zaman listeye dahil edilir + env var'daki digerleri (tekrarsiz).
+const ADMIN_EMAILS = Array.from(new Set([
+  'info@urlastone.com',
+  ...(process.env.ADMIN_NOTIFICATION_EMAILS || 'export@daymarstone.com,cihanzenger@gmail.com')
+    .split(',')
+    .map(e => e.trim()),
+])).filter(Boolean)
 
 interface TeklifData {
   ad_soyad: string
