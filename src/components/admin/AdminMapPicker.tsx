@@ -41,7 +41,9 @@ export default function AdminMapPicker({ lat, lng, onSelect }: Props) {
       zoomControl={true}
       attributionControl={false}
     >
-      <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+      <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          maxNativeZoom={16}
+          maxZoom={19} />
       <ClickHandler onSelect={onSelect} />
       {lat && lng && (
         <Marker position={[lat, lng]} icon={goldIcon} />

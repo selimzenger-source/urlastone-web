@@ -320,7 +320,9 @@ export default function ProjectMap({ locations, labels }: { locations: Location[
         <FitBoundsOnLoad locations={locations} />
         <FocusDensestButton locations={locations} label={focusLabel} />
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          maxNativeZoom={16}
+          maxZoom={19}
         />
         <MarkerClusterGroup
           iconCreateFunction={createClusterCustomIcon}
